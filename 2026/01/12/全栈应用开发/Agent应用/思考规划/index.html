@@ -1,0 +1,989 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="概述好在现代 AI Agent 架构中，思考与规划系统是 Agent 的核心中枢，它负责将外界输入、内部状态和可用工具转化为可执行的行动序列。可以理解为 Agent 的“大脑前额叶”，用于多步推理、任务分解和决策控制。其主要功能包括：状态建模（State Representation）、任务分解与规划（Planning）、决策执行（Policy &#x2F; Action Selection）以及">
+<meta property="og:type" content="article">
+<meta property="og:title" content="思考规划系统">
+<meta property="og:url" content="http://example.com/2026/01/12/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/Agent%E5%BA%94%E7%94%A8/%E6%80%9D%E8%80%83%E8%A7%84%E5%88%92/index.html">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="概述好在现代 AI Agent 架构中，思考与规划系统是 Agent 的核心中枢，它负责将外界输入、内部状态和可用工具转化为可执行的行动序列。可以理解为 Agent 的“大脑前额叶”，用于多步推理、任务分解和决策控制。其主要功能包括：状态建模（State Representation）、任务分解与规划（Planning）、决策执行（Policy &#x2F; Action Selection）以及">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-12T13:24:51.183Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:31.857Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>思考规划系统 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="思考规划系统"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">思考规划系统</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>好在现代 AI Agent 架构中，<strong>思考与规划系统</strong>是 Agent 的核心中枢，它负责将外界输入、内部状态和可用工具转化为可执行的行动序列。可以理解为 Agent 的“大脑前额叶”，用于多步推理、任务分解和决策控制。其主要功能包括：<strong>状态建模（State Representation）、任务分解与规划（Planning）、决策执行（Policy &#x2F; Action Selection）以及反馈闭环（Observation &amp; Update）</strong>。</p>
+<p>具体实现上，首先 Agent 会通过短期记忆捕获当前上下文、通过长期记忆检索历史经验，并将这些信息汇总到工作记忆中形成完整任务视图；然后 Planner 模块根据当前目标、工具能力和约束条件，将复杂任务拆解为子任务或调用工具的指令序列；接着 Executor 模块根据 Planner 输出逐步执行任务，同时将执行结果反馈回工作记忆，形成闭环；在高级 Agent 中，还可能引入 Reflection 或 Critic 模块，对 Planner 输出进行评估、修正和优化，确保决策合理性。工程上，</p>
+<p>这种思考与规划系统可以通过 <strong>Graph-based Workflow（如 LangGraph）、状态机（FSM）、行为树（Behavior Tree）或多 Agent 协作节点</strong>实现，每个节点负责不同子任务或工具调用，通过可组合的上下文协议（如 MCP）将记忆、工具和提示整合，从而支持复杂的连续对话、多任务学习和多步工具协作。</p>
+<p>总体而言，思考与规划系统并非单纯靠 LLM 的推理能力，而是通过<strong>状态管理、任务拆分、工具调用与反馈闭环</strong>的系统化设计，让 Agent 能够像人类大脑一样进行动态推理、长期规划和多步决策。</p>
+<p>这是个非常关键的问题，已经进入 <strong>Agent 的“中枢神经系统”层面</strong>了。<br>一句话先给结论：</p>
+<blockquote>
+<p>Agent 的“思考与计划”本质上是：<br><strong>状态建模 + 决策策略 + 任务分解 + 执行反馈闭环</strong> 的系统工程，而不只是让 LLM 多想几步。</p>
+</blockquote>
+<p>下面我从 <strong>实现机制 → 常见架构 → 技术栈 → 学习路线</strong> 四层给你系统拆解。</p>
+<hr>
+<h1 id="一、Agent-的“思考”在工程上是什么？"><a href="#一、Agent-的“思考”在工程上是什么？" class="headerlink" title="一、Agent 的“思考”在工程上是什么？"></a>一、Agent 的“思考”在工程上是什么？</h1><p>不是哲学意义的思考，而是三件事：</p>
+<h2 id="✅-1-状态表示（State-Representation）"><a href="#✅-1-状态表示（State-Representation）" class="headerlink" title="✅ 1. 状态表示（State Representation）"></a>✅ 1. 状态表示（State Representation）</h2><p>Agent 必须知道自己现在掌握什么信息：</p>
+<ul>
+<li>用户目标</li>
+<li>历史对话</li>
+<li>检索到的知识</li>
+<li>工具返回结果</li>
+<li>当前子任务进度</li>
+</ul>
+<p>工程上就是：</p>
+<blockquote>
+<p>一个不断被更新的 State 对象（工作记忆）</p>
+</blockquote>
+<p>在 LangGraph 里就是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">State = Working Memory<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="✅-2-决策函数（Policy）"><a href="#✅-2-决策函数（Policy）" class="headerlink" title="✅ 2. 决策函数（Policy）"></a>✅ 2. 决策函数（Policy）</h2><p>LLM 在这里充当：</p>
+<blockquote>
+<p>f(state) → next_action</p>
+</blockquote>
+<p>可能的输出是：</p>
+<ul>
+<li>直接回答</li>
+<li>调用工具</li>
+<li>拆分子任务</li>
+<li>请求更多信息</li>
+</ul>
+<p>这就是典型的：</p>
+<blockquote>
+<p>决策策略函数（Policy Function）</p>
+</blockquote>
+<p>区别在于：</p>
+<ul>
+<li>传统 RL 用神经网络</li>
+<li>Agent 用 LLM</li>
+</ul>
+<hr>
+<h2 id="✅-3-反馈闭环（Observation-→-Update）"><a href="#✅-3-反馈闭环（Observation-→-Update）" class="headerlink" title="✅ 3. 反馈闭环（Observation → Update）"></a>✅ 3. 反馈闭环（Observation → Update）</h2><p>工具返回结果后：</p>
+<ul>
+<li>写回 State</li>
+<li>再交给 LLM 决策</li>
+</ul>
+<p>形成：</p>
+<figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs fortran">State → LLM → <span class="hljs-keyword">Action</span> → Environment → Observation → State<br></code></pre></td></tr></table></figure>
+
+<p>这是<strong>强化学习式交互闭环结构</strong>，只是奖励函数通常是隐式的。</p>
+<hr>
+<h1 id="二、Agent-的“计划”是怎么实现的？"><a href="#二、Agent-的“计划”是怎么实现的？" class="headerlink" title="二、Agent 的“计划”是怎么实现的？"></a>二、Agent 的“计划”是怎么实现的？</h1><p>计划 ≠ 一次性生成长文本<br>而是几种典型模式。</p>
+<hr>
+<h2 id="✅-模式一：ReAct（推理-行动交替）"><a href="#✅-模式一：ReAct（推理-行动交替）" class="headerlink" title="✅ 模式一：ReAct（推理 + 行动交替）"></a>✅ 模式一：ReAct（推理 + 行动交替）</h2><p>经典结构：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs erlang">Thought → Action → Observation → Thought → ...<br></code></pre></td></tr></table></figure>
+
+<p>工程本质：</p>
+<ul>
+<li>LLM 同时负责推理和决策</li>
+<li>系统只负责执行与回传结果</li>
+</ul>
+<p>优点：简单<br>缺点：</p>
+<ul>
+<li>无全局规划</li>
+<li>易陷入局部最优</li>
+</ul>
+<p>适合：</p>
+<blockquote>
+<p>工具调用型 Agent</p>
+</blockquote>
+<hr>
+<h2 id="✅-模式二：Plan-and-Execute"><a href="#✅-模式二：Plan-and-Execute" class="headerlink" title="✅ 模式二：Plan-and-Execute"></a>✅ 模式二：Plan-and-Execute</h2><p>拆成两个 Agent &#x2F; 两个阶段：</p>
+<h3 id="Planner："><a href="#Planner：" class="headerlink" title="Planner："></a>Planner：</h3><ul>
+<li>输入：总体目标</li>
+<li>输出：任务列表</li>
+</ul>
+<h3 id="Executor："><a href="#Executor：" class="headerlink" title="Executor："></a>Executor：</h3><ul>
+<li>逐个执行</li>
+<li>动态修正</li>
+</ul>
+<p>这是：</p>
+<blockquote>
+<p>层级规划（Hierarchical Planning）</p>
+</blockquote>
+<p>非常像：</p>
+<ul>
+<li>操作系统的任务调度</li>
+<li>编译器的中间表示</li>
+</ul>
+<p>适合：</p>
+<blockquote>
+<p>多步骤复杂任务自动化</p>
+</blockquote>
+<hr>
+<h2 id="✅-模式三：Graph-based-Planning（LangGraph-强项）"><a href="#✅-模式三：Graph-based-Planning（LangGraph-强项）" class="headerlink" title="✅ 模式三：Graph-based Planning（LangGraph 强项）"></a>✅ 模式三：Graph-based Planning（LangGraph 强项）</h2><p>把任务建模为：</p>
+<blockquote>
+<p>状态机 &#x2F; 有向图</p>
+</blockquote>
+<p>节点代表：</p>
+<ul>
+<li>推理</li>
+<li>检索</li>
+<li>工具调用</li>
+<li>验证</li>
+</ul>
+<p>边代表：</p>
+<ul>
+<li>条件跳转</li>
+<li>循环</li>
+<li>回退</li>
+</ul>
+<p>这本质是：</p>
+<blockquote>
+<p>Workflow + LLM 决策节点</p>
+</blockquote>
+<p>优点：</p>
+<ul>
+<li>稳定</li>
+<li>可控</li>
+<li>可调试</li>
+</ul>
+<p>适合：</p>
+<blockquote>
+<p>金融 &#x2F; 安全 &#x2F; 运维等高可靠系统</p>
+</blockquote>
+<hr>
+<h2 id="✅-模式四：反思与自我修正（Reflection）"><a href="#✅-模式四：反思与自我修正（Reflection）" class="headerlink" title="✅ 模式四：反思与自我修正（Reflection）"></a>✅ 模式四：反思与自我修正（Reflection）</h2><p>增加一个阶段：</p>
+<ul>
+<li>Critic Agent</li>
+<li>或 Reflection Node</li>
+</ul>
+<p>作用：</p>
+<ul>
+<li>评估是否合理</li>
+<li>是否需要重试</li>
+<li>是否需要新计划</li>
+</ul>
+<p>这是在模拟：</p>
+<blockquote>
+<p>元认知（Metacognition）</p>
+</blockquote>
+<p>在复杂系统中非常关键，否则 Agent 会：</p>
+<ul>
+<li>自信地一路错下去</li>
+</ul>
+<hr>
+<h1 id="三、真正难的是：状态与控制流，而不是-Prompt"><a href="#三、真正难的是：状态与控制流，而不是-Prompt" class="headerlink" title="三、真正难的是：状态与控制流，而不是 Prompt"></a>三、真正难的是：状态与控制流，而不是 Prompt</h1><p>很多人以为 Agent &#x3D; Prompt 技巧，其实核心难点是：</p>
+<h2 id="❗-1-状态爆炸"><a href="#❗-1-状态爆炸" class="headerlink" title="❗ 1. 状态爆炸"></a>❗ 1. 状态爆炸</h2><ul>
+<li>中间结果越来越多</li>
+<li>记忆选择变复杂</li>
+</ul>
+<p>需要：</p>
+<ul>
+<li>状态裁剪</li>
+<li>记忆选择策略</li>
+<li>任务摘要</li>
+</ul>
+<hr>
+<h2 id="❗-2-控制流复杂"><a href="#❗-2-控制流复杂" class="headerlink" title="❗ 2. 控制流复杂"></a>❗ 2. 控制流复杂</h2><p>Agent 会出现：</p>
+<ul>
+<li>死循环</li>
+<li>工具失败</li>
+<li>条件分支错误</li>
+</ul>
+<p>需要：</p>
+<ul>
+<li>状态机思想</li>
+<li>工作流引擎</li>
+<li>回滚与重试机制</li>
+</ul>
+<hr>
+<h2 id="❗-3-计划不稳定"><a href="#❗-3-计划不稳定" class="headerlink" title="❗ 3. 计划不稳定"></a>❗ 3. 计划不稳定</h2><p>LLM 计划可能：</p>
+<ul>
+<li>漏步骤</li>
+<li>顺序错</li>
+<li>不可执行</li>
+</ul>
+<p>需要：</p>
+<ul>
+<li>Plan 验证</li>
+<li>Plan 重写</li>
+<li>动态重规划</li>
+</ul>
+<p>这已经非常接近：</p>
+<blockquote>
+<p>自动规划（Automated Planning）领域的问题</p>
+</blockquote>
+<hr>
+<h1 id="四、你要学哪些内容？（非常关键）"><a href="#四、你要学哪些内容？（非常关键）" class="headerlink" title="四、你要学哪些内容？（非常关键）"></a>四、你要学哪些内容？（非常关键）</h1><p>我按你现在背景给你一条<strong>工程可落地路线</strong>。</p>
+<hr>
+<h2 id="✅-第一层：Agent-框架与工作流"><a href="#✅-第一层：Agent-框架与工作流" class="headerlink" title="✅ 第一层：Agent 框架与工作流"></a>✅ 第一层：Agent 框架与工作流</h2><p>必须会：</p>
+<ul>
+<li>LangGraph（状态图 + 条件路由）</li>
+<li>AutoGen（多 Agent 协作模式）</li>
+</ul>
+<p>重点理解：</p>
+<ul>
+<li>State 设计</li>
+<li>Node 职责划分</li>
+<li>控制流建模</li>
+</ul>
+<p>这是：</p>
+<blockquote>
+<p>Agent 的“操作系统层”</p>
+</blockquote>
+<hr>
+<h2 id="✅-第二层：经典规划思想（不必太学术）"><a href="#✅-第二层：经典规划思想（不必太学术）" class="headerlink" title="✅ 第二层：经典规划思想（不必太学术）"></a>✅ 第二层：经典规划思想（不必太学术）</h2><p>掌握概念即可：</p>
+<ul>
+<li>分层规划（Hierarchical Planning）</li>
+<li>任务分解（Task Decomposition）</li>
+<li>有限状态机（FSM）</li>
+<li>行为树（Behavior Tree）</li>
+</ul>
+<p>这些思想在：</p>
+<ul>
+<li>游戏 AI</li>
+<li>机器人控制</li>
+</ul>
+<p>里早就成熟，现在只是换成 LLM 决策而已。</p>
+<hr>
+<h2 id="✅-第三层：强化学习基本框架（理解闭环）"><a href="#✅-第三层：强化学习基本框架（理解闭环）" class="headerlink" title="✅ 第三层：强化学习基本框架（理解闭环）"></a>✅ 第三层：强化学习基本框架（理解闭环）</h2><p>不要求你刷算法，但要懂：</p>
+<ul>
+<li>Agent &#x2F; Environment &#x2F; Action &#x2F; Observation</li>
+<li>Policy</li>
+<li>Reward（哪怕是隐式）</li>
+</ul>
+<p>你会发现：</p>
+<blockquote>
+<p>Agent 架构与 RL 架构在结构上几乎一致</p>
+</blockquote>
+<p>区别只是：</p>
+<ul>
+<li>决策模型不同</li>
+<li>训练方式不同</li>
+</ul>
+<hr>
+<h2 id="✅-第四层：记忆与检索系统"><a href="#✅-第四层：记忆与检索系统" class="headerlink" title="✅ 第四层：记忆与检索系统"></a>✅ 第四层：记忆与检索系统</h2><p>这是你前面已经在研究的：</p>
+<ul>
+<li>向量数据库</li>
+<li>RAG</li>
+<li>Memory Policy</li>
+</ul>
+<p>因为：</p>
+<blockquote>
+<p>没有记忆，计划无法长期优化</p>
+</blockquote>
+<hr>
+<h2 id="✅-第五层（进阶）：多-Agent-博弈与协同"><a href="#✅-第五层（进阶）：多-Agent-博弈与协同" class="headerlink" title="✅ 第五层（进阶）：多 Agent 博弈与协同"></a>✅ 第五层（进阶）：多 Agent 博弈与协同</h2><p>当系统变复杂：</p>
+<ul>
+<li>不同 Agent 扮演不同角色</li>
+<li>Planner &#x2F; Executor &#x2F; Critic</li>
+</ul>
+<p>就涉及：</p>
+<ul>
+<li>通信协议</li>
+<li>任务分配</li>
+<li>冲突消解</li>
+</ul>
+<p>这和：</p>
+<blockquote>
+<p>分布式系统 + 多智能体系统（MAS）</p>
+</blockquote>
+<p>开始高度重合。</p>
+<hr>
+<h1 id="五、和你方向的强关联（不是泛泛而谈）"><a href="#五、和你方向的强关联（不是泛泛而谈）" class="headerlink" title="五、和你方向的强关联（不是泛泛而谈）"></a>五、和你方向的强关联（不是泛泛而谈）</h1><p>你做的方向其实非常适合 Agent 架构：</p>
+<h2 id="🔐-软件逆向-安全"><a href="#🔐-软件逆向-安全" class="headerlink" title="🔐 软件逆向 &#x2F; 安全"></a>🔐 软件逆向 &#x2F; 安全</h2><p>Agent 可以：</p>
+<ul>
+<li>自动样本分析</li>
+<li>自动函数分类</li>
+<li>自动调用反汇编工具</li>
+</ul>
+<p>规划系统负责：</p>
+<blockquote>
+<p>下一步该分析哪一层结构</p>
+</blockquote>
+<hr>
+<h2 id="📈-量化与套利"><a href="#📈-量化与套利" class="headerlink" title="📈 量化与套利"></a>📈 量化与套利</h2><p>Agent 的计划系统可以：</p>
+<ul>
+<li>生成策略候选</li>
+<li>回测</li>
+<li>风控验证</li>
+<li>执行</li>
+</ul>
+<p>这是：</p>
+<blockquote>
+<p>自动研究员 + 自动交易员 架构</p>
+</blockquote>
+<p>非常典型的多 Agent 协作场景。</p>
+<hr>
+<h1 id="六、非常重要的一句话（给你定方向）"><a href="#六、非常重要的一句话（给你定方向）" class="headerlink" title="六、非常重要的一句话（给你定方向）"></a>六、非常重要的一句话（给你定方向）</h1><blockquote>
+<p>Agent 的核心能力不在于“会不会想”，而在于是否具备可控、可复现、可纠错的决策流程。</p>
+</blockquote>
+<p>这决定了你是在：</p>
+<ul>
+<li>玩 Demo<br>还是在</li>
+<li>做系统</li>
+</ul>
+<hr>
+<p>如果你愿意，我可以下一步直接给你拆一个：<br>👉 <strong>LangGraph 中一个完整 Planner → Executor → Reflection 的状态图是怎么设计的</strong><br>用的是系统设计思维，不是教程级代码，非常适合你这种偏工程+安全背景继续深入。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/Agent%E5%BA%94%E7%94%A8/" class="category-chain-item">Agent应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/Agent%E5%BA%94%E7%94%A8/Agent%E5%BC%80%E5%8F%91/" class="category-chain-item">Agent开发</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>思考规划系统</div>
+      <div>http://example.com/2026/01/12/全栈应用开发/Agent应用/思考规划/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年1月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/02/23/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%89%8D%E7%AB%AF/%E5%85%A8%E5%B1%80%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86/" title="全局状态管理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">全局状态管理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/01/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/%E6%8C%87%E4%BB%A4%E7%B3%BB%E7%BB%9F/%E7%A1%AC%E7%BC%96%E7%A0%81(%E6%9C%BA%E5%99%A8%E7%A0%81)/" title="硬编码(机器码)">
+                        <span class="hidden-mobile">硬编码(机器码)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

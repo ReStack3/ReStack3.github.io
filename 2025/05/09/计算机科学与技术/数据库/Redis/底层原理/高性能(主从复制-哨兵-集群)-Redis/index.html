@@ -1,0 +1,914 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="具体过程可参考这些前辈的博客，已经总结很详细了： 主从复制 主从复制是怎么实现的？ | 小林coding Redis-高可用篇-①主从复制 | 一人の境 哨兵模式： Redis-高可用篇-②哨兵模式 | 一人の境 为什么要有哨兵？ | 小林coding 集群模式： Redis-高可用篇-③切片集群 | 一人の境 redis集群 - Redis 高可用篇：Cluster 集群能支持的数据量有多大？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高性能(主从复制-哨兵-集群)-Redis">
+<meta property="og:url" content="http://example.com/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/%E9%AB%98%E6%80%A7%E8%83%BD(%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%93%A8%E5%85%B5-%E9%9B%86%E7%BE%A4)-Redis/index.html">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="具体过程可参考这些前辈的博客，已经总结很详细了： 主从复制 主从复制是怎么实现的？ | 小林coding Redis-高可用篇-①主从复制 | 一人の境 哨兵模式： Redis-高可用篇-②哨兵模式 | 一人の境 为什么要有哨兵？ | 小林coding 集群模式： Redis-高可用篇-③切片集群 | 一人の境 redis集群 - Redis 高可用篇：Cluster 集群能支持的数据量有多大？">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/ZUVlmAiPfwdF1g9.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/DObuPJTqHL2dxhj.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/tp54faAjvZLP1Ym.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/AK3m4RnrJz9WjPf.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/Wr3Uhgixb8PJseG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/vRmpGLxCoBuYasn.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/DaHzjQZqLPkY15i.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/dCLwMYEKt7ZXcDb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/46usTPcVABNRbWo.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/DsyceAIEPqz9ZnT.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/FHxUi6dnGBeZOg8.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/Vgo5viSdNbcOQnL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/07/lLZSufhz7MkxBcE.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.287Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:31.975Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/01/07/ZUVlmAiPfwdF1g9.jpg">
+  
+  
+  
+  <title>高性能(主从复制-哨兵-集群)-Redis - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="高性能(主从复制-哨兵-集群)-Redis"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          41 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">高性能(主从复制-哨兵-集群)-Redis</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>具体过程可参考这些前辈的博客，已经总结很详细了：</p>
+<p>主从复制</p>
+<p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/redis/cluster/master_slave_replication.html#%E5%91%BD%E4%BB%A4%E4%BC%A0%E6%92%AD">主从复制是怎么实现的？ | 小林coding</a></p>
+<p><a target="_blank" rel="noopener" href="https://noob.holic-x.com/md/rebirth/2.%E6%95%B0%E6%8D%AE%E5%BA%93/2.Redis/3.Redis-%E9%AB%98%E5%8F%AF%E7%94%A8%E7%AF%87-01-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6.html">Redis-高可用篇-①主从复制 | 一人の境</a></p>
+<p>哨兵模式：</p>
+<p><a target="_blank" rel="noopener" href="https://noob.holic-x.com/md/rebirth/2.%E6%95%B0%E6%8D%AE%E5%BA%93/2.Redis/3.Redis-%E9%AB%98%E5%8F%AF%E7%94%A8%E7%AF%87-02-%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F.html">Redis-高可用篇-②哨兵模式 | 一人の境</a></p>
+<p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/redis/cluster/sentinel.html#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6">为什么要有哨兵？ | 小林coding</a></p>
+<p>集群模式：</p>
+<p><a target="_blank" rel="noopener" href="https://noob.holic-x.com/md/rebirth/2.%E6%95%B0%E6%8D%AE%E5%BA%93/2.Redis/3.Redis-%E9%AB%98%E5%8F%AF%E7%94%A8%E7%AF%87-03-%E5%88%87%E7%89%87%E9%9B%86%E7%BE%A4.html">Redis-高可用篇-③切片集群 | 一人の境</a></p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000039995230">redis集群 - Redis 高可用篇：Cluster 集群能支持的数据量有多大？ - Redis - SegmentFault 思否</a></p>
+<p>本文仅是解决和收集自己在Redis高可用学习过程中产生的疑问和思考。</p>
+</blockquote>
+<h1 id="Redis高可用的整体架构构成是什么？"><a href="#Redis高可用的整体架构构成是什么？" class="headerlink" title="Redis高可用的整体架构构成是什么？"></a>Redis高可用的整体架构构成是什么？</h1><p>单机架构中，所有的数据都集中在一台服务器上，这样如果该服务器发生故障，整个服务将不可用。</p>
+<p>所以Redis引入了<em><strong>主从复制</strong></em>。</p>
+<p> 在Redis的主从架构中，由于主从模式是读写分离的，如果主节点挂了，那么将没有主节点来服务客户端的写操作请求，也没有主节点给从节点进行数据同步了。</p>
+<p>那么该如何该自动选择一个「从节点」切换为「主节点」，然后让其他从节点指向新的主节点，同时还需要通知上游那些连接 Redis 主节点的客户端，将其配置中的主节点 IP 地址更新为「新主节点」的 IP 地址。</p>
+<p>为此Redis引入了<em><strong>哨兵机制</strong></em>，其核心作用是实现<strong>自动故障转移</strong>，保障系统的高可用性。</p>
+<p>随着业务规模的拓展，数据量越来越大。Redis 会 Fork 子进程完成 RDB 持久化操作，fork 执行的耗时与 Redis 数据量成正相关。而 Fork 执行的时候会阻塞主线程，由于数据量过大导致阻塞主线程过长，所以出现了 Redis 响应慢等现象。那么为了保存大量数据，除了使用大内存主机的方式，还有什么方式呢？</p>
+<p>为此使用 Redis 引入了<strong>Cluster 集群</strong>，主要解决了大数据量存储导致的各种慢问题，同时也便于横向拓展。</p>
+<h1 id="Redis主从复制"><a href="#Redis主从复制" class="headerlink" title="Redis主从复制"></a>Redis主从复制</h1><h2 id="主从复制的整体流程？"><a href="#主从复制的整体流程？" class="headerlink" title="主从复制的整体流程？"></a>主从复制的整体流程？</h2><h3 id="全量复制-第一次同步"><a href="#全量复制-第一次同步" class="headerlink" title="全量复制(第一次同步)"></a>全量复制(第一次同步)</h3><p><img src="https://s2.loli.net/2025/01/07/ZUVlmAiPfwdF1g9.jpg" srcset="/img/loading.gif" lazyload alt="851491-20210514205905608-1963479128"></p>
+<h3 id="命令传播"><a href="#命令传播" class="headerlink" title="命令传播"></a>命令传播</h3><p>在上图中的第7步，主从服务器在完成第一次同步后，双方之间就会维护一个 TCP 连接。后续主服务器可以通过这个连接继续将写操作命令传播给从服务器，然后从服务器执行该命令，使得与主服务器的数据库状态相同。且这个连接是长连接的，目的是避免频繁的 TCP 连接和断开带来的性能开销。</p>
+<p><img src="https://s2.loli.net/2025/01/07/DObuPJTqHL2dxhj.png" srcset="/img/loading.gif" lazyload alt="image-20250107191226725"></p>
+<h3 id="增量复制"><a href="#增量复制" class="headerlink" title="增量复制"></a>增量复制</h3><p>从 Redis 2.8 开始，网络断开又恢复后，从主从服务器会采用<strong>增量复制</strong>的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。</p>
+<p><img src="https://s2.loli.net/2025/01/07/tp54faAjvZLP1Ym.jpg" srcset="/img/loading.gif" lazyload alt="OIP-C (1)"></p>
+<p>注意：<strong>replication offset</strong>，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「<em>写</em>」到的位置，从服务器使用 slave_repl_offset 来记录自己「<em>读</em>」到的位置。</p>
+<p>网络断开后，当从服务器重新连上主服务器时，从服务器会通过 psync 命令将自己的复制偏移量 slave_repl_offset 发送给主服务器，主服务器根据自己的 master_repl_offset 和 slave_repl_offset 之间的差距，然后来决定对从服务器执行哪种同步操作：</p>
+<ul>
+<li>如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>增量同步</strong>的方式；</li>
+<li>相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>全量同步</strong>的方式；</li>
+</ul>
+<p> 当主服务器在 repl_backlog_buffer 中找到主从服务器差异（增量）的数据后，就会<strong>将增量的数据写入到 replication buffer 缓冲区</strong>，用于缓存将要传播给从服务器的命令。</p>
+<h3 id="分摊主服务器压力"><a href="#分摊主服务器压力" class="headerlink" title="分摊主服务器压力"></a>分摊主服务器压力</h3><p>主从服务器在第一次数据同步的过程中，主服务器会做两件耗时的操作：<strong>生成 RDB 文件和传输 RDB 文件</strong>。主服务器是可以有多个从服务器的，如果从服务器数量非常多，而且都与主服务器进行全量同步的话，就会带来两个问题：</p>
+<ul>
+<li>创建RDB文件本身是个异步操作，但是如果通过 bgsave 命令来生成 RDB 文件，则主服务器会忙于使用 fork() 创建子进程，如果主服务器的内存数据非大，在执行 fork() 函数时是会阻塞主线程的，从而使得 Redis 无法正常处理请求；</li>
+<li>传输 RDB 文件会占用主服务器的网络带宽，会对主服务器响应命令请求产生影响；</li>
+</ul>
+<p>Redis 的从服务器也可以有自己的从服务器，可以将某个从服务器设置为“经理角色的从服务器”，<strong>主服务器生成 RDB 和传输 RDB 的压力可以分摊到充当经理角色的从服务器</strong></p>
+<p><img src="https://s2.loli.net/2025/01/07/AK3m4RnrJz9WjPf.png" srcset="/img/loading.gif" lazyload alt="image-20250107192000560"></p>
+<h1 id="Redis哨兵模式"><a href="#Redis哨兵模式" class="headerlink" title="Redis哨兵模式"></a>Redis哨兵模式</h1><blockquote>
+<p><strong>哨兵节点之间是通过 Redis 的发布者&#x2F;订阅者机制来相互发现的</strong>。</p>
+</blockquote>
+<h2 id="哨兵模式的整体流程"><a href="#哨兵模式的整体流程" class="headerlink" title="哨兵模式的整体流程"></a>哨兵模式的整体流程</h2><h3 id="监控主从节点"><a href="#监控主从节点" class="headerlink" title="监控主从节点"></a>监控主从节点</h3><p>哨兵通过 <code>SENTINEL MONITOR</code> 命令监控指定的 Redis 主节点（即主节点的 IP 和端口）。哨兵不断检查主节点和从节点的健康状态。</p>
+<p>哨兵会定期向主节点和从节点发送 <code>PING</code> 请求，以检测节点是否正常工作。</p>
+<p>如果主节点或者从节点没有在规定的时间内响应哨兵的 PING 命令，哨兵就会将它们标记为「<strong>主观下线</strong>」。这个「规定的时间」是配置项 <code>down-after-milliseconds</code> 参数设定的，单位是毫秒。</p>
+<p><img src="https://s2.loli.net/2025/01/07/Wr3Uhgixb8PJseG.png" srcset="/img/loading.gif" lazyload alt="image-20250107193228030"></p>
+<h3 id="故障检测"><a href="#故障检测" class="headerlink" title="故障检测"></a>故障检测</h3><p>在监控主从节点中，当前的哨兵只是标记了主观下线，但可能「主节点」其实并没有故障，可能只是因为主节点的系统压力比较大或者网络发送了拥塞，导致主节点没有在规定时间内响应哨兵的 PING 命令。</p>
+<p>所以，为了减少误判的情况，哨兵在部署的时候不会只部署一个节点，而是用多个节点部署成<strong>哨兵集群</strong>（<em>最少需要三台机器来部署哨兵集群</em>），<strong>通过多个哨兵节点一起判断，就可以就可以避免单个哨兵因为自身网络状况不好，而误判主节点下线的情况</strong>。同时，多个哨兵的网络同时不稳定的概率较小，由它们一起做决策，误判率也能降低。</p>
+<p>一个哨兵判断主节点为「主观下线」后，就会向其他哨兵发起命令，其他哨兵收到这个命令后，就会根据自身和主节点的网络状况，做出赞成投票或者拒绝投票的响应</p>
+<p><img src="https://s2.loli.net/2025/01/07/vRmpGLxCoBuYasn.png" srcset="/img/loading.gif" lazyload alt="image-20250107193834085"></p>
+<p>当这个哨兵的赞同票数达到哨兵配置文件中的 <code>quorum </code>配置项设定的值后，这时主节点就会被该哨兵标记为「客观下线」。quorum 的值一般设置为哨兵个数的二分之一加 1（例如 3 个哨兵就设置 2）</p>
+<h4 id="选取哨兵-leader"><a href="#选取哨兵-leader" class="headerlink" title="选取哨兵 leader"></a>选取哨兵 leader</h4><p>总结来说就是： </p>
+<h5 id="1-候选者出现"><a href="#1-候选者出现" class="headerlink" title="1. 候选者出现"></a>1. <strong>候选者出现</strong></h5><ul>
+<li>被标记为 <strong>客观下线</strong> 的主节点意味着已经确认故障，接下来会有一个 <strong>候选者</strong>（希望成为 Leader 的哨兵）发起选举。</li>
+<li>以 <strong>哨兵 B</strong> 为例，<strong>哨兵 B</strong> 在主节点故障确认后，会自动成为候选者，试图成为新的故障转移 Leader。</li>
+</ul>
+<h5 id="2-投票机制（选举过程）"><a href="#2-投票机制（选举过程）" class="headerlink" title="2. 投票机制（选举过程）"></a>2. <strong>投票机制（选举过程）</strong></h5><ul>
+<li>每个哨兵只有 <strong>一次投票机会</strong>，并且只能投给一个候选者。哨兵可以投给自己，也可以投给其他候选者。</li>
+<li>哨兵 B 作为候选者，会向其他哨兵发起投票请求，表明自己希望成为 Leader。</li>
+<li>其他哨兵接收到投票请求后，如果没有用完投票机会，会根据自己的判断投票给 <strong>候选者 B</strong> 或 <strong>候选者 A</strong>（如果出现多个候选者）。</li>
+<li><strong>投票规则</strong>：<ul>
+<li>哨兵必须 <strong>拿到半数以上的赞成票</strong>。</li>
+<li>哨兵必须获得的赞成票数 <strong>大于等于 quorum 设置值</strong>。</li>
+</ul>
+</li>
+</ul>
+<h5 id="3-选举胜者"><a href="#3-选举胜者" class="headerlink" title="3. 选举胜者"></a>3. <strong>选举胜者</strong></h5><ul>
+<li>如果有多个候选者（例如 <strong>哨兵 A</strong> 和 <strong>哨兵 B</strong>），会有竞争的情况。每个候选者会先给自己投一票，然后开始向其他哨兵请求投票。</li>
+<li>哨兵收到投票请求后，如果还没投票，按照收到的顺序投票。每个哨兵只能投一次票，因此谁先达到条件，谁就胜出。</li>
+<li>选举成功的候选者成为 <strong>Leader</strong>，也就是故障转移的执行者，负责执行主从切换操作。</li>
+</ul>
+<h3 id="故障转移"><a href="#故障转移" class="headerlink" title="故障转移"></a>故障转移</h3><p>在哨兵集群中通过投票的方式，选举出了哨兵 leader 后，就可以进行主从故障转移的过程</p>
+<p><img src="https://s2.loli.net/2025/01/07/DaHzjQZqLPkY15i.png" srcset="/img/loading.gif" lazyload alt="image-20250107194933176"></p>
+<h4 id="主从故障转移步骤"><a href="#主从故障转移步骤" class="headerlink" title="主从故障转移步骤"></a>主从故障转移步骤</h4><ul>
+<li>【步骤1】：在已下线主节点（旧主节点）属下的所有「从节点」里面，挑选出一个从节点，并将其转换为主节点；</li>
+<li>【步骤2】：让已下线主节点属下的所有「从节点」修改复制目标，修改为复制「新主节点」；</li>
+<li>【步骤3】：将新主节点的 IP 地址和信息，通过「发布者&#x2F;订阅者机制」通知给客户端；</li>
+<li>【步骤4】：继续监视旧主节点，当这个旧主节点重新上线时，将它设置为新主节点的从节点；</li>
+</ul>
+<p>具体参考：<a target="_blank" rel="noopener" href="https://xiaolincoding.com/redis/cluster/sentinel.html#%E4%B8%BB%E4%BB%8E%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E7%9A%84%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84">为什么要有哨兵？ | 小林coding</a></p>
+<h1 id="Redis切片集群"><a href="#Redis切片集群" class="headerlink" title="Redis切片集群"></a>Redis切片集群</h1><p><strong>Redis Cluster 集群</strong>属于<strong>水平扩展</strong>(横向扩展)</p>
+<p><img src="https://s2.loli.net/2025/01/07/dCLwMYEKt7ZXcDb.png" srcset="/img/loading.gif" lazyload alt="image-20250107195607264"></p>
+<p> 在基于此大数据量存储场景下，引入Redis 的切片集群概念（虽然组建切片集群比较麻烦，但是它可以保存大量数据，而且对 Redis 主线程的阻塞影响较小）。切片集群，也叫分片集群，就是指启动多个 Redis 实例组成一个集群，然后按照一定的规则，把收到的数据划分成多份，每一份用一个实例来保存。</p>
+<p> 基于上述场景，可以把 25GB 的数据平均分成 5 份（也可以不做均分，可结合实际服务器资源进行调整），使用 5 个实例来保存，每个实例只需要保存 5GB 数据。</p>
+<p><img src="https://s2.loli.net/2025/01/07/46usTPcVABNRbWo.png" srcset="/img/loading.gif" lazyload alt="image-20250107195735133"></p>
+<h2 id="Cluster-实现原理"><a href="#Cluster-实现原理" class="headerlink" title="Cluster 实现原理"></a>Cluster 实现原理</h2><h3 id="集群的组群过程"><a href="#集群的组群过程" class="headerlink" title="集群的组群过程"></a>集群的组群过程</h3><p> 集群是由一个个互相独立的节点（readis node）组成的， 一开始他们都是隔离、毫无联系的。需要通过一些操作，把这些节点聚集在一起，才能组成真正的可协调工作的集群。各个节点的联通是通过 CLUSTER MEET 命令完成的：<code>CLUSTER MEET &lt;ip&gt; &lt;port&gt;</code>  做法：其中一个node向另外一个 node（指定 ip 和 port） 发送 CLUSTER MEET 命令，让两个节点进行握手（handshake操作） ，握手成功之后，node 节点就会将握手另一侧的节点添加到当前节点所在的集群中。以此类推，一步步的将需要聚集的节点都圈入同一个集群中</p>
+<p><img src="https://s2.loli.net/2025/01/07/DsyceAIEPqz9ZnT.png" srcset="/img/loading.gif" lazyload alt="image-20240722183523813.5685df14"></p>
+<h3 id="集群数据分片原理"><a href="#集群数据分片原理" class="headerlink" title="集群数据分片原理"></a>集群数据分片原理</h3><p>Redis 集群使用 <strong>哈希槽（hash slots）</strong> 来分配数据。整个 Redis 集群包含 <strong>16384 个哈希槽</strong>，每个哈希槽可以存储多个键（key）。每个键在 Redis 集群中都会通过一个哈希算法映射到 16384 个槽中的一个槽。</p>
+<ul>
+<li><strong>哈希槽分配</strong>：Redis 使用一致性哈希算法来将数据分布到不同的节点上。每个节点负责处理一定数量的哈希槽，通常是均匀分配的。</li>
+<li><strong>键值映射</strong>：当客户端向集群插入一个键值对时，首先通过一个哈希函数计算该键的哈希值，然后将哈希值映射到 16384 个哈希槽中的某一个槽。最终，数据会存储在负责该哈希槽的节点上。</li>
+</ul>
+<p>Redis 集群通常由多个节点组成，包括 <strong>主节点</strong> 和 <strong>从节点</strong>：</p>
+<ul>
+<li><strong>主节点（Master Node）</strong>：每个主节点负责一部分哈希槽的数据存储。主节点处理所有的读写操作。</li>
+<li><strong>从节点（Slave Node）</strong>：每个从节点负责一个主节点的备份，用于数据同步和故障转移。</li>
+</ul>
+<p>集群中的每个节点都持有一部分数据的哈希槽，且主节点和从节点之间会进行 <strong>数据同步</strong>。</p>
+<p><img src="https://s2.loli.net/2025/01/07/FHxUi6dnGBeZOg8.png" srcset="/img/loading.gif" lazyload alt="e66ca4431d3b41ea9ed7bfa4be55c140"></p>
+<blockquote>
+<p><strong>当 16384 个槽都分配完全，Redis 集群才能正常工作</strong>。</p>
+</blockquote>
+<h3 id="复制与故障转移"><a href="#复制与故障转移" class="headerlink" title="复制与故障转移"></a>复制与故障转移</h3><p>Redis 集群通过 <strong>集群协议</strong>（Cluster Protocol）进行节点间的通信。每个节点都维护着集群的拓扑信息，并定期与其他节点交换信息，确保每个节点都知道其他节点的状态和数据分布情况。</p>
+<ul>
+<li><strong>节点间通信</strong>：节点之间通过 <code>PUBLISH/SUBSCRIBE</code> 模式相互通信，用于同步数据、传递故障转移信息等。</li>
+<li><strong>集群状态</strong>：每个节点都会知道哪些哈希槽分配给了哪些节点，以及各个节点的状态（如是否健康，是否是主节点，是否有从节点等）。</li>
+</ul>
+<p>Redis 集群有内置的 <strong>故障转移机制</strong>，如果某个主节点发生故障，集群会通过以下步骤进行恢复：</p>
+<ul>
+<li>哨兵通过节点之间的通信，发现主节点失效后，集群会选举一个从节点作为新的主节点。</li>
+<li>故障转移过程中，客户端可以继续向其他节点发起请求，而不会影响集群的正常运作。</li>
+<li>故障转移完成后，新的主节点会开始接受写请求，且旧的主节点会作为新的从节点，加入集群进行数据同步。</li>
+</ul>
+<blockquote>
+<p>关于 <code>Gossip</code> 协议可阅读文章：《<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=0xe60mofWrcztBuMCgV5WQ==.eN57kH+XzA3D4Hg4XKvqTuDDI1kShhA8aGguIhzQ3H52XDNKalQHog8aLD0nfPtIiSZ/PoBxsbN8SPXKNS8+qg==">病毒入侵，全靠分布式</a>》</p>
+</blockquote>
+<p>具体参考：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000039995230#item-5-4">redis集群 - Redis 高可用篇：Cluster 集群能支持的数据量有多大？ - Redis - SegmentFault 思否</a></p>
+<h3 id="客户端如何定位数据所在实例"><a href="#客户端如何定位数据所在实例" class="headerlink" title="客户端如何定位数据所在实例"></a>客户端如何定位数据所在实例</h3><p>当客户端向集群发送请求时，首先会连接到集群中的一个节点。该节点会检查请求的哈希槽，并将请求路由到负责该槽的节点。</p>
+<p><img src="https://s2.loli.net/2025/01/07/Vgo5viSdNbcOQnL.png" srcset="/img/loading.gif" lazyload alt="image-20250107202921902"></p>
+<h4 id="重新分配哈希槽"><a href="#重新分配哈希槽" class="headerlink" title="重新分配哈希槽"></a>重新分配哈希槽</h4><p>如果客户端访问的节点不是请求数据所在槽的节点，它会返回一个 <strong>MOVED</strong> 错误，并附带正确的目标节点信息。客户端接收到这个错误后，会重新向目标节点发送请求。</p>
+<p><strong>节点定位</strong>：每个 Redis 节点会持有一部分哈希槽，因此客户端只需要找到负责某个哈希槽的节点即可。</p>
+<p><strong>获取节点信息</strong>：客户端首次连接到集群中的任意节点后，该节点会向客户端返回集群的拓扑信息，包括每个节点的 IP 地址、端口号及其负责的哈希槽范围。</p>
+<ul>
+<li><strong>MOVED 错误</strong>：如果客户端请求的键并不在当前节点负责的哈希槽上，该节点会返回一个 <strong>MOVED</strong> 错误，并附带目标节点的地址信息。</li>
+<li>客户端收到 <strong>MOVED</strong> 错误后，会自动重新发起请求，连接目标节点，继续处理请求。</li>
+</ul>
+<p>客户端会根据 <strong>MOVED 错误</strong> 中提供的目标节点信息，自动重定向到正确的 Redis 实例。</p>
+<p>通过这种方式，客户端不需要手动管理集群拓扑，而是由 Redis 集群节点和客户端自动协作，确保请求能够被路由到正确的节点。</p>
+<p><img src="https://s2.loli.net/2025/01/07/lLZSufhz7MkxBcE.png" srcset="/img/loading.gif" lazyload alt="image-20250107203706675"></p>
+<h4 id="ASK-错误"><a href="#ASK-错误" class="headerlink" title="ASK 错误"></a>ASK 错误</h4><p>在 Redis 集群中，当某个哈希槽的数据正在迁移（从一个实例迁移到另一个实例），客户端在访问该哈希槽的数据时，可能会遇到 <strong>ASK 错误</strong>。这种情况通常发生在 <strong>哈希槽部分迁移</strong> 的过程中。</p>
+<h5 id="哈希槽部分迁移的场景"><a href="#哈希槽部分迁移的场景" class="headerlink" title="哈希槽部分迁移的场景"></a><strong>哈希槽部分迁移的场景</strong></h5><ul>
+<li><strong>哈希槽迁移的过程</strong>：Redis 集群支持通过 <strong><code>CLUSTER MIGRATE</code></strong> 命令将数据从一个节点迁移到另一个节点。当一个哈希槽的数据量变大，或者为了负载均衡，Redis 集群会将某些哈希槽的数据迁移到新的节点。</li>
+<li>部分迁移的情况在迁移过程中，目标哈希槽的数据会逐步迁移。如果客户端此时访问该哈希槽的某些键，可能会出现以下两种情况：<ul>
+<li><strong>部分迁移完成</strong>：一部分数据已被迁移到新节点，另一部分仍在原节点。</li>
+<li><strong>请求的键在迁移中</strong>：请求的键对应的哈希槽正在迁移过程中，部分数据可能已经移动，而部分数据还在原节点。</li>
+</ul>
+</li>
+</ul>
+<p>在这种情况下，如果客户端向当前节点发起请求，Redis 会返回 <strong>ASK 错误</strong>，提示客户端键所在的哈希槽正在迁移，并要求客户端向新的节点继续请求数据。</p>
+<h5 id="ASK-错误的响应过程"><a href="#ASK-错误的响应过程" class="headerlink" title="ASK 错误的响应过程"></a><strong>ASK 错误的响应过程</strong></h5><ol>
+<li><strong>请求被当前节点处理时</strong>：<ul>
+<li>当客户端请求的键对应的哈希槽正在从一个实例迁移到另一个实例时，如果数据还没有完全迁移，客户端会接收到一个 <strong>ASK</strong> 错误。</li>
+<li><strong>ASK 错误格式</strong>：<code>ASK &lt;slot&gt; &lt;node_id&gt;</code>，其中 <code>&lt;slot&gt;</code> 是哈希槽号，<code>&lt;node_id&gt;</code> 是迁移目标节点的 ID（即数据迁移到的目标节点）。</li>
+</ul>
+</li>
+<li><strong>客户端的处理步骤</strong>：<ul>
+<li>客户端收到 <code>ASK</code> 错误后，会先向目标节点发送一个 <strong><code>ASKING</code></strong> 命令，告知目标节点它知道当前哈希槽的数据正在迁移，并希望继续发送命令。</li>
+<li><strong>ASKING 命令</strong>：<code>ASKING</code> 命令是一个特殊命令，告诉目标节点客户端在之前遇到 <code>ASK</code> 错误，并希望继续与目标节点交互。</li>
+</ul>
+</li>
+<li><strong>继续发送命令</strong>：<ul>
+<li>在发送完 <code>ASKING</code> 命令后，客户端可以继续向目标节点发送原本的操作命令（如 <code>GET</code> 或 <code>SET</code>）。</li>
+</ul>
+</li>
+<li><strong>迁移完成后的情况</strong>：<ul>
+<li>一旦迁移完成，客户端就可以直接访问目标节点，不再需要处理 <code>ASK</code> 错误。</li>
+</ul>
+</li>
+</ol>
+<p>假设 Redis 集群中的某个哈希槽正在迁移：</p>
+<ol>
+<li><p><strong>原节点响应 ASK 错误</strong>：</p>
+<ul>
+<li><p>假设客户端尝试获取键 <code>&quot;user:1000&quot;</code>，该键被哈希到哈希槽 <code>500</code>。</p>
+</li>
+<li><p>此时，哈希槽 <code>500</code> 正在从实例 A 迁移到实例 B。</p>
+</li>
+<li><p>客户端向实例 A 发送请求，实例 A 响应一个 ASK 错误</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">ASK</span> <span class="hljs-number">500</span> <span class="hljs-number">192.168.1.2:6379</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>这意味着，哈希槽 <code>500</code> 的数据正在迁移到 <code>192.168.1.2:6379</code>（实例 B）。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>客户端发送 ASKING 命令</strong>：</p>
+<ul>
+<li><p>客户端接收到 ASK错误后，自动向实例 B 发送 ASKING命令：</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">ASKING</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>该命令表明客户端知道当前键所在的哈希槽正在迁移，并且希望向目标节点实例 B 发送请求。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>继续操作命令</strong>：</p>
+<ul>
+<li>客户端继续向实例 B 发送实际的命令（如 <code>GET user:1000</code>）。</li>
+<li>实例 B 将正常响应该命令，返回对应的数据。</li>
+</ul>
+</li>
+<li><p><strong>迁移完成</strong>：</p>
+<ul>
+<li>一旦迁移完成，客户端直接访问目标节点（如实例 B），不再需要处理 <code>ASK</code> 错误。</li>
+</ul>
+</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/" class="category-chain-item">后端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="category-chain-item">数据库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/" class="category-chain-item">Redis</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/" class="category-chain-item">底层原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="print-no-link">#数据库</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>高性能(主从复制-哨兵-集群)-Redis</div>
+      <div>http://example.com/2025/05/09/计算机科学与技术/数据库/Redis/底层原理/高性能(主从复制-哨兵-集群)-Redis/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/SQL%E8%AF%AD%E8%A8%80/" title="SQL语言">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SQL语言</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-Redis/" title="缓存问题-Redis">
+                        <span class="hidden-mobile">缓存问题-Redis</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

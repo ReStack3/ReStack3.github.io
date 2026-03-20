@@ -1,0 +1,1002 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="第 1 章 Neo4j的亮点 — neo4j 0.1.0a 文档 结构与 MySQL 等关系型数据库的“表、行、列”不同，Neo4j 的数据模型基于节点和关系。    概念 类比关系型数据库 描述 示例    节点 表中的一行记录 代表一个实体（Entity） 一个人、一部电影、一个产品、一个城市   关系 外键关联 代表节点之间的连接（Connection），必须有方向和类型 人 -[:看过]-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="neo4j使用">
+<meta property="og:url" content="http://example.com/2025/11/12/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Neo4j/neo4j%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="第 1 章 Neo4j的亮点 — neo4j 0.1.0a 文档 结构与 MySQL 等关系型数据库的“表、行、列”不同，Neo4j 的数据模型基于节点和关系。    概念 类比关系型数据库 描述 示例    节点 表中的一行记录 代表一个实体（Entity） 一个人、一部电影、一个产品、一个城市   关系 外键关联 代表节点之间的连接（Connection），必须有方向和类型 人 -[:看过]-">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-11-12T09:24:32.775Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:31.962Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>neo4j使用 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="neo4j使用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">neo4j使用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><a target="_blank" rel="noopener" href="https://neo4j.readthedocs.io/zh-cn/latest/chapter1.html">第 1 章 Neo4j的亮点 — neo4j 0.1.0a 文档</a></p>
+<h1 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h1><p>与 MySQL 等关系型数据库的“表、行、列”不同，Neo4j 的数据模型基于<strong>节点</strong>和<strong>关系</strong>。</p>
+<table>
+<thead>
+<tr>
+<th align="left">概念</th>
+<th align="left">类比关系型数据库</th>
+<th align="left">描述</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>节点</strong></td>
+<td align="left">表中的一行记录</td>
+<td align="left">代表一个<strong>实体</strong>（Entity）</td>
+<td align="left">一个人、一部电影、一个产品、一个城市</td>
+</tr>
+<tr>
+<td align="left"><strong>关系</strong></td>
+<td align="left">外键关联</td>
+<td align="left">代表节点之间的<strong>连接</strong>（Connection），<strong>必须有方向和类型</strong></td>
+<td align="left"><strong>人</strong> <code>-[:看过]-&gt;</code> <strong>电影</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>属性</strong></td>
+<td align="left">列&#x2F;字段</td>
+<td align="left">用于描述<strong>节点</strong>或<strong>关系</strong>的键值对</td>
+<td align="left">人的 <code>姓名</code>、电影的 <code>标题</code>、关系的 <code>评分</code></td>
+</tr>
+<tr>
+<td align="left"><strong>标签</strong></td>
+<td align="left">表名</td>
+<td align="left">对节点进行<strong>分类</strong>，一个节点可以有多个标签</td>
+<td align="left">给节点打上 <code>Person</code> 或 <code>Movie</code></td>
+</tr>
+</tbody></table>
+<h2 id="关系"><a href="#关系" class="headerlink" title="关系"></a>关系</h2><p>在 Neo4j 中，<strong>所有的节点和关系都是完全自定义的</strong>。所有关系类型都<strong>需要根据自己的业务需求来设计和创建</strong>。这里给出实践示例：</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性维度</th>
+<th align="left">分类 &#x2F; 类型</th>
+<th align="left">描述</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>方向性</strong></td>
+<td align="left"><strong>有向关系</strong></td>
+<td align="left">关系具有明确的起点和终点，用 <code>-&gt;</code> 或 <code>&lt;-</code> 表示。</td>
+<td align="left"><code>(A)-[:FOLLOWS]-&gt;(B)</code> (A 关注 B)</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>无向关系</strong></td>
+<td align="left">查询时不指定方向，匹配任意方向的关系。</td>
+<td align="left"><code>(A)-[:FRIENDS_WITH]-(B)</code> (A 和 B 是朋友)</td>
+</tr>
+<tr>
+<td align="left"><strong>类型与语义</strong></td>
+<td align="left"><strong>结构关系</strong></td>
+<td align="left">描述节点之间的结构性连接，如组织架构。</td>
+<td align="left"><code>(员工)-[:BELONGS_TO]-&gt;(部门)</code></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>交互关系</strong></td>
+<td align="left">描述节点之间的行为或事件，如交易、点击。</td>
+<td align="left"><code>(用户)-[:PURCHASED]-&gt;(商品)</code></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>语义关系</strong></td>
+<td align="left">描述现实世界中的抽象联系，如归属、相似。</td>
+<td align="left"><code>(药品)-[:TREATS]-&gt;(疾病)</code></td>
+</tr>
+<tr>
+<td align="left"><strong>数量与复杂度</strong></td>
+<td align="left"><strong>一对一</strong></td>
+<td align="left">一个节点只与另一个节点有此种关系。</td>
+<td align="left"><code>(人)-[:HAS_SSN]-&gt;(社保号)</code></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>一对多</strong></td>
+<td align="left">一个节点与多个节点有此种关系。</td>
+<td align="left"><code>(母亲)-[:HAS_CHILD]-&gt;(孩子)</code></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>多对多</strong></td>
+<td align="left">多个节点与多个节点有此种关系。</td>
+<td align="left"><code>(学生)-[:ENROLLED_IN]-&gt;(课程)</code></td>
+</tr>
+<tr>
+<td align="left"><strong>动态性</strong></td>
+<td align="left"><strong>静态关系</strong></td>
+<td align="left">创建后一般不变化的长期稳定关系。</td>
+<td align="left"><code>(城市)-[:LOCATED_IN]-&gt;(国家)</code></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>动态关系</strong></td>
+<td align="left">带有时间戳等属性，表示会变化的状态。</td>
+<td align="left"><code>(用户)-[:WORKED_FOR &#123;from:2020, to:2023&#125;]-&gt;(公司)</code></td>
+</tr>
+<tr>
+<td align="left"><strong>层级与递归</strong></td>
+<td align="left"><strong>层级关系</strong></td>
+<td align="left">描述树状或层级结构，如包含、汇报。</td>
+<td align="left"><code>(员工)-[:REPORTS_TO]-&gt;(经理)</code></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"><strong>递归关系</strong></td>
+<td align="left">同一类型的节点通过同种关系形成链或环。</td>
+<td align="left"><code>(人)-[:CHILD_OF]-&gt;(人)</code></td>
+</tr>
+</tbody></table>
+<h3 id="关系深度与模式分类"><a href="#关系深度与模式分类" class="headerlink" title="关系深度与模式分类"></a>关系深度与模式分类</h3><p>这个表格专门描述在查询中，如何通过关系模式匹配不同深度的连接。</p>
+<table>
+<thead>
+<tr>
+<th align="left">关系模式</th>
+<th align="left">Cypher 语法</th>
+<th align="left">描述</th>
+<th align="left">示例场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>单跳关系</strong></td>
+<td align="left"><code>-[:REL_TYPE]-&gt;</code></td>
+<td align="left">直接连接，一度关系。</td>
+<td align="left">查找用户的直接朋友。</td>
+</tr>
+<tr>
+<td align="left"><strong>多跳关系</strong></td>
+<td align="left"><code>-[:REL_TYPE*2]-&gt;</code></td>
+<td align="left">固定跳数的关系路径。</td>
+<td align="left">查找朋友的朋友（二度人脉）。</td>
+</tr>
+<tr>
+<td align="left"><strong>可变长度关系</strong></td>
+<td align="left"><code>-[:REL_TYPE*3..5]-&gt;</code></td>
+<td align="left">跳数在一个范围内。</td>
+<td align="left">查找 3 到 5 度的人脉。</td>
+</tr>
+<tr>
+<td align="left"><strong>任意长度关系</strong></td>
+<td align="left"><code>-[:REL_TYPE*]-&gt;</code></td>
+<td align="left">任意跳数的关系路径（直到图的尽头）。</td>
+<td align="left">查找所有的祖先或后代。</td>
+</tr>
+<tr>
+<td align="left"><strong>最短路径</strong></td>
+<td align="left"><code>shortestPath(...)</code></td>
+<td align="left">查找两个节点间的最短关系路径。</td>
+<td align="left">计算两个人之间的最短介绍路径。</td>
+</tr>
+</tbody></table>
+<h3 id="关系属性详解"><a href="#关系属性详解" class="headerlink" title="关系属性详解"></a>关系属性详解</h3><p>关系本身也可以拥有属性，这使得关系能够承载更丰富的信息。</p>
+<table>
+<thead>
+<tr>
+<th align="left">属性类型</th>
+<th align="left">描述</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>权重&#x2F;强度</strong></td>
+<td align="left">表示关系的强度或容量。</td>
+<td align="left"><code>-[:RATED &#123;score: 5&#125;]-&gt;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>时间性</strong></td>
+<td align="left">表示关系的开始、结束或发生时间。</td>
+<td align="left"><code>-[:WORKED_FOR &#123;from: 2020, to: 2023&#125;]-&gt;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>成本&#x2F;距离</strong></td>
+<td align="left">表示关系的成本、距离或难度。</td>
+<td align="left"><code>-[:ROAD_TO &#123;distance_km: 150&#125;]-&gt;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>状态与元数据</strong></td>
+<td align="left">描述关系本身的状态或创建信息。</td>
+<td align="left"><code>-[:FRIENDS_WITH &#123;status: &#39;active&#39;, created: timestamp()&#125;]-&gt;</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="实际应用示例"><a href="#实际应用示例" class="headerlink" title="实际应用示例"></a>实际应用示例</h3><p>让我们通过一个社交网络的 Cypher 代码示例来展示多种关系的使用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs cypher">// 创建节点和多种关系<br>CREATE <br>  (alice:Person &#123;name: &#x27;Alice&#x27;, age: 30&#125;),<br>  (bob:Person &#123;name: &#x27;Bob&#x27;, age: 25&#125;),<br>  (charlie:Person &#123;name: &#x27;Charlie&#x27;, age: 35&#125;),<br>  (acme:Company &#123;name: &#x27;Acme Corp&#x27;&#125;),<br>  (startup:Company &#123;name: &#x27;Tech Startup&#x27;&#125;),<br><br>  // 结构关系<br>  (alice)-[:WORKS_FOR &#123;title: &#x27;Engineer&#x27;, since: 2020&#125;]-&gt;(acme),<br>  (bob)-[:WORKS_FOR &#123;title: &#x27;Manager&#x27;, since: 2019&#125;]-&gt;(acme),<br><br>  // 交互关系（带权重）<br>  (alice)-[:FOLLOWS &#123;since: &#x27;2024-01-01&#x27;&#125;]-&gt;(bob),<br>  (bob)-[:FOLLOWS &#123;since: &#x27;2024-01-15&#x27;&#125;]-&gt;(charlie),<br>  (alice)-[:LIKES &#123;timestamp: timestamp()&#125;]-&gt;(charlie),<br><br>  // 语义关系<br>  (acme)-[:COMPETES_WITH]-&gt;(startup),<br>  (alice)-[:FRIENDS_WITH &#123;close: true&#125;]-&gt;(bob)<br><br>// 查询：查找 Alice 的二度人脉（朋友的朋友）<br>MATCH (a:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:FRIENDS_WITH|FOLLOWS*2]-&gt;(fof:Person)<br>RETURN a.name AS person, fof.name AS friend_of_friend<br><br>// 查询：带权重的推荐（谁和 Alice 在同一公司且被她关注的人喜欢）<br>MATCH (a:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:FOLLOWS]-&gt;(followed)-[:LIKES]-&gt;(thing)<br>WHERE (a)-[:WORKS_FOR]-&gt;()&lt;-[:WORKS_FOR]-(followed)<br>RETURN thing.name AS recommendation, count(followed) AS strength<br>ORDER BY strength DESC<br></code></pre></td></tr></table></figure>
+
+<h2 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h2><h3 id="属性系统的核心特点"><a href="#属性系统的核心特点" class="headerlink" title="属性系统的核心特点"></a>属性系统的核心特点</h3><h4 id="1-完全自由的键值对"><a href="#1-完全自由的键值对" class="headerlink" title="1. 完全自由的键值对"></a>1. <strong>完全自由的键值对</strong></h4><p>属性是以键值对的形式存在的，键和值都由您决定：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cypher">// 同一个标签的节点可以有完全不同的属性<br>CREATE <br>  (p1:Person &#123;name: &#x27;Alice&#x27;, age: 30, email: &#x27;alice@example.com&#x27;&#125;),<br>  (p2:Person &#123;name: &#x27;Bob&#x27;, salary: 50000, department: &#x27;IT&#x27;, join_date: date()&#125;),<br>  (p3:Person &#123;name: &#x27;Charlie&#x27;, nickname: &#x27;Chuck&#x27;, hobbies: [&#x27;reading&#x27;, &#x27;hiking&#x27;]&#125;)<br><br>// 关系也可以有属性<br>CREATE <br>  (alice:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:RATED &#123;<br>    score: 5, <br>    comment: &#x27;Excellent!&#x27;,<br>    created_at: timestamp(),<br>    helpful_votes: 10<br>  &#125;]-&gt;(product:Product &#123;name: &#x27;iPhone&#x27;&#125;)<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-动态模式-vs-固定模式"><a href="#2-动态模式-vs-固定模式" class="headerlink" title="2. 动态模式 vs 固定模式"></a>2. <strong>动态模式 vs 固定模式</strong></h4><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>关系型数据库</th>
+<th>Neo4j 图数据库</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>模式</strong></td>
+<td>固定列结构，所有行必须一致</td>
+<td><strong>动态属性</strong>，同标签节点可有不同属性</td>
+</tr>
+<tr>
+<td><strong>灵活性</strong></td>
+<td>修改结构需要 ALTER TABLE</td>
+<td><strong>随时添加</strong>新属性，无需预定义</td>
+</tr>
+<tr>
+<td><strong>示例</strong></td>
+<td><code>users</code> 表有固定的 <code>name, age, email</code> 列</td>
+<td>有的 Person 有 <code>age</code>，有的有 <code>salary</code>，有的两者都有</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="属性的数据类型"><a href="#属性的数据类型" class="headerlink" title="属性的数据类型"></a>属性的数据类型</h3><p>Neo4j 支持丰富的属性数据类型，所有这些都可以自由使用：</p>
+<h4 id="基本数据类型示例"><a href="#基本数据类型示例" class="headerlink" title="基本数据类型示例"></a>基本数据类型示例</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cypher">CREATE (n:Example &#123;<br>  // 字符串<br>  name: &#x27;Alice&#x27;,<br>  description: &quot;This is a long description text&quot;,<br>  <br>  // 数值<br>  age: 30,                    // 整数<br>  height: 1.75,               // 浮点数<br>  salary: 50000.50,           // 浮点数<br>  <br>  // 布尔值<br>  is_active: true,<br>  is_verified: false,<br>  <br>  // 时空类型<br>  birth_date: date(&#x27;1990-01-15&#x27;),<br>  created_at: datetime(),<br>  meeting_time: localdatetime(&#x27;2024-01-15T10:30:00&#x27;),<br>  <br>  // 地理空间<br>  location: point(&#123;x: 13.43, y: 52.51&#125;),<br>  <br>  // 列表/数组<br>  tags: [&#x27;tech&#x27;, &#x27;programming&#x27;, &#x27;database&#x27;],<br>  scores: [95, 87, 92],<br>  preferences: [&#x27;dark_mode&#x27;, &#x27;notifications_on&#x27;],<br>  <br>  // 时间间隔<br>  duration: duration(&#x27;P1Y2M3DT4H5M6S&#x27;)<br>&#125;)<br>RETURN n<br></code></pre></td></tr></table></figure>
+
+<h4 id="复杂数据结构示例"><a href="#复杂数据结构示例" class="headerlink" title="复杂数据结构示例"></a>复杂数据结构示例</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cypher">// 列表中可以包含各种类型<br>CREATE (p:Product &#123;<br>  name: &#x27;Laptop&#x27;,<br>  specifications: &#123;<br>    cpu: &#x27;Intel i7&#x27;,<br>    ram: &#x27;16GB&#x27;,<br>    storage: &#x27;1TB SSD&#x27;,<br>    ports: [&#x27;USB-C&#x27;, &#x27;HDMI&#x27;, &#x27;Thunderbolt&#x27;]<br>  &#125;,<br>  price_history: [<br>    &#123;date: &#x27;2024-01-01&#x27;, price: 999&#125;,<br>    &#123;date: &#x27;2024-02-01&#x27;, price: 899&#125;,<br>    &#123;date: &#x27;2024-03-01&#x27;, price: 849&#125;<br>  ],<br>  reviews: [<br>    &#123;user: &#x27;Alice&#x27;, rating: 5, comment: &#x27;Great!&#x27;&#125;,<br>    &#123;user: &#x27;Bob&#x27;, rating: 4, comment: &#x27;Good value&#x27;&#125;<br>  ]<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="属性设计的最佳实践"><a href="#属性设计的最佳实践" class="headerlink" title="属性设计的最佳实践"></a>属性设计的最佳实践</h3><p>虽然属性可以自由定义，但良好的设计很重要：</p>
+<h4 id="1-创建属性规范文档"><a href="#1-创建属性规范文档" class="headerlink" title="1. 创建属性规范文档"></a>1. <strong>创建属性规范文档</strong></h4><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># 属性数据字典示例</span><br><span class="hljs-attr">NodeProperties:</span><br>  <span class="hljs-attr">Person:</span><br>    <span class="hljs-attr">required:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">integer</span><br>    <span class="hljs-attr">optional:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">age:</span> <span class="hljs-string">integer</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">email:</span> <span class="hljs-string">string</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">salary:</span> <span class="hljs-string">float</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">department:</span> <span class="hljs-string">string</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">hire_date:</span> <span class="hljs-string">date</span><br>  <br>  <span class="hljs-attr">Product:</span><br>    <span class="hljs-attr">required:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">sku:</span> <span class="hljs-string">string</span><br>    <span class="hljs-attr">optional:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">price:</span> <span class="hljs-string">float</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">category:</span> <span class="hljs-string">string</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">tags:</span> <span class="hljs-string">list[string]</span><br><br><span class="hljs-attr">RelationshipProperties:</span><br>  <span class="hljs-attr">PURCHASED:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">order_id:</span> <span class="hljs-string">string</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">quantity:</span> <span class="hljs-string">integer</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">timestamp:</span> <span class="hljs-string">datetime</span><br>  <span class="hljs-attr">RATED:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">score:</span> <span class="hljs-string">integer</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">comment:</span> <span class="hljs-string">string</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">created_at:</span> <span class="hljs-string">datetime</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2-在应用层实施验证"><a href="#2-在应用层实施验证" class="headerlink" title="2. 在应用层实施验证"></a>2. <strong>在应用层实施验证</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">PropertyValidator</span>:<br>    REQUIRED_PROPERTIES = &#123;<br>        <span class="hljs-string">&#x27;Person&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;id&#x27;</span>],<br>        <span class="hljs-string">&#x27;Product&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;sku&#x27;</span>]<br>    &#125;<br>    <br>    ALLOWED_PROPERTIES = &#123;<br>        <span class="hljs-string">&#x27;Person&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;id&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>, <span class="hljs-string">&#x27;salary&#x27;</span>, <span class="hljs-string">&#x27;department&#x27;</span>],<br>        <span class="hljs-string">&#x27;Product&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;sku&#x27;</span>, <span class="hljs-string">&#x27;price&#x27;</span>, <span class="hljs-string">&#x27;category&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>]<br>    &#125;<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">validate_node_properties</span>(<span class="hljs-params">self, label, properties</span>):<br>        <span class="hljs-comment"># 检查必需属性</span><br>        <span class="hljs-keyword">for</span> req_prop <span class="hljs-keyword">in</span> self.REQUIRED_PROPERTIES.get(label, []):<br>            <span class="hljs-keyword">if</span> req_prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> properties:<br>                <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;label&#125;</span> 必须包含属性: <span class="hljs-subst">&#123;req_prop&#125;</span>&quot;</span>)<br>        <br>        <span class="hljs-comment"># 检查允许的属性</span><br>        <span class="hljs-keyword">for</span> prop <span class="hljs-keyword">in</span> properties.keys():<br>            <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> self.ALLOWED_PROPERTIES.get(label, []):<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;警告: <span class="hljs-subst">&#123;label&#125;</span> 通常不包含属性: <span class="hljs-subst">&#123;prop&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-实际项目中的属性设计"><a href="#3-实际项目中的属性设计" class="headerlink" title="3. 实际项目中的属性设计"></a>3. <strong>实际项目中的属性设计</strong></h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs cypher">// 电商系统属性设计<br>CREATE <br>  (customer:Customer &#123;<br>    customer_id: &#x27;C1001&#x27;,<br>    name: &#x27;Alice Smith&#x27;,<br>    email: &#x27;alice@example.com&#x27;,<br>    tier: &#x27;VIP&#x27;,                    // 客户等级<br>    created_date: date(),           // 注册日期<br>    default_shipping_address: &#123;     // 嵌套对象<br>      street: &#x27;123 Main St&#x27;,<br>      city: &#x27;Beijing&#x27;,<br>      postal_code: &#x27;100000&#x27;<br>    &#125;,<br>    preferences: &#123;                  // 偏好设置<br>      language: &#x27;zh-CN&#x27;,<br>      currency: &#x27;CNY&#x27;,<br>      newsletter: true<br>    &#125;<br>  &#125;),<br><br>  (order:Order &#123;<br>    order_id: &#x27;O2001&#x27;,<br>    status: &#x27;delivered&#x27;,           // 订单状态<br>    total_amount: 299.99,<br>    currency: &#x27;CNY&#x27;,<br>    created_at: datetime(),<br>    timeline: [                    // 时间线数组<br>      &#123;action: &#x27;placed&#x27;, timestamp: datetime(&#x27;2024-01-15T10:00:00&#x27;)&#125;,<br>      &#123;action: &#x27;shipped&#x27;, timestamp: datetime(&#x27;2024-01-16T14:30:00&#x27;)&#125;,<br>      &#123;action: &#x27;delivered&#x27;, timestamp: datetime(&#x27;2024-01-18T09:15:00&#x27;)&#125;<br>    ]<br>  &#125;),<br><br>  // 关系属性<br>  (customer)-[:PLACED_ORDER &#123;<br>    payment_method: &#x27;credit_card&#x27;,<br>    ip_address: &#x27;192.168.1.1&#x27;<br>  &#125;]-&gt;(order)<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="属性的查询和操作"><a href="#属性的查询和操作" class="headerlink" title="属性的查询和操作"></a>属性的查询和操作</h3><h4 id="1-动态属性访问"><a href="#1-动态属性访问" class="headerlink" title="1. 动态属性访问"></a>1. <strong>动态属性访问</strong></h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cypher">// 检查属性是否存在<br>MATCH (p:Person) <br>WHERE EXISTS(p.email)  // 只返回有 email 属性的 Person<br>RETURN p.name<br><br>// 动态处理可能不存在的属性<br>MATCH (p:Person) <br>RETURN p.name, <br>       CASE WHEN EXISTS(p.salary) THEN p.salary ELSE &#x27;未设置&#x27; END AS salary<br><br>// 使用 keys() 函数查看所有属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>RETURN keys(p) AS property_names<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-属性更新和操作"><a href="#2-属性更新和操作" class="headerlink" title="2. 属性更新和操作"></a>2. <strong>属性更新和操作</strong></h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cypher">// 添加新属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>SET p.last_login = datetime(),<br>    p.login_count = COALESCE(p.login_count, 0) + 1<br><br>// 修改属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>SET p.age = 31<br><br>// 移除属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>REMOVE p.temporary_field<br><br>// 操作列表属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>SET p.hobbies = p.hobbies + [&#x27;swimming&#x27;]  // 添加到列表<br></code></pre></td></tr></table></figure>
+
+<h1 id="Cypher-查询语言"><a href="#Cypher-查询语言" class="headerlink" title="Cypher 查询语言"></a>Cypher 查询语言</h1><p>Cypher 是 Neo4j 图数据库的声明式查询语言，它的设计非常直观，核心思想是 <strong>“让查询语句看起来像它所描述的图模式”</strong>。Cypher 的核心在于描述想要查找的<strong>图模式</strong>。而不需要告诉数据库“如何”找到数据，只需要描述数据“长什么样”。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">“找到一个人，她叫 Alice，她喜欢一部电影，这部电影的导演也叫 Alice”<br></code></pre></td></tr></table></figure>
+
+<p>在 Cypher 中，这个模式被直接翻译成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cypher">MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:LIKES]-&gt;(m:Movie)&lt;-[:DIRECTED]-(d:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>RETURN p, m, d<br></code></pre></td></tr></table></figure>
+
+<h3 id="基本语法和关键字"><a href="#基本语法和关键字" class="headerlink" title="基本语法和关键字"></a>基本语法和关键字</h3><table>
+<thead>
+<tr>
+<th align="left">Cypher 语法</th>
+<th align="left">描述</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong><code>( )</code></strong></td>
+<td align="left">表示一个<strong>节点</strong></td>
+<td align="left"><code>(p:Person &#123;name: &#39;Alice&#39;&#125;)</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>-[ ]-&gt;</code></strong></td>
+<td align="left">表示一个有方向的<strong>关系</strong></td>
+<td align="left"><code>-[:LIKES]-&gt;</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>:</code></strong></td>
+<td align="left">用于指定<strong>标签</strong>或<strong>关系类型</strong></td>
+<td align="left"><code>:Person</code>, <code>:LIKES</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>&#123; &#125;</code></strong></td>
+<td align="left">包含节点的<strong>属性</strong></td>
+<td align="left"><code>&#123;name: &#39;Alice&#39;, age: 30&#125;</code></td>
+</tr>
+</tbody></table>
+<h4 id="CREATE-创建数据"><a href="#CREATE-创建数据" class="headerlink" title="CREATE - 创建数据"></a><strong>CREATE</strong> - 创建数据</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 创建节点和关系<br>CREATE (p:Person &#123;name: &#x27;Alice&#x27;, age: 30&#125;)-[:FRIENDS_WITH &#123;since: &#x27;2023&#x27;&#125;]-&gt;(f:Person &#123;name: &#x27;Bob&#x27;, age: 25&#125;)<br><br>-- 创建多个节点<br>CREATE <br>  (m1:Movie &#123;title: &#x27;Inception&#x27;, year: 2010&#125;),<br>  (m2:Movie &#123;title: &#x27;The Matrix&#x27;, year: 1999&#125;),<br>  (a:Person &#123;name: &#x27;Leonardo&#x27;&#125;)<br></code></pre></td></tr></table></figure>
+
+<h4 id="MATCH-查询-匹配数据"><a href="#MATCH-查询-匹配数据" class="headerlink" title="MATCH - 查询&#x2F;匹配数据"></a><strong>MATCH</strong> - 查询&#x2F;匹配数据</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 匹配所有 Person 节点<br>MATCH (p:Person) RETURN p<br><br>-- 匹配特定属性的节点<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;) RETURN p<br><br>-- 使用 WHERE 条件<br>MATCH (p:Person) <br>WHERE p.age &gt; 25 AND p.name STARTS WITH &#x27;A&#x27;<br>RETURN p.name, p.age<br></code></pre></td></tr></table></figure>
+
+<h4 id="RETURN-返回结果"><a href="#RETURN-返回结果" class="headerlink" title="RETURN - 返回结果"></a><strong>RETURN</strong> - 返回结果</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 返回特定属性<br>MATCH (p:Person) RETURN p.name, p.age<br><br>-- 返回计数<br>MATCH (p:Person) RETURN count(p) AS person_count<br><br>-- 返回去重结果<br>MATCH (p:Person) RETURN DISTINCT p.name<br></code></pre></td></tr></table></figure>
+
+<h4 id="关系查询"><a href="#关系查询" class="headerlink" title="关系查询"></a><strong>关系查询</strong></h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 查找 Alice 的所有朋友<br>MATCH (alice:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:FRIENDS_WITH]-&gt;(friend:Person)<br>RETURN friend.name<br><br>-- 查找双向朋友关系<br>MATCH (p1:Person)-[:FRIENDS_WITH]-(p2:Person)  -- 注意：无方向<br>RETURN p1.name, p2.name<br><br>-- 多度关系查询（朋友的朋友）<br>MATCH (me:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:FRIENDS_WITH*2]-&gt;(fof:Person)<br>RETURN fof.name<br></code></pre></td></tr></table></figure>
+
+<h3 id="高级查询模式"><a href="#高级查询模式" class="headerlink" title="高级查询模式"></a>高级查询模式</h3><h4 id="路径查询"><a href="#路径查询" class="headerlink" title="路径查询"></a><strong>路径查询</strong></h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 查找任意长度的路径<br>MATCH path = (a:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:FRIENDS_WITH*1..5]-&gt;(b:Person &#123;name: &#x27;Bob&#x27;&#125;)<br>RETURN path<br><br>-- 最短路径<br>MATCH path = shortestPath(<br>  (a:Person &#123;name: &#x27;Alice&#x27;&#125;)-[:FRIENDS_WITH*]-(b:Person &#123;name: &#x27;Bob&#x27;&#125;)<br>)<br>RETURN path, length(path) AS degrees_of_separation<br></code></pre></td></tr></table></figure>
+
+<h4 id="聚合函数"><a href="#聚合函数" class="headerlink" title="聚合函数"></a><strong>聚合函数</strong></h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 统计每个人的朋友数量<br>MATCH (p:Person)-[:FRIENDS_WITH]-&gt;(friend:Person)<br>RETURN p.name, count(friend) AS friend_count<br>ORDER BY friend_count DESC<br><br>-- 平均值、最大值等<br>MATCH (p:Person)<br>RETURN avg(p.age) AS average_age, max(p.age) AS max_age<br></code></pre></td></tr></table></figure>
+
+<h4 id="OPTIONAL-MATCH-可选匹配"><a href="#OPTIONAL-MATCH-可选匹配" class="headerlink" title="OPTIONAL MATCH - 可选匹配"></a><strong>OPTIONAL MATCH</strong> - 可选匹配</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 即使没有朋友也会返回人员<br>MATCH (p:Person)<br>OPTIONAL MATCH (p)-[:FRIENDS_WITH]-&gt;(friend:Person)<br>RETURN p.name, friend.name  -- friend.name 可能为 null<br></code></pre></td></tr></table></figure>
+
+<h4 id="WITH-链式查询"><a href="#WITH-链式查询" class="headerlink" title="WITH - 链式查询"></a><strong>WITH</strong> - 链式查询</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 先过滤，再聚合<br>MATCH (p:Person)<br>WHERE p.age &gt; 18<br>WITH p  -- 将结果传递到下一阶段<br>ORDER BY p.age DESC<br>LIMIT 10<br>RETURN p.name, p.age<br></code></pre></td></tr></table></figure>
+
+<h3 id="数据更新和删除"><a href="#数据更新和删除" class="headerlink" title="数据更新和删除"></a>数据更新和删除</h3><h4 id="SET-更新属性"><a href="#SET-更新属性" class="headerlink" title="SET - 更新属性"></a><strong>SET</strong> - 更新属性</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 修改属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>SET p.age = 31, p.city = &#x27;Beijing&#x27;<br>RETURN p<br><br>-- 添加标签<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;) <br>SET p:Customer:VIP<br>RETURN p<br></code></pre></td></tr></table></figure>
+
+<h4 id="REMOVE-删除属性或标签"><a href="#REMOVE-删除属性或标签" class="headerlink" title="REMOVE - 删除属性或标签"></a><strong>REMOVE</strong> - 删除属性或标签</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 删除属性<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>REMOVE p.city<br>RETURN p<br><br>-- 删除标签<br>MATCH (p:Person &#123;name: &#x27;Alice&#x27;&#125;)<br>REMOVE p:VIP<br>RETURN p<br></code></pre></td></tr></table></figure>
+
+<h4 id="DELETE-删除节点和关系"><a href="#DELETE-删除节点和关系" class="headerlink" title="DELETE - 删除节点和关系"></a><strong>DELETE</strong> - 删除节点和关系</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 必须先删除关系，才能删除节点<br>MATCH (p:Person &#123;name: &#x27;Bob&#x27;&#125;)-[r]-()<br>DELETE r, p<br><br>-- 或者使用 DETACH DELETE 自动删除关系<br>MATCH (p:Person &#123;name: &#x27;Bob&#x27;&#125;)<br>DETACH DELETE p<br></code></pre></td></tr></table></figure>
+
+<h4 id="MERGE-存在则匹配，不存在则创建"><a href="#MERGE-存在则匹配，不存在则创建" class="headerlink" title="MERGE - 存在则匹配，不存在则创建"></a><strong>MERGE</strong> - 存在则匹配，不存在则创建</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- 确保节点存在（类似于 upsert）<br>MERGE (p:Person &#123;name: &#x27;Charlie&#x27;&#125;)<br>ON CREATE SET p.created = timestamp()<br>ON MATCH SET p.lastSeen = timestamp()<br>RETURN p<br></code></pre></td></tr></table></figure>
+
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><ol>
+<li><p><strong>使用参数</strong>而不是字符串拼接：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cypher">-- ✅ 好：使用参数<br>MATCH (p:Person) WHERE p.name = $name RETURN p<br><br>-- ❌ 避免：字符串拼接  <br>MATCH (p:Person) WHERE p.name = &#x27;Alice&#x27; RETURN p<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>为常用查询字段创建索引</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cypher">CREATE INDEX person_name_index FOR (p:Person) ON (p.name)<br>CREATE INDEX movie_title_index FOR (m:Movie) ON (m.title)<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>限制返回结果数量</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cypher">MATCH (p:Person) RETURN p LIMIT 100<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>使用 PROFILE 分析查询性能</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cypher">PROFILE MATCH (p:Person)-[:FRIENDS_WITH*2]-&gt;(fof) RETURN p, fof<br></code></pre></td></tr></table></figure></li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/" class="category-chain-item">后端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="category-chain-item">数据库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Neo4j/" class="category-chain-item">Neo4j</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>neo4j使用</div>
+      <div>http://example.com/2025/11/12/计算机科学与技术/数据库/Neo4j/neo4j使用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年11月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/11/12/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/Agent%E5%BA%94%E7%94%A8/%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83%E5%BE%AE%E8%B0%83/%E5%8F%82%E6%95%B0%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/" title="参数高效微调">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">参数高效微调</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/11/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Milvus/Milvus%E5%8E%9F%E7%90%86/" title="Milvus原理">
+                        <span class="hidden-mobile">Milvus原理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

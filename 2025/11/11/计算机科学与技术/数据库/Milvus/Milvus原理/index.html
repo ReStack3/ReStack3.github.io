@@ -1,0 +1,1032 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Milvus 是什么？ | Milvus 文档  为什么需要?非结构化数据处理流程Milvus 为解决非结构化数据的检索问题而生：海量的非结构化数据一般会存储在分布式文件系统或对象存储上，之后通过深度学习网络完成推理，将这些非结构数据转化成 embedding 向量，并在向量空间内完成近似性检索，从而发现数据背后的一些特征。 比如，有很多原始的食物图片，通过卷积神经网络做训练和推理，为每一幅照">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Milvus原理">
+<meta property="og:url" content="http://example.com/2025/11/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Milvus/Milvus%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="Milvus 是什么？ | Milvus 文档  为什么需要?非结构化数据处理流程Milvus 为解决非结构化数据的检索问题而生：海量的非结构化数据一般会存储在分布式文件系统或对象存储上，之后通过深度学习网络完成推理，将这些非结构数据转化成 embedding 向量，并在向量空间内完成近似性检索，从而发现数据背后的一些特征。 比如，有很多原始的食物图片，通过卷积神经网络做训练和推理，为每一幅照">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/11/12/TwAgOdxeIEG3Bqc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/12/lMzQWF6k9BUoP1y.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/12/seugr9xcZtAkLwz.png">
+<meta property="article:published_time" content="2025-11-11T09:16:48.365Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:31.944Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/11/12/TwAgOdxeIEG3Bqc.png">
+  
+  
+  
+  <title>Milvus原理 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Milvus原理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Milvus原理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/11/12/TwAgOdxeIEG3Bqc.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://milvus.io/docs/zh/overview.md">Milvus 是什么？ | Milvus 文档</a></p>
+</blockquote>
+<h1 id="为什么需要"><a href="#为什么需要" class="headerlink" title="为什么需要?"></a>为什么需要?</h1><h2 id="非结构化数据处理流程"><a href="#非结构化数据处理流程" class="headerlink" title="非结构化数据处理流程"></a>非结构化数据处理流程</h2><p>Milvus 为解决非结构化数据的检索问题而生：海量的非结构化数据一般会存储在分布式文件系统或对象存储上，之后<strong>通过深度学习网络完成推理，将这些非结构数据转化成 embedding 向量，并在向量空间内完成近似性检索，从而发现数据背后的一些特征。</strong></p>
+<p>比如，有很多原始的食物图片，通过卷积神经网络做训练和推理，为每一幅照片得出一组向量，再把这些向量按照空间中的近似维度做排序，最后得到这样的结果：最上面一排是一些长得像薯条的东西，中间都是一些长得像拉面的东西，底下都是长得像寿司的东西。也就是说，图片这种非结构化数据，经过深度学习处理之后，转化成了embedding 向量，并通过在向量空间的近似度比对来表征其相似性，这在很大程度上能跟人类理解的近似度是高度一致的。</p>
+<h2 id="向量与标量"><a href="#向量与标量" class="headerlink" title="向量与标量"></a>向量与标量</h2><p><strong>传统的标量数据和 Milvus 面向的向量数据之间，到底有哪些不同呢？</strong></p>
+<p>从基本操作上来讲，对于标量数据，针对数值类数据一般会做加减乘除的操作；对字符串类型的数据一般会做一些 term 的匹配， 或者一些类似 like 的近似匹配，抑或一些前缀匹配。</p>
+<p>而针对向量数据而言，很少进行这种 100% 的完全匹配，更多是看近似度，也就是高<strong>维空间下的距离</strong>。较常见的距离表示有<strong>余弦距离、欧式距离</strong>等。空间中向量之间的距离，很大程度上能表示非结构化数据之间的相似度。</p>
+<p>除了对数据的操作会有很大不同以外，数据的组织方式也会有很大不同。如，传统数据很容易比较大小，无论是数值类，还是字符串，都可以通过二叉树或者 skip list 的方式排列组合，然后做二分查找。<strong>对于向量数据来讲，则更加复杂，因为它维度较高，很难像传统的数值类数据一样通过排序的方式做加速，往往需要一些特殊的索引结构和存储方式。</strong></p>
+<h1 id="核心功能"><a href="#核心功能" class="headerlink" title="核心功能"></a>核心功能</h1><table>
+<thead>
+<tr>
+<th>功能类别</th>
+<th>功能名称</th>
+<th>作用说明</th>
+<th>技术要点</th>
+<th>典型应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>存储管理</strong></td>
+<td>Collection 管理</td>
+<td>类似于关系型数据库的表，用于存放同类型向量实体</td>
+<td>定义字段（包括向量字段）与索引策略</td>
+<td>管理不同主题的语料、图像或音频向量</td>
+</tr>
+<tr>
+<td></td>
+<td>Partition 分区</td>
+<td>对 Collection 进行逻辑划分，提高查询效率</td>
+<td>按标签或时间分区</td>
+<td>时间序列或多域数据查询</td>
+</tr>
+<tr>
+<td></td>
+<td>Schema 定义</td>
+<td>规定每个字段的数据类型和维度</td>
+<td>支持向量字段、数值、字符串等</td>
+<td>结构化+向量数据统一管理</td>
+</tr>
+<tr>
+<td><strong>向量检索</strong></td>
+<td>相似度搜索 (Similarity Search)</td>
+<td>查找与输入向量最相似的 K 个向量</td>
+<td>欧氏距离、余弦相似度、内积等度量</td>
+<td>语义检索、推荐系统、相似图像查找</td>
+</tr>
+<tr>
+<td></td>
+<td>向量索引 (Indexing)</td>
+<td>加速大规模向量检索</td>
+<td>IVF_FLAT、HNSW、IVF_PQ、DISKANN 等</td>
+<td>百万级以上向量搜索加速</td>
+</tr>
+<tr>
+<td></td>
+<td>向量过滤 (Vector Filter)</td>
+<td>在检索前用标量条件过滤数据</td>
+<td>SQL-like 条件表达式</td>
+<td>“查找类别&#x3D;法律的最相似句子”</td>
+</tr>
+<tr>
+<td><strong>数据操作</strong></td>
+<td>数据插入 (Insert)</td>
+<td>插入一条或批量向量数据</td>
+<td>自动生成主键或自定义 ID</td>
+<td>批量导入语料嵌入</td>
+</tr>
+<tr>
+<td></td>
+<td>删除&#x2F;更新 (Delete&#x2F;Update)</td>
+<td>逻辑删除或替换已有数据</td>
+<td>基于主键操作</td>
+<td>更新文档内容或去重</td>
+</tr>
+<tr>
+<td><strong>查询与融合</strong></td>
+<td>Hybrid Search（混合搜索）</td>
+<td>向量相似度 + 标量过滤 + 全文检索结合</td>
+<td>向量索引 + BM25&#x2F;SQL</td>
+<td>多模态检索、问答系统</td>
+</tr>
+<tr>
+<td></td>
+<td>多向量字段支持</td>
+<td>支持多个嵌入向量字段</td>
+<td>不同模型的特征并行存储</td>
+<td>图文混合检索</td>
+</tr>
+<tr>
+<td><strong>系统架构</strong></td>
+<td>分布式存储</td>
+<td>可扩展分布式架构</td>
+<td>存算分离，节点可水平扩展</td>
+<td>海量数据场景</td>
+</tr>
+<tr>
+<td></td>
+<td>高可用与容错</td>
+<td>数据副本与持久化机制</td>
+<td>Etcd 元数据 + WAL 日志</td>
+<td>云环境部署稳定运行</td>
+</tr>
+<tr>
+<td><strong>生态集成</strong></td>
+<td>向量模型接入</td>
+<td>无缝连接 OpenAI、SentenceTransformers、Cohere 等嵌入模型</td>
+<td>Python&#x2F;Java SDK 或 REST API</td>
+<td>构建 AI 语义搜索系统</td>
+</tr>
+<tr>
+<td></td>
+<td>第三方系统集成</td>
+<td>与 LangChain、LlamaIndex、Weaviate 等框架对接</td>
+<td>Python SDK &amp; HTTP API</td>
+<td>构建 RAG（检索增强生成）系统</td>
+</tr>
+</tbody></table>
+<p> Milvus 的核心就是——<strong>高性能存储 + 高维相似搜索</strong>。可以把它理解成：</p>
+<blockquote>
+<p>“一个能对向量空间做 SQL 操作的数据库”，<br>能在亿级语义嵌入中高效查找最相似内容，是构建 <strong>RAG、推荐系统、语义检索、图像搜索</strong> 的底层引擎。</p>
+</blockquote>
+<h2 id="运行流程"><a href="#运行流程" class="headerlink" title="运行流程"></a>运行流程</h2><p><strong>向量数据库的运行基于以下关键步骤：</strong></p>
+<ol>
+<li><strong>嵌入生成</strong>：使用预训练模型（如 BERT、CLIP）将非结构化数据转换为高维向量（例如 768 维或 1536 维）。这些向量捕捉了数据的语义信息。</li>
+<li><strong>向量索引</strong>：为了加速相似性搜索，向量数据库使用专门的索引结构（如 HNSW、IVF、DiskANN）组织向量数据，减少搜索时的计算量。</li>
+<li><strong>相似性搜索</strong>：通过距离度量（如欧几里得距离、余弦相似度）计算查询向量与数据库中向量的相似度，返回 Top-K 结果。</li>
+<li><strong>元数据过滤</strong>：支持结合元数据（如时间、类别）进行过滤，提升搜索精准度。</li>
+<li><strong>实时更新</strong>：支持动态插入、更新和删除向量，保持数据新鲜。</li>
+</ol>
+<h1 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h1><p><img src="https://s2.loli.net/2025/11/12/lMzQWF6k9BUoP1y.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><p>在 Milvus 上，可以创建多个 Collections 来管理数据，并将数据作为实体插入到 Collections 中。<strong>Collections 和实体类似于关系数据库中的表和记录。</strong></p>
+<p>Schema 定义了 Collections 的数据结构。在创建一个 Collection 之前，需要设计出它的 Schema。其是 Collection 的蓝图，它严格定义了 Collection 的结构，包括：</p>
+<ul>
+<li>**Fields (字段)**： 定义每个实体包含哪些数据。</li>
+<li>**Primary Key (主键)**： 指定唯一标识一个实体的字段。</li>
+<li>**Vector Field (向量字段)**： 指定存储向量的字段及其维度。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/11/12/seugr9xcZtAkLwz.png" srcset="/img/loading.gif" lazyload></p>
+<p>一个 Entity 就是一条完整的数据记录，是 Fields 的具体值的集合。它完全对应于关系型数据库中的一行 <strong>Row</strong> 或一条 <strong>Record</strong>。</p>
+<p>一个 <strong>Collection</strong> 可以包含多个 <strong>Partitions</strong>，但一个 <strong>Partition</strong> 必须属于且仅属于一个 <strong>Collection</strong>。</p>
+<ul>
+<li><strong>Collection</strong> 就像一个完整的<strong>图书馆</strong>。</li>
+<li><strong>Partition</strong> 就像是图书馆里的<strong>特定分区书架</strong>，比如“计算机科学区”、“文学区”、“历史区”。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">Collection</th>
+<th align="left">Partition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>概念层级</strong></td>
+<td align="left"><strong>顶级</strong>数据组织单位</td>
+<td align="left"><strong>次级</strong>数据组织单位，隶属于 Collection</td>
+</tr>
+<tr>
+<td align="left"><strong>类比</strong></td>
+<td align="left">数据库中的 <strong>Table</strong></td>
+<td align="left">数据库表中的 <strong>Partition</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>目的</strong></td>
+<td align="left">定义数据结构（通过 Schema），存储和管理所有实体</td>
+<td align="left">在 Collection 内部，对数据进行<strong>物理隔离</strong>和<strong>逻辑分组</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>数据隔离</strong></td>
+<td align="left">不同的 Collection 之间<strong>完全隔离</strong>，Schema 可以不同。</td>
+<td align="left">同一个 Collection 下的不同 Partition <strong>共享同一个 Schema</strong>。</td>
+</tr>
+<tr>
+<td align="left"><strong>查询范围</strong></td>
+<td align="left">默认情况下，搜索&#x2F;查询是针对<strong>整个 Collection</strong> 进行的。</td>
+<td align="left">搜索&#x2F;查询可以<strong>只针对一个或多个指定的 Partition</strong>，提高效率。</td>
+</tr>
+<tr>
+<td align="left"><strong>必需性</strong></td>
+<td align="left"><strong>必须</strong>的。插入数据前必须先创建 Collection。</td>
+<td align="left"><strong>可选</strong>的。每个 Collection 都有一个名为 <code>_default</code> 的默认分区。</td>
+</tr>
+</tbody></table>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> pymilvus <span class="hljs-keyword">import</span> connections, Collection, FieldSchema, CollectionSchema, DataType<br><br><span class="hljs-comment"># 连接 Milvus</span><br>connections.connect(<span class="hljs-string">&quot;default&quot;</span>, host=<span class="hljs-string">&#x27;localhost&#x27;</span>, port=<span class="hljs-string">&#x27;19530&#x27;</span>)<br><br><span class="hljs-comment"># 1. 定义 Collection 的 Schema</span><br>fields = [<br>    FieldSchema(name=<span class="hljs-string">&quot;id&quot;</span>, dtype=DataType.INT64, is_primary=<span class="hljs-literal">True</span>),<br>    FieldSchema(name=<span class="hljs-string">&quot;title&quot;</span>, dtype=DataType.VARCHAR, max_length=<span class="hljs-number">200</span>),<br>    FieldSchema(name=<span class="hljs-string">&quot;embedding&quot;</span>, dtype=DataType.FLOAT_VECTOR, dim=<span class="hljs-number">128</span>)<br>]<br>schema = CollectionSchema(fields, description=<span class="hljs-string">&quot;A demo collection for partitions&quot;</span>)<br><br><span class="hljs-comment"># 2. 创建 Collection - 我们的“图书馆”</span><br>collection_name = <span class="hljs-string">&quot;book_collection&quot;</span><br>demo_collection = Collection(name=collection_name, schema=schema)<br><br><span class="hljs-comment"># 3. 在 Collection 中创建分区 - 我们的“分区书架”</span><br>partition_science = demo_collection.create_partition(<span class="hljs-string">&quot;partition_science&quot;</span>)<br>partition_history = demo_collection.create_partition(<span class="hljs-string">&quot;partition_history&quot;</span>)<br><span class="hljs-comment"># 注意：每个 Collection 已经有一个名为 &quot;_default&quot; 的默认分区</span><br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Collection 中的所有分区: <span class="hljs-subst">&#123;demo_collection.partitions&#125;</span>&quot;</span>)<br><br><span class="hljs-comment"># 4. 向不同分区插入数据</span><br><span class="hljs-comment"># 数据准备</span><br>science_data = [<br>    [<span class="hljs-number">1</span>, <span class="hljs-string">&quot;The Theory of Everything&quot;</span>, [<span class="hljs-number">0.1</span>]*<span class="hljs-number">128</span>],  <span class="hljs-comment"># 简化向量</span><br>    [<span class="hljs-number">2</span>, <span class="hljs-string">&quot;A Brief History of Time&quot;</span>, [<span class="hljs-number">0.2</span>]*<span class="hljs-number">128</span>]<br>]<br>history_data = [<br>    [<span class="hljs-number">3</span>, <span class="hljs-string">&quot;The Roman Empire&quot;</span>, [<span class="hljs-number">0.3</span>]*<span class="hljs-number">128</span>],<br>    [<span class="hljs-number">4</span>, <span class="hljs-string">&quot;World War II&quot;</span>, [<span class="hljs-number">0.4</span>]*<span class="hljs-number">128</span>]<br>]<br><br><span class="hljs-comment"># 插入到指定分区</span><br>partition_science.insert(science_data)<br>partition_history.insert(history_data)<br><br><span class="hljs-comment"># 5. 搜索时指定分区，提高效率</span><br><span class="hljs-comment"># 只在“科学”分区中搜索</span><br>search_results = demo_collection.search(<br>    data=[[<span class="hljs-number">0.15</span>]*<span class="hljs-number">128</span>], <span class="hljs-comment"># 查询向量</span><br>    anns_field=<span class="hljs-string">&quot;embedding&quot;</span>,<br>    param=&#123;<span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;nprobe&quot;</span>: <span class="hljs-number">10</span>&#125;&#125;,<br>    limit=<span class="hljs-number">2</span>,<br>    partition_names=[<span class="hljs-string">&quot;partition_science&quot;</span>], <span class="hljs-comment"># 关键：指定分区</span><br>    output_fields=[<span class="hljs-string">&quot;title&quot;</span>]<br>)<br><br><span class="hljs-keyword">for</span> hits <span class="hljs-keyword">in</span> search_results:<br>    <span class="hljs-keyword">for</span> hit <span class="hljs-keyword">in</span> hits:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;科学类搜索结果: ID=<span class="hljs-subst">&#123;hit.<span class="hljs-built_in">id</span>&#125;</span>, 书名=<span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span>, 距离=<span class="hljs-subst">&#123;hit.distance&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><p>如果没有索引（即使用 <strong>FLAT</strong>），要进行最近邻搜索，就必须计算查询向量与集合中<strong>每一个</strong>向量的距离，然后排序。这在数据量巨大时（例如上亿条），计算成本是无法接受的。</p>
+<p>因此，所有向量索引的基本思想都是：<strong>通过预先计算和组织数据，将搜索范围从“整个数据库”缩小到“最有可能的几个候选区域”</strong>，用微小的精度损失换取巨大的速度提升。这就是<strong>近似最近邻</strong>搜索。</p>
+<blockquote>
+<p>索引是建立在数据之上的附加结构。其内部结构取决于所使用的近似近邻搜索算法。索引可以加快搜索速度，但在搜索过程中会产生额外的预处理时间、空间和 RAM。此外，使用索引通常会降低召回率（虽然影响可以忽略不计，但仍然很重要）。</p>
+</blockquote>
+<p>为特定字段创建索引可提高搜索效率。建议为服务所依赖的所有字段创建索引，其中必须为向量字段创建索引。</p>
+<p><a target="_blank" rel="noopener" href="https://milvus.io/docs/zh/index-explained.md">索引解释 | Milvus 文档</a></p>
+<table>
+<thead>
+<tr>
+<th align="left">索引类型</th>
+<th align="left">描述</th>
+<th align="left">适用数据类型</th>
+<th align="left">主要参数</th>
+<th align="left">最佳场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>FLAT</strong></td>
+<td align="left"><strong>精确搜索</strong>。遍历所有向量，计算精确距离。作为评估其他索引的基准。</td>
+<td align="left"><code>FLOAT_VECTOR</code> <code>BINARY_VECTOR</code></td>
+<td align="left">无</td>
+<td align="left">• 小规模数据集 • 需要 100% 召回率 • 测试基准</td>
+</tr>
+<tr>
+<td align="left"><strong>IVF_FLAT</strong></td>
+<td align="left">基于倒排文件的索引。先对向量聚类，搜索时在最近的中心点搜索。</td>
+<td align="left"><code>FLOAT_VECTOR</code> <code>BINARY_VECTOR</code></td>
+<td align="left"><code>nlist</code>：聚类中心数 <code>nprobe</code>：搜索的类簇数</td>
+<td align="left">• 中等规模数据集 • 要求速度与精度的平衡</td>
+</tr>
+<tr>
+<td align="left"><strong>IVF_SQ8</strong></td>
+<td align="left">IVF 的变体。对向量进行标量量化，将 32 位浮点向量压缩为 8 位整数，减少内存占用。</td>
+<td align="left"><code>FLOAT_VECTOR</code></td>
+<td align="left"><code>nlist</code> <code>nprobe</code></td>
+<td align="left">• 大规模数据集 • 内存资源敏感 • 可接受轻微精度损失</td>
+</tr>
+<tr>
+<td align="left"><strong>IVF_PQ</strong></td>
+<td align="left">IVF 与乘积量化的结合。将高维向量切分子空间并分别量化，压缩率极高。</td>
+<td align="left"><code>FLOAT_VECTOR</code></td>
+<td align="left"><code>nlist</code> <code>nprobe</code> <code>m</code>：子空间数 <code>nbits</code>：码本大小</td>
+<td align="left">• 超大规模数据集（十亿级） • 磁盘&#x2F;内存资源极度紧张 • 对精度要求不极端</td>
+</tr>
+<tr>
+<td align="left"><strong>HNSW</strong></td>
+<td align="left">基于图的索引。构建多层导航图，搜索速度快，精度高，但内存消耗大。</td>
+<td align="left"><code>FLOAT_VECTOR</code> <code>BINARY_VECTOR</code></td>
+<td align="left"><code>M</code>：节点最大连接数 <code>efConstruction</code>：索引构建参数 <code>ef</code>：搜索动态候选集大小</td>
+<td align="left">• 高性能、低延迟查询 • 内存资源充足 • 中小规模高精度搜索</td>
+</tr>
+<tr>
+<td align="left"><strong>SCANNER</strong></td>
+<td align="left">基于标量量化的先进索引。通过降低向量元数据的精度来压缩，是 PQ 的强劲替代。</td>
+<td align="left"><code>FLOAT_VECTOR</code></td>
+<td align="left"><code>nlist</code> <code>nprobe</code> <code>with_raw_data</code>：是否存储原始数据</td>
+<td align="left">• 追求极致查询性能与内存效率 • 大规模数据集</td>
+</tr>
+<tr>
+<td align="left"><strong>BIN_IVF_FLAT</strong></td>
+<td align="left">专为二值向量设计的 IVF 索引。</td>
+<td align="left"><code>BINARY_VECTOR</code></td>
+<td align="left"><code>nlist</code> <code>nprobe</code></td>
+<td align="left">• 二值向量数据 • 汉明距离计算</td>
+</tr>
+<tr>
+<td align="left"><strong>BIN_FLAT</strong></td>
+<td align="left">二向量的暴力精确搜索。</td>
+<td align="left"><code>BINARY_VECTOR</code></td>
+<td align="left">无</td>
+<td align="left">• 小规模二值向量数据集 • 需要 100% 召回率</td>
+</tr>
+</tbody></table>
+<h1 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a><strong>搜索</strong></h1><h2 id="ANN-搜索"><a href="#ANN-搜索" class="headerlink" title="ANN 搜索"></a>ANN 搜索</h2><p>这是 Milvus 最核心的功能。给定一个查询向量，在庞大的向量库中快速找出与它最相似的 K 个向量。使用向量索引（如 HNSW, IVF）进行近似最近邻搜索，在精度和速度之间取得平衡。<strong>关键参数</strong>：<code>limit</code> (即 K值，返回前K个结果)</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>以图搜图</strong>：上传一张猫的图片，找出图库中所有猫的图片。</li>
+<li><strong>语义文本搜索</strong>：输入“快乐的节日”，找出所有表达喜庆、欢乐情感的文本段落。</li>
+</ul>
+</li>
+</ul>
+<h2 id="过滤搜索"><a href="#过滤搜索" class="headerlink" title="过滤搜索"></a>过滤搜索</h2><p>在执行 ANN 搜索<strong>之前</strong>或<strong>之后</strong>，应用基于标量元数据的过滤条件。先根据标量条件（如 <code>author == &quot;John&quot;</code>）筛选出一个子集，然后在这个子集上进行向量搜索，或者先做向量搜索再过滤结果。这极大地提高了搜索的精确性和实用性。<strong>关键语法</strong>：使用布尔表达式（如 <code>&gt;</code>, <code>&lt;</code>, <code>==</code>, <code>and</code>, <code>or</code>）。</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>电商</strong>：“在我的<strong>价格范围 100-200 元</strong>内，找出与这个手提包<strong>最相似</strong>的商品。”</li>
+<li><strong>内容管理</strong>：“在<strong>2023年之后发布</strong>的<strong>科技类</strong>文章中，找出与‘人工智能伦理’语义相近的文章。”</li>
+</ul>
+</li>
+</ul>
+<h2 id="范围搜索"><a href="#范围搜索" class="headerlink" title="范围搜索"></a>范围搜索</h2><p>又称半径搜索。查找与查询向量距离在指定半径范围内的所有向量。不限制返回数量（K），而是限制相似度的“距离”。距离小于半径 <code>radius</code> 的向量都会被返回。<strong>关键参数</strong>：<code>radius</code> (距离半径), <code>range_filter</code> (可选，用于对结果进行二次过滤)</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>人脸门禁</strong>：“在员工库中，找出所有与当前摄像头人脸相似度**高于 95%**（即距离非常小）的人。” 确保只有极高相似度的匹配才被允许通过。</li>
+<li><strong>抄袭检测</strong>：“找出所有与待检测文档相似度<strong>超过一定阈值</strong>的潜在源文档。”</li>
+</ul>
+</li>
+</ul>
+<h2 id="混合搜索"><a href="#混合搜索" class="headerlink" title="混合搜索"></a>混合搜索</h2><p>基于<strong>多个</strong>向量字段进行联合搜索，并将结果合并。一个实体（记录）可能包含多个向量字段（如“图片向量”和“文本描述向量”）。混合搜索允许您同时对这两个字段进行查询，并通过加权平均等方式合并两个搜索结果的分数。</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>多模态搜索</strong>：输入一段文本“一只在沙滩上奔跑的金毛犬”，系统可以同时搜索“图片向量”和“图片的文本描述向量”，返回最相关的结果。</li>
+<li><strong>产品搜索</strong>：同时匹配产品的“图像特征向量”和“用户评论情感分析向量”。</li>
+</ul>
+</li>
+</ul>
+<h2 id="全文搜索"><a href="#全文搜索" class="headerlink" title="全文搜索"></a>全文搜索</h2><p>基于经典的 BM25 算法对文本字段进行关键词搜索。BM25 是一种用于评估文档与搜索查询相关性的排名函数。它处理的是标量文本字段，而不是向量。</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>文档检索</strong>：在文档库中，直接搜索包含关键词“机器学习”、“框架”的文档。</li>
+<li><strong>与向量搜索结合</strong>：先通过全文搜索快速筛选出包含关键字的文档，再对这些文档进行更精确的语义向量搜索。</li>
+</ul>
+</li>
+</ul>
+<h2 id="Rerankers"><a href="#Rerankers" class="headerlink" title="Rerankers"></a>Rerankers</h2><p>对 ANN 搜索返回的初步结果进行<strong>重排序</strong>，以优化最终排名。ANN 索引为了速度牺牲了一些精度。Reranker 作为一个更精细、可能也更耗时的模型，对 Top K 的结果进行二次计算，得到更准确的相似度分数并重新排序。</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>交叉编码器</strong>：在向量搜索初步找出 100 个相关文档后，使用一个更强大的、但运行慢的交叉编码器模型对这 100 个文档进行精排，提升前 10 个结果的准确性。</li>
+<li><strong>多因素排序</strong>：在电商搜索中，将“向量相似度”、“销量”、“用户评分”、“上新时间”等因素综合起来，对初始的相似商品列表进行重新排序。</li>
+</ul>
+</li>
+</ul>
+<h2 id="获取"><a href="#获取" class="headerlink" title="获取"></a>获取</h2><p>根据已知的<strong>主键</strong>值，直接检索出对应的完整实体数据。类似于键值数据库的 <code>get</code> 操作或 SQL 中的 <code>SELECT * FROM table WHERE id = ?</code>。它不涉及任何向量计算或相似性比较。</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li><strong>详情页查询</strong>：在向量搜索返回了一组商品的 ID 后，前端需要获取这些商品的完整信息（如名称、描述、价格）来展示，这时就使用“获取”操作。</li>
+<li><strong>缓存穿透</strong>：直接通过 ID 拉取数据。</li>
+</ul>
+</li>
+</ul>
+<h2 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h2><p>使用表达式基于<strong>标量字段</strong>来检索数据，不涉及向量相似性。类似于 SQL 中的 <code>WHERE</code> 子句查询。它用于按元数据过滤和查找数据。</p>
+<ul>
+<li><strong>示例场景</strong>：<ul>
+<li>“找出所有<code>作者</code>是‘Alice’且<code>状态</code>为‘已发布’的文章。”</li>
+<li>“统计<code>分类</code>为‘电子产品’且<code>创建时间</code>在 2024 年 1 月之后的所有记录数量。”</li>
+</ul>
+</li>
+<li><strong>与“过滤搜索”的区别</strong>：<ul>
+<li><strong>查询</strong>：目标是获取符合条件的数据本身，<strong>不进行向量相似度排序</strong>。</li>
+<li><strong>过滤搜索</strong>：目标是进行向量搜索，过滤只是其前置或后置步骤，最终结果按向量相似度排序。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 创建索引（核心步骤）</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">create_index</span>():<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n4. 创建向量索引...&quot;</span>)<br>    <br>    <span class="hljs-comment"># 在创建索引前，确保 Collection 已加载（可选，但推荐先卸载）</span><br>    <span class="hljs-keyword">if</span> book_collection.is_loaded:<br>        book_collection.release()<br>    <br>    <span class="hljs-comment"># 定义索引参数 - 这里以 HNSW 为例</span><br>    index_params = &#123;<br>        <span class="hljs-string">&quot;index_type&quot;</span>: <span class="hljs-string">&quot;HNSW&quot;</span>,           <span class="hljs-comment"># 索引类型</span><br>        <span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>,            <span class="hljs-comment"># 距离度量方式：L2（欧氏距离）</span><br>        <span class="hljs-string">&quot;params&quot;</span>: &#123;<br>            <span class="hljs-string">&quot;M&quot;</span>: <span class="hljs-number">16</span>,                    <span class="hljs-comment"># HNSW 参数：节点最大连接数</span><br>            <span class="hljs-string">&quot;efConstruction&quot;</span>: <span class="hljs-number">200</span>       <span class="hljs-comment"># HNSW 参数：索引构建时候选集大小</span><br>        &#125;<br>    &#125;<br>    <br>    <span class="hljs-comment"># 在向量字段上创建索引</span><br>    book_collection.create_index(field_name=<span class="hljs-string">&quot;vector&quot;</span>, index_params=index_params)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;   HNSW 索引创建成功!&quot;</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   索引详情: <span class="hljs-subst">&#123;index_params&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="完整"><a href="#完整" class="headerlink" title="完整"></a>完整</h2><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> pymilvus <span class="hljs-keyword">import</span> connections, FieldSchema, CollectionSchema, DataType, Collection, utility<br><span class="hljs-keyword">import</span> random<br><span class="hljs-keyword">import</span> json<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MilvusSearchDemo</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        self.collection = <span class="hljs-literal">None</span><br>        self.collection_name = <span class="hljs-string">&quot;book_search_demo&quot;</span><br>        <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">connect_milvus</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;连接 Milvus&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;1. 连接 Milvus...&quot;</span>)<br>        connections.connect(<span class="hljs-string">&quot;default&quot;</span>, host=<span class="hljs-string">&quot;localhost&quot;</span>, port=<span class="hljs-string">&quot;19530&quot;</span>)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;   ✅ 连接成功!&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">create_collection</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;创建包含多种字段类型的 Collection&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n2. 创建 Collection...&quot;</span>)<br>        <br>        <span class="hljs-comment"># 如果已存在，删除旧集合</span><br>        <span class="hljs-keyword">if</span> utility.has_collection(self.collection_name):<br>            utility.drop_collection(self.collection_name)<br>        <br>        <span class="hljs-comment"># 定义字段：主键、标量字段、向量字段</span><br>        fields = [<br>            FieldSchema(name=<span class="hljs-string">&quot;book_id&quot;</span>, dtype=DataType.INT64, is_primary=<span class="hljs-literal">True</span>),<br>            FieldSchema(name=<span class="hljs-string">&quot;title&quot;</span>, dtype=DataType.VARCHAR, max_length=<span class="hljs-number">200</span>),<br>            FieldSchema(name=<span class="hljs-string">&quot;author&quot;</span>, dtype=DataType.VARCHAR, max_length=<span class="hljs-number">100</span>),<br>            FieldSchema(name=<span class="hljs-string">&quot;category&quot;</span>, dtype=DataType.VARCHAR, max_length=<span class="hljs-number">50</span>),<br>            FieldSchema(name=<span class="hljs-string">&quot;price&quot;</span>, dtype=DataType.DOUBLE),<br>            FieldSchema(name=<span class="hljs-string">&quot;publish_year&quot;</span>, dtype=DataType.INT64),<br>            FieldSchema(name=<span class="hljs-string">&quot;content&quot;</span>, dtype=DataType.VARCHAR, max_length=<span class="hljs-number">1000</span>),  <span class="hljs-comment"># 用于全文搜索</span><br>            FieldSchema(name=<span class="hljs-string">&quot;title_vector&quot;</span>, dtype=DataType.FLOAT_VECTOR, dim=<span class="hljs-number">128</span>),  <span class="hljs-comment"># 标题向量</span><br>            FieldSchema(name=<span class="hljs-string">&quot;content_vector&quot;</span>, dtype=DataType.FLOAT_VECTOR, dim=<span class="hljs-number">128</span>)  <span class="hljs-comment"># 内容向量</span><br>        ]<br>        <br>        schema = CollectionSchema(fields, description=<span class="hljs-string">&quot;图书搜索演示集合&quot;</span>)<br>        self.collection = Collection(self.collection_name, schema)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;   ✅ Collection 创建成功!&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">insert_sample_data</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;插入示例数据&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n3. 插入示例数据...&quot;</span>)<br>        <br>        <span class="hljs-comment"># 示例数据</span><br>        categories = [<span class="hljs-string">&quot;科幻&quot;</span>, <span class="hljs-string">&quot;历史&quot;</span>, <span class="hljs-string">&quot;技术&quot;</span>, <span class="hljs-string">&quot;文学&quot;</span>, <span class="hljs-string">&quot;教育&quot;</span>]<br>        authors = [<span class="hljs-string">&quot;刘慈欣&quot;</span>, <span class="hljs-string">&quot;金庸&quot;</span>, <span class="hljs-string">&quot;吴军&quot;</span>, <span class="hljs-string">&quot;余华&quot;</span>, <span class="hljs-string">&quot;莫言&quot;</span>, <span class="hljs-string">&quot;鲁迅&quot;</span>, <span class="hljs-string">&quot;王小波&quot;</span>]<br>        <br>        data = []<br>        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1000</span>):<br>            data.append(&#123;<br>                <span class="hljs-string">&quot;book_id&quot;</span>: i + <span class="hljs-number">1</span>,<br>                <span class="hljs-string">&quot;title&quot;</span>: <span class="hljs-string">f&quot;图书标题_<span class="hljs-subst">&#123;i&#125;</span>&quot;</span>,<br>                <span class="hljs-string">&quot;author&quot;</span>: random.choice(authors),<br>                <span class="hljs-string">&quot;category&quot;</span>: random.choice(categories),<br>                <span class="hljs-string">&quot;price&quot;</span>: <span class="hljs-built_in">round</span>(random.uniform(<span class="hljs-number">20.0</span>, <span class="hljs-number">200.0</span>), <span class="hljs-number">2</span>),<br>                <span class="hljs-string">&quot;publish_year&quot;</span>: random.randint(<span class="hljs-number">1990</span>, <span class="hljs-number">2023</span>),<br>                <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;这是第<span class="hljs-subst">&#123;i&#125;</span>本图书的内容，包含一些关键词如科技、历史、文学等。&quot;</span>,<br>                <span class="hljs-string">&quot;title_vector&quot;</span>: [random.random() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">128</span>)],<br>                <span class="hljs-string">&quot;content_vector&quot;</span>: [random.random() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">128</span>)]<br>            &#125;)<br>        <br>        <span class="hljs-comment"># 插入数据</span><br>        insert_result = self.collection.insert(data)<br>        self.collection.flush()<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   ✅ 插入了 <span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(insert_result.primary_keys)&#125;</span> 条数据&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">create_indexes</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;创建向量索引&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n4. 创建索引...&quot;</span>)<br>        <br>        <span class="hljs-comment"># 为标题向量创建 HNSW 索引</span><br>        index_params_title = &#123;<br>            <span class="hljs-string">&quot;index_type&quot;</span>: <span class="hljs-string">&quot;HNSW&quot;</span>,<br>            <span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>,<br>            <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;M&quot;</span>: <span class="hljs-number">8</span>, <span class="hljs-string">&quot;efConstruction&quot;</span>: <span class="hljs-number">200</span>&#125;<br>        &#125;<br>        self.collection.create_index(<span class="hljs-string">&quot;title_vector&quot;</span>, index_params_title)<br>        <br>        <span class="hljs-comment"># 为内容向量创建 IVF 索引</span><br>        index_params_content = &#123;<br>            <span class="hljs-string">&quot;index_type&quot;</span>: <span class="hljs-string">&quot;IVF_FLAT&quot;</span>,<br>            <span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <br>            <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;nlist&quot;</span>: <span class="hljs-number">128</span>&#125;<br>        &#125;<br>        self.collection.create_index(<span class="hljs-string">&quot;content_vector&quot;</span>, index_params_content)<br>        <br>        <span class="hljs-comment"># 为标量字段创建索引（用于过滤）</span><br>        self.collection.create_index(<span class="hljs-string">&quot;author&quot;</span>, &#123;<span class="hljs-string">&quot;index_type&quot;</span>: <span class="hljs-string">&quot;Trie&quot;</span>&#125;)<br>        self.collection.create_index(<span class="hljs-string">&quot;category&quot;</span>, &#123;<span class="hljs-string">&quot;index_type&quot;</span>: <span class="hljs-string">&quot;Trie&quot;</span>&#125;)<br>        self.collection.create_index(<span class="hljs-string">&quot;price&quot;</span>, &#123;<span class="hljs-string">&quot;index_type&quot;</span>: <span class="hljs-string">&quot;STL_SORT&quot;</span>&#125;)<br>        <br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;   ✅ 所有索引创建完成!&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">load_collection</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;加载数据到内存&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n5. 加载数据到内存...&quot;</span>)<br>        self.collection.load()<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;   ✅ 数据加载完成!&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">demonstrate_searches</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;演示各种搜索类型&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n&quot;</span> + <span class="hljs-string">&quot;=&quot;</span>*<span class="hljs-number">50</span>)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;开始演示各种搜索类型&quot;</span>)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;=&quot;</span>*<span class="hljs-number">50</span>)<br>        <br>        <span class="hljs-comment"># 生成查询向量</span><br>        query_vector = [random.random() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">128</span>)]<br>        <br>        <span class="hljs-comment"># 1. ANN 搜索（基础向量搜索）</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 1. ANN 搜索 - 查找最相似的图书&quot;</span>)<br>        ann_results = self.collection.search(<br>            data=[query_vector],<br>            anns_field=<span class="hljs-string">&quot;title_vector&quot;</span>,<br>            param=&#123;<span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;ef&quot;</span>: <span class="hljs-number">50</span>&#125;&#125;,<br>            limit=<span class="hljs-number">3</span>,<br>            output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>]<br>        )<br>        <span class="hljs-keyword">for</span> i, hits <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(ann_results):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   查询 <span class="hljs-subst">&#123;i+<span class="hljs-number">1</span>&#125;</span> 的结果:&quot;</span>)<br>            <span class="hljs-keyword">for</span> hit <span class="hljs-keyword">in</span> hits:<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     📚 <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;author&#x27;</span>)&#125;</span> (距离: <span class="hljs-subst">&#123;hit.distance:<span class="hljs-number">.4</span>f&#125;</span>)&quot;</span>)<br>        <br>        <span class="hljs-comment"># 2. 过滤搜索（向量搜索 + 标量过滤）</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 2. 过滤搜索 - 在特定类别中查找相似图书&quot;</span>)<br>        filter_results = self.collection.search(<br>            data=[query_vector],<br>            anns_field=<span class="hljs-string">&quot;title_vector&quot;</span>, <br>            param=&#123;<span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;ef&quot;</span>: <span class="hljs-number">50</span>&#125;&#125;,<br>            limit=<span class="hljs-number">3</span>,<br>            expr=<span class="hljs-string">&quot;category == &#x27;科幻&#x27;&quot;</span>,  <span class="hljs-comment"># 过滤条件</span><br>            output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>, <span class="hljs-string">&quot;category&quot;</span>]<br>        )<br>        <span class="hljs-keyword">for</span> i, hits <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(filter_results):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   &#x27;科幻&#x27;类图书搜索结果:&quot;</span>)<br>            <span class="hljs-keyword">for</span> hit <span class="hljs-keyword">in</span> hits:<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     🚀 <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;author&#x27;</span>)&#125;</span> (类别: <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;category&#x27;</span>)&#125;</span>)&quot;</span>)<br>        <br>        <span class="hljs-comment"># 3. 范围搜索</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 3. 范围搜索 - 查找距离在指定范围内的向量&quot;</span>)<br>        range_results = self.collection.search(<br>            data=[query_vector],<br>            anns_field=<span class="hljs-string">&quot;title_vector&quot;</span>,<br>            param=&#123;<span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;ef&quot;</span>: <span class="hljs-number">50</span>, <span class="hljs-string">&quot;radius&quot;</span>: <span class="hljs-number">15.0</span>&#125;&#125;,  <span class="hljs-comment"># radius 参数</span><br>            limit=<span class="hljs-number">5</span>,<br>            output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>]<br>        )<br>        <span class="hljs-keyword">for</span> i, hits <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(range_results):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   距离范围 ≤ 15.0 的结果:&quot;</span>)<br>            <span class="hljs-keyword">for</span> hit <span class="hljs-keyword">in</span> hits:<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     📏 <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - 距离: <span class="hljs-subst">&#123;hit.distance:<span class="hljs-number">.4</span>f&#125;</span>&quot;</span>)<br>        <br>        <span class="hljs-comment"># 4. 复杂过滤搜索</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 4. 复杂过滤搜索 - 多条件过滤&quot;</span>)<br>        complex_filter_results = self.collection.search(<br>            data=[query_vector],<br>            anns_field=<span class="hljs-string">&quot;title_vector&quot;</span>,<br>            param=&#123;<span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;ef&quot;</span>: <span class="hljs-number">50</span>&#125;&#125;,<br>            limit=<span class="hljs-number">3</span>,<br>            expr=<span class="hljs-string">&quot;author == &#x27;刘慈欣&#x27; and price &lt; 100.0 and publish_year &gt; 2000&quot;</span>,<br>            output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>, <span class="hljs-string">&quot;price&quot;</span>, <span class="hljs-string">&quot;publish_year&quot;</span>]<br>        )<br>        <span class="hljs-keyword">for</span> i, hits <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(complex_filter_results):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   刘慈欣 &amp; 价格&lt;100 &amp; 2000年后出版的结果:&quot;</span>)<br>            <span class="hljs-keyword">for</span> hit <span class="hljs-keyword">in</span> hits:<br>                entity = hit.entity<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     🔥 <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - 价格: <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;price&#x27;</span>)&#125;</span> - 年份: <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;publish_year&#x27;</span>)&#125;</span>&quot;</span>)<br>        <br>        <span class="hljs-comment"># 5. 获取（根据主键检索）</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 5. 获取 - 根据主键获取数据&quot;</span>)<br>        get_results = self.collection.get(ids=[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>], output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>])<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   根据主键获取的结果:&quot;</span>)<br>        <span class="hljs-keyword">for</span> entity <span class="hljs-keyword">in</span> get_results:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     🆔 ID:<span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;book_id&#x27;</span>)&#125;</span> - <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;author&#x27;</span>)&#125;</span>&quot;</span>)<br>        <br>        <span class="hljs-comment"># 6. 查询（基于标量字段的查询）</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 6. 查询 - 基于标量字段的条件查询&quot;</span>)<br>        query_results = self.collection.query(<br>            expr=<span class="hljs-string">&quot;category == &#x27;技术&#x27; and price &gt; 50.0&quot;</span>,<br>            output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>, <span class="hljs-string">&quot;category&quot;</span>, <span class="hljs-string">&quot;price&quot;</span>],<br>            limit=<span class="hljs-number">3</span><br>        )<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   技术类且价格&gt;50的图书:&quot;</span>)<br>        <span class="hljs-keyword">for</span> entity <span class="hljs-keyword">in</span> query_results:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     💻 <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;author&#x27;</span>)&#125;</span> - 价格: <span class="hljs-subst">&#123;entity.get(<span class="hljs-string">&#x27;price&#x27;</span>)&#125;</span>&quot;</span>)<br>        <br>        <span class="hljs-comment"># 7. 混合搜索示例（使用多个向量字段）</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🔍 7. 混合搜索 - 使用 rerank 方式组合多个向量字段&quot;</span>)<br>        <span class="hljs-comment"># 注意：Milvus 2.3+ 支持多向量搜索，这里演示概念</span><br>        hybrid_results = self.collection.search(<br>            data=[query_vector],<br>            anns_field=<span class="hljs-string">&quot;title_vector&quot;</span>,  <span class="hljs-comment"># 可以扩展为多向量字段的组合</span><br>            param=&#123;<span class="hljs-string">&quot;metric_type&quot;</span>: <span class="hljs-string">&quot;L2&quot;</span>, <span class="hljs-string">&quot;params&quot;</span>: &#123;<span class="hljs-string">&quot;ef&quot;</span>: <span class="hljs-number">50</span>&#125;&#125;,<br>            limit=<span class="hljs-number">5</span>,<br>            output_fields=[<span class="hljs-string">&quot;book_id&quot;</span>, <span class="hljs-string">&quot;title&quot;</span>, <span class="hljs-string">&quot;author&quot;</span>],<br>            <span class="hljs-comment"># 在实际应用中，可以通过后续的 rerank 步骤结合 content_vector 的结果</span><br>        )<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;   混合搜索概念演示 (前5个结果):&quot;</span>)<br>        <span class="hljs-keyword">for</span> i, hits <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(hybrid_results):<br>            <span class="hljs-keyword">for</span> j, hit <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(hits):<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;     🔄 结果<span class="hljs-subst">&#123;j+<span class="hljs-number">1</span>&#125;</span>: <span class="hljs-subst">&#123;hit.entity.get(<span class="hljs-string">&#x27;title&#x27;</span>)&#125;</span> - 距离: <span class="hljs-subst">&#123;hit.distance:<span class="hljs-number">.4</span>f&#125;</span>&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">cleanup</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;清理资源&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n🧹 清理资源...&quot;</span>)<br>        <span class="hljs-keyword">if</span> utility.has_collection(self.collection_name):<br>            self.collection.drop()<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;   ✅ Collection 已删除&quot;</span>)<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">run_demo</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;运行完整演示&quot;&quot;&quot;</span><br>        <span class="hljs-keyword">try</span>:<br>            self.connect_milvus()<br>            self.create_collection()<br>            self.insert_sample_data()<br>            self.create_indexes()<br>            self.load_collection()<br>            self.demonstrate_searches()<br>        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;❌ 错误: <span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br>        <span class="hljs-keyword">finally</span>:<br>            <span class="hljs-comment"># 可选：清理资源</span><br>            <span class="hljs-comment"># self.cleanup()</span><br>            <span class="hljs-keyword">pass</span><br><br><span class="hljs-comment"># 运行演示</span><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    demo = MilvusSearchDemo()<br>    demo.run_demo()<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/" class="category-chain-item">后端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="category-chain-item">数据库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Milvus/" class="category-chain-item">Milvus</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Milvus原理</div>
+      <div>http://example.com/2025/11/11/计算机科学与技术/数据库/Milvus/Milvus原理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年11月11日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/11/12/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Neo4j/neo4j%E4%BD%BF%E7%94%A8/" title="neo4j使用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">neo4j使用</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/11/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C++/%E9%AB%98%E6%95%88%E7%BC%96%E7%A8%8B%E6%8A%80%E5%B7%A7/Effective-C++/" title="Effective-C++">
+                        <span class="hidden-mobile">Effective-C++</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
