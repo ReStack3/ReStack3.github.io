@@ -1,0 +1,777 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="区块奖励与交易费预计算区块奖励（accumulateRewards），初始化Coinbase余额。 区块构建在区块打包交易后、挖矿开始前，矿工需要预计算区块奖励，写入区块头的状态根。 12345678&#x2F;&#x2F; Finalize implements consensus.Engine, accumulating the block and uncle rewards,&#x2F;&#x2F; setting the fin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="激励机制">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/07/12/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Ethereum/%E6%BF%80%E5%8A%B1%E6%9C%BA%E5%88%B6/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="区块奖励与交易费预计算区块奖励（accumulateRewards），初始化Coinbase余额。 区块构建在区块打包交易后、挖矿开始前，矿工需要预计算区块奖励，写入区块头的状态根。 12345678&#x2F;&#x2F; Finalize implements consensus.Engine, accumulating the block and uncle rewards,&#x2F;&#x2F; setting the fin">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-12T08:59:14.933Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:31.900Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>激励机制 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="激励机制"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">激励机制</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="区块奖励与交易费"><a href="#区块奖励与交易费" class="headerlink" title="区块奖励与交易费"></a><strong>区块奖励与交易费</strong></h1><p>预计算区块奖励（<code>accumulateRewards</code>），初始化<code>Coinbase</code>余额。</p>
+<h2 id="区块构建"><a href="#区块构建" class="headerlink" title="区块构建"></a><strong>区块构建</strong></h2><p>在区块打包交易后、挖矿开始前，矿工需要预计算区块奖励，写入区块头的状态根。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Finalize implements consensus.Engine, accumulating the block and uncle rewards,</span><br><span class="hljs-comment">// setting the final state on the header</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(ethash *Ethash)</span></span> Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) &#123;<br>	<span class="hljs-comment">// 发放区块奖励</span><br>	accumulateRewards(chain.Config(), state, header, uncles)<br>    <span class="hljs-comment">// 更新状态根</span><br>	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>动态奖励规则</strong>：根据以太坊的硬分叉阶段调整区块奖励：</p>
+<ul>
+<li><code>FrontierBlockReward</code>：以太坊初始阶段的区块奖励（5 ETH）。</li>
+<li><code>ByzantiumBlockReward</code>：拜占庭分叉后降至 3 ETH。</li>
+<li><code>ConstantinopleBlockReward</code>：君士坦丁堡分叉后进一步降至 2 ETH。</li>
+</ul>
+<p><strong>叔块定义</strong>：被当前区块引用的最多 2 个旧区块（高度需在 <code>[currentBlockNumber - 8, currentBlockNumber)</code> 范围内）。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">accumulateRewards</span><span class="hljs-params">(config *params.ChainConfig, state *state.StateDB, header *types.Header, uncles []*types.Header)</span></span> &#123;<br>	<span class="hljs-comment">// Select the correct block reward based on chain progression</span><br>	blockReward := FrontierBlockReward<br>	<span class="hljs-keyword">if</span> config.IsByzantium(header.Number) &#123;<br>		blockReward = ByzantiumBlockReward<br>	&#125;<br>	<span class="hljs-keyword">if</span> config.IsConstantinople(header.Number) &#123;<br>		blockReward = ConstantinopleBlockReward<br>	&#125;<br>    <br><span class="hljs-comment">//叔块提交者奖励：根据叔块与当前区块的高度差动态计算：</span><br><span class="hljs-comment">/*公式：叔块奖励 = 区块奖励 × (8 + 叔块高度 - 当前高度) / 8</span><br><span class="hljs-comment">越新的叔块奖励越高（最高为完整区块奖励，最低为 1/8）。*/</span><br>	reward := <span class="hljs-built_in">new</span>(big.Int).Set(blockReward)<br>	r := <span class="hljs-built_in">new</span>(big.Int)<br>	<span class="hljs-keyword">for</span> _, uncle := <span class="hljs-keyword">range</span> uncles &#123;<br>		r.Add(uncle.Number, big8)<br>		r.Sub(r, header.Number)<br>		r.Mul(r, blockReward)<br>		r.Div(r, big8)<br>		state.AddBalance(uncle.Coinbase, r)<br><span class="hljs-comment">//主块矿工奖励：每包含一个叔块，主块矿工额外获得区块奖励的 1/32：</span><br>		r.Div(blockReward, big32)<br><span class="hljs-comment">//最终奖励分配:主块矿工奖励：区块基础奖励 + 包含叔块的额外奖励：</span><br>		reward.Add(reward, r)<br>	&#125;<br><span class="hljs-comment">//状态更新：通过 state.AddBalance 直接修改世界状态中的账户余额。</span><br>	state.AddBalance(header.Coinbase, reward)<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="交易执行"><a href="#交易执行" class="headerlink" title="交易执行"></a><strong>交易执行</strong></h2><p>交易执行时，Gas费用会被累加到矿工余额<code>Coinbase</code>（<code>statedb.AddBalance</code>）。注意<strong>交易执行时已扣除</strong>：当用户交易被执行时，<code>GasUsed * GasPrice</code> 会从其账户余额中扣除。</p>
+<p><strong>矿工自动获得</strong>：扣除的手续费实际上留在了全局状态中，而矿工通过打包交易<strong>间接获得</strong>这些资金。因为：</p>
+<ul>
+<li>区块的 <code>Coinbase</code>（矿工地址）在最终状态中被赋予所有交易手续费的汇总。</li>
+<li>无需显式转账，只需确保状态根包含这些余额变更。</li>
+</ul>
+<p>整个区块的交易并最终确定区块状态</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *StateProcessor)</span></span> Process(block *types.Block, statedb *state.StateDB, cfg vm.Config) (types.Receipts, []*types.Log, <span class="hljs-type">uint64</span>, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">var</span> (<br>		receipts types.Receipts<br>		usedGas  = <span class="hljs-built_in">new</span>(<span class="hljs-type">uint64</span>)<br>		header   = block.Header()<br>		allLogs  []*types.Log<br>        <span class="hljs-comment">//GasPool 跟踪区块剩余的可用 Gas，防止单个区块超出 Gas 限制。</span><br>		gp       = <span class="hljs-built_in">new</span>(GasPool).AddGas(block.GasLimit())<br>	)<br>    <br>    <br>	<span class="hljs-comment">// Mutate the block and state according to any hard-fork specs</span><br>	<span class="hljs-keyword">if</span> p.config.DAOForkSupport &amp;&amp; p.config.DAOForkBlock != <span class="hljs-literal">nil</span> &amp;&amp; p.config.DAOForkBlock.Cmp(block.Number()) == <span class="hljs-number">0</span> &#123;<br>		misc.ApplyDAOHardFork(statedb)<br>	&#125;<br>	<span class="hljs-comment">// 逐笔处理交易</span><br>	<span class="hljs-keyword">for</span> i, tx := <span class="hljs-keyword">range</span> block.Transactions() &#123;<br>		statedb.Prepare(tx.Hash(), block.Hash(), i)<br>		receipt, err := ApplyTransaction(p.config, p.bc, <span class="hljs-literal">nil</span>, gp, statedb, header, tx, usedGas, cfg)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>, err<br>		&#125;<br>		receipts = <span class="hljs-built_in">append</span>(receipts, receipt)<br>		allLogs = <span class="hljs-built_in">append</span>(allLogs, receipt.Logs...)<br>	&#125;<br>	<span class="hljs-comment">// Finalize the block, applying any consensus engine specific extras (e.g. block rewards)</span><br>	p.engine.Finalize(p.bc, header, statedb, block.Transactions(), block.Uncles())<br><br>	<span class="hljs-keyword">return</span> receipts, allLogs, *usedGas, <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>执行交易并生成交易回执</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">ApplyTransaction</span><span class="hljs-params">(config *params.ChainConfig, bc ChainContext, author *common.Address, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *<span class="hljs-type">uint64</span>, cfg vm.Config)</span></span> (*types.Receipt, <span class="hljs-type">error</span>) &#123;<br>    <br>    <br>    <span class="hljs-comment">//将原始交易转换为可执行的&quot;消息&quot;(Message)</span><br>	msg, err := tx.AsMessage(types.MakeSigner(config, header.Number))<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br>	<span class="hljs-comment">//EVM执行环境准备</span><br>    <span class="hljs-comment">//EVMContext包含：区块信息(时间戳、难度等),矿工地址(author),Gas价格等交易相关数据</span><br>	context := NewEVMContext(msg, header, bc, author)<br>    <span class="hljs-comment">//EVM实例：绑定当前状态数据库(statedb),加载链配置和虚拟机配置</span><br>	vmenv := vm.NewEVM(context, statedb, config, cfg)<br>    <br>    <br>	<span class="hljs-comment">// 从发送者账户预扣Gas费用(在ApplyMessage内部完成),执行合约调用或转账,根据执行结果退还未使用的G</span><br>	_, gas, failed, err := ApplyMessage(vmenv, msg, gp)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br>    <br>	<span class="hljs-comment">// 分叉差异处理：拜占庭分叉后：直接提交状态变更,拜占庭前：计算中间状态根(Merkle Root)</span><br>	<span class="hljs-keyword">var</span> root []<span class="hljs-type">byte</span><br>	<span class="hljs-keyword">if</span> config.IsByzantium(header.Number) &#123;<br>		statedb.Finalise(<span class="hljs-literal">true</span>)<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		root = statedb.IntermediateRoot(config.IsEIP158(header.Number)).Bytes()<br>	&#125;<br>    <br>    <span class="hljs-comment">//Gas累计</span><br>	*usedGas += gas<br><br>	<span class="hljs-comment">// 回执(Receipt)生成</span><br>	<span class="hljs-comment">// based on the eip phase, we&#x27;re passing whether the root touch-delete accounts.</span><br>	receipt := types.NewReceipt(root, failed, *usedGas)<br>	receipt.TxHash = tx.Hash()<br>	receipt.GasUsed = gas<br>	<span class="hljs-comment">// if the transaction created a contract, store the creation address in the receipt.</span><br>	<span class="hljs-keyword">if</span> msg.To() == <span class="hljs-literal">nil</span> &#123;<br>		receipt.ContractAddress = crypto.CreateAddress(vmenv.Context.Origin, tx.Nonce())<br>	&#125;<br>	<span class="hljs-comment">// Set the receipt logs and create a bloom for filtering</span><br>	receipt.Logs = statedb.GetLogs(tx.Hash())<br>	receipt.Bloom = types.CreateBloom(types.Receipts&#123;receipt&#125;)<br>	receipt.BlockHash = statedb.BlockHash()<br>	receipt.BlockNumber = header.Number<br>	receipt.TransactionIndex = <span class="hljs-type">uint</span>(statedb.TxIndex())<br><br>	<span class="hljs-keyword">return</span> receipt, err<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">ApplyMessage</span><span class="hljs-params">(evm *vm.EVM, msg Message, gp *GasPool)</span></span> ([]<span class="hljs-type">byte</span>, <span class="hljs-type">uint64</span>, <span class="hljs-type">bool</span>, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">return</span> NewStateTransition(evm, msg, gp).TransitionDb()<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(st *StateTransition)</span></span> TransitionDb() (ret []<span class="hljs-type">byte</span>, usedGas <span class="hljs-type">uint64</span>, failed <span class="hljs-type">bool</span>, err <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">if</span> err = st.preCheck(); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	msg := st.msg<br>	sender := vm.AccountRef(msg.From())<br>	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)<br>	istanbul := st.evm.ChainConfig().IsIstanbul(st.evm.BlockNumber)<br>	contractCreation := msg.To() == <span class="hljs-literal">nil</span><br><br>	<span class="hljs-comment">// Pay intrinsic gas</span><br>	gas, err := IntrinsicGas(st.data, contractCreation, homestead, istanbul)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">false</span>, err<br>	&#125;<br>	<span class="hljs-keyword">if</span> err = st.useGas(gas); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">false</span>, err<br>	&#125;<br><br>	<span class="hljs-keyword">var</span> (<br>		evm = st.evm<br>		<span class="hljs-comment">// vm errors do not effect consensus and are therefor</span><br>		<span class="hljs-comment">// not assigned to err, except for insufficient balance</span><br>		<span class="hljs-comment">// error.</span><br>		vmerr <span class="hljs-type">error</span><br>	)<br>	<span class="hljs-keyword">if</span> contractCreation &#123;<br>		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-comment">// Increment the nonce for the next transaction</span><br>		st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+<span class="hljs-number">1</span>)<br>		ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)<br>	&#125;<br>	<span class="hljs-keyword">if</span> vmerr != <span class="hljs-literal">nil</span> &#123;<br>		log.Debug(<span class="hljs-string">&quot;VM returned with error&quot;</span>, <span class="hljs-string">&quot;err&quot;</span>, vmerr)<br>		<span class="hljs-comment">// The only possible consensus-error would be if there wasn&#x27;t</span><br>		<span class="hljs-comment">// sufficient balance to make the transfer happen. The first</span><br>		<span class="hljs-comment">// balance transfer may never fail.</span><br>		<span class="hljs-keyword">if</span> vmerr == vm.ErrInsufficientBalance &#123;<br>			<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">false</span>, vmerr<br>		&#125;<br>	&#125;<br>	st.refundGas()<br>	st.state.AddBalance(st.evm.Coinbase, <span class="hljs-built_in">new</span>(big.Int).Mul(<span class="hljs-built_in">new</span>(big.Int).SetUint64(st.gasUsed()), st.gasPrice))<br><br>	<span class="hljs-keyword">return</span> ret, st.gasUsed(), vmerr != <span class="hljs-literal">nil</span>, err<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="挖矿阶段"><a href="#挖矿阶段" class="headerlink" title="挖矿阶段"></a><strong>挖矿阶段</strong></h3><p>矿工在找到有效Nonce后，会将包含奖励和交易费的区块广播。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(w *worker)</span></span> commitNewWork(interrupt *<span class="hljs-type">int32</span>, noempty <span class="hljs-type">bool</span>, timestamp <span class="hljs-type">int64</span>) &#123;<br>	w.mu.RLock()<br>	<span class="hljs-keyword">defer</span> w.mu.RUnlock()<br><br>	tstart := time.Now()<br>	parent := w.chain.CurrentBlock()<br><br>	<span class="hljs-keyword">if</span> parent.Time() &gt;= <span class="hljs-type">uint64</span>(timestamp) &#123;<br>		timestamp = <span class="hljs-type">int64</span>(parent.Time() + <span class="hljs-number">1</span>)<br>	&#125;<br>	<span class="hljs-comment">// this will ensure we&#x27;re not going off too far in the future</span><br>	<span class="hljs-keyword">if</span> now := time.Now().Unix(); timestamp &gt; now+<span class="hljs-number">1</span> &#123;<br>		wait := time.Duration(timestamp-now) * time.Second<br>		log.Info(<span class="hljs-string">&quot;Mining too far in the future&quot;</span>, <span class="hljs-string">&quot;wait&quot;</span>, common.PrettyDuration(wait))<br>		time.Sleep(wait)<br>	&#125;<br><br>	num := parent.Number()<br>	header := &amp;types.Header&#123;<br>		ParentHash: parent.Hash(),<br>		Number:     num.Add(num, common.Big1),<br>		GasLimit:   core.CalcGasLimit(parent, w.config.GasFloor, w.config.GasCeil),<br>		Extra:      w.extra,<br>		Time:       <span class="hljs-type">uint64</span>(timestamp),<br>	&#125;<br>	<span class="hljs-comment">// Only set the coinbase if our consensus engine is running (avoid spurious block rewards)</span><br>	<span class="hljs-keyword">if</span> w.isRunning() &#123;<br>		<span class="hljs-keyword">if</span> w.coinbase == (common.Address&#123;&#125;) &#123;<br>			log.Error(<span class="hljs-string">&quot;Refusing to mine without etherbase&quot;</span>)<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>		header.Coinbase = w.coinbase<br>	&#125;<br>	<span class="hljs-keyword">if</span> err := w.engine.Prepare(w.chain, header); err != <span class="hljs-literal">nil</span> &#123;<br>		log.Error(<span class="hljs-string">&quot;Failed to prepare header for mining&quot;</span>, <span class="hljs-string">&quot;err&quot;</span>, err)<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	<span class="hljs-comment">// If we are care about TheDAO hard-fork check whether to override the extra-data or not</span><br>	<span class="hljs-keyword">if</span> daoBlock := w.chainConfig.DAOForkBlock; daoBlock != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-comment">// Check whether the block is among the fork extra-override range</span><br>		limit := <span class="hljs-built_in">new</span>(big.Int).Add(daoBlock, params.DAOForkExtraRange)<br>		<span class="hljs-keyword">if</span> header.Number.Cmp(daoBlock) &gt;= <span class="hljs-number">0</span> &amp;&amp; header.Number.Cmp(limit) &lt; <span class="hljs-number">0</span> &#123;<br>			<span class="hljs-comment">// Depending whether we support or oppose the fork, override differently</span><br>			<span class="hljs-keyword">if</span> w.chainConfig.DAOForkSupport &#123;<br>				header.Extra = common.CopyBytes(params.DAOForkBlockExtra)<br>			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> bytes.Equal(header.Extra, params.DAOForkBlockExtra) &#123;<br>				header.Extra = []<span class="hljs-type">byte</span>&#123;&#125; <span class="hljs-comment">// If miner opposes, don&#x27;t let it use the reserved extra-data</span><br>			&#125;<br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">// Could potentially happen if starting to mine in an odd state.</span><br>	err := w.makeCurrent(parent, header)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Error(<span class="hljs-string">&quot;Failed to create mining context&quot;</span>, <span class="hljs-string">&quot;err&quot;</span>, err)<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	<span class="hljs-comment">// Create the current work task and check any fork transitions needed</span><br>	env := w.current<br>	<span class="hljs-keyword">if</span> w.chainConfig.DAOForkSupport &amp;&amp; w.chainConfig.DAOForkBlock != <span class="hljs-literal">nil</span> &amp;&amp; w.chainConfig.DAOForkBlock.Cmp(header.Number) == <span class="hljs-number">0</span> &#123;<br>		misc.ApplyDAOHardFork(env.state)<br>	&#125;<br>	<span class="hljs-comment">// Accumulate the uncles for the current block</span><br>	uncles := <span class="hljs-built_in">make</span>([]*types.Header, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>)<br>	commitUncles := <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(blocks <span class="hljs-keyword">map</span>[common.Hash]*types.Block)</span></span> &#123;<br>		<span class="hljs-comment">// Clean up stale uncle blocks first</span><br>		<span class="hljs-keyword">for</span> hash, uncle := <span class="hljs-keyword">range</span> blocks &#123;<br>			<span class="hljs-keyword">if</span> uncle.NumberU64()+staleThreshold &lt;= header.Number.Uint64() &#123;<br>				<span class="hljs-built_in">delete</span>(blocks, hash)<br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span> hash, uncle := <span class="hljs-keyword">range</span> blocks &#123;<br>			<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(uncles) == <span class="hljs-number">2</span> &#123;<br>				<span class="hljs-keyword">break</span><br>			&#125;<br>			<span class="hljs-keyword">if</span> err := w.commitUncle(env, uncle.Header()); err != <span class="hljs-literal">nil</span> &#123;<br>				log.Trace(<span class="hljs-string">&quot;Possible uncle rejected&quot;</span>, <span class="hljs-string">&quot;hash&quot;</span>, hash, <span class="hljs-string">&quot;reason&quot;</span>, err)<br>			&#125; <span class="hljs-keyword">else</span> &#123;<br>				log.Debug(<span class="hljs-string">&quot;Committing new uncle to block&quot;</span>, <span class="hljs-string">&quot;hash&quot;</span>, hash)<br>				uncles = <span class="hljs-built_in">append</span>(uncles, uncle.Header())<br>			&#125;<br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">// Prefer to locally generated uncle</span><br>	commitUncles(w.localUncles)<br>	commitUncles(w.remoteUncles)<br><br>	<span class="hljs-keyword">if</span> !noempty &#123;<br>		<span class="hljs-comment">// Create an empty block based on temporary copied state for sealing in advance without waiting block</span><br>		<span class="hljs-comment">// execution finished.</span><br>		w.commit(uncles, <span class="hljs-literal">nil</span>, <span class="hljs-literal">false</span>, tstart)<br>	&#125;<br><br>	<span class="hljs-comment">// Fill the block with all available pending transactions.</span><br>	pending, err := w.eth.TxPool().Pending()<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Error(<span class="hljs-string">&quot;Failed to fetch pending transactions&quot;</span>, <span class="hljs-string">&quot;err&quot;</span>, err)<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	<span class="hljs-comment">// Short circuit if there is no available pending transactions</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(pending) == <span class="hljs-number">0</span> &#123;<br>		w.updateSnapshot()<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	<span class="hljs-comment">// Split the pending transactions into locals and remotes</span><br>	localTxs, remoteTxs := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[common.Address]types.Transactions), pending<br>	<span class="hljs-keyword">for</span> _, account := <span class="hljs-keyword">range</span> w.eth.TxPool().Locals() &#123;<br>		<span class="hljs-keyword">if</span> txs := remoteTxs[account]; <span class="hljs-built_in">len</span>(txs) &gt; <span class="hljs-number">0</span> &#123;<br>			<span class="hljs-built_in">delete</span>(remoteTxs, account)<br>			localTxs[account] = txs<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(localTxs) &gt; <span class="hljs-number">0</span> &#123;<br>		txs := types.NewTransactionsByPriceAndNonce(w.current.signer, localTxs)<br>		<span class="hljs-keyword">if</span> w.commitTransactions(txs, w.coinbase, interrupt) &#123;<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(remoteTxs) &gt; <span class="hljs-number">0</span> &#123;<br>		txs := types.NewTransactionsByPriceAndNonce(w.current.signer, remoteTxs)<br>		<span class="hljs-keyword">if</span> w.commitTransactions(txs, w.coinbase, interrupt) &#123;<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>	&#125;<br>	w.commit(uncles, w.fullTaskHook, <span class="hljs-literal">true</span>, tstart)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>commitNewWork()</code> 的主要步骤：</p>
+<ol>
+<li><p><strong>初始化新区块头</strong>：基于父区块计算区块号、时间戳、GasLimit 等。设置矿工地址（<code>Coinbase</code>）。</p>
+</li>
+<li><p><strong>处理 DAO 硬分叉逻辑</strong>（历史遗留，现代以太坊无影响）。</p>
+</li>
+<li><p><strong>准备挖矿环境</strong>（<code>makeCurrent</code>）：创建状态数据库（<code>statedb</code>）的副本，用于交易执行。</p>
+</li>
+<li><p><strong>选择叔块（Uncles）</strong>：从本地或网络叔块池中选择最多 2 个叔块。</p>
+</li>
+<li><p><strong>打包交易</strong>：从交易池（TxPool）获取待处理交易，按 <strong>GasPrice 和 Nonce 排序</strong>。优先打包本地交易（<code>localTxs</code>），再打包远程交易（<code>remoteTxs</code>）。</p>
+</li>
+<li><p><strong>提交区块</strong>：调用 <code>commit()</code> 生成候选区块，交给共识引擎（如 Ethash）进行挖矿。</p>
+</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// commit 函数负责将当前的工作（交易、叔块等）打包成候选区块，并提交给挖矿引擎进行工作量证明（PoW）计算</span><br><span class="hljs-comment">// 参数:</span><br><span class="hljs-comment">//   - uncles: 要包含在区块中的叔块头列表</span><br><span class="hljs-comment">//   - interval: 可选的间隔回调函数（用于外部监控）</span><br><span class="hljs-comment">//   - update: 是否更新工作快照</span><br><span class="hljs-comment">//   - start: 工作开始时间（用于计算耗时）</span><br><span class="hljs-comment">// 返回值:</span><br><span class="hljs-comment">//   - error: 如果组装区块失败则返回错误</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(w *worker)</span></span> commit(uncles []*types.Header, interval <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>, update <span class="hljs-type">bool</span>, start time.Time) <span class="hljs-type">error</span> &#123;<br>    <span class="hljs-comment">// 深拷贝收据，避免不同任务间的数据竞争</span><br>    receipts := <span class="hljs-built_in">make</span>([]*types.Receipt, <span class="hljs-built_in">len</span>(w.current.receipts))<br>    <span class="hljs-keyword">for</span> i, l := <span class="hljs-keyword">range</span> w.current.receipts &#123;<br>        receipts[i] = <span class="hljs-built_in">new</span>(types.Receipt)<br>        *receipts[i] = *l  <span class="hljs-comment">// 复制收据内容</span><br>    &#125;<br>    <br>    <span class="hljs-comment">// 复制当前状态数据库，确保挖矿过程中状态不会被后续交易修改</span><br>    s := w.current.state.Copy()<br><br>    <span class="hljs-comment">// 调用共识引擎完成区块最终化并组装完整区块</span><br>    <span class="hljs-comment">// 这包括:</span><br>    <span class="hljs-comment">// 1. 发放区块奖励和叔块奖励</span><br>    <span class="hljs-comment">// 2. 计算最终状态根</span><br>    <span class="hljs-comment">// 3. 组装区块数据结构</span><br>    block, err := w.engine.FinalizeAndAssemble(w.chain, w.current.header, s, w.current.txs, uncles, w.current.receipts)<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">return</span> err<br>    &#125;<br><br>    <span class="hljs-comment">// 如果挖矿工作器仍在运行</span><br>    <span class="hljs-keyword">if</span> w.isRunning() &#123;<br>        <span class="hljs-comment">// 如果有间隔回调函数则执行</span><br>        <span class="hljs-keyword">if</span> interval != <span class="hljs-literal">nil</span> &#123;<br>            interval()<br>        &#125;<br><br>        <span class="hljs-comment">// 通过select实现非阻塞通道操作</span><br>        <span class="hljs-keyword">select</span> &#123;<br>        <span class="hljs-keyword">case</span> w.taskCh &lt;- &amp;task&#123;<br>            receipts: receipts,  <span class="hljs-comment">// 交易收据</span><br>            state: s,           <span class="hljs-comment">// 状态数据库副本</span><br>            block: block,       <span class="hljs-comment">// 完整区块</span><br>            createdAt: time.Now(), <span class="hljs-comment">// 创建时间</span><br>        &#125;:<br>            <span class="hljs-comment">// 成功发送到任务通道后，更新未确认区块追踪</span><br>            w.unconfirmed.Shift(block.NumberU64() - <span class="hljs-number">1</span>)<br><br>            <span class="hljs-comment">// 计算区块中所有交易的总手续费（用于日志记录）</span><br>            feesWei := <span class="hljs-built_in">new</span>(big.Int)<br>            <span class="hljs-keyword">for</span> i, tx := <span class="hljs-keyword">range</span> block.Transactions() &#123;<br>                <span class="hljs-comment">// 累加每笔交易的手续费: GasUsed * GasPrice</span><br>                feesWei.Add(feesWei, <span class="hljs-built_in">new</span>(big.Int).Mul(<br>                    <span class="hljs-built_in">new</span>(big.Int).SetUint64(receipts[i].GasUsed),<br>                    tx.GasPrice(),<br>                ))<br>            &#125;<br>            <span class="hljs-comment">// 将手续费从wei转换为ETH单位（用于友好显示）</span><br>            feesEth := <span class="hljs-built_in">new</span>(big.Float).Quo(<br>                <span class="hljs-built_in">new</span>(big.Float).SetInt(feesWei),<br>                <span class="hljs-built_in">new</span>(big.Float).SetInt(big.NewInt(params.Ether)),<br>            )<br><br>            <span class="hljs-comment">// 记录区块提交信息</span><br>            log.Info(<span class="hljs-string">&quot;Commit new mining work&quot;</span>,<br>                <span class="hljs-string">&quot;number&quot;</span>, block.Number(),       <span class="hljs-comment">// 区块号</span><br>                <span class="hljs-string">&quot;sealhash&quot;</span>, w.engine.SealHash(block.Header()), <span class="hljs-comment">// 区块头哈希</span><br>                <span class="hljs-string">&quot;uncles&quot;</span>, <span class="hljs-built_in">len</span>(uncles),         <span class="hljs-comment">// 叔块数量</span><br>                <span class="hljs-string">&quot;txs&quot;</span>, w.current.tcount,       <span class="hljs-comment">// 交易数量</span><br>                <span class="hljs-string">&quot;gas&quot;</span>, block.GasUsed(),        <span class="hljs-comment">// 使用的Gas总量</span><br>                <span class="hljs-string">&quot;fees&quot;</span>, feesEth,               <span class="hljs-comment">// 总手续费(ETH)</span><br>                <span class="hljs-string">&quot;elapsed&quot;</span>, common.PrettyDuration(time.Since(start)), <span class="hljs-comment">// 耗时</span><br>            )<br><br>        <span class="hljs-keyword">case</span> &lt;-w.exitCh:<br>            <span class="hljs-comment">// 如果收到退出信号，记录日志</span><br>            log.Info(<span class="hljs-string">&quot;Worker has exited&quot;</span>)<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 如果需要更新快照</span><br>    <span class="hljs-keyword">if</span> update &#123;<br>        w.updateSnapshot()<br>    &#125;<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000017046884">以太坊源码分析：共识（1）矿工 - Go语言实战 - SegmentFault 思否</a></p>
+<h1 id="全网验证"><a href="#全网验证" class="headerlink" title="全网验证"></a><strong>全网验证</strong></h1><p>其他节点检查奖励和交易费是否符合规则。</p>
+<h3 id="初步验证-最长链原则"><a href="#初步验证-最长链原则" class="headerlink" title="初步验证(最长链原则)"></a><strong>初步验证</strong>(最长链原则)</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(bc *BlockChain)</span></span> InsertChain(chain types.Blocks) (<span class="hljs-type">int</span>, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-comment">// Sanity check that we have something meaningful to import</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(chain) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>, <span class="hljs-literal">nil</span><br>	&#125;<br><br>	bc.blockProcFeed.Send(<span class="hljs-literal">true</span>)<br>	<span class="hljs-keyword">defer</span> bc.blockProcFeed.Send(<span class="hljs-literal">false</span>)<br><br>	<span class="hljs-comment">// Remove already known canon-blocks</span><br>	<span class="hljs-keyword">var</span> (<br>		block, prev *types.Block<br>	)<br>	<span class="hljs-comment">// Do a sanity check that the provided chain is actually ordered and linked</span><br>	<span class="hljs-keyword">for</span> i := <span class="hljs-number">1</span>; i &lt; <span class="hljs-built_in">len</span>(chain); i++ &#123;<br>		block = chain[i]<br>		prev = chain[i<span class="hljs-number">-1</span>]<br>		<span class="hljs-keyword">if</span> block.NumberU64() != prev.NumberU64()+<span class="hljs-number">1</span> || block.ParentHash() != prev.Hash() &#123;<br>			<span class="hljs-comment">// Chain broke ancestry, log a message (programming error) and skip insertion</span><br>			log.Error(<span class="hljs-string">&quot;Non contiguous block insert&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash(),<br>				<span class="hljs-string">&quot;parent&quot;</span>, block.ParentHash(), <span class="hljs-string">&quot;prevnumber&quot;</span>, prev.Number(), <span class="hljs-string">&quot;prevhash&quot;</span>, prev.Hash())<br><br>			<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>, fmt.Errorf(<span class="hljs-string">&quot;non contiguous insert: item %d is #%d [%x…], item %d is #%d [%x…] (parent [%x…])&quot;</span>, i<span class="hljs-number">-1</span>, prev.NumberU64(),<br>				prev.Hash().Bytes()[:<span class="hljs-number">4</span>], i, block.NumberU64(), block.Hash().Bytes()[:<span class="hljs-number">4</span>], block.ParentHash().Bytes()[:<span class="hljs-number">4</span>])<br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">// Pre-checks passed, start the full block imports</span><br>	bc.wg.Add(<span class="hljs-number">1</span>)<br>	bc.chainmu.Lock()<br>	n, err := bc.insertChain(chain, <span class="hljs-literal">true</span>)<br>	bc.chainmu.Unlock()<br>	bc.wg.Done()<br><br>	<span class="hljs-keyword">return</span> n, err<br>&#125;<br><br><span class="hljs-comment">// insertChain is the internal implementation of InsertChain, which assumes that</span><br><span class="hljs-comment">// 1) chains are contiguous, and 2) The chain mutex is held.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// This method is split out so that import batches that require re-injecting</span><br><span class="hljs-comment">// historical blocks can do so without releasing the lock, which could lead to</span><br><span class="hljs-comment">// racey behaviour. If a sidechain import is in progress, and the historic state</span><br><span class="hljs-comment">// is imported, but then new canon-head is added before the actual sidechain</span><br><span class="hljs-comment">// completes, then the historic state could be pruned again</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(bc *BlockChain)</span></span> insertChain(chain types.Blocks, verifySeals <span class="hljs-type">bool</span>) (<span class="hljs-type">int</span>, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-comment">// If the chain is terminating, don&#x27;t even bother starting up</span><br>	<span class="hljs-keyword">if</span> atomic.LoadInt32(&amp;bc.procInterrupt) == <span class="hljs-number">1</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>, <span class="hljs-literal">nil</span><br>	&#125;<br>	<span class="hljs-comment">// Start a parallel signature recovery (signer will fluke on fork transition, minimal perf loss)</span><br>	senderCacher.recoverFromBlocks(types.MakeSigner(bc.chainConfig, chain[<span class="hljs-number">0</span>].Number()), chain)<br><br>	<span class="hljs-keyword">var</span> (<br>		stats     = insertStats&#123;startTime: mclock.Now()&#125;<br>		lastCanon *types.Block<br>	)<br>	<span class="hljs-comment">// Fire a single chain head event if we&#x27;ve progressed the chain</span><br>	<span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>		<span class="hljs-keyword">if</span> lastCanon != <span class="hljs-literal">nil</span> &amp;&amp; bc.CurrentBlock().Hash() == lastCanon.Hash() &#123;<br>			bc.chainHeadFeed.Send(ChainHeadEvent&#123;lastCanon&#125;)<br>		&#125;<br>	&#125;()<br>	<span class="hljs-comment">// Start the parallel header verifier</span><br>	headers := <span class="hljs-built_in">make</span>([]*types.Header, <span class="hljs-built_in">len</span>(chain))<br>	seals := <span class="hljs-built_in">make</span>([]<span class="hljs-type">bool</span>, <span class="hljs-built_in">len</span>(chain))<br><br>	<span class="hljs-keyword">for</span> i, block := <span class="hljs-keyword">range</span> chain &#123;<br>		headers[i] = block.Header()<br>		seals[i] = verifySeals<br>	&#125;<br>	abort, results := bc.engine.VerifyHeaders(bc, headers, seals)<br>	<span class="hljs-keyword">defer</span> <span class="hljs-built_in">close</span>(abort)<br><br>	<span class="hljs-comment">// Peek the error for the first block to decide the directing import logic</span><br>	it := newInsertIterator(chain, results, bc.validator)<br><br>	block, err := it.next()<br><br>	<span class="hljs-comment">// Left-trim all the known blocks</span><br>	<span class="hljs-keyword">if</span> err == ErrKnownBlock &#123;<br>		<span class="hljs-comment">// First block (and state) is known</span><br>		<span class="hljs-comment">//   1. We did a roll-back, and should now do a re-import</span><br>		<span class="hljs-comment">//   2. The block is stored as a sidechain, and is lying about it&#x27;s stateroot, and passes a stateroot</span><br>		<span class="hljs-comment">// 	    from the canonical chain, which has not been verified.</span><br>		<span class="hljs-comment">// Skip all known blocks that are behind us</span><br>		<span class="hljs-keyword">var</span> (<br>			current  = bc.CurrentBlock()<br>			localTd  = bc.GetTd(current.Hash(), current.NumberU64())<br>			externTd = bc.GetTd(block.ParentHash(), block.NumberU64()<span class="hljs-number">-1</span>) <span class="hljs-comment">// The first block can&#x27;t be nil</span><br>		)<br>		<span class="hljs-keyword">for</span> block != <span class="hljs-literal">nil</span> &amp;&amp; err == ErrKnownBlock &#123;<br>			externTd = <span class="hljs-built_in">new</span>(big.Int).Add(externTd, block.Difficulty())<br>			<span class="hljs-keyword">if</span> localTd.Cmp(externTd) &lt; <span class="hljs-number">0</span> &#123;<br>				<span class="hljs-keyword">break</span><br>			&#125;<br>			log.Debug(<span class="hljs-string">&quot;Ignoring already known block&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash())<br>			stats.ignored++<br><br>			block, err = it.next()<br>		&#125;<br>		<span class="hljs-comment">// The remaining blocks are still known blocks, the only scenario here is:</span><br>		<span class="hljs-comment">// During the fast sync, the pivot point is already submitted but rollback</span><br>		<span class="hljs-comment">// happens. Then node resets the head full block to a lower height via `rollback`</span><br>		<span class="hljs-comment">// and leaves a few known blocks in the database.</span><br>		<span class="hljs-comment">//</span><br>		<span class="hljs-comment">// When node runs a fast sync again, it can re-import a batch of known blocks via</span><br>		<span class="hljs-comment">// `insertChain` while a part of them have higher total difficulty than current</span><br>		<span class="hljs-comment">// head full block(new pivot point).</span><br>		<span class="hljs-keyword">for</span> block != <span class="hljs-literal">nil</span> &amp;&amp; err == ErrKnownBlock &#123;<br>			log.Debug(<span class="hljs-string">&quot;Writing previously known block&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash())<br>			<span class="hljs-keyword">if</span> err := bc.writeKnownBlock(block); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> it.index, err<br>			&#125;<br>			lastCanon = block<br><br>			block, err = it.next()<br>		&#125;<br>		<span class="hljs-comment">// Falls through to the block import</span><br>	&#125;<br>	<span class="hljs-keyword">switch</span> &#123;<br>	<span class="hljs-comment">// First block is pruned, insert as sidechain and reorg only if TD grows enough</span><br>	<span class="hljs-keyword">case</span> err == consensus.ErrPrunedAncestor:<br>		log.Debug(<span class="hljs-string">&quot;Pruned ancestor, inserting as sidechain&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash())<br>		<span class="hljs-keyword">return</span> bc.insertSideChain(block, it)<br><br>	<span class="hljs-comment">// First block is future, shove it (and all children) to the future queue (unknown ancestor)</span><br>	<span class="hljs-keyword">case</span> err == consensus.ErrFutureBlock || (err == consensus.ErrUnknownAncestor &amp;&amp; bc.futureBlocks.Contains(it.first().ParentHash())):<br>		<span class="hljs-keyword">for</span> block != <span class="hljs-literal">nil</span> &amp;&amp; (it.index == <span class="hljs-number">0</span> || err == consensus.ErrUnknownAncestor) &#123;<br>			log.Debug(<span class="hljs-string">&quot;Future block, postponing import&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash())<br>			<span class="hljs-keyword">if</span> err := bc.addFutureBlock(block); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> it.index, err<br>			&#125;<br>			block, err = it.next()<br>		&#125;<br>		stats.queued += it.processed()<br>		stats.ignored += it.remaining()<br><br>		<span class="hljs-comment">// If there are any still remaining, mark as ignored</span><br>		<span class="hljs-keyword">return</span> it.index, err<br><br>	<span class="hljs-comment">// Some other error occurred, abort</span><br>	<span class="hljs-keyword">case</span> err != <span class="hljs-literal">nil</span>:<br>		bc.futureBlocks.Remove(block.Hash())<br>		stats.ignored += <span class="hljs-built_in">len</span>(it.chain)<br>		bc.reportBlock(block, <span class="hljs-literal">nil</span>, err)<br>		<span class="hljs-keyword">return</span> it.index, err<br>	&#125;<br>	<span class="hljs-comment">// No validation errors for the first block (or chain prefix skipped)</span><br>	<span class="hljs-keyword">for</span> ; block != <span class="hljs-literal">nil</span> &amp;&amp; err == <span class="hljs-literal">nil</span> || err == ErrKnownBlock; block, err = it.next() &#123;<br>		<span class="hljs-comment">// If the chain is terminating, stop processing blocks</span><br>		<span class="hljs-keyword">if</span> atomic.LoadInt32(&amp;bc.procInterrupt) == <span class="hljs-number">1</span> &#123;<br>			log.Debug(<span class="hljs-string">&quot;Premature abort during blocks processing&quot;</span>)<br>			<span class="hljs-keyword">break</span><br>		&#125;<br>		<span class="hljs-comment">// If the header is a banned one, straight out abort</span><br>		<span class="hljs-keyword">if</span> BadHashes[block.Hash()] &#123;<br>			bc.reportBlock(block, <span class="hljs-literal">nil</span>, ErrBlacklistedHash)<br>			<span class="hljs-keyword">return</span> it.index, ErrBlacklistedHash<br>		&#125;<br>		<span class="hljs-comment">// If the block is known (in the middle of the chain), it&#x27;s a special case for</span><br>		<span class="hljs-comment">// Clique blocks where they can share state among each other, so importing an</span><br>		<span class="hljs-comment">// older block might complete the state of the subsequent one. In this case,</span><br>		<span class="hljs-comment">// just skip the block (we already validated it once fully (and crashed), since</span><br>		<span class="hljs-comment">// its header and body was already in the database).</span><br>		<span class="hljs-keyword">if</span> err == ErrKnownBlock &#123;<br>			logger := log.Debug<br>			<span class="hljs-keyword">if</span> bc.chainConfig.Clique == <span class="hljs-literal">nil</span> &#123;<br>				logger = log.Warn<br>			&#125;<br>			logger(<span class="hljs-string">&quot;Inserted known block&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash(),<br>				<span class="hljs-string">&quot;uncles&quot;</span>, <span class="hljs-built_in">len</span>(block.Uncles()), <span class="hljs-string">&quot;txs&quot;</span>, <span class="hljs-built_in">len</span>(block.Transactions()), <span class="hljs-string">&quot;gas&quot;</span>, block.GasUsed(),<br>				<span class="hljs-string">&quot;root&quot;</span>, block.Root())<br><br>			<span class="hljs-keyword">if</span> err := bc.writeKnownBlock(block); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> it.index, err<br>			&#125;<br>			stats.processed++<br><br>			<span class="hljs-comment">// We can assume that logs are empty here, since the only way for consecutive</span><br>			<span class="hljs-comment">// Clique blocks to have the same state is if there are no transactions.</span><br>			lastCanon = block<br>			<span class="hljs-keyword">continue</span><br>		&#125;<br>		<span class="hljs-comment">// Retrieve the parent block and it&#x27;s state to execute on top</span><br>		start := time.Now()<br><br>		parent := it.previous()<br>		<span class="hljs-keyword">if</span> parent == <span class="hljs-literal">nil</span> &#123;<br>			parent = bc.GetHeader(block.ParentHash(), block.NumberU64()<span class="hljs-number">-1</span>)<br>		&#125;<br>		statedb, err := state.New(parent.Root, bc.stateCache)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> it.index, err<br>		&#125;<br>		<span class="hljs-comment">// If we have a followup block, run that against the current state to pre-cache</span><br>		<span class="hljs-comment">// transactions and probabilistically some of the account/storage trie nodes.</span><br>		<span class="hljs-keyword">var</span> followupInterrupt <span class="hljs-type">uint32</span><br><br>		<span class="hljs-keyword">if</span> !bc.cacheConfig.TrieCleanNoPrefetch &#123;<br>			<span class="hljs-keyword">if</span> followup, err := it.peek(); followup != <span class="hljs-literal">nil</span> &amp;&amp; err == <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(start time.Time)</span></span> &#123;<br>					throwaway, _ := state.New(parent.Root, bc.stateCache)<br>					bc.prefetcher.Prefetch(followup, throwaway, bc.vmConfig, &amp;followupInterrupt)<br><br>					blockPrefetchExecuteTimer.Update(time.Since(start))<br>					<span class="hljs-keyword">if</span> atomic.LoadUint32(&amp;followupInterrupt) == <span class="hljs-number">1</span> &#123;<br>						blockPrefetchInterruptMeter.Mark(<span class="hljs-number">1</span>)<br>					&#125;<br>				&#125;(time.Now())<br>			&#125;<br>		&#125;<br>		<span class="hljs-comment">// Process block using the parent state as reference point</span><br>		substart := time.Now()<br>		receipts, logs, usedGas, err := bc.processor.Process(block, statedb, bc.vmConfig)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			bc.reportBlock(block, receipts, err)<br>			atomic.StoreUint32(&amp;followupInterrupt, <span class="hljs-number">1</span>)<br>			<span class="hljs-keyword">return</span> it.index, err<br>		&#125;<br>		<span class="hljs-comment">// Update the metrics touched during block processing</span><br>		accountReadTimer.Update(statedb.AccountReads)     <span class="hljs-comment">// Account reads are complete, we can mark them</span><br>		storageReadTimer.Update(statedb.StorageReads)     <span class="hljs-comment">// Storage reads are complete, we can mark them</span><br>		accountUpdateTimer.Update(statedb.AccountUpdates) <span class="hljs-comment">// Account updates are complete, we can mark them</span><br>		storageUpdateTimer.Update(statedb.StorageUpdates) <span class="hljs-comment">// Storage updates are complete, we can mark them</span><br><br>		triehash := statedb.AccountHashes + statedb.StorageHashes <span class="hljs-comment">// Save to not double count in validation</span><br>		trieproc := statedb.AccountReads + statedb.AccountUpdates<br>		trieproc += statedb.StorageReads + statedb.StorageUpdates<br><br>		blockExecutionTimer.Update(time.Since(substart) - trieproc - triehash)<br><br>		<span class="hljs-comment">// Validate the state using the default validator</span><br>		substart = time.Now()<br>		<span class="hljs-keyword">if</span> err := bc.validator.ValidateState(block, statedb, receipts, usedGas); err != <span class="hljs-literal">nil</span> &#123;<br>			bc.reportBlock(block, receipts, err)<br>			atomic.StoreUint32(&amp;followupInterrupt, <span class="hljs-number">1</span>)<br>			<span class="hljs-keyword">return</span> it.index, err<br>		&#125;<br>		proctime := time.Since(start)<br><br>		<span class="hljs-comment">// Update the metrics touched during block validation</span><br>		accountHashTimer.Update(statedb.AccountHashes) <span class="hljs-comment">// Account hashes are complete, we can mark them</span><br>		storageHashTimer.Update(statedb.StorageHashes) <span class="hljs-comment">// Storage hashes are complete, we can mark them</span><br><br>		blockValidationTimer.Update(time.Since(substart) - (statedb.AccountHashes + statedb.StorageHashes - triehash))<br><br>		<span class="hljs-comment">// Write the block to the chain and get the status.</span><br>		substart = time.Now()<br>		status, err := bc.writeBlockWithState(block, receipts, logs, statedb, <span class="hljs-literal">false</span>)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>			atomic.StoreUint32(&amp;followupInterrupt, <span class="hljs-number">1</span>)<br>			<span class="hljs-keyword">return</span> it.index, err<br>		&#125;<br>		atomic.StoreUint32(&amp;followupInterrupt, <span class="hljs-number">1</span>)<br><br>		<span class="hljs-comment">// Update the metrics touched during block commit</span><br>		accountCommitTimer.Update(statedb.AccountCommits) <span class="hljs-comment">// Account commits are complete, we can mark them</span><br>		storageCommitTimer.Update(statedb.StorageCommits) <span class="hljs-comment">// Storage commits are complete, we can mark them</span><br><br>		blockWriteTimer.Update(time.Since(substart) - statedb.AccountCommits - statedb.StorageCommits)<br>		blockInsertTimer.UpdateSince(start)<br><br>		<span class="hljs-keyword">switch</span> status &#123;<br>		<span class="hljs-keyword">case</span> CanonStatTy:<br>			log.Debug(<span class="hljs-string">&quot;Inserted new block&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash(),<br>				<span class="hljs-string">&quot;uncles&quot;</span>, <span class="hljs-built_in">len</span>(block.Uncles()), <span class="hljs-string">&quot;txs&quot;</span>, <span class="hljs-built_in">len</span>(block.Transactions()), <span class="hljs-string">&quot;gas&quot;</span>, block.GasUsed(),<br>				<span class="hljs-string">&quot;elapsed&quot;</span>, common.PrettyDuration(time.Since(start)),<br>				<span class="hljs-string">&quot;root&quot;</span>, block.Root())<br><br>			lastCanon = block<br><br>			<span class="hljs-comment">// Only count canonical blocks for GC processing time</span><br>			bc.gcproc += proctime<br><br>		<span class="hljs-keyword">case</span> SideStatTy:<br>			log.Debug(<span class="hljs-string">&quot;Inserted forked block&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash(),<br>				<span class="hljs-string">&quot;diff&quot;</span>, block.Difficulty(), <span class="hljs-string">&quot;elapsed&quot;</span>, common.PrettyDuration(time.Since(start)),<br>				<span class="hljs-string">&quot;txs&quot;</span>, <span class="hljs-built_in">len</span>(block.Transactions()), <span class="hljs-string">&quot;gas&quot;</span>, block.GasUsed(), <span class="hljs-string">&quot;uncles&quot;</span>, <span class="hljs-built_in">len</span>(block.Uncles()),<br>				<span class="hljs-string">&quot;root&quot;</span>, block.Root())<br><br>		<span class="hljs-keyword">default</span>:<br>			<span class="hljs-comment">// This in theory is impossible, but lets be nice to our future selves and leave</span><br>			<span class="hljs-comment">// a log, instead of trying to track down blocks imports that don&#x27;t emit logs.</span><br>			log.Warn(<span class="hljs-string">&quot;Inserted block with unknown status&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, block.Number(), <span class="hljs-string">&quot;hash&quot;</span>, block.Hash(),<br>				<span class="hljs-string">&quot;diff&quot;</span>, block.Difficulty(), <span class="hljs-string">&quot;elapsed&quot;</span>, common.PrettyDuration(time.Since(start)),<br>				<span class="hljs-string">&quot;txs&quot;</span>, <span class="hljs-built_in">len</span>(block.Transactions()), <span class="hljs-string">&quot;gas&quot;</span>, block.GasUsed(), <span class="hljs-string">&quot;uncles&quot;</span>, <span class="hljs-built_in">len</span>(block.Uncles()),<br>				<span class="hljs-string">&quot;root&quot;</span>, block.Root())<br>		&#125;<br>		stats.processed++<br>		stats.usedGas += usedGas<br><br>		dirty, _ := bc.stateCache.TrieDB().Size()<br>		stats.report(chain, it.index, dirty)<br>	&#125;<br>	<span class="hljs-comment">// Any blocks remaining here? The only ones we care about are the future ones</span><br>	<span class="hljs-keyword">if</span> block != <span class="hljs-literal">nil</span> &amp;&amp; err == consensus.ErrFutureBlock &#123;<br>		<span class="hljs-keyword">if</span> err := bc.addFutureBlock(block); err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> it.index, err<br>		&#125;<br>		block, err = it.next()<br><br>		<span class="hljs-keyword">for</span> ; block != <span class="hljs-literal">nil</span> &amp;&amp; err == consensus.ErrUnknownAncestor; block, err = it.next() &#123;<br>			<span class="hljs-keyword">if</span> err := bc.addFutureBlock(block); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> it.index, err<br>			&#125;<br>			stats.queued++<br>		&#125;<br>	&#125;<br>	stats.ignored += it.remaining()<br><br>	<span class="hljs-keyword">return</span> it.index, err<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="状态根验证"><a href="#状态根验证" class="headerlink" title="状态根验证"></a>状态根验证</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(v *BlockValidator)</span></span> ValidateState(block *types.Block, statedb *state.StateDB, receipts types.Receipts, usedGas <span class="hljs-type">uint64</span>) <span class="hljs-type">error</span> &#123;<br>	header := block.Header()<br>	<span class="hljs-keyword">if</span> block.GasUsed() != usedGas &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid gas used (remote: %d local: %d)&quot;</span>, block.GasUsed(), usedGas)<br>	&#125;<br>	<span class="hljs-comment">// Validate the received block&#x27;s bloom with the one derived from the generated receipts.</span><br>	<span class="hljs-comment">// For valid blocks this should always validate to true.</span><br>	rbloom := types.CreateBloom(receipts)<br>	<span class="hljs-keyword">if</span> rbloom != header.Bloom &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid bloom (remote: %x  local: %x)&quot;</span>, header.Bloom, rbloom)<br>	&#125;<br>	<span class="hljs-comment">// Tre receipt Trie&#x27;s root (R = (Tr [[H1, R1], ... [Hn, R1]]))</span><br>	receiptSha := types.DeriveSha(receipts)<br>	<span class="hljs-keyword">if</span> receiptSha != header.ReceiptHash &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid receipt root hash (remote: %x local: %x)&quot;</span>, header.ReceiptHash, receiptSha)<br>	&#125;<br>	<span class="hljs-comment">// Validate the state root against the received state root and throw</span><br>	<span class="hljs-comment">// an error if they don&#x27;t match.</span><br>	<span class="hljs-keyword">if</span> root := statedb.IntermediateRoot(v.config.IsEIP158(header.Number)); header.Root != root &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid merkle root (remote: %x local: %x)&quot;</span>, header.Root, root)<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="区块头验证"><a href="#区块头验证" class="headerlink" title="区块头验证"></a><strong>区块头验证</strong></h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// verifyHeader checks whether a header conforms to the consensus rules of the</span><br><span class="hljs-comment">// stock Ethereum ethash engine.</span><br><span class="hljs-comment">// See YP section 4.3.4. &quot;Block Header Validity&quot;</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(ethash *Ethash)</span></span> verifyHeader(chain consensus.ChainReader, header, parent *types.Header, uncle <span class="hljs-type">bool</span>, seal <span class="hljs-type">bool</span>) <span class="hljs-type">error</span> &#123;<br>	<span class="hljs-comment">// Ensure that the header&#x27;s extra-data section is of a reasonable size</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-type">uint64</span>(<span class="hljs-built_in">len</span>(header.Extra)) &gt; params.MaximumExtraDataSize &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;extra-data too long: %d &gt; %d&quot;</span>, <span class="hljs-built_in">len</span>(header.Extra), params.MaximumExtraDataSize)<br>	&#125;<br>	<span class="hljs-comment">// Verify the header&#x27;s timestamp</span><br>	<span class="hljs-keyword">if</span> !uncle &#123;<br>		<span class="hljs-keyword">if</span> header.Time &gt; <span class="hljs-type">uint64</span>(time.Now().Add(allowedFutureBlockTime).Unix()) &#123;<br>			<span class="hljs-keyword">return</span> consensus.ErrFutureBlock<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">if</span> header.Time &lt;= parent.Time &#123;<br>		<span class="hljs-keyword">return</span> errZeroBlockTime<br>	&#125;<br>	<span class="hljs-comment">// Verify the block&#x27;s difficulty based in its timestamp and parent&#x27;s difficulty</span><br>	expected := ethash.CalcDifficulty(chain, header.Time, parent)<br><br>	<span class="hljs-keyword">if</span> expected.Cmp(header.Difficulty) != <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid difficulty: have %v, want %v&quot;</span>, header.Difficulty, expected)<br>	&#125;<br>	<span class="hljs-comment">// Verify that the gas limit is &lt;= 2^63-1</span><br>	<span class="hljs-built_in">cap</span> := <span class="hljs-type">uint64</span>(<span class="hljs-number">0x7fffffffffffffff</span>)<br>	<span class="hljs-keyword">if</span> header.GasLimit &gt; <span class="hljs-built_in">cap</span> &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid gasLimit: have %v, max %v&quot;</span>, header.GasLimit, <span class="hljs-built_in">cap</span>)<br>	&#125;<br>	<span class="hljs-comment">// Verify that the gasUsed is &lt;= gasLimit</span><br>	<span class="hljs-keyword">if</span> header.GasUsed &gt; header.GasLimit &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid gasUsed: have %d, gasLimit %d&quot;</span>, header.GasUsed, header.GasLimit)<br>	&#125;<br><br>	<span class="hljs-comment">// Verify that the gas limit remains within allowed bounds</span><br>	diff := <span class="hljs-type">int64</span>(parent.GasLimit) - <span class="hljs-type">int64</span>(header.GasLimit)<br>	<span class="hljs-keyword">if</span> diff &lt; <span class="hljs-number">0</span> &#123;<br>		diff *= <span class="hljs-number">-1</span><br>	&#125;<br>	limit := parent.GasLimit / params.GasLimitBoundDivisor<br><br>	<span class="hljs-keyword">if</span> <span class="hljs-type">uint64</span>(diff) &gt;= limit || header.GasLimit &lt; params.MinGasLimit &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;invalid gas limit: have %d, want %d += %d&quot;</span>, header.GasLimit, parent.GasLimit, limit)<br>	&#125;<br>	<span class="hljs-comment">// Verify that the block number is parent&#x27;s +1</span><br>	<span class="hljs-keyword">if</span> diff := <span class="hljs-built_in">new</span>(big.Int).Sub(header.Number, parent.Number); diff.Cmp(big.NewInt(<span class="hljs-number">1</span>)) != <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">return</span> consensus.ErrInvalidNumber<br>	&#125;<br>	<span class="hljs-comment">// Verify the engine specific seal securing the block</span><br>	<span class="hljs-keyword">if</span> seal &#123;<br>		<span class="hljs-keyword">if</span> err := ethash.VerifySeal(chain, header); err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">// If all checks passed, validate any special fields for hard forks</span><br>	<span class="hljs-keyword">if</span> err := misc.VerifyDAOHeaderExtraData(chain.Config(), header); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> err<br>	&#125;<br>	<span class="hljs-keyword">if</span> err := misc.VerifyForkHashes(chain.Config(), header, uncle); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> err<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="PoW验证"><a href="#PoW验证" class="headerlink" title="PoW验证"></a><strong>PoW验证</strong></h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(ethash *Ethash)</span></span> verifySeal(chain consensus.ChainReader, header *types.Header, fulldag <span class="hljs-type">bool</span>) <span class="hljs-type">error</span> &#123;<br>	<span class="hljs-comment">// If we&#x27;re running a fake PoW, accept any seal as valid</span><br>	<span class="hljs-keyword">if</span> ethash.config.PowMode == ModeFake || ethash.config.PowMode == ModeFullFake &#123;<br>		time.Sleep(ethash.fakeDelay)<br>		<span class="hljs-keyword">if</span> ethash.fakeFail == header.Number.Uint64() &#123;<br>			<span class="hljs-keyword">return</span> errInvalidPoW<br>		&#125;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;<br>	<span class="hljs-comment">// If we&#x27;re running a shared PoW, delegate verification to it</span><br>	<span class="hljs-keyword">if</span> ethash.shared != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> ethash.shared.verifySeal(chain, header, fulldag)<br>	&#125;<br>	<span class="hljs-comment">// Ensure that we have a valid difficulty for the block</span><br>	<span class="hljs-keyword">if</span> header.Difficulty.Sign() &lt;= <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">return</span> errInvalidDifficulty<br>	&#125;<br>	<span class="hljs-comment">// Recompute the digest and PoW values</span><br>	number := header.Number.Uint64()<br><br>	<span class="hljs-keyword">var</span> (<br>		digest []<span class="hljs-type">byte</span><br>		result []<span class="hljs-type">byte</span><br>	)<br>	<span class="hljs-comment">// If fast-but-heavy PoW verification was requested, use an ethash dataset</span><br>	<span class="hljs-keyword">if</span> fulldag &#123;<br>		dataset := ethash.dataset(number, <span class="hljs-literal">true</span>)<br>		<span class="hljs-keyword">if</span> dataset.generated() &#123;<br>			digest, result = hashimotoFull(dataset.dataset, ethash.SealHash(header).Bytes(), header.Nonce.Uint64())<br><br>			<span class="hljs-comment">// Datasets are unmapped in a finalizer. Ensure that the dataset stays alive</span><br>			<span class="hljs-comment">// until after the call to hashimotoFull so it&#x27;s not unmapped while being used.</span><br>			runtime.KeepAlive(dataset)<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			<span class="hljs-comment">// Dataset not yet generated, don&#x27;t hang, use a cache instead</span><br>			fulldag = <span class="hljs-literal">false</span><br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">// If slow-but-light PoW verification was requested (or DAG not yet ready), use an ethash cache</span><br>	<span class="hljs-keyword">if</span> !fulldag &#123;<br>		cache := ethash.cache(number)<br><br>		size := datasetSize(number)<br>		<span class="hljs-keyword">if</span> ethash.config.PowMode == ModeTest &#123;<br>			size = <span class="hljs-number">32</span> * <span class="hljs-number">1024</span><br>		&#125;<br>		digest, result = hashimotoLight(size, cache.cache, ethash.SealHash(header).Bytes(), header.Nonce.Uint64())<br><br>		<span class="hljs-comment">// Caches are unmapped in a finalizer. Ensure that the cache stays alive</span><br>		<span class="hljs-comment">// until after the call to hashimotoLight so it&#x27;s not unmapped while being used.</span><br>		runtime.KeepAlive(cache)<br>	&#125;<br>	<span class="hljs-comment">// Verify the calculated values against the ones provided in the header</span><br>	<span class="hljs-keyword">if</span> !bytes.Equal(header.MixDigest[:], digest) &#123;<br>		<span class="hljs-keyword">return</span> errInvalidMixDigest<br>	&#125;<br>	target := <span class="hljs-built_in">new</span>(big.Int).Div(two256, header.Difficulty)<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">new</span>(big.Int).SetBytes(result).Cmp(target) &gt; <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">return</span> errInvalidPoW<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="区块体验证"><a href="#区块体验证" class="headerlink" title="区块体验证"></a><strong>区块体验证</strong></h5><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(it *insertIterator)</span></span> next() (*types.Block, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-comment">// If we reached the end of the chain, abort</span><br>	<span class="hljs-keyword">if</span> it.index+<span class="hljs-number">1</span> &gt;= <span class="hljs-built_in">len</span>(it.chain) &#123;<br>		it.index = <span class="hljs-built_in">len</span>(it.chain)<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span><br>	&#125;<br>	<span class="hljs-comment">// Advance the iterator and wait for verification result if not yet done</span><br>	it.index++<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(it.errors) &lt;= it.index &#123;<br>		it.errors = <span class="hljs-built_in">append</span>(it.errors, &lt;-it.results)<br>	&#125;<br>	<span class="hljs-keyword">if</span> it.errors[it.index] != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> it.chain[it.index], it.errors[it.index]<br>	&#125;<br>	<span class="hljs-comment">// Block header valid, run body validation and return</span><br>	<span class="hljs-keyword">return</span> it.chain[it.index], it.validator.ValidateBody(it.chain[it.index])<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(v *BlockValidator)</span></span> ValidateBody(block *types.Block) <span class="hljs-type">error</span> &#123;<br>	<span class="hljs-comment">// Check whether the block&#x27;s known, and if not, that it&#x27;s linkable</span><br>	<span class="hljs-keyword">if</span> v.bc.HasBlockAndState(block.Hash(), block.NumberU64()) &#123;<br>		<span class="hljs-keyword">return</span> ErrKnownBlock<br>	&#125;<br>	<span class="hljs-comment">// Header validity is known at this point, check the uncles and transactions</span><br>	header := block.Header()<br>	<span class="hljs-keyword">if</span> err := v.engine.VerifyUncles(v.bc, block); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> err<br>	&#125;<br>	<span class="hljs-keyword">if</span> hash := types.CalcUncleHash(block.Uncles()); hash != header.UncleHash &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;uncle root hash mismatch: have %x, want %x&quot;</span>, hash, header.UncleHash)<br>	&#125;<br>	<span class="hljs-keyword">if</span> hash := types.DeriveSha(block.Transactions()); hash != header.TxHash &#123;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;transaction root hash mismatch: have %x, want %x&quot;</span>, hash, header.TxHash)<br>	&#125;<br>	<span class="hljs-keyword">if</span> !v.bc.HasBlockAndState(block.ParentHash(), block.NumberU64()<span class="hljs-number">-1</span>) &#123;<br>		<span class="hljs-keyword">if</span> !v.bc.HasBlock(block.ParentHash(), block.NumberU64()<span class="hljs-number">-1</span>) &#123;<br>			<span class="hljs-keyword">return</span> consensus.ErrUnknownAncestor<br>		&#125;<br>		<span class="hljs-keyword">return</span> consensus.ErrPrunedAncestor<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h6 id="叔块验证"><a href="#叔块验证" class="headerlink" title="叔块验证"></a><strong>叔块验证</strong></h6><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(ethash *Ethash)</span></span> VerifyUncles(chain consensus.ChainReader, block *types.Block) <span class="hljs-type">error</span> &#123;<br>	<span class="hljs-comment">// If we&#x27;re running a full engine faking, accept any input as valid</span><br>	<span class="hljs-keyword">if</span> ethash.config.PowMode == ModeFullFake &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;<br>	<span class="hljs-comment">// Verify that there are at most 2 uncles included in this block</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(block.Uncles()) &gt; maxUncles &#123;<br>		<span class="hljs-keyword">return</span> errTooManyUncles<br>	&#125;<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(block.Uncles()) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;<br>	<span class="hljs-comment">// Gather the set of past uncles and ancestors</span><br>	uncles, ancestors := mapset.NewSet(), <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[common.Hash]*types.Header)<br><br>	number, parent := block.NumberU64()<span class="hljs-number">-1</span>, block.ParentHash()<br>	<span class="hljs-keyword">for</span> i := <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">7</span>; i++ &#123;<br>		ancestor := chain.GetBlock(parent, number)<br>		<span class="hljs-keyword">if</span> ancestor == <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">break</span><br>		&#125;<br>		ancestors[ancestor.Hash()] = ancestor.Header()<br>		<span class="hljs-keyword">for</span> _, uncle := <span class="hljs-keyword">range</span> ancestor.Uncles() &#123;<br>			uncles.Add(uncle.Hash())<br>		&#125;<br>		parent, number = ancestor.ParentHash(), number<span class="hljs-number">-1</span><br>	&#125;<br>	ancestors[block.Hash()] = block.Header()<br>	uncles.Add(block.Hash())<br><br>	<span class="hljs-comment">// Verify each of the uncles that it&#x27;s recent, but not an ancestor</span><br>	<span class="hljs-keyword">for</span> _, uncle := <span class="hljs-keyword">range</span> block.Uncles() &#123;<br>		<span class="hljs-comment">// Make sure every uncle is rewarded only once</span><br>		hash := uncle.Hash()<br>		<span class="hljs-keyword">if</span> uncles.Contains(hash) &#123;<br>			<span class="hljs-keyword">return</span> errDuplicateUncle<br>		&#125;<br>		uncles.Add(hash)<br><br>		<span class="hljs-comment">// Make sure the uncle has a valid ancestry</span><br>		<span class="hljs-keyword">if</span> ancestors[hash] != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> errUncleIsAncestor<br>		&#125;<br>		<span class="hljs-keyword">if</span> ancestors[uncle.ParentHash] == <span class="hljs-literal">nil</span> || uncle.ParentHash == block.ParentHash() &#123;<br>			<span class="hljs-keyword">return</span> errDanglingUncle<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := ethash.verifyHeader(chain, uncle, ancestors[uncle.ParentHash], <span class="hljs-literal">true</span>, <span class="hljs-literal">true</span>); err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> err<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="写入区块链"><a href="#写入区块链" class="headerlink" title="写入区块链"></a><strong>写入区块链</strong></h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(bc *BlockChain)</span></span> writeBlockWithState(block *types.Block, receipts []*types.Receipt, logs []*types.Log, state *state.StateDB, emitHeadEvent <span class="hljs-type">bool</span>) (status WriteStatus, err <span class="hljs-type">error</span>) &#123;<br>	bc.wg.Add(<span class="hljs-number">1</span>)<br>	<span class="hljs-keyword">defer</span> bc.wg.Done()<br><br>	<span class="hljs-comment">// Calculate the total difficulty of the block</span><br>	ptd := bc.GetTd(block.ParentHash(), block.NumberU64()<span class="hljs-number">-1</span>)<br>	<span class="hljs-keyword">if</span> ptd == <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> NonStatTy, consensus.ErrUnknownAncestor<br>	&#125;<br>	<span class="hljs-comment">// Make sure no inconsistent state is leaked during insertion</span><br>	currentBlock := bc.CurrentBlock()<br>	localTd := bc.GetTd(currentBlock.Hash(), currentBlock.NumberU64())<br>	externTd := <span class="hljs-built_in">new</span>(big.Int).Add(block.Difficulty(), ptd)<br><br>	<span class="hljs-comment">// Irrelevant of the canonical status, write the block itself to the database</span><br>	<span class="hljs-keyword">if</span> err := bc.hc.WriteTd(block.Hash(), block.NumberU64(), externTd); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> NonStatTy, err<br>	&#125;<br>	rawdb.WriteBlock(bc.db, block)<br><br>	root, err := state.Commit(bc.chainConfig.IsEIP158(block.Number()))<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> NonStatTy, err<br>	&#125;<br>	triedb := bc.stateCache.TrieDB()<br><br>	<span class="hljs-comment">// If we&#x27;re running an archive node, always flush</span><br>	<span class="hljs-keyword">if</span> bc.cacheConfig.TrieDirtyDisabled &#123;<br>		<span class="hljs-keyword">if</span> err := triedb.Commit(root, <span class="hljs-literal">false</span>); err != <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span> NonStatTy, err<br>		&#125;<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-comment">// Full but not archive node, do proper garbage collection</span><br>		triedb.Reference(root, common.Hash&#123;&#125;) <span class="hljs-comment">// metadata reference to keep trie alive</span><br>		bc.triegc.Push(root, -<span class="hljs-type">int64</span>(block.NumberU64()))<br><br>		<span class="hljs-keyword">if</span> current := block.NumberU64(); current &gt; TriesInMemory &#123;<br>			<span class="hljs-comment">// If we exceeded our memory allowance, flush matured singleton nodes to disk</span><br>			<span class="hljs-keyword">var</span> (<br>				nodes, imgs = triedb.Size()<br>				limit       = common.StorageSize(bc.cacheConfig.TrieDirtyLimit) * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span><br>			)<br>			<span class="hljs-keyword">if</span> nodes &gt; limit || imgs &gt; <span class="hljs-number">4</span>*<span class="hljs-number">1024</span>*<span class="hljs-number">1024</span> &#123;<br>				triedb.Cap(limit - ethdb.IdealBatchSize)<br>			&#125;<br>			<span class="hljs-comment">// Find the next state trie we need to commit</span><br>			chosen := current - TriesInMemory<br><br>			<span class="hljs-comment">// If we exceeded out time allowance, flush an entire trie to disk</span><br>			<span class="hljs-keyword">if</span> bc.gcproc &gt; bc.cacheConfig.TrieTimeLimit &#123;<br>				<span class="hljs-comment">// If the header is missing (canonical chain behind), we&#x27;re reorging a low</span><br>				<span class="hljs-comment">// diff sidechain. Suspend committing until this operation is completed.</span><br>				header := bc.GetHeaderByNumber(chosen)<br>				<span class="hljs-keyword">if</span> header == <span class="hljs-literal">nil</span> &#123;<br>					log.Warn(<span class="hljs-string">&quot;Reorg in progress, trie commit postponed&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, chosen)<br>				&#125; <span class="hljs-keyword">else</span> &#123;<br>					<span class="hljs-comment">// If we&#x27;re exceeding limits but haven&#x27;t reached a large enough memory gap,</span><br>					<span class="hljs-comment">// warn the user that the system is becoming unstable.</span><br>					<span class="hljs-keyword">if</span> chosen &lt; lastWrite+TriesInMemory &amp;&amp; bc.gcproc &gt;= <span class="hljs-number">2</span>*bc.cacheConfig.TrieTimeLimit &#123;<br>						log.Info(<span class="hljs-string">&quot;State in memory for too long, committing&quot;</span>, <span class="hljs-string">&quot;time&quot;</span>, bc.gcproc, <span class="hljs-string">&quot;allowance&quot;</span>, bc.cacheConfig.TrieTimeLimit, <span class="hljs-string">&quot;optimum&quot;</span>, <span class="hljs-type">float64</span>(chosen-lastWrite)/TriesInMemory)<br>					&#125;<br>					<span class="hljs-comment">// Flush an entire trie and restart the counters</span><br>					triedb.Commit(header.Root, <span class="hljs-literal">true</span>)<br>					lastWrite = chosen<br>					bc.gcproc = <span class="hljs-number">0</span><br>				&#125;<br>			&#125;<br>			<span class="hljs-comment">// Garbage collect anything below our required write retention</span><br>			<span class="hljs-keyword">for</span> !bc.triegc.Empty() &#123;<br>				root, number := bc.triegc.Pop()<br>				<span class="hljs-keyword">if</span> <span class="hljs-type">uint64</span>(-number) &gt; chosen &#123;<br>					bc.triegc.Push(root, number)<br>					<span class="hljs-keyword">break</span><br>				&#125;<br>				triedb.Dereference(root.(common.Hash))<br>			&#125;<br>		&#125;<br>	&#125;<br><br>	<span class="hljs-comment">// Write other block data using a batch.</span><br>	batch := bc.db.NewBatch()<br>	rawdb.WriteReceipts(batch, block.Hash(), block.NumberU64(), receipts)<br><br>	<span class="hljs-comment">// If the total difficulty is higher than our known, add it to the canonical chain</span><br>	<span class="hljs-comment">// Second clause in the if statement reduces the vulnerability to selfish mining.</span><br>	<span class="hljs-comment">// Please refer to http://www.cs.cornell.edu/~ie53/publications/btcProcFC.pdf</span><br>	reorg := externTd.Cmp(localTd) &gt; <span class="hljs-number">0</span><br>	currentBlock = bc.CurrentBlock()<br>	<span class="hljs-keyword">if</span> !reorg &amp;&amp; externTd.Cmp(localTd) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-comment">// Split same-difficulty blocks by number, then preferentially select</span><br>		<span class="hljs-comment">// the block generated by the local miner as the canonical block.</span><br>		<span class="hljs-keyword">if</span> block.NumberU64() &lt; currentBlock.NumberU64() &#123;<br>			reorg = <span class="hljs-literal">true</span><br>		&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> block.NumberU64() == currentBlock.NumberU64() &#123;<br>			<span class="hljs-keyword">var</span> currentPreserve, blockPreserve <span class="hljs-type">bool</span><br>			<span class="hljs-keyword">if</span> bc.shouldPreserve != <span class="hljs-literal">nil</span> &#123;<br>				currentPreserve, blockPreserve = bc.shouldPreserve(currentBlock), bc.shouldPreserve(block)<br>			&#125;<br>			reorg = !currentPreserve &amp;&amp; (blockPreserve || mrand.Float64() &lt; <span class="hljs-number">0.5</span>)<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">if</span> reorg &#123;<br>		<span class="hljs-comment">// Reorganise the chain if the parent is not the head block</span><br>		<span class="hljs-keyword">if</span> block.ParentHash() != currentBlock.Hash() &#123;<br>			<span class="hljs-keyword">if</span> err := bc.reorg(currentBlock, block); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> NonStatTy, err<br>			&#125;<br>		&#125;<br>		<span class="hljs-comment">// Write the positional metadata for transaction/receipt lookups and preimages</span><br>		rawdb.WriteTxLookupEntries(batch, block)<br>		rawdb.WritePreimages(batch, state.Preimages())<br><br>		status = CanonStatTy<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		status = SideStatTy<br>	&#125;<br>	<span class="hljs-keyword">if</span> err := batch.Write(); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> NonStatTy, err<br>	&#125;<br><br>	<span class="hljs-comment">// Set new head.</span><br>	<span class="hljs-keyword">if</span> status == CanonStatTy &#123;<br>		bc.insert(block)<br>	&#125;<br>	bc.futureBlocks.Remove(block.Hash())<br><br>	<span class="hljs-keyword">if</span> status == CanonStatTy &#123;<br>		bc.chainFeed.Send(ChainEvent&#123;Block: block, Hash: block.Hash(), Logs: logs&#125;)<br>		<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(logs) &gt; <span class="hljs-number">0</span> &#123;<br>			bc.logsFeed.Send(logs)<br>		&#125;<br>		<span class="hljs-comment">// In theory we should fire a ChainHeadEvent when we inject</span><br>		<span class="hljs-comment">// a canonical block, but sometimes we can insert a batch of</span><br>		<span class="hljs-comment">// canonicial blocks. Avoid firing too much ChainHeadEvents,</span><br>		<span class="hljs-comment">// we will fire an accumulated ChainHeadEvent and disable fire</span><br>		<span class="hljs-comment">// event here.</span><br>		<span class="hljs-keyword">if</span> emitHeadEvent &#123;<br>			bc.chainHeadFeed.Send(ChainHeadEvent&#123;Block: block&#125;)<br>		&#125;<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		bc.chainSideFeed.Send(ChainSideEvent&#123;Block: block&#125;)<br>	&#125;<br>	<span class="hljs-keyword">return</span> status, <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/" class="category-chain-item">区块链应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/" class="category-chain-item">公链原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Ethereum/" class="category-chain-item">Ethereum</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>激励机制</div>
+      <div>https://hermes37.vercel.app/2025/07/12/全栈应用开发/后端/区块链应用/公链原理/Ethereum/激励机制/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/12/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Solana/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="数据结构">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">数据结构</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/11/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E8%AE%BE%E5%A4%87%E6%A3%80%E6%B5%8B%E5%AF%B9%E6%8A%97/%E8%AE%BE%E5%A4%87%E5%AF%B9%E6%8A%97%E6%8E%A8%E6%BC%94/" title="设备对抗推演">
+                        <span class="hidden-mobile">设备对抗推演</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

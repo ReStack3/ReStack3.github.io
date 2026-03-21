@@ -1,0 +1,1694 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在 angr 框架中，Project 类是分析二进制文件的入口点，它封装了程序的所有信息和分析接口。以下是 project.loader 和 project.factory 的详细说明，以及 Project 下的关键组件：  1. angr.Project 的核心组件   属性&#x2F;方法 作用    project.loader 管理二进制文件的加载和内存布局（通过 CLE 模块实现）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="angr的基本使用">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/06/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/angr%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="在 angr 框架中，Project 类是分析二进制文件的入口点，它封装了程序的所有信息和分析接口。以下是 project.loader 和 project.factory 的详细说明，以及 Project 下的关键组件：  1. angr.Project 的核心组件   属性&#x2F;方法 作用    project.loader 管理二进制文件的加载和内存布局（通过 CLE 模块实现）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-06T09:31:25.579Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:32.405Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>angr的基本使用 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="angr的基本使用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          54 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">angr的基本使用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在 <strong>angr</strong> 框架中，<code>Project</code> 类是分析二进制文件的入口点，它封装了程序的所有信息和分析接口。以下是 <code>project.loader</code> 和 <code>project.factory</code> 的详细说明，以及 <code>Project</code> 下的关键组件：</p>
+<hr>
+<h3 id="1-angr-Project-的核心组件"><a href="#1-angr-Project-的核心组件" class="headerlink" title="1. angr.Project 的核心组件"></a><strong>1. <code>angr.Project</code> 的核心组件</strong></h3><table>
+<thead>
+<tr>
+<th><strong>属性&#x2F;方法</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>project.loader</code></strong></td>
+<td>管理二进制文件的加载和内存布局（通过 <code>CLE</code> 模块实现）。</td>
+</tr>
+<tr>
+<td><strong><code>project.factory</code></strong></td>
+<td>创建符号执行的状态（<code>state</code>）和模拟管理器（<code>simulation_manager</code>）。</td>
+</tr>
+<tr>
+<td><strong><code>project.analyses</code></strong></td>
+<td>提供静态分析功能（如 CFG 生成、数据依赖分析）。</td>
+</tr>
+<tr>
+<td><strong><code>project.kb</code></strong></td>
+<td>知识库（Knowledge Base），存储分析结果（如函数、钩子、符号表信息）。</td>
+</tr>
+<tr>
+<td><strong><code>project.hook</code></strong></td>
+<td>用于劫持&#x2F;替换特定地址的代码（如系统调用劫持）。</td>
+</tr>
+<tr>
+<td><strong><code>project.arch</code></strong></td>
+<td>目标架构信息（如 <code>x86</code>、<code>ARM</code>）。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-project-loader：二进制加载器"><a href="#2-project-loader：二进制加载器" class="headerlink" title="2. project.loader：二进制加载器"></a><strong>2. <code>project.loader</code>：二进制加载器</strong></h3><p><code>project.loader</code> 是 <strong>CLE（Cle Loads Everything）</strong> 模块的实例，负责加载二进制文件及其依赖库，并提供内存空间管理。</p>
+<h4 id="关键功能"><a href="#关键功能" class="headerlink" title="关键功能"></a><strong>关键功能</strong></h4><table>
+<thead>
+<tr>
+<th><strong>属性&#x2F;方法</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>loader.main_object</code></td>
+<td>主程序二进制对象（如 ELF 文件）。</td>
+</tr>
+<tr>
+<td><code>loader.shared_objects</code></td>
+<td>动态链接库字典（如 <code>libc.so</code>）。</td>
+</tr>
+<tr>
+<td><code>loader.memory</code></td>
+<td>虚拟地址空间管理，支持符号化内存访问。</td>
+</tr>
+<tr>
+<td><code>loader.find_symbol(name)</code></td>
+<td>通过符号名查找地址（如 <code>&quot;printf&quot;</code>）。</td>
+</tr>
+<tr>
+<td><code>loader.mapped_base</code></td>
+<td>主程序的加载基地址（对 PIE 程序很重要）。</td>
+</tr>
+</tbody></table>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a><strong>示例</strong></h4><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs perl"><span class="hljs-keyword">print</span>(<span class="hljs-keyword">hex</span>(project.loader.main_object.mapped_base))  <span class="hljs-comment"># 输出主程序基地址</span><br><span class="hljs-keyword">print</span>(project.loader.shared_objects)               <span class="hljs-comment"># 查看依赖库</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-project-factory：符号执行工厂"><a href="#3-project-factory：符号执行工厂" class="headerlink" title="3. project.factory：符号执行工厂"></a><strong>3. <code>project.factory</code>：符号执行工厂</strong></h3><p><code>project.factory</code> 用于创建符号执行的初始状态和控制模拟过程。</p>
+<h4 id="关键方法"><a href="#关键方法" class="headerlink" title="关键方法"></a><strong>关键方法</strong></h4><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>factory.blank_state(addr)</code></td>
+<td>创建一个空白符号状态（所有寄存器&#x2F;内存为符号值）。</td>
+</tr>
+<tr>
+<td><code>factory.entry_state(args)</code></td>
+<td>从程序入口点创建状态，支持符号化命令行参数。</td>
+</tr>
+<tr>
+<td><code>factory.call_state(addr, args)</code></td>
+<td>模拟调用特定函数（<code>addr</code>）的状态。</td>
+</tr>
+<tr>
+<td><code>factory.simulation_manager(state)</code></td>
+<td>创建模拟管理器，控制符号执行过程（路径探索、合并等）。</td>
+</tr>
+</tbody></table>
+<h4 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a><strong>示例</strong></h4><figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs pf"><span class="hljs-comment"># 创建从 main 函数开始的符号状态</span><br><span class="hljs-keyword">state</span> = project.factory.entry_state(args=[<span class="hljs-string">&quot;sym_arg&quot;</span>])<br><br><span class="hljs-comment"># 创建空白状态，从 0x400500 开始执行</span><br><span class="hljs-keyword">state</span> = project.factory.blank_state(addr=<span class="hljs-number">0</span>x400500)<br><br><span class="hljs-comment"># 启动符号执行</span><br>simgr = project.factory.simulation_manager(<span class="hljs-keyword">state</span>)<br>simgr.explore(find=<span class="hljs-number">0</span>x401000)  <span class="hljs-comment"># 探索到地址 0x401000 的路径</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-完整交互示例"><a href="#4-完整交互示例" class="headerlink" title="4. 完整交互示例"></a><strong>4. 完整交互示例</strong></h3><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs routeros">import angr<br><br><span class="hljs-comment"># 加载二进制文件</span><br>project = angr.Project(<span class="hljs-string">&quot;/bin/ls&quot;</span>, <span class="hljs-attribute">auto_load_libs</span>=<span class="hljs-literal">False</span>)<br><br><span class="hljs-comment"># 1. 使用 loader 查看加载信息</span><br><span class="hljs-built_in">print</span>(f<span class="hljs-string">&quot;基地址: &#123;hex(project.loader.main_object.mapped_base)&#125;&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;依赖库:&quot;</span>, project.loader.shared_objects.keys())<br><br><span class="hljs-comment"># 2. 使用 factory 创建符号状态</span><br>state = project.factory.entry_state(args=[<span class="hljs-string">&quot;sym_arg&quot;</span>])<br><br><span class="hljs-comment"># 3. 启动符号执行</span><br>simgr = project.factory.simulation_manager(state)<br>simgr.explore(<span class="hljs-attribute">find</span>=lambda s: b<span class="hljs-string">&quot;Permission denied&quot;</span> <span class="hljs-keyword">in</span> s.posix.dumps(1))<br><br><span class="hljs-comment"># 4. 输出结果</span><br><span class="hljs-keyword">if</span> simgr.found:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;找到路径，输入为:&quot;</span>, simgr.found[0].posix.dumps(0))<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="5-组件协作关系"><a href="#5-组件协作关系" class="headerlink" title="5. 组件协作关系"></a><strong>5. 组件协作关系</strong></h3><ol>
+<li><strong><code>loader</code> 加载二进制</strong> → <strong><code>factory</code> 创建状态</strong> → <strong><code>analyses</code> 静态分析</strong></li>
+<li><strong><code>kb</code> 存储分析结果</strong> → <strong><code>hook</code> 修改行为</strong> → <strong><code>simulation_manager</code> 控制执行</strong></li>
+</ol>
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a><strong>总结</strong></h3><ul>
+<li><strong><code>project.loader</code><strong>：<br> 处理二进制加载、内存映射和符号解析，是分析的​</strong>​数据基础​</strong>​。</li>
+<li><strong><code>project.factory</code><strong>：<br> 提供符号执行的​</strong>​状态管理和控制流​</strong>​，是动态分析的​<strong>​入口​</strong>​。</li>
+<li><strong>典型工作流</strong>：<br> 加载二进制 (<code>loader</code>) → 初始化状态 (<code>factory</code>) → 执行分析 (<code>analyses</code>&#x2F;<code>simulation_manager</code>)。</li>
+</ul>
+<p>通过这两个核心组件，angr 实现了从二进制加载到符号执行的全流程管理。</p>
+<p>在 <strong>angr</strong> 的 <code>simulation_manager</code> 中，除了 <code>step()</code> 单步执行外，还提供了多种执行和控制符号执行流程的方法。以下是完整的执行控制方法及其用途：</p>
+<hr>
+<h3 id="1-基础执行方法"><a href="#1-基础执行方法" class="headerlink" title="1. 基础执行方法"></a><strong>1. 基础执行方法</strong></h3><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>作用</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>step()</code></strong></td>
+<td>执行当前所有活跃状态（<code>active</code>）的<strong>一条指令</strong>，遇到分支时分裂状态。</td>
+<td><code>sm.step()</code></td>
+</tr>
+<tr>
+<td><strong><code>run()</code></strong></td>
+<td>持续执行，直到所有路径终止或达到默认限制（如超时、内存耗尽）。</td>
+<td><code>sm.run()</code></td>
+</tr>
+<tr>
+<td><strong><code>explore()</code></strong></td>
+<td>探索路径直到找到特定地址（<code>find</code>）或避免某些地址（<code>avoid</code>）。</td>
+<td><code>sm.explore(find=0x400700, avoid=[0x401000])</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-高级执行控制"><a href="#2-高级执行控制" class="headerlink" title="2. 高级执行控制"></a><strong>2. 高级执行控制</strong></h3><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>作用</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>move()</code></strong></td>
+<td>将状态从一个分类（如 <code>active</code>）移动到另一个（如 <code>found</code>）。</td>
+<td><code>sm.move(&#39;active&#39;, &#39;found&#39;, filter_func=lambda s: s.addr == 0x400700)</code></td>
+</tr>
+<tr>
+<td><strong><code>stash()</code></strong></td>
+<td>将状态暂存到自定义分类（如 <code>suspects</code>），便于后续处理。</td>
+<td><code>sm.stash(stash=&#39;suspects&#39;, from_stash=&#39;active&#39;)</code></td>
+</tr>
+<tr>
+<td><strong><code>prune()</code></strong></td>
+<td>根据条件剪枝状态（如合并相似路径）。</td>
+<td><code>sm.prune(filter_func=lambda s: s.ip == 0x400500)</code></td>
+</tr>
+<tr>
+<td><strong><code>merge()</code></strong></td>
+<td>合并多个状态（需启用 <code>merge</code> 选项）。</td>
+<td><code>sm.merge(stash=&#39;active&#39;)</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-路径探索技术"><a href="#3-路径探索技术" class="headerlink" title="3. 路径探索技术"></a><strong>3. 路径探索技术</strong></h3><p>通过 <code>use_technique()</code> 应用高级探索策略：</p>
+<table>
+<thead>
+<tr>
+<th><strong>技术类（<code>angr.exploration_techniques</code>）</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>DFS</code></strong></td>
+<td>深度优先搜索（优先探索新路径）。</td>
+</tr>
+<tr>
+<td><strong><code>BFS</code></strong></td>
+<td>广度优先搜索（均匀探索所有路径）。</td>
+</tr>
+<tr>
+<td><strong><code>LoopSeer</code></strong></td>
+<td>检测循环并避免冗余执行。</td>
+</tr>
+<tr>
+<td><strong><code>MemoryWatcher</code></strong></td>
+<td>监控内存使用，防止溢出。</td>
+</tr>
+</tbody></table>
+<p><strong>示例</strong>：</p>
+<figure class="highlight capnproto"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs capnproto"><span class="hljs-keyword">from</span> angr.exploration_techniques <span class="hljs-keyword">import</span> DFS<br>sm.use_technique(DFS())  <span class="hljs-comment"># 启用深度优先搜索</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-状态分类与筛选"><a href="#4-状态分类与筛选" class="headerlink" title="4. 状态分类与筛选"></a><strong>4. 状态分类与筛选</strong></h3><p><code>simulation_manager</code> 自动将状态分类到不同集合中：</p>
+<table>
+<thead>
+<tr>
+<th><strong>分类（Stash）</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>active</code></td>
+<td>当前活跃状态（默认执行目标）。</td>
+</tr>
+<tr>
+<td><code>deadended</code></td>
+<td>已终止状态（如执行到 <code>ret</code>）。</td>
+</tr>
+<tr>
+<td><code>found</code></td>
+<td>通过 <code>explore(find=...)</code> 找到的目标状态。</td>
+</tr>
+<tr>
+<td><code>avoided</code></td>
+<td>通过 <code>explore(avoid=...)</code> 跳过的状态。</td>
+</tr>
+<tr>
+<td><code>errored</code></td>
+<td>出错状态（如非法指令）。</td>
+</tr>
+</tbody></table>
+<p><strong>示例</strong>：</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pf"><span class="hljs-comment"># 筛选所有到达目标的状态</span><br><span class="hljs-keyword">for</span> <span class="hljs-keyword">state</span> <span class="hljs-keyword">in</span> sm.found:<br>    print(f<span class="hljs-string">&quot;Found path with input: &#123;state.posix.dumps(0)&#125;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="5-执行控制示例"><a href="#5-执行控制示例" class="headerlink" title="5. 执行控制示例"></a><strong>5. 执行控制示例</strong></h3><h4 id="1-基础执行"><a href="#1-基础执行" class="headerlink" title="(1) 基础执行"></a><strong>(1) 基础执行</strong></h4><figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pf">sm = project.factory.simulation_manager(<span class="hljs-keyword">state</span>)<br>sm.step()  <span class="hljs-comment"># 单步执行</span><br>sm.run()   <span class="hljs-comment"># 运行到结束</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2-目标导向探索"><a href="#2-目标导向探索" class="headerlink" title="(2) 目标导向探索"></a><strong>(2) 目标导向探索</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">sm.explore(<br>    find=<span class="hljs-number">0x400700</span>,    <span class="hljs-comment"># 目标地址</span><br>    avoid=[<span class="hljs-number">0x401000</span>], <span class="hljs-comment"># 避免的地址</span><br>    step_func=<span class="hljs-keyword">lambda</span> s: <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Step at <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(s.addr)&#125;</span>&quot;</span>)  <span class="hljs-comment"># 每步回调</span><br>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-自定义策略"><a href="#3-自定义策略" class="headerlink" title="(3) 自定义策略"></a><strong>(3) 自定义策略</strong></h4><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs vim">from angr.exploration_techniques import DFS<br><span class="hljs-keyword">sm</span>.use_technique(DFS())  # 深度优先搜索<br><span class="hljs-keyword">while</span> <span class="hljs-keyword">sm</span>.active:<br>    <span class="hljs-keyword">sm</span>.step()<br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">sm</span>.active[<span class="hljs-number">0</span>].addr == <span class="hljs-number">0</span>x400500:<br>        <span class="hljs-keyword">sm</span>.<span class="hljs-keyword">move</span>(<span class="hljs-string">&#x27;active&#x27;</span>, <span class="hljs-string">&#x27;found&#x27;</span>)  # 将到达 <span class="hljs-number">0</span>x400500 的状态移到 found<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="6-性能优化建议"><a href="#6-性能优化建议" class="headerlink" title="6. 性能优化建议"></a><strong>6. 性能优化建议</strong></h3><p>- </p>
+<p>  限制执行</p>
+<p>  ：</p>
+  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">sm.<span class="hljs-built_in">run</span>(<span class="hljs-attribute">n</span>=100)  # 最多执行100步<br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  剪枝策略</p>
+<p>  ：</p>
+  <figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">sm.prune<span class="hljs-params">(<span class="hljs-attr">filter_func</span>=lambda s: s.<span class="hljs-attr">ip</span> == 0x400500)</span>  <span class="hljs-comment"># 移除特定状态</span><br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  内存管理</p>
+<p>  ：</p>
+  <figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs 1c">sm.use_technique(angr.exploration_techniques.MemoryWatcher())  <span class="hljs-meta"># 监控内存</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a><strong>总结</strong></h3><p>angr 的 <code>simulation_manager</code> 提供了丰富的执行控制方法：</p>
+<ol>
+<li><strong>基础执行</strong>：<code>step()</code>、<code>run()</code>、<code>explore()</code>。</li>
+<li><strong>高级控制</strong>：状态分类（<code>move</code>&#x2F;<code>stash</code>）、路径合并（<code>merge</code>）、剪枝（<code>prune</code>）。</li>
+<li><strong>探索策略</strong>：通过 <code>exploration_techniques</code> 实现 DFS、BFS 等算法。</li>
+</ol>
+<p>根据分析需求（如漏洞挖掘、覆盖率测试）选择合适的方法，平衡路径覆盖率和性能。</p>
+<p>在 <strong>angr</strong> 的 <code>simulation_manager</code> 中，除了 <code>step()</code> 单步执行外，还提供了多种执行和控制符号执行流程的方法。以下是完整的执行控制方法及其用途：</p>
+<hr>
+<h3 id="1-基础执行方法-1"><a href="#1-基础执行方法-1" class="headerlink" title="1. 基础执行方法"></a><strong>1. 基础执行方法</strong></h3><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>作用</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>step()</code></strong></td>
+<td>执行当前所有活跃状态（<code>active</code>）的<strong>一条指令</strong>，遇到分支时分裂状态。</td>
+<td><code>sm.step()</code></td>
+</tr>
+<tr>
+<td><strong><code>run()</code></strong></td>
+<td>持续执行，直到所有路径终止或达到默认限制（如超时、内存耗尽）。</td>
+<td><code>sm.run()</code></td>
+</tr>
+<tr>
+<td><strong><code>explore()</code></strong></td>
+<td>探索路径直到找到特定地址（<code>find</code>）或避免某些地址（<code>avoid</code>）。</td>
+<td><code>sm.explore(find=0x400700, avoid=[0x401000])</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-高级执行控制-1"><a href="#2-高级执行控制-1" class="headerlink" title="2. 高级执行控制"></a><strong>2. 高级执行控制</strong></h3><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>作用</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>move()</code></strong></td>
+<td>将状态从一个分类（如 <code>active</code>）移动到另一个（如 <code>found</code>）。</td>
+<td><code>sm.move(&#39;active&#39;, &#39;found&#39;, filter_func=lambda s: s.addr == 0x400700)</code></td>
+</tr>
+<tr>
+<td><strong><code>stash()</code></strong></td>
+<td>将状态暂存到自定义分类（如 <code>suspects</code>），便于后续处理。</td>
+<td><code>sm.stash(stash=&#39;suspects&#39;, from_stash=&#39;active&#39;)</code></td>
+</tr>
+<tr>
+<td><strong><code>prune()</code></strong></td>
+<td>根据条件剪枝状态（如合并相似路径）。</td>
+<td><code>sm.prune(filter_func=lambda s: s.ip == 0x400500)</code></td>
+</tr>
+<tr>
+<td><strong><code>merge()</code></strong></td>
+<td>合并多个状态（需启用 <code>merge</code> 选项）。</td>
+<td><code>sm.merge(stash=&#39;active&#39;)</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-路径探索技术-1"><a href="#3-路径探索技术-1" class="headerlink" title="3. 路径探索技术"></a><strong>3. 路径探索技术</strong></h3><p>通过 <code>use_technique()</code> 应用高级探索策略：</p>
+<table>
+<thead>
+<tr>
+<th><strong>技术类（<code>angr.exploration_techniques</code>）</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>DFS</code></strong></td>
+<td>深度优先搜索（优先探索新路径）。</td>
+</tr>
+<tr>
+<td><strong><code>BFS</code></strong></td>
+<td>广度优先搜索（均匀探索所有路径）。</td>
+</tr>
+<tr>
+<td><strong><code>LoopSeer</code></strong></td>
+<td>检测循环并避免冗余执行。</td>
+</tr>
+<tr>
+<td><strong><code>MemoryWatcher</code></strong></td>
+<td>监控内存使用，防止溢出。</td>
+</tr>
+</tbody></table>
+<p><strong>示例</strong>：</p>
+<figure class="highlight capnproto"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs capnproto"><span class="hljs-keyword">from</span> angr.exploration_techniques <span class="hljs-keyword">import</span> DFS<br>sm.use_technique(DFS())  <span class="hljs-comment"># 启用深度优先搜索</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-状态分类与筛选-1"><a href="#4-状态分类与筛选-1" class="headerlink" title="4. 状态分类与筛选"></a><strong>4. 状态分类与筛选</strong></h3><p><code>simulation_manager</code> 自动将状态分类到不同集合中：</p>
+<table>
+<thead>
+<tr>
+<th><strong>分类（Stash）</strong></th>
+<th><strong>含义</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>active</code></td>
+<td>当前活跃状态（默认执行目标）。</td>
+</tr>
+<tr>
+<td><code>deadended</code></td>
+<td>已终止状态（如执行到 <code>ret</code>）。</td>
+</tr>
+<tr>
+<td><code>found</code></td>
+<td>通过 <code>explore(find=...)</code> 找到的目标状态。</td>
+</tr>
+<tr>
+<td><code>avoided</code></td>
+<td>通过 <code>explore(avoid=...)</code> 跳过的状态。</td>
+</tr>
+<tr>
+<td><code>errored</code></td>
+<td>出错状态（如非法指令）。</td>
+</tr>
+</tbody></table>
+<p><strong>示例</strong>：</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pf"><span class="hljs-comment"># 筛选所有到达目标的状态</span><br><span class="hljs-keyword">for</span> <span class="hljs-keyword">state</span> <span class="hljs-keyword">in</span> sm.found:<br>    print(f<span class="hljs-string">&quot;Found path with input: &#123;state.posix.dumps(0)&#125;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="5-执行控制示例-1"><a href="#5-执行控制示例-1" class="headerlink" title="5. 执行控制示例"></a><strong>5. 执行控制示例</strong></h3><h4 id="1-基础执行-1"><a href="#1-基础执行-1" class="headerlink" title="(1) 基础执行"></a><strong>(1) 基础执行</strong></h4><figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pf">sm = project.factory.simulation_manager(<span class="hljs-keyword">state</span>)<br>sm.step()  <span class="hljs-comment"># 单步执行</span><br>sm.run()   <span class="hljs-comment"># 运行到结束</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2-目标导向探索-1"><a href="#2-目标导向探索-1" class="headerlink" title="(2) 目标导向探索"></a><strong>(2) 目标导向探索</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">sm.explore(<br>    find=<span class="hljs-number">0x400700</span>,    <span class="hljs-comment"># 目标地址</span><br>    avoid=[<span class="hljs-number">0x401000</span>], <span class="hljs-comment"># 避免的地址</span><br>    step_func=<span class="hljs-keyword">lambda</span> s: <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Step at <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(s.addr)&#125;</span>&quot;</span>)  <span class="hljs-comment"># 每步回调</span><br>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-自定义策略-1"><a href="#3-自定义策略-1" class="headerlink" title="(3) 自定义策略"></a><strong>(3) 自定义策略</strong></h4><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs vim">from angr.exploration_techniques import DFS<br><span class="hljs-keyword">sm</span>.use_technique(DFS())  # 深度优先搜索<br><span class="hljs-keyword">while</span> <span class="hljs-keyword">sm</span>.active:<br>    <span class="hljs-keyword">sm</span>.step()<br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">sm</span>.active[<span class="hljs-number">0</span>].addr == <span class="hljs-number">0</span>x400500:<br>        <span class="hljs-keyword">sm</span>.<span class="hljs-keyword">move</span>(<span class="hljs-string">&#x27;active&#x27;</span>, <span class="hljs-string">&#x27;found&#x27;</span>)  # 将到达 <span class="hljs-number">0</span>x400500 的状态移到 found<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="6-性能优化建议-1"><a href="#6-性能优化建议-1" class="headerlink" title="6. 性能优化建议"></a><strong>6. 性能优化建议</strong></h3><p>- </p>
+<p>  限制执行</p>
+<p>  ：</p>
+  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">sm.<span class="hljs-built_in">run</span>(<span class="hljs-attribute">n</span>=100)  # 最多执行100步<br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  剪枝策略</p>
+<p>  ：</p>
+  <figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">sm.prune<span class="hljs-params">(<span class="hljs-attr">filter_func</span>=lambda s: s.<span class="hljs-attr">ip</span> == 0x400500)</span>  <span class="hljs-comment"># 移除特定状态</span><br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  内存管理</p>
+<p>  ：</p>
+  <figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs 1c">sm.use_technique(angr.exploration_techniques.MemoryWatcher())  <span class="hljs-meta"># 监控内存</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a><strong>总结</strong></h3><p>angr 的 <code>simulation_manager</code> 提供了丰富的执行控制方法：</p>
+<ol>
+<li><strong>基础执行</strong>：<code>step()</code>、<code>run()</code>、<code>explore()</code>。</li>
+<li><strong>高级控制</strong>：状态分类（<code>move</code>&#x2F;<code>stash</code>）、路径合并（<code>merge</code>）、剪枝（<code>prune</code>）。</li>
+<li><strong>探索策略</strong>：通过 <code>exploration_techniques</code> 实现 DFS、BFS 等算法。</li>
+</ol>
+<p>根据分析需求（如漏洞挖掘、覆盖率测试）选择合适的方法，平衡路径覆盖率和性能。</p>
+<p>在 <strong>angr</strong> 的 <code>simulation_manager</code> 中，<code>sm.active</code> 是一个 <strong>状态列表</strong>，存储当前所有<strong>活跃的符号执行状态</strong>。以下是详细说明：</p>
+<hr>
+<h3 id="1-sm-active-的本质"><a href="#1-sm-active-的本质" class="headerlink" title="1. sm.active 的本质"></a><strong>1. <code>sm.active</code> 的本质</strong></h3><ul>
+<li><p><strong>数据类型</strong>：<code>List[SimState]</code>，即多个符号执行状态的集合。</p>
+</li>
+<li><p>内容</p>
+<p>：每个 </p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">SimState</span><br></code></pre></td></tr></table></figure>
+
+<p> 对象代表程序的一个</p>
+<p>可能执行路径</p>
+<p>，包含：</p>
+<ul>
+<li>当前程序计数器（<code>state.addr</code>）</li>
+<li>符号寄存器&#x2F;内存值</li>
+<li>路径约束条件</li>
+<li>其他执行上下文（如文件描述符、系统调用等）</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="2-何时状态会进入-active？"><a href="#2-何时状态会进入-active？" class="headerlink" title="2. 何时状态会进入 active？"></a><strong>2. 何时状态会进入 <code>active</code>？</strong></h3><table>
+<thead>
+<tr>
+<th><strong>场景</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>初始状态</strong></td>
+<td>通过 <code>project.factory</code> 创建的第一个状态（如 <code>entry_state</code>）。</td>
+</tr>
+<tr>
+<td><strong>分支分裂</strong></td>
+<td>遇到条件分支（如 <code>if</code>）时，克隆出两个状态分别对应 <code>True/False</code> 路径。</td>
+</tr>
+<tr>
+<td><strong>手动添加</strong></td>
+<td>调用 <code>sm.move()</code> 或 <code>sm.stash()</code> 将其他分类的状态移入 <code>active</code>。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-何时状态会离开-active？"><a href="#3-何时状态会离开-active？" class="headerlink" title="3. 何时状态会离开 active？"></a><strong>3. 何时状态会离开 <code>active</code>？</strong></h3><table>
+<thead>
+<tr>
+<th><strong>场景</strong></th>
+<th><strong>状态去向</strong></th>
+<th><strong>触发条件</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>正常终止</strong></td>
+<td>→ <code>deadended</code></td>
+<td>执行到 <code>ret</code>、<code>exit</code> 等终止指令。</td>
+</tr>
+<tr>
+<td><strong>到达目标</strong></td>
+<td>→ <code>found</code></td>
+<td>通过 <code>sm.explore(find=addr)</code> 匹配目标地址。</td>
+</tr>
+<tr>
+<td><strong>触发避免条件</strong></td>
+<td>→ <code>avoided</code></td>
+<td>通过 <code>sm.explore(avoid=addr)</code> 匹配避免地址。</td>
+</tr>
+<tr>
+<td><strong>执行错误</strong></td>
+<td>→ <code>errored</code></td>
+<td>遇到非法指令、未建模的系统调用等。</td>
+</tr>
+<tr>
+<td><strong>手动移出</strong></td>
+<td>→ 自定义分类</td>
+<td>调用 <code>sm.move()</code> 或 <code>sm.stash()</code>。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="4-代码示例解析"><a href="#4-代码示例解析" class="headerlink" title="4. 代码示例解析"></a><strong>4. 代码示例解析</strong></h3><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver"><span class="hljs-keyword">while</span> <span class="hljs-built_in">len</span>(sm.active) &gt; <span class="hljs-number">0</span>:          <span class="hljs-comment"># 当存在活跃状态时循环</span><br>    <span class="hljs-keyword">for</span> active <span class="hljs-keyword">in</span> sm.active:       <span class="hljs-comment"># 遍历所有活跃状态</span><br>        flow.<span class="hljs-built_in">add</span>(active.addr)      <span class="hljs-comment"># 记录当前状态的程序计数器（PC）地址</span><br>    sm.step()                      <span class="hljs-comment"># 所有活跃状态执行一步</span><br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  行为</p>
+<p>  ：</p>
+<ol>
+<li>每次循环记录所有活跃状态的当前地址（即正在执行的基本块地址）。</li>
+<li>调用 <code>step()</code> 推进所有活跃状态执行一步。</li>
+<li>循环直到没有活跃状态（所有路径终止或报错）。</li>
+</ol>
+<hr>
+<h3 id="5-示例执行过程"><a href="#5-示例执行过程" class="headerlink" title="5. 示例执行过程"></a><strong>5. 示例执行过程</strong></h3><p>假设程序从 <code>0x400500</code> 开始，执行以下分支逻辑：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs scss">if (x &gt; <span class="hljs-number">0</span>) &#123;  <span class="hljs-comment">// 0x400510</span><br>    <span class="hljs-built_in">foo</span>();    <span class="hljs-comment">// 0x400520</span><br>&#125; else &#123;<br>    <span class="hljs-built_in">bar</span>();    <span class="hljs-comment">// 0x400530</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong><code>sm.active</code> 的变化</strong>：</p>
+<table>
+<thead>
+<tr>
+<th><strong>执行步骤</strong></th>
+<th><code>active</code> 中的地址</th>
+<th><strong>事件</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始</td>
+<td><code>[0x400500]</code></td>
+<td>初始状态进入 <code>active</code>。</td>
+</tr>
+<tr>
+<td>第1步</td>
+<td><code>[0x400510]</code></td>
+<td>执行 <code>0x400500</code> 的指令。</td>
+</tr>
+<tr>
+<td>第2步</td>
+<td><code>[0x400520, 0x400530]</code></td>
+<td>分支分裂为两条路径。</td>
+</tr>
+<tr>
+<td>第3步</td>
+<td><code>[0x400520_next, 0x400530_next]</code></td>
+<td>分别执行 <code>foo()</code> 和 <code>bar()</code> 的入口。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="6-常见问题"><a href="#6-常见问题" class="headerlink" title="6. 常见问题"></a><strong>6. 常见问题</strong></h3><h4 id="Q1-为什么-sm-active-会为空？"><a href="#Q1-为什么-sm-active-会为空？" class="headerlink" title="Q1: 为什么 sm.active 会为空？"></a><strong>Q1: 为什么 <code>sm.active</code> 会为空？</strong></h4><ul>
+<li><strong>所有路径终止</strong>：状态自然执行完毕（如程序退出）。</li>
+<li><strong>所有路径报错</strong>：状态因错误被移到 <code>errored</code>。</li>
+<li><strong>无新路径生成</strong>：代码陷入无限循环但未触发新分支（需手动终止）。</li>
+</ul>
+<h4 id="Q2-如何限制-active-的数量？"><a href="#Q2-如何限制-active-的数量？" class="headerlink" title="Q2: 如何限制 active 的数量？"></a><strong>Q2: 如何限制 <code>active</code> 的数量？</strong></h4><p>- </p>
+<p>  剪枝策略</p>
+<p>  ：定期调用 </p>
+  <figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">sm<span class="hljs-selector-class">.prune</span>()<br></code></pre></td></tr></table></figure>
+
+<p>   合并或丢弃相似状态。</p>
+  <figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">sm.prune<span class="hljs-params">(<span class="hljs-attr">filter_func</span>=lambda s: s.<span class="hljs-attr">ip</span> == 0x400500)</span>  <span class="hljs-comment"># 移除特定状态</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>路径限制</strong>：通过 <code>sm.run(n=100)</code> 限制最大步数。</li>
+</ul>
+<hr>
+<h3 id="7-高级调试技巧"><a href="#7-高级调试技巧" class="headerlink" title="7. 高级调试技巧"></a><strong>7. 高级调试技巧</strong></h3><p>- </p>
+<p>  打印活跃状态</p>
+<p>  ：</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">for</span> i, state <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(sm.active):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;状态 <span class="hljs-subst">&#123;i&#125;</span>: PC=<span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(state.addr)&#125;</span>, 约束=<span class="hljs-subst">&#123;state.solver.constraints&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>可视化控制流</strong>：<br> 结合 <code>project.analyses.CFGFast()</code> 绘制已覆盖的基本块。</li>
+</ul>
+<hr>
+<h3 id="总结-3"><a href="#总结-3" class="headerlink" title="总结"></a><strong>总结</strong></h3><p><code>sm.active</code> 是符号执行的核心动态属性，表示当前所有<strong>正在探索的路径状态</strong>。通过监控和操作 <code>active</code> 列表，可以实现：</p>
+<ul>
+<li><strong>路径覆盖分析</strong>（记录 <code>active.addr</code>）。</li>
+<li><strong>定向漏洞挖掘</strong>（优先探索危险路径）。</li>
+<li><strong>性能优化</strong>（剪枝或合并冗余状态）。</li>
+</ul>
+<p>理解 <code>active</code> 的生命周期是掌握 angr 符号执行的关键！</p>
+<p>在 angr 的符号执行过程中，<code>sm.active</code> 的初始状态和数量是由你创建的起始状态 (<code>state</code>) 决定的。以下是详细的解释：</p>
+<hr>
+<h3 id="1-初始时-sm-active-的确定"><a href="#1-初始时-sm-active-的确定" class="headerlink" title="1. 初始时 sm.active 的确定"></a><strong>1. 初始时 <code>sm.active</code> 的确定</strong></h3><p>当你执行以下代码时：</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs pf">sm = project.factory.simulation_manager(<span class="hljs-keyword">state</span>)<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong><code>sm.active</code> 的初始内容</strong>：<br> 此时 <code>sm.active</code> 是一个包含 ​<strong>​唯一初始状态​</strong>​（即你传入的 <code>state</code>）的列表，长度为 1。</p>
+<ul>
+<li>这个 <code>state</code> 是你通过 <code>project.factory.blank_state()</code> 或 <code>entry_state()</code> 等创建的，其程序计数器（<code>state.addr</code>）指向你指定的起始地址（如函数入口或程序入口）。</li>
+</ul>
+</li>
+<li><p><strong>验证初始状态</strong>：<br> 可以通过以下代码检查：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;初始 sm.active 数量:&quot;</span>, <span class="hljs-built_in">len</span>(sm.active))  <span class="hljs-comment"># 输出 1</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;初始 PC 地址:&quot;</span>, <span class="hljs-built_in">hex</span>(sm.active[<span class="hljs-number">0</span>].addr))  <span class="hljs-comment"># 如 0x400500</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="2-sm-step-如何影响-sm-active？"><a href="#2-sm-step-如何影响-sm-active？" class="headerlink" title="2. sm.step() 如何影响 sm.active？"></a><strong>2. <code>sm.step()</code> 如何影响 <code>sm.active</code>？</strong></h3><p>当调用 <code>sm.step()</code> 时，符号执行引擎会：</p>
+<ol>
+<li><p><strong>执行当前 <code>active</code> 中的所有状态</strong>：<br> 对每个状态，执行其当前指令（<code>state.addr</code> 指向的指令）。</p>
+</li>
+<li><p>处理分支分裂</p>
+<p>：</p>
+<ul>
+<li><p>如果指令是 <strong>无分支</strong>（如 <code>mov</code>、<code>add</code>），状态继续线性推进。</p>
+</li>
+<li><p>如果指令是 </p>
+<p>条件分支</p>
+<p>（如 </p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">jz</span><br></code></pre></td></tr></table></figure>
+
+<p>、</p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit"><span class="hljs-built_in">call</span><br></code></pre></td></tr></table></figure>
+
+<p>），会根据符号条件克隆状态：</p>
+<ul>
+<li>例如 <code>if (x &gt; 0)</code> 会生成两个状态：<code>x &gt; 0</code> 和 <code>x &lt;= 0</code>，此时 <code>sm.active</code> 数量变为 2。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>更新 <code>sm.active</code></p>
+<p>：</p>
+<ul>
+<li>新生成的状态（如分支后的子状态）会被加入 <code>sm.active</code>。</li>
+<li>终止的状态（如执行到 <code>ret</code>）会被移到 <code>deadended</code>。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="3-你的代码执行流程"><a href="#3-你的代码执行流程" class="headerlink" title="3. 你的代码执行流程"></a><strong>3. 你的代码执行流程</strong></h3><figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs pf">sm = project.factory.simulation_manager(<span class="hljs-keyword">state</span>)  <span class="hljs-comment"># 初始化，sm.active = [state]</span><br>sm.step()  <span class="hljs-comment"># 第一次执行，可能分裂出多个状态</span><br><br>while len(sm.active) &gt; <span class="hljs-number">0</span>:<br>    <span class="hljs-keyword">for</span> active <span class="hljs-keyword">in</span> sm.active:<br>        flow.add(active.addr)  <span class="hljs-comment"># 记录当前所有活跃状态的地址</span><br>    sm.step()  <span class="hljs-comment"># 继续执行，可能进一步分裂或终止状态</span><br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  关键点</p>
+<p>  ：</p>
+<ul>
+<li>在第一次 <code>sm.step()</code> 后，<code>sm.active</code> 的数量可能已经变化（如从 1 变为 2）。</li>
+<li>后续循环会持续跟踪所有活跃路径，直到没有活跃状态（所有路径终止或报错）。</li>
+</ul>
+<hr>
+<h3 id="4-为什么能安全使用-while-len-sm-active-0？"><a href="#4-为什么能安全使用-while-len-sm-active-0？" class="headerlink" title="4. 为什么能安全使用 while len(sm.active) &gt; 0？"></a><strong>4. 为什么能安全使用 <code>while len(sm.active) &gt; 0</code>？</strong></h3><ul>
+<li><p><strong>初始保证</strong>：<br> 由于 <code>simulation_manager</code> 必须接收至少一个初始状态（<code>state</code>），因此首次进入循环时 <code>sm.active</code> 至少包含 1 个状态。</p>
+</li>
+<li><p>终止条件</p>
+<p>：</p>
+<ul>
+<li>如果程序是有限路径（如无无限循环），最终所有状态会终止（<code>active</code> 变为空）。</li>
+<li>如果程序有无限循环，需手动限制循环次数（如 <code>for _ in range(1000)</code>）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="5-示例演示"><a href="#5-示例演示" class="headerlink" title="5. 示例演示"></a><strong>5. 示例演示</strong></h3><p>假设程序从 <code>0x400500</code> 开始，有以下分支逻辑：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs kotlin"><span class="hljs-keyword">if</span> (x &gt; <span class="hljs-number">0</span>) &#123;  <span class="hljs-comment">// 0x400510</span><br>    <span class="hljs-keyword">return</span>;   <span class="hljs-comment">// 0x400520</span><br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    y = <span class="hljs-number">1</span>;    <span class="hljs-comment">// 0x400530</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>符号执行过程</strong>：</p>
+<table>
+<thead>
+<tr>
+<th><strong>执行步骤</strong></th>
+<th><code>sm.active</code> 内容</th>
+<th><strong>事件</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始</td>
+<td><code>[state(addr=0x400500)]</code></td>
+<td>初始状态。</td>
+</tr>
+<tr>
+<td>第一次 <code>sm.step()</code></td>
+<td><code>[state(0x400510, x&gt;0), state(0x400510, x&lt;=0)]</code></td>
+<td>分支分裂为两条路径。</td>
+</tr>
+<tr>
+<td>第二次 <code>sm.step()</code></td>
+<td><code>[state(0x400530, x&lt;=0)]</code></td>
+<td><code>x&gt;0</code> 路径终止（<code>ret</code>），<code>x&lt;=0</code> 路径继续。</td>
+</tr>
+<tr>
+<td>第三次 <code>sm.step()</code></td>
+<td><code>[]</code></td>
+<td>所有路径终止，循环退出。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="6-常见问题解答"><a href="#6-常见问题解答" class="headerlink" title="6. 常见问题解答"></a><strong>6. 常见问题解答</strong></h3><h4 id="Q1-如果初始-state-是-entry-state-，sm-active-一定是-1-吗？"><a href="#Q1-如果初始-state-是-entry-state-，sm-active-一定是-1-吗？" class="headerlink" title="Q1: 如果初始 state 是 entry_state()，sm.active 一定是 1 吗？"></a><strong>Q1: 如果初始 <code>state</code> 是 <code>entry_state()</code>，<code>sm.active</code> 一定是 1 吗？</strong></h4><ul>
+<li><strong>是</strong>。<code>entry_state()</code> 返回单个状态，<code>simulation_manager</code> 会将其作为唯一的初始活跃状态。</li>
+</ul>
+<h4 id="Q2-如何知道-sm-active-何时会增加？"><a href="#Q2-如何知道-sm-active-何时会增加？" class="headerlink" title="Q2: 如何知道 sm.active 何时会增加？"></a><strong>Q2: 如何知道 <code>sm.active</code> 何时会增加？</strong></h4><ul>
+<li><p><strong>分支指令</strong>：如 <code>jz</code>、<code>call</code>、<code>ret</code> 等会触发状态分裂或终止。</p>
+</li>
+<li><p>调试方法</p>
+<p>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">track_states</span>(<span class="hljs-params">sm</span>):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Step: active=<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(sm.active)&#125;</span>, deadended=<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(sm.deadended)&#125;</span>&quot;</span>)<br>sm.step(step_func=track_states)  <span class="hljs-comment"># 每步打印状态数量</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="Q3-如何避免无限循环？"><a href="#Q3-如何避免无限循环？" class="headerlink" title="Q3: 如何避免无限循环？"></a><strong>Q3: 如何避免无限循环？</strong></h4><p>- </p>
+<p>  设置超时</p>
+<p>  ：</p>
+  <figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs vim"><span class="hljs-keyword">for</span> _ in <span class="hljs-built_in">range</span>(<span class="hljs-number">1000</span>):  # 最多执行<span class="hljs-number">1000</span>步<br>    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(<span class="hljs-keyword">sm</span>.active) == <span class="hljs-number">0</span>:<br>        <span class="hljs-keyword">break</span><br>    <span class="hljs-keyword">sm</span>.step()<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="总结-4"><a href="#总结-4" class="headerlink" title="总结"></a><strong>总结</strong></h3><ul>
+<li>**初始 <code>sm.active</code>**：由你传入的 <code>state</code> 决定，初始长度为 1。</li>
+<li><strong>动态变化</strong>：通过 <code>step()</code> 执行后，可能因分支分裂增加数量，或因终止减少数量。</li>
+<li><strong>安全循环</strong>：<code>while len(sm.active) &gt; 0</code> 会自然处理所有路径，直到无活跃状态。</li>
+</ul>
+<p>理解 <code>sm.active</code> 的动态变化是掌握符号执行路径探索的关键！</p>
+<p>在 angr 的符号执行中，<code>sm.step()</code> 的行为既不同于调试器的 <strong>F7（单步步入）</strong> 也不同于 <strong>F9（运行到断点）</strong>，而是更接近 <strong>智能化的路径探索</strong>。以下是详细对比和停止条件的解析：</p>
+<hr>
+<h3 id="1-sm-step-vs-调试器操作"><a href="#1-sm-step-vs-调试器操作" class="headerlink" title="1. sm.step() vs. 调试器操作"></a><strong>1. <code>sm.step()</code> vs. 调试器操作</strong></h3><table>
+<thead>
+<tr>
+<th><strong>操作</strong></th>
+<th><strong>行为</strong></th>
+<th><strong>是否遍历所有路径</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>F7（步入）</strong></td>
+<td>执行一条指令，进入函数调用内部。</td>
+<td>仅跟踪当前路径，不探索其他分支。</td>
+</tr>
+<tr>
+<td><strong>F9（运行）</strong></td>
+<td>从当前地址持续执行，直到遇到断点或程序终止。</td>
+<td>仅跟踪一条路径，直到停止条件触发。</td>
+</tr>
+<tr>
+<td><strong><code>sm.step()</code></strong></td>
+<td>对所有活跃状态执行一条指令，遇到分支时<strong>自动分裂状态</strong>，探索所有可能路径。</td>
+<td><strong>是</strong>，但受约束求解和资源限制影响。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-sm-step-如何遍历路径？"><a href="#2-sm-step-如何遍历路径？" class="headerlink" title="2. sm.step() 如何遍历路径？"></a><strong>2. <code>sm.step()</code> 如何遍历路径？</strong></h3><h4 id="（1）分支分裂机制"><a href="#（1）分支分裂机制" class="headerlink" title="（1）分支分裂机制"></a><strong>（1）分支分裂机制</strong></h4><ul>
+<li><strong>条件分支</strong>：<br> 当遇到 <code>if (x &gt; 0)</code> 时（<code>x</code> 是符号变量），<code>sm.step()</code> 会生成两个状态：<ul>
+<li>状态A：<code>x &gt; 0</code> 为真，继续执行 <code>if</code> 块。</li>
+<li>状态B：<code>x &gt; 0</code> 为假，执行 <code>else</code> 块。<br> ​<strong>​此时 <code>sm.active</code> 数量从 1 变为 2​</strong>​。</li>
+</ul>
+</li>
+<li><strong>间接跳转</strong>：<br> 如 <code>jmp [eax]</code>（<code>eax</code> 是符号值），会尝试求解 <code>eax</code> 的可能取值，分裂出多个状态。</li>
+</ul>
+<h4 id="（2）路径独立性"><a href="#（2）路径独立性" class="headerlink" title="（2）路径独立性"></a><strong>（2）路径独立性</strong></h4><p>每个分裂的状态独立执行，维护自己的：</p>
+<ul>
+<li>寄存器&#x2F;内存值</li>
+<li>路径约束（如 <code>x &gt; 0 ∧ y == 10</code>）</li>
+<li>程序计数器（PC）</li>
+</ul>
+<hr>
+<h3 id="3-停止条件"><a href="#3-停止条件" class="headerlink" title="3. 停止条件"></a><strong>3. 停止条件</strong></h3><p><code>sm.step()</code> 的路径探索会在以下情况下停止：</p>
+<h4 id="（1）自然终止"><a href="#（1）自然终止" class="headerlink" title="（1）自然终止"></a><strong>（1）自然终止</strong></h4><table>
+<thead>
+<tr>
+<th><strong>条件</strong></th>
+<th><strong>结果状态</strong></th>
+<th><strong>示例指令</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行到 <code>ret</code>&#x2F;<code>exit</code></td>
+<td>→ <code>deadended</code></td>
+<td><code>ret</code>, <code>exit(0)</code></td>
+</tr>
+<tr>
+<td>所有路径探索完成</td>
+<td><code>sm.active</code> 为空</td>
+<td>程序正常结束</td>
+</tr>
+</tbody></table>
+<h4 id="（2）主动干预"><a href="#（2）主动干预" class="headerlink" title="（2）主动干预"></a><strong>（2）主动干预</strong></h4><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>sm.explore()</code></strong></td>
+<td>指定目标地址（<code>find=</code>）或避免地址（<code>avoid=</code>），命中后停止。</td>
+</tr>
+<tr>
+<td><strong>手动限制</strong></td>
+<td>设置最大步数或超时：</td>
+</tr>
+</tbody></table>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs markdown">for _ in range(1000):  # 最多1000步<br><span class="hljs-code">    if len(sm.active) == 0: break</span><br><span class="hljs-code">    sm.step()</span><br><span class="hljs-code">``` |</span><br><span class="hljs-code"></span><br><span class="hljs-section">#### <span class="hljs-strong">**（3）约束求解失败**</span></span><br><span class="hljs-bullet">-</span> <span class="hljs-strong">**无解路径**</span>：若某条路径的约束不可满足（如 <span class="hljs-code">`x &gt; 0 ∧ x &lt; -1`</span>），该状态会被丢弃。  <br><span class="hljs-bullet">-</span> <span class="hljs-strong">**求解超时**</span>：复杂约束可能导致 Z3 超时，相关路径暂停探索。<br><br><span class="hljs-section">#### <span class="hljs-strong">**（4）资源耗尽**</span></span><br><span class="hljs-bullet">-</span> 内存不足：状态过多时会崩溃（需用 <span class="hljs-code">`prune()`</span> 剪枝）。  <br><span class="hljs-bullet">-</span> 符号执行超限：angr 默认限制路径数量（可通过 <span class="hljs-code">`sm.step(size=N)`</span> 调整）。<br><br>---<br><br><span class="hljs-section">### <span class="hljs-strong">**4. 示例：路径探索与停止**</span></span><br><span class="hljs-section">#### <span class="hljs-strong">**C程序片段**</span></span><br><span class="hljs-code">```c</span><br><span class="hljs-code">int foo(int x) &#123;</span><br><span class="hljs-code">    if (x &gt; 0) &#123;    // 分支1</span><br><span class="hljs-code">        if (x &lt; 10) // 分支2</span><br><span class="hljs-code">            return 1;</span><br><span class="hljs-code">        else</span><br><span class="hljs-code">            return 2;</span><br><span class="hljs-code">    &#125; else &#123;</span><br><span class="hljs-code">        return -1;</span><br><span class="hljs-code">    &#125;</span><br><span class="hljs-code">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="符号执行过程"><a href="#符号执行过程" class="headerlink" title="符号执行过程"></a><strong>符号执行过程</strong></h4><table>
+<thead>
+<tr>
+<th><strong>步骤</strong></th>
+<th><code>sm.active</code> 数量</th>
+<th><strong>事件</strong></th>
+<th><strong>约束条件</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始</td>
+<td>1</td>
+<td>初始状态 <code>x = sym_x</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td>第1步</td>
+<td>2</td>
+<td>分裂 <code>sym_x &gt; 0</code> 和 <code>sym_x &lt;= 0</code></td>
+<td><code>[sym_x &gt; 0]</code>, <code>[sym_x &lt;= 0]</code></td>
+</tr>
+<tr>
+<td>第2步</td>
+<td>2</td>
+<td><code>sym_x &gt; 0</code> 路径分裂为 <code>sym_x &lt; 10</code> 和 <code>sym_x &gt;= 10</code></td>
+<td><code>[sym_x &gt; 0, sym_x &lt; 10]</code>, <code>[sym_x &gt; 0, sym_x &gt;= 10]</code></td>
+</tr>
+<tr>
+<td>第3步</td>
+<td>0</td>
+<td>所有路径终止（<code>return</code>）</td>
+<td>无活跃状态</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="5-如何控制路径探索？"><a href="#5-如何控制路径探索？" class="headerlink" title="5. 如何控制路径探索？"></a><strong>5. 如何控制路径探索？</strong></h3><h4 id="（1）限制路径数量"><a href="#（1）限制路径数量" class="headerlink" title="（1）限制路径数量"></a><strong>（1）限制路径数量</strong></h4><figure class="highlight capnproto"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs capnproto"><span class="hljs-keyword">from</span> angr.exploration_techniques <span class="hljs-keyword">import</span> LengthLimiter<br>sm.use_technique(LengthLimiter(max_length=<span class="hljs-number">100</span>))  <span class="hljs-comment"># 限制每条路径最多100条指令</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="（2）优先探索高风险路径"><a href="#（2）优先探索高风险路径" class="headerlink" title="（2）优先探索高风险路径"></a><strong>（2）优先探索高风险路径</strong></h4><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">from angr<span class="hljs-selector-class">.exploration_techniques</span> import PrioritySearch<br>sm<span class="hljs-selector-class">.use_technique</span>(<span class="hljs-built_in">PrioritySearch</span>(priority_func=lambda s: s<span class="hljs-selector-class">.addr</span> == <span class="hljs-number">0</span>x400500))<br></code></pre></td></tr></table></figure>
+
+<h4 id="（3）合并相似状态"><a href="#（3）合并相似状态" class="headerlink" title="（3）合并相似状态"></a><strong>（3）合并相似状态</strong></h4><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">from angr<span class="hljs-selector-class">.exploration_techniques</span> import MergePoints<br>sm<span class="hljs-selector-class">.use_technique</span>(<span class="hljs-built_in">MergePoints</span>())<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a><strong>6. 总结</strong></h3><p>- </p>
+<p>  <code>sm.step()</code></p>
+<p>  ：</p>
+<ul>
+<li><p><strong>类似智能化的 F7</strong>：每条指令都可能导致状态分裂，探索所有可行路径。</p>
+</li>
+<li><p><strong>停止条件</strong>：路径终止、主动干预、资源耗尽或约束无解。</p>
+</li>
+<li><p>关键区别</p>
+<p>：</p>
+<ul>
+<li>调试器（F7&#x2F;F9）是<strong>具体执行</strong>，只走一条路径。</li>
+<li>符号执行是<strong>抽象探索</strong>，覆盖所有可能路径（受限于计算资源）。</li>
+</ul>
+</li>
+</ul>
+<p>通过合理配置约束和探索策略，可以高效地实现漏洞挖掘或覆盖率分析。</p>
+<p>在 angr 的符号执行中，<code>sm.step()</code> 和 <code>while len(sm.active) &gt; 0</code> 的组合是为了 <strong>逐步追踪所有路径的执行过程</strong>，而不仅仅是“完成遍历”。以下是详细解释：</p>
+<hr>
+<h3 id="1-sm-step-的单步性"><a href="#1-sm-step-的单步性" class="headerlink" title="1. sm.step() 的单步性"></a><strong>1. <code>sm.step()</code> 的单步性</strong></h3><ul>
+<li><strong><code>sm.step()</code> 的局限性</strong>：<br> 每次调用 <code>sm.step()</code> 仅执行 ​<strong>​当前所有活跃状态的一条指令​</strong>​，并更新状态集合（<code>sm.active</code>）。<ul>
+<li><strong>它不会自动完成所有路径的遍历</strong>，只是推进一步。</li>
+<li><strong>分支分裂</strong>：遇到条件分支时，会生成新状态，但需要多次 <code>step()</code> 才能完全展开所有路径。</li>
+</ul>
+</li>
+<li><strong>类比调试器</strong>：<ul>
+<li><code>sm.step()</code> 类似 <strong>手动按 F7</strong>，每次只走一步，需多次调用才能覆盖整个程序。</li>
+<li><code>while</code> 循环相当于 <strong>反复按 F7</strong>，直到所有路径终止。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="2-为什么需要-while-循环？"><a href="#2-为什么需要-while-循环？" class="headerlink" title="2. 为什么需要 while 循环？"></a><strong>2. 为什么需要 <code>while</code> 循环？</strong></h3><h4 id="（1）路径分裂是动态的"><a href="#（1）路径分裂是动态的" class="headerlink" title="（1）路径分裂是动态的"></a><strong>（1）路径分裂是动态的</strong></h4><p>- </p>
+<p>  分支的递归展开</p>
+<p>  ：</p>
+<p>  一个 </p>
+  <figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">if</span><br></code></pre></td></tr></table></figure>
+
+<p>   分支可能需要多步 </p>
+  <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-function"><span class="hljs-title">step</span><span class="hljs-params">()</span></span><br></code></pre></td></tr></table></figure>
+
+<p>   才能完全展开。例如：</p>
+  <figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs gcode"><span class="hljs-keyword">if</span> <span class="hljs-comment">(x &gt; 0)</span> &#123;       <span class="hljs-comment">// 第1次 step(): 分裂为两条路径（x&gt;0 和 x&lt;=0）</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-comment">(y &lt; 10)</span> &#123;  <span class="hljs-comment">// 第2次 step(): 每条路径可能继续分裂</span><br>        ...<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>单次 <code>step()</code> 只能处理当前层的分支，需要循环展开所有嵌套分支。</li>
+</ul>
+<h4 id="（2）路径终止是异步的"><a href="#（2）路径终止是异步的" class="headerlink" title="（2）路径终止是异步的"></a><strong>（2）路径终止是异步的</strong></h4><p>- </p>
+<p>  路径可能在不同步数终止</p>
+<p>  ：</p>
+<ul>
+<li>某些路径快速终止（如 <code>return</code>），其他路径可能需要更多步（如循环）。</li>
+<li><code>while</code> 循环确保 <strong>所有路径都被执行到终止</strong>，而不仅是“开始执行”。</li>
+</ul>
+<h4 id="（3）记录中间状态"><a href="#（3）记录中间状态" class="headerlink" title="（3）记录中间状态"></a><strong>（3）记录中间状态</strong></h4><p>- </p>
+<p>  目标</p>
+<p>  ：</p>
+  <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">flow.<span class="hljs-built_in">add</span>(active.addr)<br></code></pre></td></tr></table></figure>
+
+<p>   记录的是 </p>
+<p>  每条路径的执行轨迹</p>
+<p>  （即所有基本块地址）。</p>
+<ul>
+<li>需要在每次 <code>step()</code> 后捕获最新状态，否则会遗漏中间块。</li>
+</ul>
+<hr>
+<h3 id="3-执行流程示例"><a href="#3-执行流程示例" class="headerlink" title="3. 执行流程示例"></a><strong>3. 执行流程示例</strong></h3><h4 id="程序逻辑"><a href="#程序逻辑" class="headerlink" title="程序逻辑"></a><strong>程序逻辑</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (x &gt; <span class="hljs-number">0</span>) &#123;   <span class="hljs-comment">// 分支1</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;A&quot;</span>);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;B&quot;</span>);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;C&quot;</span>);   <span class="hljs-comment">// 公共块</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="符号执行过程-1"><a href="#符号执行过程-1" class="headerlink" title="符号执行过程"></a><strong>符号执行过程</strong></h4><table>
+<thead>
+<tr>
+<th><strong>循环迭代</strong></th>
+<th><code>sm.active</code> 状态</th>
+<th><strong>执行动作</strong></th>
+<th><code>flow</code> 记录内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>初始</td>
+<td><code>[state(x=sym_x, addr=0x400500)]</code></td>
+<td><code>step()</code> 执行 <code>if (x &gt; 0)</code></td>
+<td><code>&#123;0x400500&#125;</code></td>
+</tr>
+<tr>
+<td>第1次</td>
+<td><code>[state(x&gt;0, addr=0x400510), state(x&lt;=0, addr=0x400520)]</code></td>
+<td><code>step()</code> 执行分支代码</td>
+<td><code>&#123;0x400500, 0x400510, 0x400520&#125;</code></td>
+</tr>
+<tr>
+<td>第2次</td>
+<td><code>[state(x&gt;0, addr=0x400530), state(x&lt;=0, addr=0x400530)]</code></td>
+<td><code>step()</code> 执行 <code>printf(&quot;C&quot;)</code></td>
+<td><code>&#123;0x400500, 0x400510, 0x400520, 0x400530&#125;</code></td>
+</tr>
+<tr>
+<td>第3次</td>
+<td><code>[]</code> (所有路径终止)</td>
+<td>循环退出</td>
+<td>最终结果</td>
+</tr>
+</tbody></table>
+<p>- </p>
+<p>  关键点</p>
+<p>  ：</p>
+<ul>
+<li>只有通过循环多次 <code>step()</code>，才能覆盖 <code>if-else</code> 的两条路径和后续公共块。</li>
+<li>单次 <code>step()</code> 只能看到分支的初始分裂，无法到达终止点。</li>
+</ul>
+<hr>
+<h3 id="4-如果不使用-while-循环会怎样？"><a href="#4-如果不使用-while-循环会怎样？" class="headerlink" title="4. 如果不使用 while 循环会怎样？"></a><strong>4. 如果不使用 <code>while</code> 循环会怎样？</strong></h3><h4 id="（1）单次-step-的缺陷"><a href="#（1）单次-step-的缺陷" class="headerlink" title="（1）单次 step() 的缺陷"></a><strong>（1）单次 <code>step()</code> 的缺陷</strong></h4><figure class="highlight monkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs monkey">sm.<span class="hljs-keyword">step</span>()<span class="hljs-meta">  # 只执行一步</span><br><span class="hljs-built_in">print</span>(flow)<span class="hljs-meta">  # 仅包含初始块和第一条指令的地址</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>结果</strong>：<br> 只能记录 ​<strong>​第一层分支的分裂点​</strong>​，无法获取完整路径（如 <code>printf(&quot;C&quot;)</code> 的地址会被遗漏）。</li>
+</ul>
+<h4 id="（2）路径覆盖不完整"><a href="#（2）路径覆盖不完整" class="headerlink" title="（2）路径覆盖不完整"></a><strong>（2）路径覆盖不完整</strong></h4><ul>
+<li><strong>遗漏路径</strong>：<br> 若程序有多个嵌套分支（如循环、递归），单次 <code>step()</code> 无法展开所有可能性。</li>
+</ul>
+<hr>
+<h3 id="5-如何验证路径是否完全遍历？"><a href="#5-如何验证路径是否完全遍历？" class="headerlink" title="5. 如何验证路径是否完全遍历？"></a><strong>5. 如何验证路径是否完全遍历？</strong></h3><h4 id="（1）检查终止状态"><a href="#（1）检查终止状态" class="headerlink" title="（1）检查终止状态"></a><strong>（1）检查终止状态</strong></h4><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs vim"><span class="hljs-keyword">while</span> <span class="hljs-built_in">len</span>(<span class="hljs-keyword">sm</span>.active) &gt; <span class="hljs-number">0</span>:<br>    <span class="hljs-keyword">sm</span>.step()<br><span class="hljs-keyword">print</span>(<span class="hljs-string">&quot;deadended paths:&quot;</span>, <span class="hljs-built_in">len</span>(<span class="hljs-keyword">sm</span>.deadended))  # 所有终止的路径数量<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>若 <code>sm.deadended</code> 数量与预期路径数一致</strong>（如 2 个分支 → 2 条终止路径），则说明完全遍历。</li>
+</ul>
+<h4 id="（2）结合-CFG-验证"><a href="#（2）结合-CFG-验证" class="headerlink" title="（2）结合 CFG 验证"></a><strong>（2）结合 CFG 验证</strong></h4><figure class="highlight nim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs nim">cfg = project.analyses.<span class="hljs-type">CFGFast</span>()<br>all_blocks = <span class="hljs-type">set</span>(<span class="hljs-keyword">block</span>.<span class="hljs-keyword">addr</span> <span class="hljs-keyword">for</span> <span class="hljs-keyword">block</span> <span class="hljs-keyword">in</span> cfg.nodes())<br>print(<span class="hljs-string">&quot;未覆盖的块:&quot;</span>, all_blocks - flow)  <span class="hljs-comment"># 检查是否有遗漏</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="6-总结-1"><a href="#6-总结-1" class="headerlink" title="6. 总结"></a><strong>6. 总结</strong></h3><ul>
+<li><p><strong><code>sm.step()</code><strong>：单步推进所有活跃状态，</strong>不保证完成所有路径</strong>。</p>
+</li>
+<li><p><code>while</code> 循环</p>
+<p>：</p>
+<ul>
+<li>确保所有路径被<strong>完全展开</strong>（从开始到终止）。</li>
+<li>动态记录每个基本块的访问情况（<code>flow.add(active.addr)</code>）。</li>
+</ul>
+</li>
+<li><p>关键区别</p>
+<p>：</p>
+<ul>
+<li>单次 <code>step()</code> ≈ 按一次 F7（仅走一步）。</li>
+<li><code>while</code> 循环 ≈ 持续按 F7 直到程序结束。</li>
+</ul>
+</li>
+</ul>
+<p>这种设计允许精细控制符号执行过程，同时确保路径覆盖的完整性。</p>
+<p>、在 angr 中，关于 <code>sm.step()</code> 的行为，<strong>两种描述都是正确的</strong>，但需要从不同层次理解其工作逻辑。以下是关键点解析：</p>
+<hr>
+<h3 id="1-sm-step-的核心行为"><a href="#1-sm-step-的核心行为" class="headerlink" title="1. sm.step() 的核心行为"></a><strong>1. <code>sm.step()</code> 的核心行为</strong></h3><table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>单步执行</strong></td>
+<td>对<strong>当前所有活跃状态</strong>（<code>sm.active</code>）<strong>各执行一条指令</strong></td>
+</tr>
+<tr>
+<td><strong>自动分支分裂</strong></td>
+<td>若某状态的指令是条件分支（如 <code>jz/jnz</code>），会生成对应路径的新状态</td>
+</tr>
+<tr>
+<td><strong>非递归推进</strong></td>
+<td>仅执行一步，<strong>不会自动递归展开所有路径</strong>，需多次调用 <code>step()</code> 才能继续探索</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-看似矛盾的解释"><a href="#2-看似矛盾的解释" class="headerlink" title="2. 看似矛盾的解释"></a><strong>2. 看似矛盾的解释</strong></h3><h4 id="1-“探索所有可能路径”"><a href="#1-“探索所有可能路径”" class="headerlink" title="(1) “探索所有可能路径”"></a><strong>(1) “探索所有可能路径”</strong></h4><ul>
+<li><strong>分支分裂时</strong>：当某个活跃状态遇到分支指令，<code>step()</code> 会生成两个新状态（分别对应条件成立&#x2F;不成立），保证<strong>所有可能性被捕获</strong>。</li>
+<li><strong>但</strong>：新状态只是加入状态集合，<strong>不会立即执行后续指令</strong>，需再次调用 <code>step()</code> 推进。</li>
+</ul>
+<h4 id="2-“不会自动完成遍历”"><a href="#2-“不会自动完成遍历”" class="headerlink" title="(2) “不会自动完成遍历”"></a><strong>(2) “不会自动完成遍历”</strong></h4><ul>
+<li><strong>单步性</strong>：每次 <code>step()</code> 只执行<strong>当前活跃状态的一步</strong>，不自动递归执行新生成的状态。</li>
+<li><strong>需要循环</strong>：完全展开所有路径需手动循环调用 <code>step()</code>，直到满足终止条件（如所有路径结束或超时）。</li>
+</ul>
+<hr>
+<h3 id="3-示例说明"><a href="#3-示例说明" class="headerlink" title="3. 示例说明"></a><strong>3. 示例说明</strong></h3><p>假设程序在地址 <code>0x400010</code> 处有一个条件分支：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python">sm = proj.factory.simulation_manager()<br>sm.step()  <span class="hljs-comment"># 执行到分支处，分裂为两个状态（假设 active=[0x400010]）</span><br><span class="hljs-comment"># 现在 sm.active 包含两个状态：</span><br><span class="hljs-comment"># - 状态A（条件成立，PC=0x400020）</span><br><span class="hljs-comment"># - 状态B（条件不成立，PC=0x400030）</span><br><br>sm.step()  <span class="hljs-comment"># 对状态A和B各执行一步，可能继续分裂</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-关键结论"><a href="#4-关键结论" class="headerlink" title="4. 关键结论"></a><strong>4. 关键结论</strong></h3><ul>
+<li><strong>正确表述</strong>：<br><code>sm.step()</code> <strong>会处理当前所有活跃状态的分支分裂</strong>（保证路径完整性），但<strong>不会自动递归执行新状态</strong>（需用户显式推进）。  </li>
+<li><strong>用户责任</strong>：<br>需要手动管理状态探索策略（如循环调用 <code>step()</code> 或使用 <code>sm.run()</code> 自动完成）。</li>
+</ul>
+<hr>
+<h3 id="5-自动化路径探索方案"><a href="#5-自动化路径探索方案" class="headerlink" title="5. 自动化路径探索方案"></a><strong>5. 自动化路径探索方案</strong></h3><p>若需自动展开所有路径，可使用以下方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方法1：循环执行直到无活跃状态</span><br><span class="hljs-keyword">while</span> <span class="hljs-built_in">len</span>(sm.active) &gt; <span class="hljs-number">0</span>:<br>    sm.step()<br><br><span class="hljs-comment"># 方法2：使用 run() 自动探索（有超时风险）</span><br>sm.run()<br></code></pre></td></tr></table></figure>
+
+<p>二者的区别在于 <code>run()</code> 内部实现了更复杂的路径调度策略（如优先探索高权重路径），而手动 <code>step()</code> 适合精细控制。</p>
+<p><a target="_blank" rel="noopener" href="https://angr-docs-zh-cn.readthedocs.io/zh-cn/latest/api.html#module-angr.project">API 参考手册 - angr 文档</a></p>
+<p><a target="_blank" rel="noopener" href="https://umvfx1bvaw50.github.io/angrDeflat/">angr deflat源码分析 | UmVfX1BvaW50’s Blog</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件逆向工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/" class="category-chain-item">二进制程序分析</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/" class="category-chain-item">符号执行</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>angr的基本使用</div>
+      <div>https://hermes37.vercel.app/2025/06/06/软件逆向工程/符号执行/angr的基本使用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/10/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/Ollvm/Ollvm%E5%8F%8D%E6%B7%B7%E6%B7%86/" title="Ollvm反混淆">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Ollvm反混淆</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/06/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/Ollvm/%E6%8E%A7%E5%88%B6%E6%B5%81%E5%B9%B3%E5%9D%A6%E5%8C%96/" title="控制流平坦化">
+                        <span class="hidden-mobile">控制流平坦化</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,847 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Z3约束条件约束条件（Constraints） 是对问题求解空间的限制或规定，它规定了哪些解是允许的，哪些解是不允许的。在数学、计算机科学、逻辑学等领域，约束条件通常用于描述某个问题的限制条件，目的是让我们能够从所有可能的解中筛选出符合特定规则或要求的解。 在数学中，约束条件通常是一些方程或不等式，定义了一个问题的解集。例如，约束条件 x + y ≤ 10 就表示在求解时，变量 x 和 y 的和不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="angr原理浅析">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/angr%E5%8E%9F%E7%90%86%E6%B5%85%E6%9E%90/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="Z3约束条件约束条件（Constraints） 是对问题求解空间的限制或规定，它规定了哪些解是允许的，哪些解是不允许的。在数学、计算机科学、逻辑学等领域，约束条件通常用于描述某个问题的限制条件，目的是让我们能够从所有可能的解中筛选出符合特定规则或要求的解。 在数学中，约束条件通常是一些方程或不等式，定义了一个问题的解集。例如，约束条件 x + y ≤ 10 就表示在求解时，变量 x 和 y 的和不">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/19/5rTdVqvCSa6zQtP.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/19/mJYOACvKk2acpsj.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/19/u3ez9CtglaXyJNk.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/19/pwKVfMPCjUbX95v.jpg">
+<meta property="article:published_time" content="2025-05-09T07:31:42.634Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:32.396Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/19/5rTdVqvCSa6zQtP.png">
+  
+  
+  
+  <title>angr原理浅析 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="angr原理浅析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">angr原理浅析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Z3"><a href="#Z3" class="headerlink" title="Z3"></a>Z3</h1><h2 id="约束条件"><a href="#约束条件" class="headerlink" title="约束条件"></a>约束条件</h2><p><strong>约束条件（Constraints）</strong> 是对问题求解空间的限制或规定，它规定了哪些解是允许的，哪些解是不允许的。在数学、计算机科学、逻辑学等领域，约束条件通常用于描述某个问题的限制条件，目的是让我们能够从所有可能的解中筛选出符合特定规则或要求的解。</p>
+<p>在数学中，约束条件通常是一些方程或不等式，定义了一个问题的解集。例如，约束条件 <code>x + y ≤ 10</code> 就表示在求解时，变量 <code>x</code> 和 <code>y</code> 的和不能超过 10。</p>
+<p>在计算机科学，约束条件常常是对程序状态的描述，表示程序在某一时刻满足的条件或限制。例如，假设有一个条件 <code>if (x &lt; 10)</code>，那么在程序的执行过程中，<code>x &lt; 10</code> 就是一个约束条件。</p>
+<h2 id="什么是Z3"><a href="#什么是Z3" class="headerlink" title="什么是Z3"></a>什么是Z3</h2><p><a target="_blank" rel="noopener" href="https://github.com/Z3Prover/z3">Z3 solver</a> 是由微软开发的 <strong>可满足性模理论求解器</strong>（<strong>Satisfiability Modulo Theory solver</strong>， 即 <code>SMT solver</code>），用于检查逻辑表达式的可满足性，并可以找到一组约束中的其中一个可行解（无法找出所有的可行解）。</p>
+<p>不深入研究的话，这里可以简单理解为：<strong>解方程</strong>，当然他还有很多应用场景比如：</p>
+<ul>
+<li><strong>布尔逻辑</strong>：可以处理布尔表达式，求解SAT（布尔可满足性）问题。</li>
+<li><strong>线性算术</strong>：能够处理整数和实数的线性约束。</li>
+<li><strong>非线性算术</strong>：支持非线性算术运算的求解。</li>
+<li><strong>数组、集合、图结构</strong>：支持复杂的数据结构。</li>
+<li><strong>符号执行</strong>：结合符号执行技术，Z3能对程序的执行路径进行分析和求解。</li>
+<li><strong>程序验证</strong>：通过将程序的行为转化为约束，Z3可以帮助验证程序是否满足特定的安全性或功能性要求。</li>
+<li><strong>自动化定理证明</strong>：Z3可以用来证明数学定理或逻辑公式的有效性。</li>
+</ul>
+<h2 id="简单的使用"><a href="#简单的使用" class="headerlink" title="简单的使用"></a>简单的使用</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> z3 <span class="hljs-keyword">import</span> Solver, Real, sat<br><br><span class="hljs-comment"># 创建符号变量 x</span><br>x = Real(<span class="hljs-string">&#x27;x&#x27;</span>)<br><span class="hljs-comment"># 创建方程：x^2 - 3x + 2 = 0</span><br>equation = x**<span class="hljs-number">2</span> - <span class="hljs-number">3</span>*x + <span class="hljs-number">2</span> == <span class="hljs-number">0</span><br><span class="hljs-comment"># 创建一个求解器</span><br>solver = Solver()<br><span class="hljs-comment"># 将方程添加到求解器</span><br>solver.add(equation)<br><span class="hljs-comment"># 检查是否可解</span><br><span class="hljs-keyword">if</span> solver.check() == sat:<br>    model = solver.model()<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;解为 x = <span class="hljs-subst">&#123;model[x]&#125;</span>&quot;</span>)<br><span class="hljs-keyword">else</span>:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;方程无解&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>结果是：<img src="https://s2.loli.net/2024/12/19/5rTdVqvCSa6zQtP.png" srcset="/img/loading.gif" lazyload alt="image-20241219153257642" style="zoom:50%;" /></p>
+<p>而不是：x &#x3D; 1和x &#x3D; 2</p>
+<p>这是因为Z3 在求解方程时，默认情况下只返回第一个找到的解。这是因为 Z3 是一个 <strong>满足性求解器</strong>（Satisfiability Solver），它的目标是检查约束是否可满足，并返回其中一个满足约束的解，而不是所有可能的解。</p>
+<p>通过进一步添加约束条件可以得到所有解（即排除已经找到的解）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 检查是否可解</span><br><span class="hljs-keyword">while</span> solver.check() == sat:<br>    model = solver.model()<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;解为 x = <span class="hljs-subst">&#123;model[x]&#125;</span>&quot;</span>)<br>    <span class="hljs-comment"># 排除当前解，继续寻找下一个解</span><br>    solver.add(x != model[x])<br></code></pre></td></tr></table></figure>
+
+<p>结果是：<img src="https://s2.loli.net/2024/12/19/mJYOACvKk2acpsj.png" srcset="/img/loading.gif" lazyload alt="image-20241219153642676" style="zoom:50%;" /></p>
+<h1 id="angr"><a href="#angr" class="headerlink" title="angr"></a>angr</h1><h2 id="符号执行"><a href="#符号执行" class="headerlink" title="符号执行"></a>符号执行</h2><p><img src="https://s2.loli.net/2024/12/19/u3ez9CtglaXyJNk.png" srcset="/img/loading.gif" lazyload alt="220430bodvqhbod4pty8zv"></p>
+<p>符号执行是一种程序分析技术，它通过将程序中的某些变量替换为符号变量（而不是具体值），来模拟程序的执行。符号变量代表任意值，并通过符号计算来追踪程序的执行路径和计算结果。与传统的测试方法不同，它并不是通过具体的输入值来执行程序，而是通过符号表示的输入值来执行程序，并尝试探索程序中所有可能的执行路径。</p>
+<h3 id="符号执行流程"><a href="#符号执行流程" class="headerlink" title="符号执行流程"></a>符号执行流程</h3><p><strong>符号变量</strong>： 在符号执行中，输入变量（例如函数参数、内存内容等）被替换为符号变量（symbolic variables），这些符号变量表示可以取任意值。与传统的实际值（如整数、字符串）不同，符号变量没有固定的值，而是代表一个值的集合或范围。</p>
+<p><strong>路径探索</strong>： 符号执行通过模拟程序的控制流来探索不同的路径。每当程序遇到条件判断（例如 <code>if</code> 语句）时，它会根据符号变量的约束来分裂路径。符号执行引擎会为每条路径维护一组条件约束，表示该路径的执行条件。</p>
+<p><strong>约束收集与求解</strong>： 在执行过程中，每当遇到条件判断时（例如 <code>if</code> 语句），符号执行引擎会根据条件生成约束（例如 <code>x &lt; 10</code> 或 <code>x &gt;= 10</code>）。这些约束随着路径的推进被累积。最后，使用约束求解器（如 Z3）来检查是否存在解，即判断某条路径是否可行。如果求解器找到了满足这些约束的具体输入值，那么符号执行就能沿着这条路径继续模拟执行。</p>
+<h2 id="什么是angr"><a href="#什么是angr" class="headerlink" title="什么是angr?"></a>什么是angr?</h2><p><strong>angr</strong> 是一个基于 Python 的 <strong>二进制分析框架</strong>，专门用于分析二进制程序。它提供了一个强大的工具集，用于执行分析任务，如符号执行（Symbolic Execution）、路径探索（Path Exploration）、漏洞挖掘、逆向工程、静态分析等。</p>
+<h2 id="angr的工作原理？"><a href="#angr的工作原理？" class="headerlink" title="angr的工作原理？"></a>angr的工作原理？</h2><ol>
+<li><strong>加载二进制</strong>：使用 angr 加载目标二进制文件（例如 ELF、PE 格式的可执行文件）。</li>
+<li><strong>符号执行与路径探索</strong>：angr 会在二进制程序的某些地方插入符号（symbolic variables），并从程序入口点（例如 <code>main</code> 函数）开始执行。每执行一步，angr 会模拟程序的行为并生成新的约束条件。</li>
+<li><strong>生成约束</strong>：在符号执行过程中，程序的条件分支会根据符号变量的取值生成约束（例如：<code>x &lt; 10</code>）。这些约束会被加入到当前路径的状态中。</li>
+<li><strong>路径分裂</strong>：当遇到条件分支时，angr 会将程序的执行路径分裂成多个子路径。例如，<code>if (x &lt; 10)</code> 会导致两个路径，一个路径满足 <code>x &lt; 10</code>，另一个路径满足 <code>x &gt;= 10</code>。</li>
+<li><strong>求解与回溯</strong>：每条路径都会产生约束，angr 会通过求解器（如 Z3）来判断某条路径是否可行。如果路径不可行，angr 会将其丢弃。如果路径可行，它将继续沿着该路径执行，直到达到目标或出现漏洞。</li>
+</ol>
+<p>可以看出同unicorn只能走一个分支相比，angr在运行的过程中，从给定的一个state(程序状态，程序的寄存器值，内存的不同都可以作为程序状态的不同)开始执行，每个state维护着一个约束条件的集合(比如i&lt;10,i!&#x3D;0)，通过收集约束，进行遍历，最终angr理论上可以遍历到程序的所有可能控制流，当angr运行到目标状态时，就可以调用求解器(z3等)对一路上收集到的约束进行求解，最终得到某个符号能够到达当前状态的值。</p>
+<p><img src="https://s2.loli.net/2024/12/19/pwKVfMPCjUbX95v.jpg" srcset="/img/loading.gif" lazyload alt="215918bnzmvv6wzoqingwv"></p>
+<p>值得注意的是：同传统的静态符号执行(unicorn引擎)相比，<strong>angr使用的是混合执行技术，合并了静态符号执行，和动态具体执行两种技术</strong></p>
+<p>动态符号执行（concolic execution）维持了两个状态。<strong>一种是实际变量的状态，另一种是符号化的状态。</strong>实际状态将随机生成值映射到变量中，而符号化状态将变量进行符号化。concolic首先将实际状态运行，并收集实际运行时该路径的变量符号化的约束式，i求解。并将约束式取反，获取另一条路径的约束式并求解。过程不断重复，知道路径被探索完，或者达到用户设置的限制。</p>
+<p>具体的例子可以看到：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">func</span><span class="hljs-params">(<span class="hljs-type">int</span> x)</span> &#123;<br>    <span class="hljs-keyword">if</span> (x &gt; <span class="hljs-number">10</span>) &#123;<br>        <span class="hljs-keyword">if</span> (x &lt; <span class="hljs-number">20</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;  <span class="hljs-comment">// 路径1</span><br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;  <span class="hljs-comment">// 路径2</span><br>        &#125;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">3</span>;      <span class="hljs-comment">// 路径3</span><br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="动态执行过程"><a href="#动态执行过程" class="headerlink" title="动态执行过程"></a>动态执行过程</h3><ol>
+<li><strong>实际状态</strong>：随机初始化输入，例如 <code>x = 15</code>。</li>
+<li><strong>符号化状态</strong>：将 <code>x</code> 表示为符号变量 <code>X</code>。</li>
+</ol>
+<hr>
+<h4 id="步骤1：运行实际状态并收集约束"><a href="#步骤1：运行实际状态并收集约束" class="headerlink" title="步骤1：运行实际状态并收集约束"></a><strong>步骤1：运行实际状态并收集约束</strong></h4><ol>
+<li><p><strong>实际运行</strong>：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs py">x = <span class="hljs-number">15</span><br><span class="hljs-comment">#执行路径为：</span><br><span class="hljs-keyword">if</span> (<span class="hljs-number">15</span> &gt; <span class="hljs-number">10</span>) &#123;          // 条件成立<br>    <span class="hljs-keyword">if</span> (<span class="hljs-number">15</span> &lt; <span class="hljs-number">20</span>) &#123;      // 条件成立<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>结果：程序返回 <code>1</code>，对应<strong>路径1</strong>。</p>
+</li>
+<li><p><strong>符号化执行</strong>：</p>
+<p>符号化条件为：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs py">X &gt; <span class="hljs-number">10</span>  (路径<span class="hljs-number">1</span>)<br>X &lt; <span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+
+<p>将这些条件存入符号约束集。</p>
+</li>
+</ol>
+<hr>
+<h4 id="步骤2：生成新路径（约束取反）"><a href="#步骤2：生成新路径（约束取反）" class="headerlink" title="步骤2：生成新路径（约束取反）"></a><strong>步骤2：生成新路径（约束取反）</strong></h4><ol>
+<li><p>从约束集中取反条件：</p>
+<p>原路径约束为 <code>X &gt; 10 &amp;&amp; X &lt; 20</code>。</p>
+<p>取反约束为 </p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">!(X &gt; <span class="hljs-number">10</span> &amp;&amp; X &lt; <span class="hljs-number">20</span>)<br></code></pre></td></tr></table></figure>
+
+<p>即：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">X &lt;= <span class="hljs-number">10</span> || X &gt;= <span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>**选择其中一条路径：<code>X &lt;= 10</code>**。</p>
+<p>求解约束 <code>X &lt;= 10</code>，求解器可能返回 <code>X = 5</code>。</p>
+</li>
+</ol>
+<hr>
+<h4 id="步骤3：探索新路径"><a href="#步骤3：探索新路径" class="headerlink" title="步骤3：探索新路径"></a><strong>步骤3：探索新路径</strong></h4><ol>
+<li><p>使用新值 <code>x = 5</code> 实际运行：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs py">x = <span class="hljs-number">5</span><br><span class="hljs-comment">#执行路径为：</span><br><span class="hljs-keyword">if</span> (<span class="hljs-number">5</span> &gt; <span class="hljs-number">10</span>) &#123;           // 条件不成立<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">3</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>结果：程序返回 <code>3</code>，对应<strong>路径3</strong>。</p>
+</li>
+<li><p>收集符号化约束：</p>
+<p>符号化条件为：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">X &lt;= <span class="hljs-number">10</span>  (路径<span class="hljs-number">3</span>)<br></code></pre></td></tr></table></figure></li>
+</ol>
+<hr>
+<h4 id="步骤4：继续探索未覆盖的路径"><a href="#步骤4：继续探索未覆盖的路径" class="headerlink" title="步骤4：继续探索未覆盖的路径"></a><strong>步骤4：继续探索未覆盖的路径</strong></h4><ol>
+<li><p>再次从约束集中取反条件：</p>
+<p>已探索的路径约束为：</p>
+<p>​     路径1：<code>X &gt; 10 &amp;&amp; X &lt; 20</code></p>
+<p>​     路径3：<code>X &lt;= 10</code></p>
+<p>合并取反条件：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">!(X &gt; <span class="hljs-number">10</span> &amp;&amp; X &lt; <span class="hljs-number">20</span>) &amp;&amp; !(X &lt;= <span class="hljs-number">10</span>)<br></code></pre></td></tr></table></figure>
+
+<p>简化后为：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">X &gt;= <span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>**选择路径：<code>X &gt;= 20</code>**。</p>
+<p>求解约束 <code>X &gt;= 20</code>，求解器可能返回 <code>X = 25</code>。</p>
+</li>
+<li><p>使用新值 <code>x = 25</code> 实际运行：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">x = <span class="hljs-number">25</span>	<br></code></pre></td></tr></table></figure>
+
+<p>执行路径为：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">if</span> (<span class="hljs-number">25</span> &gt; <span class="hljs-number">10</span>) &#123;          // 条件成立<br>    <span class="hljs-keyword">if</span> (<span class="hljs-number">25</span> &lt; <span class="hljs-number">20</span>) &#123;      // 条件不成立<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>结果：程序返回 <code>2</code>，对应<strong>路径2</strong>。</p>
+</li>
+</ol>
+<hr>
+<h4 id="终止条件"><a href="#终止条件" class="headerlink" title="终止条件"></a><strong>终止条件</strong></h4><p>动态符号执行会重复上述过程：</p>
+<ol>
+<li>实际运行一个具体值。</li>
+<li>收集符号化约束。</li>
+<li>取反约束生成新路径。</li>
+<li>继续探索未覆盖的路径。</li>
+</ol>
+<p>直到：</p>
+<ul>
+<li><strong>所有路径都被探索</strong>：程序的逻辑分支全部覆盖。</li>
+<li><strong>达到用户设定的限制</strong>：例如最大路径数量、最大求解时间等。</li>
+</ul>
+<h2 id="angr的不足"><a href="#angr的不足" class="headerlink" title="angr的不足"></a>angr的不足</h2><h3 id="未约束导致路径爆炸"><a href="#未约束导致路径爆炸" class="headerlink" title="未约束导致路径爆炸"></a>未约束导致路径爆炸</h3><p>在符号执行中，如果函数的输入变量或状态没有被有效约束（即没有设定足够的条件），Angr 等工具会把这些变量当作符号值进行推理和执行。而未约束的变量可能会导致两方面的问题：</p>
+<ol>
+<li><strong>不确定的输入</strong>： 如果输入没有约束（例如，函数的参数没有指定具体的值或者范围），那么每次执行到某个条件判断时，就会有多个可能的选择。例如，假设你有一个函数，其中某个参数 <code>x</code> 的值没有明确的限制，那么在 <code>if</code> 语句中对 <code>x</code> 的判断就可能导致多个分支，每个分支都有不同的路径。</li>
+<li><strong>无限循环</strong>： 当未约束的变量影响到循环条件时，符号执行就无法准确预测循环何时结束，因为它并不知道循环的终止条件何时成立。例如，某个循环的退出条件可能是 <code>x == 0</code>，但 <code>x</code> 是一个未约束的符号变量，Angr 并不知道 <code>x</code> 什么时候会变为 0。因此，符号执行引擎就可能会一直在这个循环中进行模拟，导致路径在循环内无限增长。</li>
+</ol>
+<p>实例说明：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">void foo(<span class="hljs-built_in">int</span> x) &#123;<br>    <span class="hljs-keyword">while</span> (x &gt; <span class="hljs-number">0</span>) &#123;<br>        x--;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>如果我们给定一个具体的值，例如 <code>x = 10</code>，程序会在 10 次迭代后退出。</li>
+<li>但是如果 <code>x</code> 是一个未约束的符号变量（例如，Angr 看到 <code>x</code> 是一个符号值），它就不能确定 <code>x</code> 会在什么时候达到 0，或者是否有可能永远不为 0。</li>
+</ul>
+<p>在符号执行中，Angr 会尝试探索所有可能的路径。在这种情况下，由于 <code>x</code> 没有约束，符号执行引擎无法推断出 <code>x</code> 何时会变为 0，因此它可能会认为该循环将永远执行下去，导致<strong>路径爆炸</strong>。</p>
+<h4 id="路径爆炸与无限循环的关系"><a href="#路径爆炸与无限循环的关系" class="headerlink" title="路径爆炸与无限循环的关系"></a><strong>路径爆炸与无限循环的关系</strong></h4><p>路径爆炸指的是，随着未约束变量的增加，符号执行的路径数量呈指数级增长，导致无法有效地探索所有路径。无限循环是路径爆炸的一种特殊情况，通常发生在没有足够约束的情况下，符号执行无法判断循环是否终止，从而导致执行路径无法终止。</p>
+<p>例如，当未约束的循环变量 <code>x</code> 不断变化，且影响循环的终止条件时，Angr 可能会不断生成新的路径，每个路径代表不同的 <code>x</code> 值和不同的循环迭代次数，最终导致路径数量迅速膨胀，系统无法有效处理这些路径，从而导致“卡死”。</p>
+<p>实例说明：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-built_in">int</span> func(<span class="hljs-built_in">int</span> x) &#123;<br>    <span class="hljs-keyword">while</span> (x &gt; <span class="hljs-number">0</span>) &#123;<br>        x = x - <span class="hljs-number">1</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> x;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>如果 <code>x</code> 没有任何约束，Angr 会将其视为符号变量，可能会生成多条路径来探索 <code>x</code> 可能的值。每条路径都会尝试模拟 <code>x</code> 在每次循环中的变化，直到达到退出条件 <code>x &lt;= 0</code>。</p>
+<p>在符号执行的过程中，Angr 会对每次 <code>x = x - 1</code> 做出决策，并生成新的路径。</p>
+<p>如果没有足够的约束（例如，限制 <code>x</code> 的值或设置循环的最大迭代次数），Angr 可能会生成大量的路径来模拟不同的 <code>x</code> 值和循环次数，导致路径数目激增，甚至无法终止。</p>
+<h3 id="误报"><a href="#误报" class="headerlink" title="误报"></a>误报</h3><p>事实上angr是基于符号执行来遍历程序的所有路径，它是否能遍历所有路径其实取决于其约束求解引擎是否强大，这里采用的是z3<br>当它能明确发现这个条件是无法满足的时候就不会走向这个路径，我们可以称之为虚假控制流。<br>但是如果程序本身的逻辑中存在一个条件是非常难以满足的，或者说超出了约束求解引擎的能力，那么则有可能到达不了这个路径，就会被误标记为虚假的控制流，实际中是很少出现的。</p>
+<p>参考博客</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/0xJDchen/p/9291335.html">动若脱兔:深入浅出angr–初步理解符号执行以及angr架构 - 0xJDchen - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1484714-1-1.html">利用angr去除混淆的优势，不足与实践 - 吾爱破解 - 52pojie.cn</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/level5uiharu/p/16925991.html">angr_ctf——从0学习angr（一）：angr简介与核心概念 - Uiharu - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://ctf-wiki.org/reverse/tools/simulate-execution/angr/">angr - CTF Wiki</a></p>
+<p><a target="_blank" rel="noopener" href="https://sxhthreo.github.io/2024/08/14/security/fu-hao-zhi-xing-zong-shu/">符号执行综述 | ShiQuLiZhi BLOG</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件逆向工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/" class="category-chain-item">二进制程序分析</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/" class="category-chain-item">符号执行</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>angr原理浅析</div>
+      <div>https://hermes37.vercel.app/2025/05/09/软件逆向工程/符号执行/angr原理浅析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E6%8B%9F%E6%89%A7%E8%A1%8C/Unicorn%E5%8E%9F%E7%90%86%E6%B5%85%E6%9E%90/" title="Unicorn原理浅析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Unicorn原理浅析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B1%87%E7%BC%96/%E3%80%8AC++%E5%8F%8D%E6%B1%87%E7%BC%96%E4%B8%8E%E9%80%86%E5%90%91%E5%88%86%E6%9E%90%E6%8A%80%E6%9C%AF%E3%80%8B%E9%98%85%E8%AF%BB(%E5%9B%9B)/" title="《C++反汇编与逆向分析技术》阅读(四)">
+                        <span class="hidden-mobile">《C++反汇编与逆向分析技术》阅读(四)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

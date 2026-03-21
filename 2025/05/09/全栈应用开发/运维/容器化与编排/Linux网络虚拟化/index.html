@@ -1,0 +1,966 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Namespace和Cgroups技术实现了容器进程的隔离，并且通过AUFS让容器拥有自己的“文件系统”，容器中的进程所感受到的环境就像在一台虚拟机上一样，但是这台“虚拟机”还没有插上“网线”，那么在这里就会通过网络虚拟化技术构建容器的网络，给这个“虚拟机”插上网线。  网络虚拟化基石：network namespace在前面什么是Docker? - The Peak Tower中简单谈到了Li">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux网络虚拟化">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/Linux%E7%BD%91%E7%BB%9C%E8%99%9A%E6%8B%9F%E5%8C%96/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="Namespace和Cgroups技术实现了容器进程的隔离，并且通过AUFS让容器拥有自己的“文件系统”，容器中的进程所感受到的环境就像在一台虚拟机上一样，但是这台“虚拟机”还没有插上“网线”，那么在这里就会通过网络虚拟化技术构建容器的网络，给这个“虚拟机”插上网线。  网络虚拟化基石：network namespace在前面什么是Docker? - The Peak Tower中简单谈到了Li">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/xgL1EoyMjXqIip3.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/PkBuvI1oQ9a3wRr.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/aDsh4SYOvu6eFUt.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/ZlPWrOsL9azN6Do.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/CzdxsTFb5o3weID.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/uEVoA4qaz9nvMW6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/4QMab5CdKcYDiSf.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/dLj4SgboT7uUYEO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/TbFM4qnscNmp6ZY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/hTAnLaRXv5lp9O3.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/fEKAR3WDjgsX17H.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/EAeSkqDaQwpCcs2.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/R8yI9cxEZjXdisT.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/2FHZGacEyYKTexn.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/jOGoSys6UBJcqPr.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250212210753525.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/12/PkT35a8DYBmXOEp.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.123Z">
+<meta property="article:modified_time" content="2026-03-13T13:08:31.999Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="软件工程">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/12/xgL1EoyMjXqIip3.jpg">
+  
+  
+  
+  <title>Linux网络虚拟化 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux网络虚拟化"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          45 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux网络虚拟化</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>Namespace和Cgroups技术实现了容器进程的隔离，并且通过AUFS让容器拥有自己的“文件系统”，容器中的进程所感受到的环境就像在一台虚拟机上一样，但是这台“虚拟机”还没有插上“网线”，那么在这里就会通过网络虚拟化技术构建容器的网络，给这个“虚拟机”插上网线。</p>
+</blockquote>
+<h1 id="网络虚拟化基石：network-namespace"><a href="#网络虚拟化基石：network-namespace" class="headerlink" title="网络虚拟化基石：network namespace"></a>网络虚拟化基石：network namespace</h1><p>在前面<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/11/26/%E4%BB%80%E4%B9%88%E6%98%AFDocker/">什么是Docker? - The Peak Tower</a>中简单谈到了Linux Namespace技术，这里简单回顾一下：</p>
+<blockquote>
+<p>Linux的namespace（名字空间）的作用就是“隔离内核资源”。在Linux的世界里，文件系统挂载点、主机名、POSIX进程间通信消息队列、进程PID数字空间、IP地址、user ID数字空间等全局系统资源被namespace分割，装到一个个抽象的独立空间里。而隔离上述系统资源的namespace分别是Mount namespace、UTS namespace、IPC namespace、PID namespace、network namespace和user namespace。对进程来说，要想使用namespace里面的资源，首先要“进入”（具体操作方法，下文会介绍）到这个namespace，而且还无法跨namespace访问资源。</p>
+<p>Linux的namespace给里面的进程造成了两个错觉：</p>
+<p>（1）它是系统里唯一的进程。</p>
+<p>（2）它独享系统的所有资源。</p>
+<p>默认情况下，Linux进程处在和宿主机相同的namespace，即初始的根namespace里，默认享有全局系统资源。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/02/12/xgL1EoyMjXqIip3.jpg" srcset="/img/loading.gif" lazyload alt="OIP"></p>
+<p>再回到网络虚拟化技术(network namespace)它在Linux内核2.6版本引入，作用是隔离Linux系统的设备，以及IP地址、端口、路由表、防火墙规则等网络资源。因此，每个网络namespace里都有自己的网络设备（如IP地址、路由表、端口范围、&#x2F;proc&#x2F;net目录等）。从网络的角度看，network namespace使得容器非常有用，一个直观的例子就是：由于每个容器都有自己的（虚拟）网络设备，并且容器里的进程可以放心地绑定在端口上而不必担心冲突，这就使得在一个主机上同时运行多个监听80端口的Web服务器变为可能，如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/PkBuvI1oQ9a3wRr.png" srcset="/img/loading.gif" lazyload alt="image-20250212201736691"></p>
+<p>一个全新的network namespace会附带创建一个本地回环地址。除此之外，没有任何其他的网络设备。仅有一个本地回环设备是没法与外界通信的。如果我们想与外界（比如主机上的网卡）进行通信，就需要在namespace里再创建一对虚拟的以太网卡，即所谓的veth pair。顾名思义，veth pair总是成对出现且相互连接，它就像Linux的双向管道（pipe），报文从veth pair一端进去就会由另一端收到。</p>
+<hr>
+<blockquote>
+<p>我们都知道，Linux实际是通过网络设备去操作和使用网卡的，系统装了一个网卡之后会为其生成一个网络设备实例，比如eth0。而随着网络虚拟化技术的发展，Linux支持创建出虚拟化的设备，可以通过虚拟化设备的组合实现多种多样的功能和网络拓扑。常见的虚拟化设备有Veth、Bridge、802.1.q VLAN device、TAP等</p>
+</blockquote>
+<h1 id="千呼万唤始出来：veth-pair"><a href="#千呼万唤始出来：veth-pair" class="headerlink" title="千呼万唤始出来：veth pair"></a>千呼万唤始出来：veth pair</h1><p>veth pair一端发送的数据会在另外一端接收，非常像Linux的双向管道。根据这一特性，veth pair常被用于跨network namespace之间的通信，即分别将veth pair的两端放在不同的namespace里，如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/aDsh4SYOvu6eFUt.png" srcset="/img/loading.gif" lazyload alt="image-20250212202604375"></p>
+<p>veth pair设备的原理较简单，就是向veth pair设备的一端输入数据，数据通过内核协议栈后从veth pair的另一端出来。veth pair的基本工作原理如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/ZlPWrOsL9azN6Do.png" srcset="/img/loading.gif" lazyload alt="image-20250212203439291"></p>
+<hr>
+<h1 id="连接你我他：Linux-bridge"><a href="#连接你我他：Linux-bridge" class="headerlink" title="连接你我他：Linux bridge"></a>连接你我他：Linux bridge</h1><blockquote>
+<p>仅有veth pair设备，容器是无法访问外部网络的。为什么呢？因为从容器发出的数据包，实际上是直接进了veth pair设备的协议栈。如果容器需要访问网络，则需要使用网桥等技术将veth pair设备接收的数据包通过某种方式转发出去。</p>
+<p>在计算机网络课本上学的网桥正如其字面含义所描述的，有“牵线搭桥”之意，用于连接两个不同的局域网，是网线的延伸。网桥是二层网络设备，两个端口分别有一条独立的交换信道，不共享一条背板总线，可隔离冲突域。网桥比集线器（hub）性能更好，集线器上各端口都是共享同一条背板总线的。后来，网桥被具有更多端口、可隔离冲突域的交换机（switch）所取代。</p>
+</blockquote>
+<p>Linux bridge就是Linux系统中的网桥，但是Linux bridge的行为更像是一台虚拟的网络交换机，任意的真实物理设备（例如eth0）和虚拟设备（例如，前面讲到的veth pair和后面即将介绍的tap设备）都可以连接到Linux bridge上。</p>
+<p><strong>需要注意的是，Linux bridge不能跨机连接网络设备。</strong></p>
+<p>Linux bridge与Linux上其他网络设备的区别在于，普通的网络设备只有两端，从一端进来的数据会从另一端出去。例如，物理网卡从外面网络中收到的数据会转发给内核协议栈，而从协议栈过来的数据会转发到外面的物理网络中。Linux bridge则有多个端口，数据可以从任何端口进来，进来之后从哪个口出去取决目的MAC地址，原理和物理交换机差不多。</p>
+<p>刚创建一个bridge时，它是一个独立的网络设备，只有一个端口连着协议栈，其他端口什么都没连接，这样的bridge其实没有任何实际功能，如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/CzdxsTFb5o3weID.png" srcset="/img/loading.gif" lazyload alt="1"></p>
+<p>创建一对veth设备并连接到网桥的网络拓扑图。</p>
+<p><img src="https://s2.loli.net/2025/02/12/uEVoA4qaz9nvMW6.png" srcset="/img/loading.gif" lazyload alt="2"></p>
+<p>绑定IP地址的bridge设备的网络拓扑如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/4QMab5CdKcYDiSf.png" srcset="/img/loading.gif" lazyload alt="3"></p>
+<p>将物理网卡添加到bridge设备的网络拓扑如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/dLj4SgboT7uUYEO.png" srcset="/img/loading.gif" lazyload alt="4"></p>
+<h2 id="Linux-bridge在网络虚拟化中的应用"><a href="#Linux-bridge在网络虚拟化中的应用" class="headerlink" title="Linux bridge在网络虚拟化中的应用"></a><strong>Linux bridge在网络虚拟化中的应用</strong></h2><h3 id="虚拟机"><a href="#虚拟机" class="headerlink" title="虚拟机"></a>虚拟机</h3><p>虚拟机通过tun&#x2F;tap或者其他类似的虚拟网络设备，将虚拟机内的网卡同br0连接起来，这样就达到和真实交换机一样的效果，虚拟机发出去的数据包先到达br0，然后由br0交给eth0发送出去，数据包都不需要经过host机器的协议栈，效率高，如图所示。如果有多个虚拟机，那么这些虚拟机通过tun&#x2F;tap设备连接到网桥。</p>
+<p><img src="https://s2.loli.net/2025/02/12/TbFM4qnscNmp6ZY.png" srcset="/img/loading.gif" lazyload alt="5"></p>
+<h3 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h3><p>容器运行在自己单独的network namespace里，因此都有自己单独的协议栈。Linux bridge在容器场景的组网和上面的虚拟机场景差不多，但也存在一些区别。例如，容器使用的是veth pair设备，而虚拟机使用的是tun&#x2F;tap设备。在虚拟机场景下，我们给主机物理网卡eth0分配了IP地址；而在容器场景下，我们一般不会对宿主机eth0进行配置。在虚拟机场景下，虚拟器一般会和主机在同一个网段；而在容器场景下，容器和物理网络不在同一个网段内。Linux bridge在容器中的应用如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/hTAnLaRXv5lp9O3.png" srcset="/img/loading.gif" lazyload alt="6"></p>
+<p>在容器中配置其网关地址为br0，在我们的例子中即1.2.3.101（容器网络网段是1.2.3.0&#x2F;24）。因此，从容器发出去的数据包先到达br0，然后交给host机器的协议栈。由于目的IP是外网IP，且host机器开启了IP forward功能，数据包会通过eth0发送出去。因为容器所分配的网段一般都不在物理网络网段内（在我们的例子中，物理网络网段是10.20.30.0&#x2F;24），所以一般发出去之前会先做NAT转换（NAT转换需要自己配置，可以使用iptables，）。</p>
+<h2 id="网络接口的混杂模式"><a href="#网络接口的混杂模式" class="headerlink" title="网络接口的混杂模式"></a>网络接口的混杂模式</h2><p>前文提到过网桥的混杂模式，网络接口的混杂模式在Kubernetes网络也有应用，本节将重点讨论网络接口的混杂模式。</p>
+<p>混杂模式，简称Promisc mode，俗称“监听模式”。混杂模式通常被网络管理员用来诊断网络问题，但也会被无认证的、想偷听网络通信的人利用。根据维基百科的定义，混杂模式是指一个网卡会把它接收的所有网络流量都交给CPU，而不是只把它想转交的部分交给CPU。在IEEE 802定的网络规范中，每个网络帧都有一个目的MAC地址。在非混杂模式下，网卡只会接收目的MAC地址是它自己的单播帧，以及多播及广播帧；在混杂模式下，网卡会接收经过它的所有帧！</p>
+<hr>
+<h1 id="给用户态一个机会：tun-tap设备"><a href="#给用户态一个机会：tun-tap设备" class="headerlink" title="给用户态一个机会：tun&#x2F;tap设备"></a>给用户态一个机会：tun&#x2F;tap设备</h1><p>在前文讲解Linux bridge时就介绍过tun&#x2F;tap设备，并强调tun&#x2F;tap设备在虚拟机的组网过程中起到作用。tun&#x2F;tap设备到底是什么？从Linux文件系统的角度看，它是用户可以用文件句柄操作的字符设备；从网络虚拟化角度看，它是虚拟网卡，一端连着网络协议栈，另一端连着用户态程序。如果把veth pair称为设备孪生，那么tun&#x2F;tap就像是一对表兄弟。虽然很多情况下我们都是连带提到它们，但它们还是有些区别的。tun表示虚拟的是点对点设备，tap表示虚拟的是以太网设备，这两种设备针对网络包实施不同的封装。</p>
+<p>tun&#x2F;tap设备有什么作用呢？tun&#x2F;tap设备可以将TCP&#x2F;IP协议栈处理好的网络包发送给任何一个使用tun&#x2F;tap驱动的进程，由进程重新处理后发到物理链路中。tun&#x2F;tap设备就像是埋在用户程序空间的一个钩子，我们可以很方便地将对网络包的处理程序挂在这个钩子上，OpenVPN、Vtun、flannel都是基于它实现隧道包封装的。</p>
+<h2 id="tun-tap设备的工作原理"><a href="#tun-tap设备的工作原理" class="headerlink" title="tun&#x2F;tap设备的工作原理"></a>tun&#x2F;tap设备的工作原理</h2><p>先简单介绍物理设备上的数据是如何通过Linux网络栈送达用户态程序的，tun&#x2F;tap设备的基本原理如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/fEKAR3WDjgsX17H.png" srcset="/img/loading.gif" lazyload alt="7"></p>
+<p>上图是一个经典的、通过Socket调用实现用户态和内核态数据交互的过程。物理网卡从网线接收数据后送达网络协议栈，而进程通过Socket创建特殊套接字，从网络协议栈读取数据。</p>
+<p>从网络协议栈的角度看，tun&#x2F;tap设备这类虚拟网卡与物理网卡并无区别。只是对tun&#x2F;tap设备而言，它与物理网卡的不同表现在它的数据源不是物理链路，而是来自用户态！这也是tun&#x2F;tap设备的最大价值所在。</p>
+<p>tun&#x2F;tap设备其实就是利用Linux的设备文件实现内核态和用户态的数据交互，而访问设备文件则会调用设备驱动相应的例程，要知道设备驱动也是内核态和用户态的一个接口。tun设备的工作模式如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/EAeSkqDaQwpCcs2.png" srcset="/img/loading.gif" lazyload alt="8"></p>
+<p>普通的物理网卡通过网线收发数据包，而tun设备通过一个设备文件（&#x2F;dev&#x2F;tunX）收发数据包。所有对这个文件的写操作会通过tun设备转换成一个数据包传送给内核网络协议栈。当内核发送一个包给tun设备时，用户态的进程通过读取这个文件可以拿到包的内容。当然，用户态的程序也可以通过写这个文件向tun设备发送数据。</p>
+<p>tap设备与tun设备的工作原理完全相同，区别在于：</p>
+<ul>
+<li>tun设备的&#x2F;dev&#x2F;tunX文件收发的是IP包，因此只能工作在L3，无法与物理网卡做桥接，但可以通过三层交换（例如ip_forward）与物理网卡连通；</li>
+<li>tap设备的&#x2F;dev&#x2F;tapX文件收发的是链路层数据包，可以与物理网卡做桥接。</li>
+</ul>
+<blockquote>
+<p>tun设备的tun是英文隧道（tunnel）的缩写，言下之意，tun设备似乎与隧道网络存在一丝联系。tun&#x2F;tap设备的用处是将协议栈中的部分数据包转发给用户空间的应用程序，给用户空间的程序一个处理数据包的机会。常见的tun&#x2F;tap设备使用场景有数据压缩、加密等，最常见的是<strong>VPN</strong>，包括tunnel及应用层的IPSec等。</p>
+</blockquote>
+<h1 id="iptables"><a href="#iptables" class="headerlink" title="iptables"></a>iptables</h1><p>iptables的底层实现是netfilter。netfilter是Linux内核2.4版引入的一个子系统，最初由Linux内核防火墙和网络的维护者Rusty Russell提出。它作为一个通用的、抽象的框架，提供一整套hook函数的管理机制，使得数据包过滤、包处理（设置标志位、修改TTL等）、地址伪装、网络地址转换、透明代理、访问控制、基于协议类型的连接跟踪，甚至带宽限速等功能成为可能。netfilter的架构就是在整个网络流程的若干位置放置一些钩子，并在每个钩子上挂载一些处理函数进行处理。</p>
+<p>IP层的5个钩子点的位置，对应iptables就是5条内置链，分别是PREROUTING、POSTROUTING、INPUT、OUTPUT和FORWARD。netfilter原理图如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/R8yI9cxEZjXdisT.png" srcset="/img/loading.gif" lazyload alt="9"></p>
+<p>当网卡上收到一个包送达协议栈时，最先经过的netfilter钩子是PREROUTING，如果确实有用户埋了这个钩子函数，那么内核将在这里对数据包进行目的地址转换（DNAT）。不管在PREROUTING有没有做过DNAT，内核都会通过查本地路由表决定这个数据包是发送给本地进程还是发送给其他机器。如果是发送给其他机器（或其他network namespace），就相当于把本地当作路由器，就会经过netfilter的FORWARD钩子，用户可以在此处设置包过滤钩子函数，例如iptables的reject函数。所有马上要发到协议栈外的包都会经过POSTROUTING钩子，用户可以在这里埋下源地址转换（SNAT）或源地址伪装（Masquerade，简称Masq）的钩子函数。如果经过上面的路由决策，内核决定把包发给本地进程，就会经过INPUT钩子。本地进程收到数据包后，回程报文会先经过OUTPUT钩子，然后经过一次路由决策（例如，决定从机器的哪块网卡出去，下一跳地址是多少等），最后出协议栈的网络包同样会经过POSTROUTING钩子。</p>
+<p>netfilter是Linux内核网络模块的一个经典框架，毫不夸张地说，整个Linux系统的<strong>网络安全</strong>大厦都构建在netfilter之上，如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/2FHZGacEyYKTexn.png" srcset="/img/loading.gif" lazyload alt="10"></p>
+<p>我们可以发现，构建在netfilter钩子之上的网络安全策略和连接跟踪的用户态程序就有ebtables、arptables、（IPv6版本的）ip6tables、iptables、iptables-nftables（iptables的改进版本）、conntrack（连接跟踪）等。Kubernetes网络之间用到的工具就有ebtables、iptables&#x2F;ip6tables和conntrack，其中iptables是核心。</p>
+<h2 id="iptables的三板斧：table、chain和rule"><a href="#iptables的三板斧：table、chain和rule" class="headerlink" title="iptables的三板斧：table、chain和rule"></a>iptables的三板斧：table、chain和rule</h2><p>iptables是用户空间的一个程序，通过netlink和内核的netfilter框架打交道，负责往钩子上配置回调函数。一般情况下用于构建Linux内核防火墙，特殊情况下也做服务负载均衡（这是Kubernetes的特色操作，我们将在后面章节专门分析）。iptables的工作原理如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/jOGoSys6UBJcqPr.png" srcset="/img/loading.gif" lazyload alt="11"></p>
+<p>我们常说的iptables 5X5，即5张表（table）和5条链（chain）。</p>
+<h3 id="Table"><a href="#Table" class="headerlink" title="Table"></a>Table</h3><table>
+<thead>
+<tr>
+<th><strong>表名称</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>filter 表</strong></td>
+<td>默认的表，用于网络流量的过滤。包含数据包的接受（ACCEPT）、拒绝（DROP）等基本操作。</td>
+</tr>
+<tr>
+<td><strong>nat 表</strong></td>
+<td>用于网络地址转换（NAT，Network Address Translation），处理数据包的源地址和目的地址转换，主要用于路由、端口转发等。</td>
+</tr>
+<tr>
+<td><strong>mangle 表</strong></td>
+<td>用于修改数据包的IP头部或其他特性，例如修改TTL（Time to Live），或者改变数据包的TOS（Type of Service）值。</td>
+</tr>
+<tr>
+<td><strong>raw 表</strong></td>
+<td>用于处理数据包的连接跟踪（connection tracking）功能，可以让你在数据包被连接跟踪之前或之后进行处理。</td>
+</tr>
+<tr>
+<td><strong>security 表</strong></td>
+<td>用于实施安全策略，主要用于SELinux（Security-Enhanced Linux）环境下。通过该表，可以对数据包应用与安全相关的策略。</td>
+</tr>
+</tbody></table>
+<p>这5张表的优先级从高到低是：raw、mangle、nat、filter、security。需要注意的是，iptables不支持用户自定义表。</p>
+<h3 id="Chain"><a href="#Chain" class="headerlink" title="Chain"></a><strong>Chain</strong></h3><table>
+<thead>
+<tr>
+<th><strong>链名称</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>INPUT 链</strong></td>
+<td>该链用于处理进入本机的数据包。所有发往本地系统的数据包会首先进入 INPUT 链。</td>
+</tr>
+<tr>
+<td><strong>OUTPUT 链</strong></td>
+<td>该链用于处理由本机发出的数据包。所有由本机发送的数据包会首先进入 OUTPUT 链。</td>
+</tr>
+<tr>
+<td><strong>FORWARD 链</strong></td>
+<td>该链用于处理通过本机转发的数据包。如果数据包不是发往本地机器，而是需要转发到其他机器时，会经过此链。</td>
+</tr>
+<tr>
+<td><strong>PREROUTING 链</strong></td>
+<td>该链用于处理进入本机的数据包，在路由决定之前进行处理。例如，NAT表中的端口转发规则会使用此链。</td>
+</tr>
+<tr>
+<td><strong>POSTROUTING 链</strong></td>
+<td>该链用于处理从本机发出的数据包，在路由决定之后进行处理。常用于修改出站数据包的源地址（如源地址转换）。</td>
+</tr>
+</tbody></table>
+<p>这里产生了一个疑问，iptables的链（chain）的概念还比较好理解，就是对应netfilter的5处钩子，而iptables的表（table）的具体作用是什么呢？而且上文说的“不是每个链上都能挂表”这句话的表述似乎也很奇怪。</p>
+<p>任何概念都不是凭空想象出来的，它都是有实际用途的。其实，iptables的表是来分类管理iptables规则（rule）的，系统所有的iptables规则都被划分到不同的表集合中。上文也提到了，filter表中会有过滤数据包的规则，nat表中会有做地址转换的规则。因此，iptables的规则就是挂在netfilter钩子上的函数，用来修改数据包的内容或过滤数据包，iptables的表就是所有规则的5个逻辑集合！</p>
+<h3 id="Rule"><a href="#Rule" class="headerlink" title="Rule"></a>Rule</h3><p>在 <code>iptables</code> 中，<strong>Rule（规则）</strong> 是用于定义如何处理进入、离开或转发的数据包的配置项。每个规则（Rule）包含了一组条件和对应的动作。通过这些规则，可以指定特定的数据包流量如何被接受、拒绝或处理。</p>
+<h4 id="1-iptables-规则的基本结构"><a href="#1-iptables-规则的基本结构" class="headerlink" title="1. iptables 规则的基本结构"></a>1. <strong>iptables 规则的基本结构</strong></h4><p>每条 <code>iptables</code> 规则通常由以下几个部分组成：</p>
+<ul>
+<li><strong>匹配条件（Match Conditions）</strong>：指定规则的适用条件，例如源地址、目标地址、协议类型、端口等。</li>
+<li><strong>动作（Target Action）</strong>：指定匹配条件满足时，iptables 应该对数据包执行的操作，例如 ACCEPT、DROP、REJECT、SNAT、DNAT 等。</li>
+</ul>
+<p>例如，以下是一个简单的规则：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">iptables -A INPUT -p tcp --dport 80 -j ACCEPT<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-A INPUT</code>：将规则追加到 <code>INPUT</code> 链。</li>
+<li><code>-p tcp</code>：匹配协议为 TCP。</li>
+<li><code>--dport 80</code>：匹配目标端口为 80（HTTP 服务）。</li>
+<li><code>-j ACCEPT</code>：匹配成功时，接受该数据包。</li>
+</ul>
+<h4 id="2-iptables-规则的常见目标"><a href="#2-iptables-规则的常见目标" class="headerlink" title="2. iptables 规则的常见目标"></a>2. <strong>iptables 规则的常见目标</strong></h4><p><code>iptables</code> 支持多种目标类型，常见的包括：</p>
+<table>
+<thead>
+<tr>
+<th><strong>目标（Target）</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ACCEPT</strong></td>
+<td>允许数据包通过。</td>
+</tr>
+<tr>
+<td><strong>DROP</strong></td>
+<td>丢弃数据包，不返回任何响应（常用于防止攻击）。</td>
+</tr>
+<tr>
+<td><strong>REJECT</strong></td>
+<td>丢弃数据包并返回一个 ICMP 错误消息（例如，目标不可达）。</td>
+</tr>
+<tr>
+<td><strong>SNAT</strong></td>
+<td>源地址转换（Source NAT），修改数据包的源地址。</td>
+</tr>
+<tr>
+<td><strong>DNAT</strong></td>
+<td>目的地址转换（Destination NAT），修改数据包的目标地址。</td>
+</tr>
+<tr>
+<td><strong>MASQUERADE</strong></td>
+<td>动态源地址转换，通常用于共享 Internet 连接（当源地址是本地私有地址时）。</td>
+</tr>
+<tr>
+<td><strong>LOG</strong></td>
+<td>记录数据包的详细信息，通常用于调试或监控。</td>
+</tr>
+<tr>
+<td><strong>RETURN</strong></td>
+<td>停止当前链的处理，返回到调用链的下一条规则。</td>
+</tr>
+<tr>
+<td><strong>MARK</strong></td>
+<td>设置数据包标记，用于其他系统的规则或日志管理。</td>
+</tr>
+</tbody></table>
+<h4 id="3-规则匹配条件"><a href="#3-规则匹配条件" class="headerlink" title="3. 规则匹配条件"></a>3. <strong>规则匹配条件</strong></h4><p>每条规则都有一些匹配条件，这些条件可以组合使用，以确保规则只适用于特定的数据包。常见的匹配条件包括：</p>
+<table>
+<thead>
+<tr>
+<th><strong>条件</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>-p [协议]</strong></td>
+<td>匹配协议类型，如 <code>tcp</code>、<code>udp</code>、<code>icmp</code> 等。</td>
+</tr>
+<tr>
+<td><strong>-s [源IP地址]</strong></td>
+<td>匹配源IP地址（可以是IP地址范围）。</td>
+</tr>
+<tr>
+<td><strong>-d [目标IP地址]</strong></td>
+<td>匹配目标IP地址（可以是IP地址范围）。</td>
+</tr>
+<tr>
+<td><strong>–sport [源端口]</strong></td>
+<td>匹配源端口（通常与协议为 <code>tcp</code> 或 <code>udp</code> 一起使用）。</td>
+</tr>
+<tr>
+<td><strong>–dport [目标端口]</strong></td>
+<td>匹配目标端口（通常与协议为 <code>tcp</code> 或 <code>udp</code> 一起使用）。</td>
+</tr>
+<tr>
+<td><strong>-i [接口]</strong></td>
+<td>匹配数据包的进入接口（例如 <code>eth0</code>）。</td>
+</tr>
+<tr>
+<td><strong>-o [接口]</strong></td>
+<td>匹配数据包的离开接口（例如 <code>eth0</code>）。</td>
+</tr>
+<tr>
+<td><strong>-m [模块]</strong></td>
+<td>使用额外的匹配模块，如 <code>conntrack</code>、<code>state</code> 等。</td>
+</tr>
+<tr>
+<td><strong>-j [目标]</strong></td>
+<td>指定规则匹配成功后执行的动作（如 <code>ACCEPT</code>、<code>DROP</code>）。</td>
+</tr>
+</tbody></table>
+<p>值得一提的是，用户自定义链中的规则和系统预定义的5条链里的规则没有区别。由于自定义的链没有与netfilter里的钩子进行绑定，所以它不会自动触发，只能从其他链的规则中跳转过来，这也是JUMP动作存在的意义。</p>
+<h3 id="iptables表与链的对应关系"><a href="#iptables表与链的对应关系" class="headerlink" title="iptables表与链的对应关系"></a>iptables表与链的对应关系</h3><p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250212210753525.png" srcset="/img/loading.gif" lazyload alt="12"></p>
+<p>如果我们扩充图9，给它加上iptables的5张表，那么一个网络包经过iptables的处理路径如图所示。</p>
+<p><img src="https://s2.loli.net/2025/02/12/PkT35a8DYBmXOEp.png" srcset="/img/loading.gif" lazyload alt="13"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4%E6%B5%8B%E8%AF%95/" class="category-chain-item">运维测试</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4%E6%B5%8B%E8%AF%95/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/" class="category-chain-item">容器化与编排</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4%E6%B5%8B%E8%AF%95/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/Docker/" class="category-chain-item">Docker</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="print-no-link">#软件工程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux网络虚拟化</div>
+      <div>https://hermes37.vercel.app/2025/05/09/全栈应用开发/运维/容器化与编排/Linux网络虚拟化/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/%E4%BB%80%E4%B9%88%E6%98%AFDocker/" title="什么是Docker">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">什么是Docker</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/Docker%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/" title="Docker网络模型">
+                        <span class="hidden-mobile">Docker网络模型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
