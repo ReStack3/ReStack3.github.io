@@ -1,0 +1,1027 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="引入笔者有个好朋友hermes，是个独立开发者，一直过着“小而美”的惬意日子。他开发的 Next.js 应用跑在一台 2 核 2G 的服务器上，用户不多，流量平缓，日子倒也安稳。 那时候，他的运维方式很“原始”也很直接——出问题了，就 SSH 登上服务器，敲几行命令： 123top           # 看看是不是 CPU 爆了tail -f &#x2F;var&#x2F;log&#x2F;myapp&#x2F;error.log">
+<meta property="og:type" content="article">
+<meta property="og:title" content="监控与日志">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/03/21/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E7%9B%91%E6%8E%A7%E4%B8%8E%E6%97%A5%E5%BF%97/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="引入笔者有个好朋友hermes，是个独立开发者，一直过着“小而美”的惬意日子。他开发的 Next.js 应用跑在一台 2 核 2G 的服务器上，用户不多，流量平缓，日子倒也安稳。 那时候，他的运维方式很“原始”也很直接——出问题了，就 SSH 登上服务器，敲几行命令： 123top           # 看看是不是 CPU 爆了tail -f &#x2F;var&#x2F;log&#x2F;myapp&#x2F;error.log">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260322103358920.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260322104559734.png">
+<meta property="article:published_time" content="2026-03-21T14:03:46.011Z">
+<meta property="article:modified_time" content="2026-03-22T03:48:14.133Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260322103358920.png">
+  
+  
+  
+  <title>监控与日志 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="监控与日志"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          52 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">监控与日志</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h1><p>笔者有个好朋友hermes，是个独立开发者，一直过着“小而美”的惬意日子。他开发的 Next.js 应用跑在一台 2 核 2G 的服务器上，用户不多，流量平缓，日子倒也安稳。</p>
+<p>那时候，他的运维方式很“原始”也很直接——出问题了，就 SSH 登上服务器，敲几行命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">top           <span class="hljs-comment"># 看看是不是 CPU 爆了</span><br><span class="hljs-built_in">tail</span> -f /var/log/myapp/error.log  <span class="hljs-comment"># 翻翻报错日志</span><br>free -h       <span class="hljs-comment"># 瞅瞅内存还剩多少</span><br></code></pre></td></tr></table></figure>
+
+<p>偶尔再用浏览器 F12 看看接口耗时，感觉“够用了”。毕竟，用户少，问题少，手动查一查总能找到原因。</p>
+<p>直到有一天，他的应用突然“爆了”——不知道哪个博主推荐了一下，流量瞬间翻了 10 倍。他先是窃喜，然后很快笑不出来了：</p>
+<ul>
+<li>用户反馈页面打不开、接口超时</li>
+<li>他自己也一脸懵：到底是 CPU 不够？还是数据库连接池爆了？还是哪个 API 被疯狂刷？</li>
+<li>登上服务器，top 一看，CPU 飘红，但不知道是哪个请求导致的</li>
+<li>翻日志，几千行报错堆在一起，根本看不清故障从什么时候开始的</li>
+<li>更崩溃的是，问题只在高峰期出现，等他一顿操作猛如虎登上服务器，流量已经回落了，故障现场“完美消失”</li>
+</ul>
+<p>过去那套“人肉运维”的方式，在面对突发流量时，暴露出三个致命短板：</p>
+<ol>
+<li><p><strong>被动响应，后知后觉</strong>  ：没有告警，永远都是用户先发现故障，他才知道出事了。等他登录服务器，可能已经过去了十几分钟，甚至错过了故障现场。</p>
+</li>
+<li><p><strong>信息孤岛，无法关联</strong>  ：CPU 飙高时，不知道是哪个接口导致的；日志报错时，不知道当时的系统指标长什么样。指标、日志、调用链是割裂的，全靠人脑“脑补”关联。</p>
+</li>
+<li><p><strong>手动操作，效率低下</strong>  ：每个问题都要手动敲命令、翻日志、查资料，故障处理时间动辄半小时以上。对于独立开发者来说，这段时间用户流失了多少，他根本不敢算。</p>
+</li>
+</ol>
+<p>当我得知他现在最想要的其实是：</p>
+<ul>
+<li><strong>能 24 小时自动盯着系统</strong>，异常时主动告诉他，而不是等用户投诉</li>
+<li><strong>能在一个界面上同时看到 CPU、请求量、响应时间、错误日志</strong>，而不是到处切窗口</li>
+<li><strong>能回溯故障发生那一刻的完整现场</strong>，而不是靠“猜”和“回忆”</li>
+</ul>
+<p>听着他的需求，我果断推荐了 <code>Prometheus + Grafana + ELK</code> 。</p>
+<ul>
+<li><strong>Prometheus</strong> 负责 7×24 小时采集指标，主动告警</li>
+<li><strong>Grafana</strong> 把散落的指标变成直观的仪表盘</li>
+<li><strong>ELK</strong> 把海量日志集中管理，让故障可追溯、可分析</li>
+</ul>
+<p>用完他对我说：“早知道有这套东西，我就不至于这两天失眠了。”</p>
+<h1 id="Prometheus-Grafana"><a href="#Prometheus-Grafana" class="headerlink" title="Prometheus + Grafana"></a>Prometheus + Grafana</h1><h2 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a>Prometheus</h2><p><strong>Prometheus 是一个开源的系统监控和告警工具包</strong>，最初由 SoundCloud 开发，现为 CNCF（云原生计算基金会）的毕业项目，是云原生监控的事实标准。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://prometheus.io/docs/prometheus/latest/getting_started/">Getting started | Prometheus</a></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>多维数据模型</strong></td>
+<td align="left">通过指标名称和键值对标签（如 <code>method=&quot;GET&quot;</code>、<code>status=&quot;500&quot;</code>）来标识时间序列</td>
+</tr>
+<tr>
+<td align="left"><strong>PromQL 查询语言</strong></td>
+<td align="left">强大灵活的查询语言，支持聚合、运算、预测等复杂分析</td>
+</tr>
+<tr>
+<td align="left"><strong>拉取模式</strong></td>
+<td align="left">主动从目标系统（ exporters ）拉取指标，而非被动接收</td>
+</tr>
+<tr>
+<td align="left"><strong>独立运行</strong></td>
+<td align="left">不依赖外部存储，自带时序数据库</td>
+</tr>
+<tr>
+<td align="left"><strong>服务发现</strong></td>
+<td align="left">自动发现监控目标（支持 Kubernetes、Consul、DNS 等）</td>
+</tr>
+<tr>
+<td align="left"><strong>告警管理</strong></td>
+<td align="left">通过 Alertmanager 实现告警分组、静默、路由</td>
+</tr>
+</tbody></table>
+<p>其通过HTTP协议周期性抓取被监控组件的状态。输出被监控组件信息的HTTP接口称为exporter。常用组件大部分都有exporter可以直接使用，比如haproxy,nginx，Mysql,Linux系统信息（包括磁盘、内存、CPU、网络等待）。</p>
+<p>虽然 Prometheus 提供的 Web UI 也可以很好的查看不同指标的视图，但是这个功能非常简单，只适合用来调试。要实现一个强大的监控系统，还需要一个能定制展示不同指标的面板，能支持不同类型的展现方式（曲线图、饼状图、热点图、TopN 等），这就是仪表盘（Dashboard）功能。</p>
+<p>因此 Prometheus 开发了一套仪表盘系统 <a target="_blank" rel="noopener" href="https://github.com/prometheus-junkyard/promdash">PromDash</a>，不过很快这套系统就被废弃了，官方开始推荐使用 Grafana 来对 Prometheus 的指标数据进行可视化，这不仅是因为 Grafana 的功能非常强大，而且它和 Prometheus 可以完美的无缝融合。</p>
+<h2 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a>Grafana</h2><p><strong>Grafana 是一个开源的可视化分析平台</strong>，支持连接多种数据源，将监控数据以仪表盘、图表的形式直观展示。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://grafana.org.cn/docs/grafana/latest/">Grafana OSS 和 Enterprise | Grafana 文档 - Grafana 文档</a></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>多数据源支持</strong></td>
+<td align="left">Prometheus、Elasticsearch、MySQL、PostgreSQL、Loki、CloudWatch 等 50+ 种</td>
+</tr>
+<tr>
+<td align="left"><strong>丰富的面板类型</strong></td>
+<td align="left">时间序列图、柱状图、统计表、热力图、地图、日志面板等</td>
+</tr>
+<tr>
+<td align="left"><strong>交互式仪表盘</strong></td>
+<td align="left">拖拽式构建、变量筛选、时间范围选择、钻取分析</td>
+</tr>
+<tr>
+<td align="left"><strong>告警可视化</strong></td>
+<td align="left">支持在图表上直接配置告警规则</td>
+</tr>
+<tr>
+<td align="left"><strong>用户与权限</strong></td>
+<td align="left">支持团队协作、角色权限控制</td>
+</tr>
+<tr>
+<td align="left"><strong>注释与协作</strong></td>
+<td align="left">在图表上标注事件（如部署、故障），支持团队评论</td>
+</tr>
+</tbody></table>
+<h2 id="黄金组合"><a href="#黄金组合" class="headerlink" title="黄金组合"></a><strong>黄金组合</strong></h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://grafana.org.cn/docs/grafana/latest/getting-started/get-started-grafana-prometheus/">开始使用 Grafana 和 Prometheus | Grafana 文档 </a></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs bash">1. 数据采集（Prometheus）<br>   ├── 拉取应用 /metrics 端点<br>   ├── 拉取 node_exporter（系统指标）<br>   └── 存储到时序数据库<br>                    ↓<br>2. 数据查询（PromQL）<br>   └── 对存储的指标进行聚合、计算<br>                    ↓<br>3. 可视化（Grafana）<br>   ├── 连接 Prometheus 数据源<br>   ├── 使用 PromQL 查询数据<br>   ├── 在仪表盘上渲染图表<br>   └── 配置变量实现动态筛选<br>                    ↓<br>4. 告警（Prometheus + Alertmanager）<br>   ├── Prometheus 根据规则触发告警<br>   ├── Alertmanager 处理告警（分组、静默、路由）<br>   └── 发送通知（邮件、钉钉、企业微信等）<br></code></pre></td></tr></table></figure>
+
+
+
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260322103358920.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="Next-js-应用接入-Prometheus"><a href="#Next-js-应用接入-Prometheus" class="headerlink" title="Next.js 应用接入 Prometheus"></a>Next.js 应用接入 Prometheus</h3><p>这里使用docker部署：</p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs inform7">┌─────────────────────────────────────────────────────────────────┐<br>│                        Docker 环境                              │<br>├─────────────────────────────────────────────────────────────────┤<br>│                                                                  │<br>│  ┌──────────────────┐    拉取指标    ┌──────────────────┐       │<br>│  │  Next.js App     │◄───────────────┤                  │       │<br>│  │  (<span class="hljs-keyword">Container</span>)     │                │   Prometheus     │       │<br>│  │  :3000           │                │   (<span class="hljs-keyword">Container</span>)    │       │<br>│  │  /api/metrics    │                │   :9090          │       │<br>│  └──────────────────┘                └────────┬─────────┘       │<br>│           │                                    │                 │<br>│           │ 拉取系统指标                        │ 查询数据        │<br>│           ▼                                    ▼                 │<br>│  ┌──────────────────┐                ┌──────────────────┐       │<br>│  │  Node Exporter   │                │     Grafana      │       │<br>│  │  (<span class="hljs-keyword">Container</span>)     │                │   (<span class="hljs-keyword">Container</span>)    │       │<br>│  │  :9100           │                │   :3001          │       │<br>│  └──────────────────┘                └──────────────────┘       │<br>│                                                                  │<br>└─────────────────────────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<h4 id="1-安装依赖"><a href="#1-安装依赖" class="headerlink" title="1. 安装依赖"></a>1. 安装依赖</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm install prom-client<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-创建-metrics-端点"><a href="#2-创建-metrics-端点" class="headerlink" title="2. 创建 metrics 端点"></a>2. 创建 metrics 端点</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// app/api/metrics/route.ts</span><br><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NextResponse</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> client <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;prom-client&#x27;</span>;<br><br><span class="hljs-comment">// 创建 Registry</span><br><span class="hljs-keyword">const</span> register = <span class="hljs-keyword">new</span> client.<span class="hljs-title class_">Registry</span>();<br><br><span class="hljs-comment">// 添加默认的 Node.js 指标（CPU、内存、事件循环等）</span><br>client.<span class="hljs-title function_">collectDefaultMetrics</span>(&#123; <br>  register,<br>  <span class="hljs-attr">prefix</span>: <span class="hljs-string">&#x27;node_&#x27;</span>,  <span class="hljs-comment">// 前缀避免冲突</span><br>  <span class="hljs-comment">// 可选：自定义收集间隔</span><br>  <span class="hljs-attr">timeout</span>: <span class="hljs-number">5000</span> <br>&#125;);<br><br><span class="hljs-comment">// ============ 自定义指标 ============</span><br><br><span class="hljs-comment">// 1. HTTP 请求计数器</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> httpRequestsTotal = <span class="hljs-keyword">new</span> client.<span class="hljs-title class_">Counter</span>(&#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;http_requests_total&#x27;</span>,<br>  <span class="hljs-attr">help</span>: <span class="hljs-string">&#x27;Total number of HTTP requests&#x27;</span>,<br>  <span class="hljs-attr">labelNames</span>: [<span class="hljs-string">&#x27;method&#x27;</span>, <span class="hljs-string">&#x27;path&#x27;</span>, <span class="hljs-string">&#x27;status&#x27;</span>] <span class="hljs-keyword">as</span> <span class="hljs-keyword">const</span>,<br>  <span class="hljs-attr">registers</span>: [register],<br>&#125;);<br><br><span class="hljs-comment">// 2. HTTP 请求延迟直方图</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> httpRequestDuration = <span class="hljs-keyword">new</span> client.<span class="hljs-title class_">Histogram</span>(&#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;http_request_duration_seconds&#x27;</span>,<br>  <span class="hljs-attr">help</span>: <span class="hljs-string">&#x27;HTTP request duration in seconds&#x27;</span>,<br>  <span class="hljs-attr">labelNames</span>: [<span class="hljs-string">&#x27;method&#x27;</span>, <span class="hljs-string">&#x27;path&#x27;</span>] <span class="hljs-keyword">as</span> <span class="hljs-keyword">const</span>,<br>  <span class="hljs-attr">buckets</span>: [<span class="hljs-number">0.005</span>, <span class="hljs-number">0.01</span>, <span class="hljs-number">0.025</span>, <span class="hljs-number">0.05</span>, <span class="hljs-number">0.1</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2.5</span>, <span class="hljs-number">5</span>],<br>  <span class="hljs-attr">registers</span>: [register],<br>&#125;);<br><br><span class="hljs-comment">// 3. 活跃请求数仪表盘</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> activeRequests = <span class="hljs-keyword">new</span> client.<span class="hljs-title class_">Gauge</span>(&#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;http_requests_active&#x27;</span>,<br>  <span class="hljs-attr">help</span>: <span class="hljs-string">&#x27;Current number of active HTTP requests&#x27;</span>,<br>  <span class="hljs-attr">registers</span>: [register],<br>&#125;);<br><br><span class="hljs-comment">// 4. 业务指标示例：用户注册数</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> userRegistrations = <span class="hljs-keyword">new</span> client.<span class="hljs-title class_">Counter</span>(&#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;user_registrations_total&#x27;</span>,<br>  <span class="hljs-attr">help</span>: <span class="hljs-string">&#x27;Total number of user registrations&#x27;</span>,<br>  <span class="hljs-attr">labelNames</span>: [<span class="hljs-string">&#x27;provider&#x27;</span>] <span class="hljs-keyword">as</span> <span class="hljs-keyword">const</span>,  <span class="hljs-comment">// email, google, github</span><br>  <span class="hljs-attr">registers</span>: [register],<br>&#125;);<br><br><span class="hljs-comment">// 5. 业务指标示例：数据库查询延迟</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> dbQueryDuration = <span class="hljs-keyword">new</span> client.<span class="hljs-title class_">Histogram</span>(&#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;db_query_duration_seconds&#x27;</span>,<br>  <span class="hljs-attr">help</span>: <span class="hljs-string">&#x27;Database query duration in seconds&#x27;</span>,<br>  <span class="hljs-attr">labelNames</span>: [<span class="hljs-string">&#x27;operation&#x27;</span>, <span class="hljs-string">&#x27;table&#x27;</span>] <span class="hljs-keyword">as</span> <span class="hljs-keyword">const</span>,<br>  <span class="hljs-attr">buckets</span>: [<span class="hljs-number">0.001</span>, <span class="hljs-number">0.005</span>, <span class="hljs-number">0.01</span>, <span class="hljs-number">0.05</span>, <span class="hljs-number">0.1</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">1</span>],<br>  <span class="hljs-attr">registers</span>: [register],<br>&#125;);<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">GET</span>(<span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">const</span> metrics = <span class="hljs-keyword">await</span> register.<span class="hljs-title function_">metrics</span>();<br>  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NextResponse</span>(metrics, &#123;<br>    <span class="hljs-attr">headers</span>: &#123;<br>      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: register.<span class="hljs-property">contentType</span>,<br>      <span class="hljs-string">&#x27;Cache-Control&#x27;</span>: <span class="hljs-string">&#x27;no-cache&#x27;</span>,<br>    &#125;,<br>  &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-创建中间件记录所有请求"><a href="#3-创建中间件记录所有请求" class="headerlink" title="3. 创建中间件记录所有请求"></a>3. 创建中间件记录所有请求</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// middleware.ts</span><br><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NextResponse</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> &#123; <span class="hljs-title class_">NextRequest</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><br><span class="hljs-comment">// 使用全局变量避免在中间件中直接导入（中间件有限制）</span><br><span class="hljs-comment">// 这里使用异步方式，实际指标更新通过 API 路由或服务端组件</span><br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">middleware</span>(<span class="hljs-params">request: NextRequest</span>) &#123;<br>  <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  <span class="hljs-keyword">const</span> &#123; pathname, method &#125; = request.<span class="hljs-property">nextUrl</span>;<br>  <br>  <span class="hljs-comment">// 排除 metrics 端点本身</span><br>  <span class="hljs-keyword">if</span> (pathname === <span class="hljs-string">&#x27;/api/metrics&#x27;</span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">next</span>();<br>  &#125;<br>  <br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">const</span> response = <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">next</span>();<br>    <span class="hljs-keyword">const</span> duration = (<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - start) / <span class="hljs-number">1000</span>;<br>    <br>    <span class="hljs-comment">// 异步记录指标（不阻塞请求）</span><br>    <span class="hljs-comment">// 注意：中间件中不能直接调用 prom-client</span><br>    <span class="hljs-comment">// 需要通过 API 或后台任务记录</span><br>    <span class="hljs-title function_">recordMetrics</span>(method, pathname, response.<span class="hljs-property">status</span>, duration);<br>    <br>    <span class="hljs-keyword">return</span> response;<br>  &#125; <span class="hljs-keyword">catch</span> (error) &#123;<br>    <span class="hljs-title function_">recordMetrics</span>(method, pathname, <span class="hljs-number">500</span>, (<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - start) / <span class="hljs-number">1000</span>);<br>    <span class="hljs-keyword">throw</span> error;<br>  &#125;<br>&#125;<br><br><span class="hljs-comment">// 记录指标的辅助函数（通过内部 API）</span><br><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">recordMetrics</span>(<span class="hljs-params"></span><br><span class="hljs-params">  method: <span class="hljs-built_in">string</span>, </span><br><span class="hljs-params">  path: <span class="hljs-built_in">string</span>, </span><br><span class="hljs-params">  status: <span class="hljs-built_in">number</span>, </span><br><span class="hljs-params">  duration: <span class="hljs-built_in">number</span></span><br><span class="hljs-params"></span>) &#123;<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-comment">// 调用内部 API 记录指标</span><br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`http://localhost:3000/api/metrics/record`</span>, &#123;<br>      <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,<br>      <span class="hljs-attr">headers</span>: &#123; <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span> &#125;,<br>      <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(&#123; method, path, status, duration &#125;),<br>    &#125;).<span class="hljs-title function_">catch</span>(<span class="hljs-function">() =&gt;</span> &#123;&#125;); <span class="hljs-comment">// 忽略错误，不影响业务</span><br>  &#125; <span class="hljs-keyword">catch</span> &#123;<br>    <span class="hljs-comment">// 静默失败</span><br>  &#125;<br>&#125;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> config = &#123;<br>  <span class="hljs-attr">matcher</span>: <span class="hljs-string">&#x27;/((?!_next/static|_next/image|favicon.ico).*)&#x27;</span>,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="4-创建指标记录-API"><a href="#4-创建指标记录-API" class="headerlink" title="4. 创建指标记录 API"></a>4. 创建指标记录 API</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// app/api/metrics/record/route.ts</span><br><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NextRequest</span>, <span class="hljs-title class_">NextResponse</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> &#123; httpRequestsTotal, httpRequestDuration, activeRequests &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../metrics/route&#x27;</span>;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">POST</span>(<span class="hljs-params">request: NextRequest</span>) &#123;<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-keyword">const</span> &#123; method, path, status, duration &#125; = <span class="hljs-keyword">await</span> request.<span class="hljs-title function_">json</span>();<br>    <br>    <span class="hljs-comment">// 增加请求计数</span><br>    httpRequestsTotal.<span class="hljs-title function_">labels</span>(method, path, status.<span class="hljs-title function_">toString</span>()).<span class="hljs-title function_">inc</span>();<br>    <br>    <span class="hljs-comment">// 记录请求延迟</span><br>    httpRequestDuration.<span class="hljs-title function_">labels</span>(method, path).<span class="hljs-title function_">observe</span>(duration);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">json</span>(&#123; <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span> &#125;);<br>  &#125; <span class="hljs-keyword">catch</span> (error) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">json</span>(&#123; <span class="hljs-attr">error</span>: <span class="hljs-string">&#x27;Failed to record metrics&#x27;</span> &#125;, &#123; <span class="hljs-attr">status</span>: <span class="hljs-number">500</span> &#125;);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="5-在业务代码中使用自定义指标"><a href="#5-在业务代码中使用自定义指标" class="headerlink" title="5. 在业务代码中使用自定义指标"></a>5. 在业务代码中使用自定义指标</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// app/api/auth/register/route.ts</span><br><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NextRequest</span>, <span class="hljs-title class_">NextResponse</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> &#123; userRegistrations, dbQueryDuration &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;../../metrics/route&#x27;</span>;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">POST</span>(<span class="hljs-params">request: NextRequest</span>) &#123;<br>  <span class="hljs-keyword">const</span> &#123; email, provider &#125; = <span class="hljs-keyword">await</span> request.<span class="hljs-title function_">json</span>();<br>  <br>  <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-comment">// 模拟数据库操作</span><br>    <span class="hljs-comment">// 实际项目中记录数据库查询耗时</span><br>    <span class="hljs-keyword">await</span> <span class="hljs-title function_">createUser</span>(email);<br>    <br>    <span class="hljs-keyword">const</span> duration = (<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - start) / <span class="hljs-number">1000</span>;<br>    <br>    <span class="hljs-comment">// 记录数据库查询延迟</span><br>    dbQueryDuration.<span class="hljs-title function_">labels</span>(<span class="hljs-string">&#x27;insert&#x27;</span>, <span class="hljs-string">&#x27;users&#x27;</span>).<span class="hljs-title function_">observe</span>(duration);<br>    <br>    <span class="hljs-comment">// 记录用户注册</span><br>    userRegistrations.<span class="hljs-title function_">labels</span>(provider || <span class="hljs-string">&#x27;email&#x27;</span>).<span class="hljs-title function_">inc</span>();<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">json</span>(&#123; <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span> &#125;);<br>  &#125; <span class="hljs-keyword">catch</span> (error) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">json</span>(&#123; <span class="hljs-attr">error</span>: <span class="hljs-string">&#x27;Registration failed&#x27;</span> &#125;, &#123; <span class="hljs-attr">status</span>: <span class="hljs-number">500</span> &#125;);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="Docker-部署配置"><a href="#Docker-部署配置" class="headerlink" title="Docker 部署配置"></a>Docker 部署配置</h4><h5 id="1-项目目录结构"><a href="#1-项目目录结构" class="headerlink" title="1. 项目目录结构"></a>1. 项目目录结构</h5><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs stata">your-nextjs-<span class="hljs-keyword">app</span>/<br>├── Dockerfile<br>├── docker-compose.yml<br>├── prometheus/<br>│   ├── prometheus.yml<br>│   └── alert_rules.yml<br>├── grafana/<br>│   ├── datasources.yml<br>│   └── dashboards/<br>│       └── nextjs-dashboard.json<br>└── nextjs-<span class="hljs-keyword">app</span>/           # 你的 Next.js 应用代码<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-Next-js-Dockerfile"><a href="#2-Next-js-Dockerfile" class="headerlink" title="2. Next.js Dockerfile"></a>2. Next.js Dockerfile</h5><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs dockerfile"><span class="hljs-comment"># Dockerfile</span><br><span class="hljs-keyword">FROM</span> node:<span class="hljs-number">20</span>-alpine AS builder<br><br><span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app</span><br><br><span class="hljs-comment"># 复制依赖文件</span><br><span class="hljs-keyword">COPY</span><span class="language-bash"> package*.json ./</span><br><span class="hljs-keyword">RUN</span><span class="language-bash"> npm ci</span><br><br><span class="hljs-comment"># 复制源代码并构建</span><br><span class="hljs-keyword">COPY</span><span class="language-bash"> . .</span><br><span class="hljs-keyword">RUN</span><span class="language-bash"> npm run build</span><br><br><span class="hljs-comment"># 生产镜像</span><br><span class="hljs-keyword">FROM</span> node:<span class="hljs-number">20</span>-alpine AS runner<br><br><span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app</span><br><br><span class="hljs-comment"># 设置环境变量</span><br><span class="hljs-keyword">ENV</span> NODE_ENV=production<br><br><span class="hljs-comment"># 创建非 root 用户</span><br><span class="hljs-keyword">RUN</span><span class="language-bash"> addgroup --system --gid 1001 nodejs</span><br><span class="hljs-keyword">RUN</span><span class="language-bash"> adduser --system --uid 1001 nextjs</span><br><br><span class="hljs-comment"># 复制构建产物</span><br><span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder --<span class="hljs-built_in">chown</span>=nextjs:nodejs /app/.next/standalone ./</span><br><span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder --<span class="hljs-built_in">chown</span>=nextjs:nodejs /app/.next/static ./.next/static</span><br><span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder --<span class="hljs-built_in">chown</span>=nextjs:nodejs /app/public ./public</span><br><br><span class="hljs-keyword">USER</span> nextjs<br><br><span class="hljs-keyword">EXPOSE</span> <span class="hljs-number">3000</span><br><br><span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;server.js&quot;</span>]</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="3-docker-compose-yml-完整配置"><a href="#3-docker-compose-yml-完整配置" class="headerlink" title="3. docker-compose.yml 完整配置"></a>3. docker-compose.yml 完整配置</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3.8&#x27;</span><br><br><span class="hljs-attr">services:</span><br>  <span class="hljs-comment"># Next.js 应用</span><br>  <span class="hljs-attr">nextjs:</span><br>    <span class="hljs-attr">build:</span><br>      <span class="hljs-attr">context:</span> <span class="hljs-string">.</span><br>      <span class="hljs-attr">dockerfile:</span> <span class="hljs-string">Dockerfile</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">nextjs-app</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;3000:3000&quot;</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">NODE_ENV=production</span><br>      <span class="hljs-comment"># 可选：数据库连接等环境变量</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">monitoring</span><br>    <span class="hljs-attr">labels:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;prometheus.scrape=true&quot;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;prometheus.port=3000&quot;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;prometheus.path=/api/metrics&quot;</span><br><br>  <span class="hljs-comment"># Node Exporter - 采集系统指标</span><br>  <span class="hljs-attr">node-exporter:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">prom/node-exporter:latest</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">node-exporter</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;9100:9100&quot;</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/proc:/host/proc:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/sys:/host/sys:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/:/rootfs:ro</span><br>    <span class="hljs-attr">command:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--path.procfs=/host/proc&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--path.sysfs=/host/sys&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--path.rootfs=/rootfs&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)&#x27;</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">monitoring</span><br><br>  <span class="hljs-comment"># Prometheus</span><br>  <span class="hljs-attr">prometheus:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">prom/prometheus:latest</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">prometheus</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;9090:9090&quot;</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">prometheus_data:/prometheus</span><br>    <span class="hljs-attr">command:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--config.file=/etc/prometheus/prometheus.yml&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--storage.tsdb.path=/prometheus&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--web.console.libraries=/usr/share/prometheus/console_libraries&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--web.console.templates=/usr/share/prometheus/consoles&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--web.enable-lifecycle&#x27;</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">monitoring</span><br><br>  <span class="hljs-comment"># Grafana</span><br>  <span class="hljs-attr">grafana:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">grafana/grafana:latest</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">grafana</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;3001:3000&quot;</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">GF_SECURITY_ADMIN_PASSWORD=admin</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">GF_INSTALL_PLUGINS=grafana-piechart-panel</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">grafana_data:/var/lib/grafana</span><br>    <span class="hljs-attr">depends_on:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">prometheus</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">monitoring</span><br><br>  <span class="hljs-comment"># 可选：Alertmanager</span><br>  <span class="hljs-attr">alertmanager:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">prom/alertmanager:latest</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">alertmanager</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;9093:9093&quot;</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">alertmanager_data:/alertmanager</span><br>    <span class="hljs-attr">command:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--config.file=/etc/alertmanager/alertmanager.yml&#x27;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;--storage.path=/alertmanager&#x27;</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">monitoring</span><br><br><span class="hljs-attr">networks:</span><br>  <span class="hljs-attr">monitoring:</span><br>    <span class="hljs-attr">driver:</span> <span class="hljs-string">bridge</span><br><br><span class="hljs-attr">volumes:</span><br>  <span class="hljs-attr">prometheus_data:</span><br>  <span class="hljs-attr">grafana_data:</span><br>  <span class="hljs-attr">alertmanager_data:</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="4-Prometheus-配置"><a href="#4-Prometheus-配置" class="headerlink" title="4. Prometheus 配置"></a>4. Prometheus 配置</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># prometheus/prometheus.yml</span><br><span class="hljs-attr">global:</span><br>  <span class="hljs-attr">scrape_interval:</span> <span class="hljs-string">15s</span>      <span class="hljs-comment"># 默认抓取间隔</span><br>  <span class="hljs-attr">evaluation_interval:</span> <span class="hljs-string">15s</span>  <span class="hljs-comment"># 规则评估间隔</span><br>  <span class="hljs-attr">external_labels:</span><br>    <span class="hljs-attr">monitor:</span> <span class="hljs-string">&#x27;nextjs-monitor&#x27;</span><br><br><span class="hljs-comment"># 告警规则文件</span><br><span class="hljs-attr">rule_files:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;alert_rules.yml&#x27;</span><br><br><span class="hljs-comment"># 抓取配置</span><br><span class="hljs-attr">scrape_configs:</span><br>  <span class="hljs-comment"># Prometheus 自身监控</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">job_name:</span> <span class="hljs-string">&#x27;prometheus&#x27;</span><br>    <span class="hljs-attr">static_configs:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">targets:</span> [<span class="hljs-string">&#x27;localhost:9090&#x27;</span>]<br><br>  <span class="hljs-comment"># Node Exporter（系统指标）</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">job_name:</span> <span class="hljs-string">&#x27;node-exporter&#x27;</span><br>    <span class="hljs-attr">static_configs:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">targets:</span> [<span class="hljs-string">&#x27;node-exporter:9100&#x27;</span>]<br>    <span class="hljs-attr">metrics_path:</span> <span class="hljs-string">&#x27;/metrics&#x27;</span><br><br>  <span class="hljs-comment"># Next.js 应用</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">job_name:</span> <span class="hljs-string">&#x27;nextjs-app&#x27;</span><br>    <span class="hljs-attr">static_configs:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">targets:</span> [<span class="hljs-string">&#x27;nextjs:3000&#x27;</span>]<br>    <span class="hljs-attr">metrics_path:</span> <span class="hljs-string">&#x27;/api/metrics&#x27;</span><br>    <span class="hljs-attr">scrape_interval:</span> <span class="hljs-string">10s</span>  <span class="hljs-comment"># 更频繁抓取应用指标</span><br>    <span class="hljs-comment"># 可选：添加自定义标签</span><br>    <span class="hljs-attr">relabel_configs:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">source_labels:</span> [<span class="hljs-string">__address__</span>]<br>        <span class="hljs-attr">target_label:</span> <span class="hljs-string">instance</span><br>        <span class="hljs-attr">replacement:</span> <span class="hljs-string">&#x27;nextjs-app&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># prometheus/alert_rules.yml</span><br><span class="hljs-attr">groups:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nextjs_alerts</span><br>    <span class="hljs-attr">interval:</span> <span class="hljs-string">30s</span><br>    <span class="hljs-attr">rules:</span><br>      <span class="hljs-comment"># 高错误率告警</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">alert:</span> <span class="hljs-string">HighErrorRate</span><br>        <span class="hljs-attr">expr:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          (sum(rate(http_requests_total&#123;status=~&quot;5..&quot;&#125;[5m])) </span><br><span class="hljs-string">          / sum(rate(http_requests_total[5m]))) &gt; 0.05</span><br><span class="hljs-string"></span>        <span class="hljs-attr">for:</span> <span class="hljs-string">2m</span><br>        <span class="hljs-attr">labels:</span><br>          <span class="hljs-attr">severity:</span> <span class="hljs-string">critical</span><br>          <span class="hljs-attr">service:</span> <span class="hljs-string">nextjs</span><br>        <span class="hljs-attr">annotations:</span><br>          <span class="hljs-attr">summary:</span> <span class="hljs-string">&quot;Next.js 应用错误率过高&quot;</span><br>          <span class="hljs-attr">description:</span> <span class="hljs-string">&quot;5xx 错误率超过 5%，当前值 <span class="hljs-template-variable">&#123;&#123; $value | humanizePercentage &#125;&#125;</span>&quot;</span><br><br>      <span class="hljs-comment"># 高延迟告警</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">alert:</span> <span class="hljs-string">HighLatency</span><br>        <span class="hljs-attr">expr:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          histogram_quantile(0.95, </span><br><span class="hljs-string">            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)</span><br><span class="hljs-string">          ) &gt; 1</span><br><span class="hljs-string"></span>        <span class="hljs-attr">for:</span> <span class="hljs-string">3m</span><br>        <span class="hljs-attr">labels:</span><br>          <span class="hljs-attr">severity:</span> <span class="hljs-string">warning</span><br>          <span class="hljs-attr">service:</span> <span class="hljs-string">nextjs</span><br>        <span class="hljs-attr">annotations:</span><br>          <span class="hljs-attr">summary:</span> <span class="hljs-string">&quot;Next.js 应用响应延迟过高&quot;</span><br>          <span class="hljs-attr">description:</span> <span class="hljs-string">&quot;P95 延迟超过 1 秒，当前值 <span class="hljs-template-variable">&#123;&#123; $value &#125;&#125;</span>s&quot;</span><br><br>      <span class="hljs-comment"># 服务宕机告警</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">alert:</span> <span class="hljs-string">ServiceDown</span><br>        <span class="hljs-attr">expr:</span> <span class="hljs-string">up&#123;job=&quot;nextjs-app&quot;&#125;</span> <span class="hljs-string">==</span> <span class="hljs-number">0</span><br>        <span class="hljs-attr">for:</span> <span class="hljs-string">1m</span><br>        <span class="hljs-attr">labels:</span><br>          <span class="hljs-attr">severity:</span> <span class="hljs-string">critical</span><br>          <span class="hljs-attr">service:</span> <span class="hljs-string">nextjs</span><br>        <span class="hljs-attr">annotations:</span><br>          <span class="hljs-attr">summary:</span> <span class="hljs-string">&quot;Next.js 服务不可用&quot;</span><br>          <span class="hljs-attr">description:</span> <span class="hljs-string">&quot;服务已下线超过 1 分钟&quot;</span><br><br>      <span class="hljs-comment"># 高 CPU 使用率</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">alert:</span> <span class="hljs-string">HighCPUUsage</span><br>        <span class="hljs-attr">expr:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          100 - (avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[5m])) * 100) &gt; 80</span><br><span class="hljs-string"></span>        <span class="hljs-attr">for:</span> <span class="hljs-string">5m</span><br>        <span class="hljs-attr">labels:</span><br>          <span class="hljs-attr">severity:</span> <span class="hljs-string">warning</span><br>          <span class="hljs-attr">service:</span> <span class="hljs-string">node</span><br>        <span class="hljs-attr">annotations:</span><br>          <span class="hljs-attr">summary:</span> <span class="hljs-string">&quot;CPU 使用率过高&quot;</span><br>          <span class="hljs-attr">description:</span> <span class="hljs-string">&quot;CPU 使用率超过 80%，当前值 <span class="hljs-template-variable">&#123;&#123; $value &#125;&#125;</span>%&quot;</span><br><br>      <span class="hljs-comment"># 内存使用过高</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">alert:</span> <span class="hljs-string">HighMemoryUsage</span><br>        <span class="hljs-attr">expr:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          (node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) </span><br><span class="hljs-string">          / node_memory_MemTotal_bytes * 100 &gt; 90</span><br><span class="hljs-string"></span>        <span class="hljs-attr">for:</span> <span class="hljs-string">5m</span><br>        <span class="hljs-attr">labels:</span><br>          <span class="hljs-attr">severity:</span> <span class="hljs-string">warning</span><br>          <span class="hljs-attr">service:</span> <span class="hljs-string">node</span><br>        <span class="hljs-attr">annotations:</span><br>          <span class="hljs-attr">summary:</span> <span class="hljs-string">&quot;内存使用率过高&quot;</span><br>          <span class="hljs-attr">description:</span> <span class="hljs-string">&quot;内存使用率超过 90%，当前值 <span class="hljs-template-variable">&#123;&#123; $value &#125;&#125;</span>%&quot;</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="5-Grafana-自动配置"><a href="#5-Grafana-自动配置" class="headerlink" title="5. Grafana 自动配置"></a>5. Grafana 自动配置</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># grafana/datasources.yml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-number">1</span><br><br><span class="hljs-attr">datasources:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Prometheus</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">prometheus</span><br>    <span class="hljs-attr">access:</span> <span class="hljs-string">proxy</span><br>    <span class="hljs-attr">url:</span> <span class="hljs-string">http://prometheus:9090</span><br>    <span class="hljs-attr">isDefault:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">editable:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">jsonData:</span><br>      <span class="hljs-attr">timeInterval:</span> <span class="hljs-string">&quot;15s&quot;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># grafana/dashboards/dashboard.yml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-number">1</span><br><br><span class="hljs-attr">providers:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">&#x27;Next.js Dashboards&#x27;</span><br>    <span class="hljs-attr">orgId:</span> <span class="hljs-number">1</span><br>    <span class="hljs-attr">folder:</span> <span class="hljs-string">&#x27;&#x27;</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">file</span><br>    <span class="hljs-attr">disableDeletion:</span> <span class="hljs-literal">false</span><br>    <span class="hljs-attr">editable:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">options:</span><br>      <span class="hljs-attr">path:</span> <span class="hljs-string">/etc/grafana/provisioning/dashboards</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="6-创建-Grafana-Dashboard-JSON"><a href="#6-创建-Grafana-Dashboard-JSON" class="headerlink" title="6. 创建 Grafana Dashboard JSON"></a>6. 创建 Grafana Dashboard JSON</h5><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-comment">// grafana/dashboards/nextjs-dashboard.json</span><br><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Next.js 应用监控&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;uid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;nextjs-monitor&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;tags&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;nextjs&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;prometheus&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;timezone&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;browser&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;panels&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;请求 QPS&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;graph&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;gridPos&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;w&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;h&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;targets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sum(rate(http_requests_total[5m]))&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;总 QPS&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sum by (status) (rate(http_requests_total[5m]))&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&#123;&#123;status&#125;&#125;&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;请求延迟 (P50/P95/P99)&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;graph&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;gridPos&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;w&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;h&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;targets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;P50&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;P95&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;P99&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;错误率&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;graph&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;gridPos&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;w&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;h&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;targets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;(sum(rate(http_requests_total&#123;status=~\&quot;5..\&quot;&#125;[5m])) / sum(rate(http_requests_total[5m]))) * 100&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;错误率 %&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;CPU 使用率&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;graph&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;gridPos&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;w&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;h&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;targets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;100 - (avg(rate(node_cpu_seconds_total&#123;mode=\&quot;idle\&quot;&#125;[5m])) * 100)&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;CPU 使用率 %&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;内存使用&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;graph&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;gridPos&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">16</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;w&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;h&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;targets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / 1024 / 1024&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;已用内存 MB&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;活跃请求数&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;graph&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;gridPos&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">16</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;w&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">12</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;h&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;targets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;expr&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http_requests_active&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;legendFormat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;当前活跃请求&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="7-Alertmanager-配置"><a href="#7-Alertmanager-配置" class="headerlink" title="7. Alertmanager 配置"></a>7. Alertmanager 配置</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># alertmanager/alertmanager.yml</span><br><span class="hljs-attr">global:</span><br>  <span class="hljs-attr">smtp_smarthost:</span> <span class="hljs-string">&#x27;smtp.gmail.com:587&#x27;</span><br>  <span class="hljs-attr">smtp_from:</span> <span class="hljs-string">&#x27;alertmanager@example.com&#x27;</span><br>  <span class="hljs-attr">smtp_auth_username:</span> <span class="hljs-string">&#x27;your-email@gmail.com&#x27;</span><br>  <span class="hljs-attr">smtp_auth_password:</span> <span class="hljs-string">&#x27;your-app-password&#x27;</span><br><br><span class="hljs-attr">route:</span><br>  <span class="hljs-attr">group_by:</span> [<span class="hljs-string">&#x27;alertname&#x27;</span>, <span class="hljs-string">&#x27;service&#x27;</span>]<br>  <span class="hljs-attr">group_wait:</span> <span class="hljs-string">10s</span><br>  <span class="hljs-attr">group_interval:</span> <span class="hljs-string">10s</span><br>  <span class="hljs-attr">repeat_interval:</span> <span class="hljs-string">4h</span><br>  <span class="hljs-attr">receiver:</span> <span class="hljs-string">&#x27;email-and-webhook&#x27;</span><br><br><span class="hljs-attr">receivers:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">&#x27;email-and-webhook&#x27;</span><br>    <span class="hljs-attr">email_configs:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">to:</span> <span class="hljs-string">&#x27;your-email@example.com&#x27;</span><br>        <span class="hljs-attr">send_resolved:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">webhook_configs:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">url:</span> <span class="hljs-string">&#x27;https://your-webhook-url.com/alert&#x27;</span><br>        <span class="hljs-attr">send_resolved:</span> <span class="hljs-literal">true</span><br><br><span class="hljs-attr">inhibit_rules:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">source_match:</span><br>      <span class="hljs-attr">severity:</span> <span class="hljs-string">&#x27;critical&#x27;</span><br>    <span class="hljs-attr">target_match:</span><br>      <span class="hljs-attr">severity:</span> <span class="hljs-string">&#x27;warning&#x27;</span><br>    <span class="hljs-attr">equal:</span> [<span class="hljs-string">&#x27;alertname&#x27;</span>, <span class="hljs-string">&#x27;service&#x27;</span>]<br></code></pre></td></tr></table></figure>
+
+<h4 id="启动和部署"><a href="#启动和部署" class="headerlink" title="启动和部署"></a>启动和部署</h4><h5 id="1-构建并启动所有服务"><a href="#1-构建并启动所有服务" class="headerlink" title="1. 构建并启动所有服务"></a>1. 构建并启动所有服务</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 克隆项目</span><br><span class="hljs-built_in">cd</span> your-nextjs-app<br><br><span class="hljs-comment"># 创建必要的目录</span><br><span class="hljs-built_in">mkdir</span> -p prometheus grafana/dashboards alertmanager<br><br><span class="hljs-comment"># 复制配置文件到对应目录</span><br><span class="hljs-comment"># ... 按照上面的结构创建配置文件 ...</span><br><br><span class="hljs-comment"># 启动所有服务</span><br>docker-compose up -d<br><br><span class="hljs-comment"># 查看日志</span><br>docker-compose logs -f<br><br><span class="hljs-comment"># 查看服务状态</span><br>docker-compose ps<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-验证服务"><a href="#2-验证服务" class="headerlink" title="2. 验证服务"></a>2. 验证服务</h5><table>
+<thead>
+<tr>
+<th>服务</th>
+<th>地址</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Next.js 应用</td>
+<td><a target="_blank" rel="noopener" href="http://localhost:3000/">http://localhost:3000</a></td>
+<td>你的应用</td>
+</tr>
+<tr>
+<td>Next.js Metrics</td>
+<td><a target="_blank" rel="noopener" href="http://localhost:3000/api/metrics">http://localhost:3000/api/metrics</a></td>
+<td>Prometheus 指标端点</td>
+</tr>
+<tr>
+<td>Node Exporter</td>
+<td><a target="_blank" rel="noopener" href="http://localhost:9100/metrics">http://localhost:9100/metrics</a></td>
+<td>系统指标</td>
+</tr>
+<tr>
+<td>Prometheus</td>
+<td><a target="_blank" rel="noopener" href="http://localhost:9090/">http://localhost:9090</a></td>
+<td>Prometheus UI</td>
+</tr>
+<tr>
+<td>Grafana</td>
+<td><a target="_blank" rel="noopener" href="http://localhost:3001/">http://localhost:3001</a></td>
+<td>Grafana 仪表盘（admin&#x2F;admin）</td>
+</tr>
+<tr>
+<td>Alertmanager</td>
+<td><a target="_blank" rel="noopener" href="http://localhost:9093/">http://localhost:9093</a></td>
+<td>告警管理</td>
+</tr>
+</tbody></table>
+<h1 id="ELK"><a href="#ELK" class="headerlink" title="ELK"></a>ELK</h1><p><a target="_blank" rel="noopener" href="https://www.elastic.co/elastic-stack/">Elastic Stack: (ELK) Elasticsearch, Kibana &amp; Logstash | Elastic</a></p>
+<p><strong>ELK 是 Elasticsearch、Logstash、Kibana 三个开源项目的首字母缩写</strong>，合起来构成一套完整的<strong>日志集中管理解决方案</strong>，用于解决分布式系统中日志分散、难以检索、无法关联分析的问题。</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">ELK</span> = Elasticsearch + Logstash + Kibana<br>       ↓              ↓           ↓<br>    存储+索引      采集+解析    搜索+可视化<br></code></pre></td></tr></table></figure>
+
+<p>在没有 ELK 之前，查看日志是这样的：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 登录服务器1</span><br>ssh server1<br><span class="hljs-built_in">tail</span> -f /var/log/app/error.log<br><br><span class="hljs-comment"># 登录服务器2</span><br>ssh server2<br>grep <span class="hljs-string">&quot;ERROR&quot;</span> /var/log/app/*.<span class="hljs-built_in">log</span><br><br><span class="hljs-comment"># 登录服务器3</span><br>ssh server3<br><span class="hljs-built_in">cat</span> /var/log/app/access.log | grep <span class="hljs-string">&quot;500&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>当有 10 台、100 台服务器时，这种“人肉登录翻日志”的方式完全不可行。ELK 把<strong>所有服务器的日志集中到一个地方</strong>，让你能<strong>在一个界面上搜索、分析、可视化</strong>所有日志。</p>
+<h2 id="ELK-三大组件详解"><a href="#ELK-三大组件详解" class="headerlink" title="ELK 三大组件详解"></a>ELK 三大组件详解</h2><h3 id="Elasticsearch（存储与索引）"><a href="#Elasticsearch（存储与索引）" class="headerlink" title="Elasticsearch（存储与索引）"></a>Elasticsearch（存储与索引）</h3><p><strong>Elasticsearch 是一个基于 Lucene 的分布式搜索和分析引擎</strong>，是 ELK 的核心存储层。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>分布式</strong></td>
+<td>自动将数据分片存储在多台服务器，支持水平扩展</td>
+</tr>
+<tr>
+<td><strong>实时搜索</strong></td>
+<td>数据写入后近乎实时可被搜索（约1秒延迟）</td>
+</tr>
+<tr>
+<td><strong>全文检索</strong></td>
+<td>支持复杂的文本搜索、模糊匹配、聚合分析</td>
+</tr>
+<tr>
+<td><strong>Schema Free</strong></td>
+<td>无需预定义表结构，自动识别字段类型</td>
+</tr>
+<tr>
+<td><strong>RESTful API</strong></td>
+<td>通过 HTTP API 进行所有操作</td>
+</tr>
+</tbody></table>
+<h4 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h4><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">关系型数据库      →    Elasticsearch<br>─────────────────────────────────────<br><span class="hljs-keyword">Database</span>（数据库） →    <span class="hljs-keyword">Index</span>（索引）<br><span class="hljs-keyword">Table</span>（表）        →    <span class="hljs-keyword">Type</span>（类型，已弃用）<br><span class="hljs-keyword">Row</span>（行）          →    Document（文档）<br><span class="hljs-keyword">Column</span>（列）       →    Field（字段）<br><span class="hljs-keyword">Schema</span>（表结构）   →    <span class="hljs-keyword">Mapping</span>（映射）<br></code></pre></td></tr></table></figure>
+
+<h4 id="数据存储示例"><a href="#数据存储示例" class="headerlink" title="数据存储示例"></a>数据存储示例</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-comment">// Elasticsearch 中存储的日志文档</span><br><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;_index&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;nginx-access-2024.01.15&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;abc123&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;_source&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;@timestamp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2024-01-15T10:30:45.123Z&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;client_ip&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.1.100&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;method&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/api/users&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;status_code&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">200</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;response_time_ms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">45</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;user_agent&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Mozilla/5.0...&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.1.100 - - [15/Jan/2024:10:30:45 +0000] \&quot;GET /api/users HTTP/1.1\&quot; 200 1234&quot;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="Logstash（采集与处理）"><a href="#Logstash（采集与处理）" class="headerlink" title="Logstash（采集与处理）"></a>Logstash（采集与处理）</h3><p><strong>Logstash 是一个服务器端数据处理管道</strong>，负责从各种数据源采集日志，进行解析、转换、过滤，然后发送到 Elasticsearch 或其他存储。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>多源输入</strong></td>
+<td>支持文件、TCP&#x2F;UDP、Syslog、Kafka、数据库等 200+ 种输入插件</td>
+</tr>
+<tr>
+<td><strong>实时处理</strong></td>
+<td>边采集边处理，毫秒级延迟</td>
+</tr>
+<tr>
+<td><strong>灵活过滤</strong></td>
+<td>通过 Grok、正则、JSON、KV 等方式解析非结构化日志</td>
+</tr>
+<tr>
+<td><strong>无代理架构</strong></td>
+<td>只需在服务器上运行 Logstash 进程，无需在被采集应用上安装 Agent</td>
+</tr>
+<tr>
+<td><strong>可靠传输</strong></td>
+<td>支持持久化队列，防止数据丢失</td>
+</tr>
+</tbody></table>
+<h4 id="Logstash-管道架构"><a href="#Logstash-管道架构" class="headerlink" title="Logstash 管道架构"></a>Logstash 管道架构</h4><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">┌─────────────────────────────────────────────────────────────────┐<br>│                      Logstash Pipeline                          │<br>├─────────────────────────────────────────────────────────────────┤<br>│                                                                  │<br>│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │<br>│  │   <span class="hljs-keyword">Input</span>     │    │   <span class="hljs-keyword">Filter</span>    │    │   Output    │         │<br>│  │  阶段       │ →  │  阶段       │ →  │  阶段       │         │<br>│  ├─────────────┤    ├─────────────┤    ├─────────────┤         │<br>│  │ • file      │    │ • grok      │    │ • elastic   │         │<br>│  │ • tcp       │    │ • mutate    │    │   <span class="hljs-keyword">search</span>    │         │<br>│  │ • udp       │    │ • <span class="hljs-type">date</span>      │    │ • kafka     │         │<br>│  │ • syslog    │    │ • <span class="hljs-type">json</span>      │    │ • stdout    │         │<br>│  │ • kafka     │    │ • geoip     │    │ • file      │         │<br>│  │ • beats     │    │ • useragent │    │ • redis     │         │<br>│  └─────────────┘    └─────────────┘    └─────────────┘         │<br>│                                                                  │<br>└─────────────────────────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<h4 id="Logstash-配置示例"><a href="#Logstash-配置示例" class="headerlink" title="Logstash 配置示例"></a>Logstash 配置示例</h4><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs ruby"><span class="hljs-comment"># logstash.conf</span><br>input &#123;<br>  <span class="hljs-comment"># 从文件读取 Nginx 访问日志</span><br>  file &#123;<br>    path =&gt; <span class="hljs-string">&quot;/var/log/nginx/access.log&quot;</span><br>    start_position =&gt; <span class="hljs-string">&quot;beginning&quot;</span><br>    sincedb_path =&gt; <span class="hljs-string">&quot;/dev/null&quot;</span>  <span class="hljs-comment"># 每次都从头读取（测试用）</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 从 TCP 端口接收日志</span><br>  tcp &#123;<br>    port =&gt; <span class="hljs-number">5000</span><br>    codec =&gt; json  <span class="hljs-comment"># 接收 JSON 格式日志</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 从 Kafka 消费日志</span><br>  kafka &#123;<br>    bootstrap_servers =&gt; <span class="hljs-string">&quot;kafka:9092&quot;</span><br>    topics =&gt; [<span class="hljs-string">&quot;app-logs&quot;</span>]<br>    group_id =&gt; <span class="hljs-string">&quot;logstash&quot;</span><br>  &#125;<br>&#125;<br><br>filter &#123;<br>  <span class="hljs-comment"># 使用 Grok 解析 Nginx 日志</span><br>  grok &#123;<br>    match =&gt; &#123; <br>      <span class="hljs-string">&quot;message&quot;</span> =&gt; <span class="hljs-string">&quot;%&#123;COMBINEDAPACHELOG&#125;&quot;</span>  <span class="hljs-comment"># 预定义模式</span><br>    &#125;<br>  &#125;<br>  <br>  <span class="hljs-comment"># 解析 JSON 字段</span><br>  json &#123;<br>    source =&gt; <span class="hljs-string">&quot;message&quot;</span><br>    target =&gt; <span class="hljs-string">&quot;parsed&quot;</span><br>    skip_on_invalid_json =&gt; <span class="hljs-literal">true</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 修改字段</span><br>  mutate &#123;<br>    <span class="hljs-comment"># 重命名字段</span><br>    rename =&gt; &#123; <span class="hljs-string">&quot;clientip&quot;</span> =&gt; <span class="hljs-string">&quot;client_ip&quot;</span> &#125;<br>    <span class="hljs-comment"># 删除无用字段</span><br>    remove_field =&gt; [<span class="hljs-string">&quot;message&quot;</span>, <span class="hljs-string">&quot;host&quot;</span>]<br>    <span class="hljs-comment"># 类型转换</span><br>    convert =&gt; &#123; <span class="hljs-string">&quot;response&quot;</span> =&gt; <span class="hljs-string">&quot;integer&quot;</span> &#125;<br>    convert =&gt; &#123; <span class="hljs-string">&quot;bytes&quot;</span> =&gt; <span class="hljs-string">&quot;integer&quot;</span> &#125;<br>  &#125;<br>  <br>  <span class="hljs-comment"># 添加地理位置信息</span><br>  geoip &#123;<br>    source =&gt; <span class="hljs-string">&quot;client_ip&quot;</span><br>    target =&gt; <span class="hljs-string">&quot;geoip&quot;</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 解析 User-Agent</span><br>  useragent &#123;<br>    source =&gt; <span class="hljs-string">&quot;agent&quot;</span><br>    target =&gt; <span class="hljs-string">&quot;ua&quot;</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 统一时间戳格式</span><br>  date &#123;<br>    match =&gt; [ <span class="hljs-string">&quot;timestamp&quot;</span>, <span class="hljs-string">&quot;dd/MMM/yyyy:HH:mm:ss Z&quot;</span> ]<br>    target =&gt; <span class="hljs-string">&quot;@timestamp&quot;</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 添加自定义字段</span><br>  mutate &#123;<br>    add_field =&gt; &#123;<br>      <span class="hljs-string">&quot;environment&quot;</span> =&gt; <span class="hljs-string">&quot;production&quot;</span><br>      <span class="hljs-string">&quot;service&quot;</span> =&gt; <span class="hljs-string">&quot;nginx&quot;</span><br>    &#125;<br>  &#125;<br>&#125;<br><br>output &#123;<br>  <span class="hljs-comment"># 输出到 Elasticsearch</span><br>  elasticsearch &#123;<br>    hosts =&gt; [<span class="hljs-string">&quot;elasticsearch:9200&quot;</span>]<br>    index =&gt; <span class="hljs-string">&quot;nginx-access-%&#123;+YYYY.MM.dd&#125;&quot;</span>  <span class="hljs-comment"># 按天分索引</span><br>    user =&gt; <span class="hljs-string">&quot;elastic&quot;</span><br>    password =&gt; <span class="hljs-string">&quot;$&#123;ES_PASSWORD&#125;&quot;</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 调试用：同时输出到控制台</span><br>  stdout &#123;<br>    codec =&gt; rubydebug<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Kibana（搜索与可视化）"><a href="#Kibana（搜索与可视化）" class="headerlink" title="Kibana（搜索与可视化）"></a>Kibana（搜索与可视化）</h3><p><strong>Kibana 是 Elasticsearch 的可视化前端</strong>，提供 Web 界面让你搜索、分析、可视化 Elasticsearch 中的数据。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据探索</strong></td>
+<td>交互式搜索、过滤、查看原始日志</td>
+</tr>
+<tr>
+<td><strong>可视化</strong></td>
+<td>柱状图、折线图、饼图、热力图、地图等多种图表</td>
+</tr>
+<tr>
+<td><strong>仪表盘</strong></td>
+<td>将多个可视化图表组合成一个页面</td>
+</tr>
+<tr>
+<td><strong>实时流</strong></td>
+<td>实时滚动显示最新日志</td>
+</tr>
+<tr>
+<td><strong>机器学习</strong></td>
+<td>自动检测异常模式（需付费功能）</td>
+</tr>
+<tr>
+<td><strong>告警</strong></td>
+<td>基于查询结果的告警通知</td>
+</tr>
+</tbody></table>
+<p><strong>ELK 完整架构图</strong>：</p>
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260322104559734.png" srcset="/img/loading.gif" lazyload alt="image-20260322104559734"></p>
+<h2 id="Next-js-应用接入-ELK"><a href="#Next-js-应用接入-ELK" class="headerlink" title="Next.js 应用接入 ELK"></a>Next.js 应用接入 ELK</h2><h3 id="在-Next-js-中输出结构化日志"><a href="#在-Next-js-中输出结构化日志" class="headerlink" title="在 Next.js 中输出结构化日志"></a>在 Next.js 中输出结构化日志</h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// lib/logger.ts</span><br><span class="hljs-keyword">import</span> pino <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;pino&#x27;</span>;<br><br><span class="hljs-comment">// 创建 Pino 日志实例</span><br><span class="hljs-keyword">const</span> logger = <span class="hljs-title function_">pino</span>(&#123;<br>  <span class="hljs-attr">level</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">LOG_LEVEL</span> || <span class="hljs-string">&#x27;info&#x27;</span>,<br>  <span class="hljs-comment">// 生产环境输出 JSON 格式，方便 Logstash 解析</span><br>  <span class="hljs-attr">formatters</span>: &#123;<br>    <span class="hljs-attr">level</span>: <span class="hljs-function">(<span class="hljs-params">label</span>) =&gt;</span> &#123;<br>      <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">level</span>: label &#125;;<br>    &#125;,<br>    <span class="hljs-attr">bindings</span>: <span class="hljs-function">(<span class="hljs-params">bindings</span>) =&gt;</span> &#123;<br>      <span class="hljs-keyword">return</span> &#123;<br>        <span class="hljs-attr">pid</span>: bindings.<span class="hljs-property">pid</span>,<br>        <span class="hljs-attr">host</span>: bindings.<span class="hljs-property">hostname</span>,<br>        <span class="hljs-attr">service</span>: <span class="hljs-string">&#x27;nextjs-app&#x27;</span>,<br>        <span class="hljs-attr">environment</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">NODE_ENV</span>,<br>      &#125;;<br>    &#125;,<br>  &#125;,<br>  <span class="hljs-comment">// 时间戳格式化</span><br>  <span class="hljs-attr">timestamp</span>: pino.<span class="hljs-property">stdTimeFunctions</span>.<span class="hljs-property">isoTime</span>,<br>  <span class="hljs-comment">// 美化输出（仅开发环境）</span><br>  <span class="hljs-attr">transport</span>: process.<span class="hljs-property">env</span>.<span class="hljs-property">NODE_ENV</span> === <span class="hljs-string">&#x27;development&#x27;</span> <br>    ? &#123; <span class="hljs-attr">target</span>: <span class="hljs-string">&#x27;pino-pretty&#x27;</span> &#125;<br>    : <span class="hljs-literal">undefined</span>,<br>&#125;);<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> logger;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-在-API-路由中使用"><a href="#2-在-API-路由中使用" class="headerlink" title="2. 在 API 路由中使用"></a>2. 在 API 路由中使用</h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// app/api/users/route.ts</span><br><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NextRequest</span>, <span class="hljs-title class_">NextResponse</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> logger <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/lib/logger&#x27;</span>;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">GET</span>(<span class="hljs-params">request: NextRequest</span>) &#123;<br>  <span class="hljs-keyword">const</span> startTime = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  <span class="hljs-keyword">const</span> &#123; searchParams &#125; = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(request.<span class="hljs-property">url</span>);<br>  <span class="hljs-keyword">const</span> userId = searchParams.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;id&#x27;</span>);<br>  <br>  <span class="hljs-comment">// 记录请求开始</span><br>  logger.<span class="hljs-title function_">info</span>(&#123;<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;API request started&#x27;</span>,<br>    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;GET&#x27;</span>,<br>    <span class="hljs-attr">path</span>: <span class="hljs-string">&#x27;/api/users&#x27;</span>,<br>    userId,<br>    <span class="hljs-attr">requestId</span>: request.<span class="hljs-property">headers</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;x-request-id&#x27;</span>),<br>  &#125;);<br>  <br>  <span class="hljs-keyword">try</span> &#123;<br>    <span class="hljs-comment">// 模拟业务逻辑</span><br>    <span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getUserFromDB</span>(userId);<br>    <br>    <span class="hljs-keyword">const</span> duration = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - startTime;<br>    <br>    <span class="hljs-comment">// 记录成功响应</span><br>    logger.<span class="hljs-title function_">info</span>(&#123;<br>      <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;API request completed&#x27;</span>,<br>      <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;GET&#x27;</span>,<br>      <span class="hljs-attr">path</span>: <span class="hljs-string">&#x27;/api/users&#x27;</span>,<br>      userId,<br>      duration,<br>      <span class="hljs-attr">status</span>: <span class="hljs-number">200</span>,<br>    &#125;);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">json</span>(user);<br>  &#125; <span class="hljs-keyword">catch</span> (error) &#123;<br>    <span class="hljs-keyword">const</span> duration = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - startTime;<br>    <br>    <span class="hljs-comment">// 记录错误</span><br>    logger.<span class="hljs-title function_">error</span>(&#123;<br>      <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;API request failed&#x27;</span>,<br>      <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;GET&#x27;</span>,<br>      <span class="hljs-attr">path</span>: <span class="hljs-string">&#x27;/api/users&#x27;</span>,<br>      userId,<br>      duration,<br>      <span class="hljs-attr">error</span>: error <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">Error</span> ? error.<span class="hljs-property">message</span> : <span class="hljs-string">&#x27;Unknown error&#x27;</span>,<br>      <span class="hljs-attr">stack</span>: error <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">Error</span> ? error.<span class="hljs-property">stack</span> : <span class="hljs-literal">undefined</span>,<br>    &#125;);<br>    <br>    <span class="hljs-keyword">return</span> <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">json</span>(<br>      &#123; <span class="hljs-attr">error</span>: <span class="hljs-string">&#x27;Internal Server Error&#x27;</span> &#125;,<br>      &#123; <span class="hljs-attr">status</span>: <span class="hljs-number">500</span> &#125;<br>    );<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-中间件记录请求"><a href="#3-中间件记录请求" class="headerlink" title="3. 中间件记录请求"></a>3. 中间件记录请求</h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// middleware.ts</span><br><span class="hljs-keyword">import</span> &#123; <span class="hljs-title class_">NextResponse</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> &#123; <span class="hljs-title class_">NextRequest</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;next/server&#x27;</span>;<br><span class="hljs-keyword">import</span> logger <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@/lib/logger&#x27;</span>;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">middleware</span>(<span class="hljs-params">request: NextRequest</span>) &#123;<br>  <span class="hljs-keyword">const</span> start = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>();<br>  <span class="hljs-keyword">const</span> &#123; pathname, method &#125; = request.<span class="hljs-property">nextUrl</span>;<br>  <span class="hljs-keyword">const</span> requestId = crypto.<span class="hljs-title function_">randomUUID</span>();<br>  <br>  <span class="hljs-comment">// 添加请求ID到响应头</span><br>  <span class="hljs-keyword">const</span> response = <span class="hljs-title class_">NextResponse</span>.<span class="hljs-title function_">next</span>();<br>  response.<span class="hljs-property">headers</span>.<span class="hljs-title function_">set</span>(<span class="hljs-string">&#x27;x-request-id&#x27;</span>, requestId);<br>  <br>  <span class="hljs-comment">// 记录请求</span><br>  logger.<span class="hljs-title function_">info</span>(&#123;<br>    <span class="hljs-attr">msg</span>: <span class="hljs-string">&#x27;HTTP request&#x27;</span>,<br>    method,<br>    <span class="hljs-attr">path</span>: pathname,<br>    requestId,<br>    <span class="hljs-attr">userAgent</span>: request.<span class="hljs-property">headers</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;user-agent&#x27;</span>),<br>    <span class="hljs-attr">ip</span>: request.<span class="hljs-property">ip</span> || request.<span class="hljs-property">headers</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;x-forwarded-for&#x27;</span>),<br>  &#125;);<br>  <br>  <span class="hljs-comment">// 监听响应完成</span><br>  response.<span class="hljs-property">headers</span>.<span class="hljs-title function_">append</span>(<span class="hljs-string">&#x27;x-response-time&#x27;</span>, <span class="hljs-title class_">String</span>(<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() - start));<br>  <br>  <span class="hljs-keyword">return</span> response;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-Docker-Compose-集成-ELK"><a href="#4-Docker-Compose-集成-ELK" class="headerlink" title="4. Docker Compose 集成 ELK"></a>4. Docker Compose 集成 ELK</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3.8&#x27;</span><br><br><span class="hljs-attr">services:</span><br>  <span class="hljs-comment"># Next.js 应用</span><br>  <span class="hljs-attr">nextjs:</span><br>    <span class="hljs-attr">build:</span> <span class="hljs-string">.</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;3000:3000&quot;</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">NODE_ENV=production</span><br>    <span class="hljs-attr">logging:</span><br>      <span class="hljs-attr">driver:</span> <span class="hljs-string">&quot;json-file&quot;</span><br>      <span class="hljs-attr">options:</span><br>        <span class="hljs-attr">max-size:</span> <span class="hljs-string">&quot;10m&quot;</span><br>        <span class="hljs-attr">max-file:</span> <span class="hljs-string">&quot;3&quot;</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elk</span><br><br>  <span class="hljs-comment"># Filebeat - 采集 Docker 容器日志</span><br>  <span class="hljs-attr">filebeat:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">docker.elastic.co/beats/filebeat:8.11.0</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">filebeat</span><br>    <span class="hljs-attr">user:</span> <span class="hljs-string">root</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/var/lib/docker/containers:/var/lib/docker/containers:ro</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/var/run/docker.sock:/var/run/docker.sock:ro</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">ELASTICSEARCH_HOSTS=http://elasticsearch:9200</span><br>    <span class="hljs-attr">depends_on:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elasticsearch</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elk</span><br><br>  <span class="hljs-comment"># Logstash（可选，如需复杂处理）</span><br>  <span class="hljs-attr">logstash:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">docker.elastic.co/logstash/logstash:8.11.0</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">logstash</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;5000:5000&quot;</span><br>    <span class="hljs-attr">depends_on:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elasticsearch</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elk</span><br><br>  <span class="hljs-comment"># Elasticsearch</span><br>  <span class="hljs-attr">elasticsearch:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">docker.elastic.co/elasticsearch/elasticsearch:8.11.0</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">elasticsearch</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">discovery.type=single-node</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">ES_JAVA_OPTS=-Xms1g</span> <span class="hljs-string">-Xmx1g</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">xpack.security.enabled=false</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">xpack.security.enrollment.enabled=false</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;9200:9200&quot;</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elasticsearch_data:/usr/share/elasticsearch/data</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elk</span><br><br>  <span class="hljs-comment"># Kibana</span><br>  <span class="hljs-attr">kibana:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">docker.elastic.co/kibana/kibana:8.11.0</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">kibana</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">ELASTICSEARCH_HOSTS=http://elasticsearch:9200</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;5601:5601&quot;</span><br>    <span class="hljs-attr">depends_on:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elasticsearch</span><br>    <span class="hljs-attr">networks:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elk</span><br><br><span class="hljs-attr">networks:</span><br>  <span class="hljs-attr">elk:</span><br>    <span class="hljs-attr">driver:</span> <span class="hljs-string">bridge</span><br><br><span class="hljs-attr">volumes:</span><br>  <span class="hljs-attr">elasticsearch_data:</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="5-Filebeat-配置"><a href="#5-Filebeat-配置" class="headerlink" title="5. Filebeat 配置"></a>5. Filebeat 配置</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># filebeat/filebeat.yml</span><br><span class="hljs-attr">filebeat.inputs:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">type:</span> <span class="hljs-string">container</span><br>    <span class="hljs-attr">paths:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;/var/lib/docker/containers/*/*.log&#x27;</span><br>    <span class="hljs-attr">json.keys_under_root:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">json.add_error_key:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">json.message_key:</span> <span class="hljs-string">log</span><br><br><span class="hljs-attr">processors:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">add_docker_metadata:</span><br>      <span class="hljs-attr">host:</span> <span class="hljs-string">&quot;unix:///var/run/docker.sock&quot;</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">decode_json_fields:</span><br>      <span class="hljs-attr">fields:</span> [<span class="hljs-string">&quot;message&quot;</span>]<br>      <span class="hljs-attr">target:</span> <span class="hljs-string">&quot;json&quot;</span><br>      <span class="hljs-attr">overwrite_keys:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">drop_fields:</span><br>      <span class="hljs-attr">fields:</span> [<span class="hljs-string">&quot;agent&quot;</span>, <span class="hljs-string">&quot;host&quot;</span>, <span class="hljs-string">&quot;input&quot;</span>, <span class="hljs-string">&quot;log&quot;</span>, <span class="hljs-string">&quot;ecs&quot;</span>]<br><br><span class="hljs-attr">output.elasticsearch:</span><br>  <span class="hljs-attr">hosts:</span> [<span class="hljs-string">&#x27;$&#123;ELASTICSEARCH_HOSTS:elasticsearch:9200&#125;&#x27;</span>]<br>  <span class="hljs-attr">index:</span> <span class="hljs-string">&quot;nextjs-logs-<span class="hljs-template-variable">%&#123;+yyyy.MM.dd&#125;</span>&quot;</span><br>  <span class="hljs-comment"># 如果使用 Logstash，注释上面，启用下面</span><br>  <span class="hljs-comment"># output.logstash:</span><br>  <span class="hljs-comment">#   hosts: [&quot;logstash:5000&quot;]</span><br><br><span class="hljs-attr">logging.level:</span> <span class="hljs-string">info</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="6-Logstash-配置（可选，用于复杂解析）"><a href="#6-Logstash-配置（可选，用于复杂解析）" class="headerlink" title="6. Logstash 配置（可选，用于复杂解析）"></a>6. Logstash 配置（可选，用于复杂解析）</h3><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs ruby"><span class="hljs-comment"># logstash/logstash.conf</span><br>input &#123;<br>  beats &#123;<br>    port =&gt; <span class="hljs-number">5044</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 接收 TCP 日志</span><br>  tcp &#123;<br>    port =&gt; <span class="hljs-number">5000</span><br>    codec =&gt; json<br>  &#125;<br>&#125;<br><br>filter &#123;<br>  <span class="hljs-comment"># 解析 Next.js 日志</span><br>  <span class="hljs-keyword">if</span> [service] == <span class="hljs-string">&quot;nextjs-app&quot;</span> &#123;<br>    json &#123;<br>      source =&gt; <span class="hljs-string">&quot;message&quot;</span><br>      target =&gt; <span class="hljs-string">&quot;nextjs&quot;</span><br>    &#125;<br>    <br>    <span class="hljs-comment"># 添加自定义字段</span><br>    mutate &#123;<br>      add_field =&gt; &#123;<br>        <span class="hljs-string">&quot;service_type&quot;</span> =&gt; <span class="hljs-string">&quot;nextjs&quot;</span><br>        <span class="hljs-string">&quot;environment&quot;</span> =&gt; <span class="hljs-string">&quot;$&#123;ENVIRONMENT&#125;&quot;</span><br>      &#125;<br>    &#125;<br>    <br>    <span class="hljs-comment"># 提取 HTTP 状态码</span><br>    <span class="hljs-keyword">if</span> [nextjs][status] &#123;<br>      mutate &#123;<br>        convert =&gt; &#123; <span class="hljs-string">&quot;[nextjs][status]&quot;</span> =&gt; <span class="hljs-string">&quot;integer&quot;</span> &#125;<br>      &#125;<br>    &#125;<br>  &#125;<br>  <br>  <span class="hljs-comment"># 地理 IP 解析</span><br>  geoip &#123;<br>    source =&gt; <span class="hljs-string">&quot;ip&quot;</span><br>    target =&gt; <span class="hljs-string">&quot;geoip&quot;</span><br>  &#125;<br>  <br>  <span class="hljs-comment"># 删除原始 message 字段</span><br>  mutate &#123;<br>    remove_field =&gt; [<span class="hljs-string">&quot;message&quot;</span>, <span class="hljs-string">&quot;agent&quot;</span>, <span class="hljs-string">&quot;host&quot;</span>, <span class="hljs-string">&quot;log&quot;</span>, <span class="hljs-string">&quot;input&quot;</span>]<br>  &#125;<br>&#125;<br><br>output &#123;<br>  elasticsearch &#123;<br>    hosts =&gt; [<span class="hljs-string">&quot;elasticsearch:9200&quot;</span>]<br>    index =&gt; <span class="hljs-string">&quot;nextjs-logs-%&#123;+YYYY.MM.dd&#125;&quot;</span><br>    user =&gt; <span class="hljs-string">&quot;$&#123;ELASTICSEARCH_USER&#125;&quot;</span><br>    password =&gt; <span class="hljs-string">&quot;$&#123;ELASTICSEARCH_PASSWORD&#125;&quot;</span><br>  &#125;<br>  <br>  stdout &#123;<br>    codec =&gt; rubydebug<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>核心职责</th>
+<th>关键特性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Elasticsearch</strong></td>
+<td>存储 + 索引</td>
+<td>分布式、实时搜索、全文检索</td>
+</tr>
+<tr>
+<td><strong>Logstash</strong></td>
+<td>采集 + 解析</td>
+<td>200+ 插件、Grok 解析、灵活管道</td>
+</tr>
+<tr>
+<td><strong>Kibana</strong></td>
+<td>搜索 + 可视化</td>
+<td>交互式探索、仪表盘、告警</td>
+</tr>
+<tr>
+<td><strong>Beats</strong></td>
+<td>轻量采集</td>
+<td>资源占用小、专用于特定数据源</td>
+</tr>
+</tbody></table>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/crazymakercircle/p/16768535.html#autoid-h2-3-2-0">Prometheus+Grafana （史上最全） - 技术自由圈 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/626576165">(99+ 封私信 &#x2F; 94 条消息) （超干货）Prometheus+Grafana监控应用 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zsql/p/13164414.html">搞懂ELK并不是一件特别难的事（ELK） - 一寸HUI - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2167267">ELK入门——ELK详细介绍（ELK概念和特点、Elasticsearch&#x2F;Logstash&#x2F;beats&#x2F;kibana安装及使用介绍、插件介绍）-腾讯云开发者社区-腾讯云</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>监控与日志</div>
+      <div>https://hermes37.vercel.app/2026/03/21/全栈应用开发/运维/监控与日志/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/03/21/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx%E9%85%8D%E7%BD%AE/" title="Nginx配置">
+                        <span class="hidden-mobile">Nginx配置</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
