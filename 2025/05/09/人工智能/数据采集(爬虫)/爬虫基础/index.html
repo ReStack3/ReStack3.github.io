@@ -1,0 +1,1861 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Request 更具体的请浏览官方文档：高级用法 — Requests 2.18.1 文档  基本用法请求与响应对象任何时候进行了类似 requests.get() 的调用，你都在做两件主要的事情。其一，你在构建一个 Request 对象， 该对象将被发送到某个服务器请求或查询一些资源。其二，一旦 requests 得到一个从服务器返回的响应就会产生一个 Response 对象。该响应对象包含服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="爬虫基础">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E7%88%AC%E8%99%AB%E5%9F%BA%E7%A1%80/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="Request 更具体的请浏览官方文档：高级用法 — Requests 2.18.1 文档  基本用法请求与响应对象任何时候进行了类似 requests.get() 的调用，你都在做两件主要的事情。其一，你在构建一个 Request 对象， 该对象将被发送到某个服务器请求或查询一些资源。其二，一旦 requests 得到一个从服务器返回的响应就会产生一个 Response 对象。该响应对象包含服务">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/gJET28GUlPdymMV.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/lZoW1nmPJtYBDy6.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/NulWHZrzRhjJ9eV.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/D8rRlEuxy5jtMSe.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.208Z">
+<meta property="article:modified_time" content="2026-03-26T06:49:26.805Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据采集处理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/31/gJET28GUlPdymMV.png">
+  
+  
+  
+  <title>爬虫基础 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="爬虫基础"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          55 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">爬虫基础</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Request"><a href="#Request" class="headerlink" title="Request"></a>Request</h1><blockquote>
+<p>更具体的请浏览官方文档：<a target="_blank" rel="noopener" href="https://requests.readthedocs.io/projects/cn/zh-cn/latest/user/advanced.html#session-objects">高级用法 — Requests 2.18.1 文档</a></p>
+</blockquote>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><h3 id="请求与响应对象"><a href="#请求与响应对象" class="headerlink" title="请求与响应对象"></a>请求与响应对象</h3><p>任何时候进行了类似 requests.get() 的调用，你都在做两件主要的事情。其一，你在构建一个 Request 对象， 该对象将被发送到某个服务器请求或查询一些资源。其二，一旦 <code>requests</code> 得到一个从服务器返回的响应就会产生一个 <code>Response</code> 对象。该响应对象包含服务器返回的所有信息，也包含你原来创建的 <code>Request</code> 对象。</p>
+<h4 id="requests参数"><a href="#requests参数" class="headerlink" title="requests参数"></a>requests参数</h4><img src="https://s2.loli.net/2024/12/31/gJET28GUlPdymMV.png" srcset="/img/loading.gif" lazyload alt="image-20241231180931825" style="zoom:50%;" />
+
+<h5 id="参数具体信息"><a href="#参数具体信息" class="headerlink" title="参数具体信息"></a>参数具体信息</h5><p><img src="https://s2.loli.net/2024/12/31/lZoW1nmPJtYBDy6.png" srcset="/img/loading.gif" lazyload alt="image-20241231181023697"></p>
+<h4 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h4><h5 id="1-get-方法"><a href="#1-get-方法" class="headerlink" title="1.get()方法"></a>1.get()方法</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> requests<br><br>x = requests.get(<span class="hljs-string">&#x27;https://begtut.com&#x27;</span>)<br><span class="hljs-built_in">print</span>(x.status_code) <br></code></pre></td></tr></table></figure>
+
+<h6 id="底层实现"><a href="#底层实现" class="headerlink" title="底层实现"></a>底层实现</h6><p><img src="https://s2.loli.net/2024/12/31/NulWHZrzRhjJ9eV.png" srcset="/img/loading.gif" lazyload alt="image-20241231182011680"></p>
+<h5 id="2-post-方法"><a href="#2-post-方法" class="headerlink" title="2.post()方法"></a>2.post()方法</h5><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs py">payload = &#123;<span class="hljs-string">&#x27;key1&#x27;</span>: <span class="hljs-string">&#x27;value1&#x27;</span>, <span class="hljs-string">&#x27;key2&#x27;</span>: <span class="hljs-string">&#x27;value2&#x27;</span>&#125;<br><br>r = requests.post(<span class="hljs-string">&quot;http://httpbin.org/post&quot;</span>, data=payload)<br><span class="hljs-built_in">print</span>(r.text)<br></code></pre></td></tr></table></figure>
+
+<h6 id="底层实现-1"><a href="#底层实现-1" class="headerlink" title="底层实现"></a>底层实现</h6><p><img src="https://s2.loli.net/2024/12/31/D8rRlEuxy5jtMSe.png" srcset="/img/loading.gif" lazyload alt="image-20241231182223726"></p>
+<h3 id="requests-Response-对象"><a href="#requests-Response-对象" class="headerlink" title="requests.Response 对象"></a>requests.Response 对象</h3><table>
+<thead>
+<tr>
+<th><strong>属性&#x2F;方法</strong></th>
+<th><strong>类型</strong></th>
+<th align="left"><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>status_code</code></td>
+<td><code>int</code></td>
+<td align="left">HTTP 响应的状态码。例如，200 表示请求成功，404 表示未找到，500 表示服务器错误等。</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td align="left">响应体的内容，通常为文本数据，如 HTML 或 XML 格式的响应。</td>
+</tr>
+<tr>
+<td><code>json()</code></td>
+<td><code>dict</code></td>
+<td align="left">如果响应内容是 JSON 格式，调用该方法会将其解析为 Python 字典对象。</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code>bytes</code></td>
+<td align="left">响应体的原始字节内容。如果响应是二进制数据（如图片、视频等），使用此属性。</td>
+</tr>
+<tr>
+<td><code>headers</code></td>
+<td><code>dict</code></td>
+<td align="left">响应的 HTTP 头部，包含键值对，例如 <code>Content-Type</code>、<code>Server</code> 等。</td>
+</tr>
+<tr>
+<td><code>cookies</code></td>
+<td><code>RequestsCookieJar</code></td>
+<td align="left">响应中的 cookies 信息，通常用来存储客户端和服务器之间的会话信息。</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>str</code></td>
+<td align="left">最终请求的 URL，可能与传递的 URL 不同，因为可能发生了重定向。</td>
+</tr>
+<tr>
+<td><code>encoding</code></td>
+<td><code>str</code></td>
+<td align="left">响应内容的字符编码（例如 <code>utf-8</code>）。</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>str</code></td>
+<td align="left">HTTP 响应的状态说明。例如，”OK” 或 “Not Found” 等。</td>
+</tr>
+<tr>
+<td><code>ok</code></td>
+<td><code>bool</code></td>
+<td align="left">如果响应状态码为 2xx，则返回 <code>True</code>，表示请求成功；否则返回 <code>False</code>。</td>
+</tr>
+<tr>
+<td><code>elapsed</code></td>
+<td><code>timedelta</code></td>
+<td align="left">请求耗时的 <code>timedelta</code> 对象，表示请求从开始到结束所用的时间。</td>
+</tr>
+<tr>
+<td><code>history</code></td>
+<td><code>list</code></td>
+<td align="left">如果发生了重定向，这个属性将包含响应的历史记录。</td>
+</tr>
+<tr>
+<td><code>is_redirect</code></td>
+<td><code>bool</code></td>
+<td align="left">如果响应是重定向响应（如 301 或 302），返回 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>is_permanent_redirect</code></td>
+<td><code>bool</code></td>
+<td align="left">如果响应是永久重定向（如 301），返回 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>iter_content(chunk_size=1)</code></td>
+<td><code>iterator</code></td>
+<td align="left">按块读取响应内容，适合处理大文件的下载，<code>chunk_size</code> 设置每块数据的大小。</td>
+</tr>
+<tr>
+<td><code>iter_lines(chunk_size=1)</code></td>
+<td><code>iterator</code></td>
+<td align="left">按行迭代响应体内容，适合逐行处理大文本数据。</td>
+</tr>
+<tr>
+<td><code>raise_for_status()</code></td>
+<td><code>None</code></td>
+<td align="left">如果响应的状态码表示请求失败（如 4xx 或 5xx 错误），抛出异常。</td>
+</tr>
+<tr>
+<td><code>close()</code></td>
+<td><code>None</code></td>
+<td align="left">关闭连接，释放底层资源。</td>
+</tr>
+<tr>
+<td><code>request</code></td>
+<td><code>Request</code></td>
+<td align="left">返回用于生成此响应的请求对象。</td>
+</tr>
+<tr>
+<td><code>raw</code></td>
+<td><code>urllib3.response.HTTPResponse</code></td>
+<td align="left">响应的底层 <code>HTTPResponse</code> 对象，提供更多底层的控制选项。</td>
+</tr>
+<tr>
+<td><code>apparent_encoding</code></td>
+<td><code>str</code></td>
+<td align="left"><code>requests</code> 根据内容检测的编码类型，而非通过 HTTP 头部获取的编码。</td>
+</tr>
+<tr>
+<td><code>_content</code></td>
+<td><code>bytes</code></td>
+<td align="left">内部存储的响应内容，通常通过 <code>r.content</code> 访问。</td>
+</tr>
+<tr>
+<td><code>_content_consumed</code></td>
+<td><code>bool</code></td>
+<td align="left">标识响应内容是否已被消耗。如果内容已经消费（例如通过 <code>text</code> 或 <code>json()</code>），则为 <code>True</code>。</td>
+</tr>
+<tr>
+<td><code>_next</code></td>
+<td><code>Response</code></td>
+<td align="left">用于处理响应流中的下一个响应对象（通常与流式请求相关）。</td>
+</tr>
+<tr>
+<td><code>close()</code></td>
+<td><code>None</code></td>
+<td align="left">关闭该响应的底层连接。</td>
+</tr>
+</tbody></table>
+<h2 id="高级用法"><a href="#高级用法" class="headerlink" title="高级用法"></a>高级用法</h2><h3 id="会话对象"><a href="#会话对象" class="headerlink" title="会话对象"></a>会话对象</h3><p>在 Web 开发中，<strong>cookie</strong> 用于存储客户端（浏览器）和服务器之间的会话信息，例如登录状态、用户设置等。当你访问网站时，服务器可能会向你的浏览器发送一个 cookie，浏览器会在后续的请求中将这个 cookie 发送回服务器。</p>
+<p>通常，每次使用 <code>requests.get()</code> 或 <code>requests.post()</code> 发出请求时，这些请求都是独立的，它们不共享任何信息。也就是说，每次请求都没有记住上次请求的状态。</p>
+<p>会话对象的作用：</p>
+<ol>
+<li><p><strong>跨请求保持 cookie</strong>：当你使用 <code>requests.Session()</code> 创建一个会话对象时，它会自动保存和管理会话期间的 <strong>cookie</strong>。这意味着，当你向同一个服务器发送多个请求时，前一个请求的 cookie 会被保存下来并在下一个请求中自动使用，从而模拟了在浏览器中的持续会话。</p>
+<p>例如，当你登录一个网站时，服务器可能会设置一个 <code>session_id</code> cookie。使用会话对象后，后续的请求会自动携带这个 <code>session_id</code>，使得服务器可以识别你仍然是同一个用户，而不需要重新登录。</p>
+</li>
+<li><p><strong>连接池和性能提升</strong>：使用会话对象还能够通过 <strong>连接池</strong> 功能重用底层的 TCP 连接，减少了每次请求时重新建立连接的开销，从而提高性能，特别是在对同一主机进行多个请求时。</p>
+</li>
+</ol>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> requests<br><br><span class="hljs-comment"># 创建一个会话对象</span><br>session = requests.Session()<br><br><span class="hljs-comment"># 发送第一个请求，服务器返回 cookie</span><br>response1 = session.get(<span class="hljs-string">&#x27;https://example.com/login&#x27;</span>)<br><span class="hljs-built_in">print</span>(response1.cookies)  <span class="hljs-comment"># 打印服务器返回的 cookie</span><br><br><span class="hljs-comment"># 发送第二个请求，会话对象自动携带上次的 cookie</span><br>response2 = session.get(<span class="hljs-string">&#x27;https://example.com/dashboard&#x27;</span>)<br><span class="hljs-built_in">print</span>(response2.cookies)  <span class="hljs-comment"># 你可以看到第二个请求携带了第一个请求的 cookie</span><br><br></code></pre></td></tr></table></figure>
+
+
+
+<table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong><code>requests.request()</code></strong></th>
+<th><strong><code>requests.Session().request()</code></strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>会话管理</strong></td>
+<td>每次请求都是独立的，没有会话管理</td>
+<td>会话对象自动管理 cookie 和连接池</td>
+</tr>
+<tr>
+<td><strong>连接复用</strong></td>
+<td>每次请求建立新的 TCP 连接</td>
+<td>会话对象复用底层 TCP 连接，提高性能</td>
+</tr>
+<tr>
+<td><strong>性能</strong></td>
+<td>性能较差，因为每次请求都需要重新连接</td>
+<td>性能较好，适合多次请求，避免重复建立连接</td>
+</tr>
+<tr>
+<td><strong>用途</strong></td>
+<td>适用于单次请求或不需要保持会话的场景</td>
+<td>适用于需要保持会话的场景，如登录后的连续请求</td>
+</tr>
+<tr>
+<td><strong>状态保持（如 cookie）</strong></td>
+<td>不会自动保持状态，每次请求需要显式传递</td>
+<td>自动保持状态（例如 cookies），后续请求自动带上</td>
+</tr>
+<tr>
+<td><strong>实例化对象</strong></td>
+<td>不需要创建会话对象，直接发起请求</td>
+<td>需要创建 <code>Session</code> 对象并通过该对象发起请求</td>
+</tr>
+</tbody></table>
+<h4 id="requests-request-和-requests-Session-request"><a href="#requests-request-和-requests-Session-request" class="headerlink" title="requests.request() 和 requests.Session().request()"></a><code>requests.request()</code> 和 <code>requests.Session().request()</code></h4><p><code>requests.request()</code> 方法和 <code>requests.Session().request()</code> 方法都可以用来发起 HTTP 请求，但它们在实现方式和使用场景上有所不同。虽然两者都调用了 <code>Session</code> 类的 <code>request()</code> 方法，但其差异主要体现在 <strong>会话管理</strong> 和 <strong>内部实现</strong> 上。</p>
+<h5 id="两者调用-Session-类的-request-方法的区别"><a href="#两者调用-Session-类的-request-方法的区别" class="headerlink" title="两者调用 Session 类的 request() 方法的区别?"></a><strong>两者调用 <code>Session</code> 类的 <code>request()</code> 方法的区别</strong>?</h5><ul>
+<li>**<code>requests.request()</code>**：<ul>
+<li>是一个 <strong>顶级函数</strong>，调用时会临时创建一个新的 <code>Session</code> 对象，并在该对象上发起请求。每次调用 <code>requests.request()</code> 都是一次 <strong>独立的请求</strong>，请求之间没有任何共享状态（如 cookies 或连接池）。</li>
+<li>它并不保持会话状态，每次请求都没有连接池和 cookie 管理。</li>
+</ul>
+</li>
+<li>**<code>requests.Session().request()</code>**：<ul>
+<li>这是 <code>Session</code> 类的 <strong>实例方法</strong>，会话对象用于 <strong>跨多个请求保持会话状态</strong>（例如自动携带 cookies、HTTP 头部、连接池复用等）。</li>
+<li>使用 <code>Session()</code> 对象，你可以在多个请求之间保持相同的会话信息，如登录的 cookies，不需要每次手动传递请求参数。。</li>
+</ul>
+</li>
+</ul>
+<h5 id="代码实现上的差异"><a href="#代码实现上的差异" class="headerlink" title="代码实现上的差异"></a><strong>代码实现上的差异</strong></h5><p><code>requests.request()</code> 会在内部新建一个 <code>Session</code> 对象，而 <code>requests.Session().request()</code> 则使用已经创建好的 <code>Session</code> 对象。以下是它们的简化实现：</p>
+<h6 id="requests-request-实现："><a href="#requests-request-实现：" class="headerlink" title="requests.request() 实现："></a><code>requests.request()</code> 实现：</h6><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">from</span> requests <span class="hljs-keyword">import</span> Session<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">request</span>(<span class="hljs-params">method, url, **kwargs</span>):<br>    <span class="hljs-comment"># 每次都创建一个新的 Session 对象</span><br>    session = Session()<br>    <span class="hljs-keyword">return</span> session.request(method, url, **kwargs)<br></code></pre></td></tr></table></figure>
+
+<h6 id="requests-Session-request-实现："><a href="#requests-Session-request-实现：" class="headerlink" title="requests.Session().request() 实现："></a><code>requests.Session().request()</code> 实现：</h6><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> requests<br><br><span class="hljs-comment"># 使用已有的 Session 对象发起请求</span><br>session = requests.Session()<br>response = session.request(<span class="hljs-string">&#x27;GET&#x27;</span>, <span class="hljs-string">&#x27;https://example.com&#x27;</span>)<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="Lxml"><a href="#Lxml" class="headerlink" title="Lxml"></a>Lxml</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://lxml.de/">lxml - Processing XML and HTML with Python</a></p>
+</blockquote>
+<p><code>lxml</code> 是一个用于处理 XML 和 HTML 的 Python 库，它提供了对 XML 和 HTML 的高效解析和操作能力。</p>
+<h2 id="HTML-和-XML-之间的区别"><a href="#HTML-和-XML-之间的区别" class="headerlink" title="HTML 和 XML 之间的区别"></a>HTML 和 XML 之间的区别</h2><p><strong>XML</strong> 是一种面向数据的标记语言，专注于描述和传输结构化信息；它注重可扩展性和自定义，适合数据存储和交换。</p>
+<p><strong>HTML</strong> 是一种面向显示的标记语言，专注于内容的呈现和用户交互；它结构固定且宽松，适合网页设计。</p>
+<table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>XML（可扩展标记语言）</strong></th>
+<th><strong>HTML（超文本标记语言）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>目的</strong></td>
+<td>用于表示、存储和传输数据，强调数据的<strong>结构化</strong>和<strong>自定义</strong>。</td>
+<td>用于<strong>展示</strong>网页内容，描述文档的外观和行为。</td>
+</tr>
+<tr>
+<td><strong>语法规则</strong></td>
+<td>严格：标签必须正确嵌套，属性值必须用引号，必须有根标签。</td>
+<td>宽松：标签可以不完全闭合，不区分大小写，错误不会阻止文档渲染。</td>
+</tr>
+<tr>
+<td><strong>标签定义</strong></td>
+<td>用户可以自定义标签。</td>
+<td>使用预定义的固定标签（如 <code>&lt;html&gt;</code>、<code>&lt;div&gt;</code>）。</td>
+</tr>
+<tr>
+<td><strong>数据格式</strong></td>
+<td>数据驱动：描述数据及其结构，通常无视觉呈现。</td>
+<td>视觉驱动：用来定义文档的结构和视觉内容。</td>
+</tr>
+<tr>
+<td><strong>用途</strong></td>
+<td>数据交换（如配置文件、Web 服务接口）。</td>
+<td>构建和展示网页内容。</td>
+</tr>
+<tr>
+<td><strong>可扩展性</strong></td>
+<td>完全支持：用户可以根据需求定义自己的标签和结构。</td>
+<td>不支持扩展：只能使用 HTML 标准定义的标签。</td>
+</tr>
+<tr>
+<td><strong>显示功能</strong></td>
+<td>仅存储数据，无法直接定义数据如何显示。</td>
+<td>专为显示内容设计，提供文本、图像、超链接等显示功能。</td>
+</tr>
+<tr>
+<td><strong>严格性</strong></td>
+<td>严格遵守规则，错误会导致解析失败。</td>
+<td>宽容性强，小错误不会影响页面渲染。</td>
+</tr>
+<tr>
+<td><strong>案例用途</strong></td>
+<td>配置文件（如 <code>.xml</code> 文件）、数据交换（如 SOAP、RSS）。</td>
+<td>网页设计、超媒体文档展示。</td>
+</tr>
+<tr>
+<td><strong>属性</strong></td>
+<td>属性仅用于提供额外信息，内容以文本为主。</td>
+<td>属性用于控制页面的外观和行为（如 <code>style</code>、<code>class</code>）。</td>
+</tr>
+<tr>
+<td><strong>大小写敏感性</strong></td>
+<td>区分大小写：<code>&lt;Tag&gt;</code> 和 <code>&lt;tag&gt;</code> 是不同的标签。</td>
+<td>不区分大小写：<code>&lt;Tag&gt;</code> 和 <code>&lt;tag&gt;</code> 是等价的。</td>
+</tr>
+<tr>
+<td><strong>解析工具</strong></td>
+<td>通常需要专用的解析器（如 <code>lxml</code>、<code>ElementTree</code>）。</td>
+<td>浏览器原生支持，无需额外解析工具。</td>
+</tr>
+<tr>
+<td><strong>支持的标准</strong></td>
+<td>W3C XML 标准。</td>
+<td>W3C HTML 和 HTML5 标准。</td>
+</tr>
+<tr>
+<td><strong>数据验证</strong></td>
+<td>支持数据验证（如通过 DTD 或 XML Schema 验证）。</td>
+<td>不支持数据验证，仅为文档展示服务。</td>
+</tr>
+<tr>
+<td><strong>与 CSS 的集成</strong></td>
+<td>通常不直接集成 CSS，需结合 HTML 或其他技术实现样式。</td>
+<td>天生与 CSS 集成，用于控制页面样式和布局。</td>
+</tr>
+<tr>
+<td><strong>与 JavaScript 的集成</strong></td>
+<td>通常作为数据源（如通过 AJAX 获取和解析 XML 数据）。</td>
+<td>可以直接与 JavaScript 结合，实现交互式网页功能。</td>
+</tr>
+<tr>
+<td><strong>人类可读性</strong></td>
+<td>设计为机器和人类都易于理解，适合存储复杂的结构化数据。</td>
+<td>面向人类设计，主要用于网页内容和交互的编写。</td>
+</tr>
+</tbody></table>
+<h2 id="lxml-模块组成及功能概览"><a href="#lxml-模块组成及功能概览" class="headerlink" title="lxml 模块组成及功能概览"></a>lxml 模块组成及功能概览</h2><table>
+<thead>
+<tr>
+<th><strong>模块</strong></th>
+<th><strong>功能描述</strong></th>
+<th><strong>常见方法&#x2F;功能</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>lxml.etree</strong></td>
+<td>核心模块，用于解析、生成、查询和修改 XML 和 HTML 文档。</td>
+<td><code>parse()</code>、<code>fromstring()</code>、<code>Element()</code>、<code>XPath()</code>、<code>tostring()</code>、节点操作（如 <code>append()</code>、<code>remove()</code>）。</td>
+</tr>
+<tr>
+<td><strong>lxml.html</strong></td>
+<td>专门处理 HTML，支持修复不规范 HTML 结构并提供更高级操作接口。</td>
+<td><code>html.parse()</code>、<code>html.fromstring()</code>、<code>html.tostring()</code>、CSS 选择器功能（配合 <code>CSSSelector</code>）。</td>
+</tr>
+<tr>
+<td><strong>lxml.xpath</strong></td>
+<td>提供 XPath 查询功能，用于快速查找和筛选 XML&#x2F;HTML 元素。</td>
+<td><code>XPath()</code>、<code>XPathResult()</code>，通过 <code>element.xpath()</code> 执行查询。</td>
+</tr>
+<tr>
+<td><strong>lxml.objectify</strong></td>
+<td>将 XML 数据转换为 Python 对象，支持属性访问方式操作 XML 数据。</td>
+<td><code>objectify.fromstring()</code>、<code>objectify.Element()</code>，动态生成属性和子元素。</td>
+</tr>
+<tr>
+<td><strong>lxml.etree.CDATA</strong></td>
+<td>用于表示 XML 文档中的 CDATA 部分，处理不需要转义的字符数据。</td>
+<td>无直接方法，适用于定义和操作 CDATA 节点内容。</td>
+</tr>
+<tr>
+<td><strong>lxml.html.CSSSelector</strong></td>
+<td>提供 CSS 选择器支持，通过 CSS 风格选择器查找文档中的元素（类似 jQuery）。</td>
+<td><code>CSSSelector(selector)</code>，基于 CSS 选择器的元素查询。</td>
+</tr>
+<tr>
+<td><strong>lxml.etree.XMLParser</strong></td>
+<td>XML 解析器，支持标准的 XML 文档解析。</td>
+<td><code>XMLParser()</code>，支持自定义解析行为。</td>
+</tr>
+<tr>
+<td><strong>lxml.etree.HTMLParser</strong></td>
+<td>HTML 解析器，支持修复不规范 HTML 并解析为 HTML 文档。</td>
+<td><code>HTMLParser()</code>，适合处理不规范的网页内容。</td>
+</tr>
+<tr>
+<td><strong>lxml.builder</strong></td>
+<td>提供动态构建 XML 文档的能力，通过类对象生成 XML 元素并组装完整文档。</td>
+<td><code>builder.ElementMaker()</code>，创建元素构建器，支持动态 XML 生成。</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>模块功能对比与适用场景</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>模块名称</strong></th>
+<th><strong>适用场景</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>lxml.etree</strong></td>
+<td>通用 XML 和 HTML 操作，适用于标准文档的解析、修改和生成。</td>
+</tr>
+<tr>
+<td><strong>lxml.html</strong></td>
+<td>处理 HTML 文档的高级需求，适合网页爬虫和修复不规范 HTML。</td>
+</tr>
+<tr>
+<td><strong>lxml.xpath</strong></td>
+<td>基于 XPath 的快速节点查询，适合大规模 XML&#x2F;HTML 数据的精准查找。</td>
+</tr>
+<tr>
+<td><strong>lxml.objectify</strong></td>
+<td>将 XML 转为对象，适合需要通过属性访问 XML 节点的场景。</td>
+</tr>
+<tr>
+<td><strong>lxml.builder</strong></td>
+<td>动态生成 XML，适用于需要灵活构建复杂 XML 文档的情况。</td>
+</tr>
+<tr>
+<td><strong>lxml.html.CSSSelector</strong></td>
+<td>使用 CSS 选择器查找 HTML 元素，适用于熟悉 CSS 的开发者操作 HTML。</td>
+</tr>
+<tr>
+<td><strong>XMLParser&#x2F;HTMLParser</strong></td>
+<td>定制 XML&#x2F;HTML 解析行为，适合需要特殊解析规则的应用。</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="lxml-etree-和-lxml-html-对比"><a href="#lxml-etree-和-lxml-html-对比" class="headerlink" title="lxml.etree 和 lxml.html 对比"></a><strong><code>lxml.etree</code> 和 <code>lxml.html</code> 对比</strong></h2><table>
+<thead>
+<tr>
+<th><strong>对比维度</strong></th>
+<th><strong>lxml.etree</strong></th>
+<th><strong>lxml.html</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>模块性质</strong></td>
+<td>核心模块，用于解析、生成、查询和修改 XML 和 HTML。</td>
+<td>基于 <code>lxml.etree</code> 的扩展模块，专门处理 HTML 文档，特别是不规范 HTML。</td>
+</tr>
+<tr>
+<td><strong>支持文档类型</strong></td>
+<td>XML 和 HTML，主要面向标准化文档，要求严格符合 XML 规范。</td>
+<td>专注 HTML，适用于不规范 HTML 文档，自动修复结构问题。</td>
+</tr>
+<tr>
+<td><strong>解析器</strong></td>
+<td>标准的 XML 解析器（<code>XMLParser</code> 和 <code>HTMLParser</code>），对标准要求严格。</td>
+<td>使用基于 HTML 的解析器，对缺失闭合标签、不匹配标签等容错处理更强。</td>
+</tr>
+<tr>
+<td><strong>容错能力</strong></td>
+<td>面向 XML 标准，容错能力较弱。</td>
+<td>面向 HTML 标准，自动修复常见的 HTML 错误，例如闭合标签补全、修复嵌套问题。</td>
+</tr>
+<tr>
+<td><strong>功能扩展</strong></td>
+<td>提供标准的 XML&#x2F;HTML 解析和操作功能，支持 XPath、XSLT、节点增删改查等操作。</td>
+<td>在继承 <code>lxml.etree</code> 功能的基础上，提供 CSS 选择器支持、HTML 特定修复功能以及对不规范文档的优化。</td>
+</tr>
+<tr>
+<td><strong>自动修复</strong></td>
+<td>仅对 XML 规范严格处理，不会自动修复文档结构问题。</td>
+<td>能修复不规范的 HTML，例如缺失的 <code>&lt;/html&gt;</code> 或不完整的标签。</td>
+</tr>
+<tr>
+<td><strong>CSS 选择器支持</strong></td>
+<td>不支持 CSS 选择器，只能通过 XPath 查询。</td>
+<td>支持 CSS 选择器查询，提供 <code>CSSSelector</code> 类，简化 HTML 元素的查询。</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>需要严格处理 XML 或标准 HTML 的场景，如配置文件、API 数据解析等。</td>
+<td>适合处理网页爬虫和 HTML 文档操作，尤其是不规范 HTML 的解析和修复场景。</td>
+</tr>
+<tr>
+<td><strong>示例方法</strong></td>
+<td><code>etree.parse()</code>、<code>etree.fromstring()</code>、<code>etree.Element()</code>、<code>XPath()</code>。</td>
+<td><code>html.parse()</code>、<code>html.fromstring()</code>、<code>CSSSelector()</code>、自动补全和修复 HTML 结构问题。</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="lxml-etree-常用属性与方法"><a href="#lxml-etree-常用属性与方法" class="headerlink" title="lxml.etree 常用属性与方法"></a><strong><code>lxml.etree</code> 常用属性与方法</strong></h2><h3 id="1-核心类及作用"><a href="#1-核心类及作用" class="headerlink" title="1. 核心类及作用"></a><strong>1. 核心类及作用</strong></h3><table>
+<thead>
+<tr>
+<th><strong>类名</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Element</code></td>
+<td>表示 XML&#x2F;HTML 文档中的节点，支持各种节点操作。</td>
+</tr>
+<tr>
+<td><code>ElementTree</code></td>
+<td>表示整个文档树结构，用于管理和操作根节点及其子节点。</td>
+</tr>
+<tr>
+<td><code>XMLParser</code></td>
+<td>用于解析 XML 文档，支持自定义解析行为。</td>
+</tr>
+<tr>
+<td><code>HTMLParser</code></td>
+<td>用于解析 HTML 文档，支持容错处理。</td>
+</tr>
+<tr>
+<td><code>XPath</code></td>
+<td>表示 XPath 表达式，便于对文档进行高级查询。</td>
+</tr>
+<tr>
+<td><code>XSLT</code></td>
+<td>表示 XSLT 转换对象，用于对 XML 文档进行样式转换。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-Element-类常用属性和方法"><a href="#2-Element-类常用属性和方法" class="headerlink" title="2. Element 类常用属性和方法"></a><strong>2. <code>Element</code> 类常用属性和方法</strong></h3><table>
+<thead>
+<tr>
+<th><strong>属性&#x2F;方法</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>属性</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>tag</code></td>
+<td>返回节点的标签名（字符串）。</td>
+</tr>
+<tr>
+<td><code>attrib</code></td>
+<td>返回节点的属性字典（键值对可修改）。</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td>返回节点的文本内容（可读写）。</td>
+</tr>
+<tr>
+<td><code>tail</code></td>
+<td>返回节点的尾部文本（紧接在节点后面的文本）。</td>
+</tr>
+<tr>
+<td><strong>方法</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>append(element)</code></td>
+<td>向当前节点的子节点列表中追加一个子元素。</td>
+</tr>
+<tr>
+<td><code>extend(elements)</code></td>
+<td>向当前节点追加多个子元素。</td>
+</tr>
+<tr>
+<td><code>find(path)</code></td>
+<td>按 XPath 查询子节点，返回第一个匹配的子节点。</td>
+</tr>
+<tr>
+<td><code>findall(path)</code></td>
+<td>按 XPath 查询所有匹配的子节点，返回列表。</td>
+</tr>
+<tr>
+<td><code>findtext(path)</code></td>
+<td>按 XPath 查询子节点并返回其文本内容。</td>
+</tr>
+<tr>
+<td><code>get(key, default=None)</code></td>
+<td>获取指定属性的值，若不存在返回默认值。</td>
+</tr>
+<tr>
+<td><code>set(key, value)</code></td>
+<td>设置指定属性的值。</td>
+</tr>
+<tr>
+<td><code>keys()</code></td>
+<td>返回节点所有属性的键。</td>
+</tr>
+<tr>
+<td><code>items()</code></td>
+<td>返回节点所有属性的键值对。</td>
+</tr>
+<tr>
+<td><code>insert(index, element)</code></td>
+<td>在指定位置插入子节点。</td>
+</tr>
+<tr>
+<td><code>remove(element)</code></td>
+<td>删除指定的子节点。</td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>清除当前节点的所有内容（文本、子节点和属性）。</td>
+</tr>
+<tr>
+<td><code>iter(tag=None)</code></td>
+<td>深度优先遍历当前节点及其所有子节点。</td>
+</tr>
+<tr>
+<td><code>iterchildren(tag=None)</code></td>
+<td>遍历当前节点的直接子节点。</td>
+</tr>
+<tr>
+<td><code>itertext()</code></td>
+<td>遍历当前节点及其子节点中的所有文本内容。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-ElementTree-类常用属性和方法"><a href="#3-ElementTree-类常用属性和方法" class="headerlink" title="3. ElementTree 类常用属性和方法"></a><strong>3. <code>ElementTree</code> 类常用属性和方法</strong></h3><table>
+<thead>
+<tr>
+<th><strong>属性&#x2F;方法</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>属性</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>docinfo</code></td>
+<td>返回文档的元信息（如编码、DTD 等）。</td>
+</tr>
+<tr>
+<td><code>getroot()</code></td>
+<td>返回文档的根节点。</td>
+</tr>
+<tr>
+<td><strong>方法</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>find(path)</code></td>
+<td>在整棵树中查找第一个匹配的节点。</td>
+</tr>
+<tr>
+<td><code>findall(path)</code></td>
+<td>在整棵树中查找所有匹配的节点，返回列表。</td>
+</tr>
+<tr>
+<td><code>findtext(path)</code></td>
+<td>返回匹配节点的文本内容。</td>
+</tr>
+<tr>
+<td><code>write(file, encoding=None, xml_declaration=None)</code></td>
+<td>将文档树写入文件。</td>
+</tr>
+<tr>
+<td><code>xpath(expression)</code></td>
+<td>使用 XPath 表达式查询文档树。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="4-解析相关函数"><a href="#4-解析相关函数" class="headerlink" title="4. 解析相关函数"></a><strong>4. 解析相关函数</strong></h3><table>
+<thead>
+<tr>
+<th><strong>函数</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>XML(string)</code></td>
+<td>解析 XML 字符串，返回根节点。</td>
+</tr>
+<tr>
+<td><code>HTML(string)</code></td>
+<td>解析 HTML 字符串，返回根节点。</td>
+</tr>
+<tr>
+<td><code>parse(file)</code></td>
+<td>从文件解析 XML&#x2F;HTML 文档。</td>
+</tr>
+<tr>
+<td><code>fromstring(string)</code></td>
+<td>解析 XML&#x2F;HTML 字符串，返回根节点。</td>
+</tr>
+<tr>
+<td><code>tostring(element, pretty_print=False)</code></td>
+<td>将节点序列化为字符串。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="5-文档创建与序列化"><a href="#5-文档创建与序列化" class="headerlink" title="5. 文档创建与序列化"></a><strong>5. 文档创建与序列化</strong></h3><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创建</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Element(tag, attrib=None, **extra)</code></td>
+<td>创建一个新的节点。</td>
+</tr>
+<tr>
+<td><code>SubElement(parent, tag, attrib=None, **extra)</code></td>
+<td>向父节点中创建子节点。</td>
+</tr>
+<tr>
+<td><code>Comment(text)</code></td>
+<td>创建注释节点。</td>
+</tr>
+<tr>
+<td><code>ProcessingInstruction(target, text=None)</code></td>
+<td>创建处理指令节点。</td>
+</tr>
+<tr>
+<td><strong>序列化</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>tostring(element, encoding=None, pretty_print=False)</code></td>
+<td>将节点序列化为字符串。</td>
+</tr>
+<tr>
+<td><code>ElementTree.write(file, encoding=None, xml_declaration=None)</code></td>
+<td>将整个树写入文件。</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="6-XPath-类常用方法"><a href="#6-XPath-类常用方法" class="headerlink" title="6. XPath 类常用方法"></a><strong>6. XPath 类常用方法</strong></h4><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>evaluate(tree_or_element)</code></td>
+<td>在指定的树或节点上运行 XPath 表达式，返回匹配结果。</td>
+</tr>
+<tr>
+<td><code>find(tree_or_element)</code></td>
+<td>返回第一个匹配的节点。</td>
+</tr>
+<tr>
+<td><code>findall(tree_or_element)</code></td>
+<td>返回所有匹配的节点，返回列表。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="示例代码对比"><a href="#示例代码对比" class="headerlink" title="示例代码对比"></a><strong>示例代码对比</strong></h3><h4 id="XML-文档操作"><a href="#XML-文档操作" class="headerlink" title="XML 文档操作"></a><strong>XML 文档操作</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> lxml <span class="hljs-keyword">import</span> etree<br><br><span class="hljs-comment"># 创建 XML</span><br>root = etree.Element(<span class="hljs-string">&quot;root&quot;</span>)<br>child = etree.SubElement(root, <span class="hljs-string">&quot;child&quot;</span>, attrib=&#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;test&quot;</span>&#125;)<br>child.text = <span class="hljs-string">&quot;Hello, XML!&quot;</span><br><br><span class="hljs-comment"># 打印序列化后的 XML</span><br><span class="hljs-built_in">print</span>(etree.tostring(root, pretty_print=<span class="hljs-literal">True</span>).decode())<br></code></pre></td></tr></table></figure>
+
+<h4 id="XPath-查询"><a href="#XPath-查询" class="headerlink" title="XPath 查询"></a><strong>XPath 查询</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> lxml <span class="hljs-keyword">import</span> etree<br><br><span class="hljs-comment"># 创建 XML</span><br>root = etree.Element(<span class="hljs-string">&quot;root&quot;</span>)<br>etree.SubElement(root, <span class="hljs-string">&quot;child&quot;</span>, attrib=&#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;A&quot;</span>&#125;).text = <span class="hljs-string">&quot;Value A&quot;</span><br>etree.SubElement(root, <span class="hljs-string">&quot;child&quot;</span>, attrib=&#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;B&quot;</span>&#125;).text = <span class="hljs-string">&quot;Value B&quot;</span><br><br><span class="hljs-comment"># XPath 查询</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@name=&#x27;A&#x27;]/text()&quot;</span>)<br><span class="hljs-built_in">print</span>(result)  <span class="hljs-comment"># 输出 [&#x27;Value A&#x27;]</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a><strong>总结</strong></h3><table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>推荐方法&#x2F;类</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>创建节点和文档</td>
+<td><code>Element</code>、<code>SubElement</code></td>
+</tr>
+<tr>
+<td>序列化为字符串或写入文件</td>
+<td><code>tostring()</code>、<code>ElementTree.write()</code></td>
+</tr>
+<tr>
+<td>查询节点</td>
+<td><code>find()</code>、<code>findall()</code>、<code>xpath()</code></td>
+</tr>
+<tr>
+<td>修改节点属性或文本</td>
+<td><code>set()</code>、<code>attrib</code>、<code>text</code></td>
+</tr>
+<tr>
+<td>遍历节点</td>
+<td><code>iter()</code>、<code>iterchildren()</code></td>
+</tr>
+</tbody></table>
+<h2 id="XPath-的基本语法规则"><a href="#XPath-的基本语法规则" class="headerlink" title="XPath 的基本语法规则"></a>XPath 的基本语法规则</h2><h3 id="lxml-库的-XPath-语法与使用指南"><a href="#lxml-库的-XPath-语法与使用指南" class="headerlink" title="lxml 库的 XPath 语法与使用指南"></a><strong><code>lxml</code> 库的 XPath 语法与使用指南</strong></h3><p>XPath（XML Path Language）是一种用于定位 XML&#x2F;HTML 文档中节点的语言，它支持节点查询、条件筛选以及多种操作功能。在 Python 的 <code>lxml.etree</code> 中，XPath 是 XML 和 HTML 查询的核心。</p>
+<p>以下内容将介绍 XPath 的常用语法规则和 <code>lxml</code> 中的使用方法。</p>
+<hr>
+<h3 id="1-XPath-的基本语法规则"><a href="#1-XPath-的基本语法规则" class="headerlink" title="1. XPath 的基本语法规则"></a><strong>1. XPath 的基本语法规则</strong></h3><h4 id="1-1-基础节点选择"><a href="#1-1-基础节点选择" class="headerlink" title="1.1 基础节点选择"></a><strong>1.1 基础节点选择</strong></h4><table>
+<thead>
+<tr>
+<th><strong>表达式</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/</code></td>
+<td>根节点选择。</td>
+<td><code>/root</code> 选择根节点 <code>&lt;root&gt;</code>。</td>
+</tr>
+<tr>
+<td><code>//</code></td>
+<td>从文档的任意位置选择匹配的节点（不局限于直接子节点）。</td>
+<td><code>//child</code> 选择文档中所有的 <code>&lt;child&gt;</code> 节点。</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td>当前节点。</td>
+<td><code>.</code> 表示当前节点。</td>
+</tr>
+<tr>
+<td><code>..</code></td>
+<td>父节点。</td>
+<td><code>..</code> 表示当前节点的父节点。</td>
+</tr>
+<tr>
+<td><code>@</code></td>
+<td>属性选择器，用于选择节点属性值。</td>
+<td><code>//@id</code> 选择所有节点的 <code>id</code> 属性。</td>
+</tr>
+</tbody></table>
+<p>注意：</p>
+<h3 id="XPath查找范围的本质区别"><a href="#XPath查找范围的本质区别" class="headerlink" title="XPath查找范围的本质区别"></a><strong>XPath查找范围的本质区别</strong></h3><table>
+<thead>
+<tr>
+<th align="left"><strong>表达式</strong></th>
+<th align="left"><strong>查找范围</strong></th>
+<th align="left"><strong>适用场景</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>//div[@class=&quot;x&quot;]//a</code></td>
+<td align="left">div下<strong>所有层级</strong>的<code>&lt;a&gt;</code></td>
+<td align="left">当<code>&lt;a&gt;</code>嵌套在不确定的深层结构中</td>
+</tr>
+<tr>
+<td align="left"><code>//div[@class=&quot;x&quot;]/a</code></td>
+<td align="left">仅div的<strong>直接子元素</strong><code>&lt;a&gt;</code></td>
+<td align="left">当<code>&lt;a&gt;</code>是div的直接子元素</td>
+</tr>
+<tr>
+<td align="left"><code>//div[@class=&quot;x&quot;]/section//a</code></td>
+<td align="left">div的直接子<code>&lt;section&gt;</code>下的所有<code>&lt;a&gt;</code></td>
+<td align="left">当目标元素被特定标签（如section）包</td>
+</tr>
+</tbody></table>
+<p>返回的一般是若非提前则为列表</p>
+<h4 id="1-2-条件筛选"><a href="#1-2-条件筛选" class="headerlink" title="1.2 条件筛选"></a><strong>1.2 条件筛选</strong></h4><table>
+<thead>
+<tr>
+<th><strong>表达式</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[condition]</code></td>
+<td>筛选符合条件的节点。</td>
+<td><code>//child[@name=&#39;A&#39;]</code> 选择属性 <code>name=&quot;A&quot;</code> 的 <code>&lt;child&gt;</code> 节点。</td>
+</tr>
+<tr>
+<td><code>position()</code></td>
+<td>返回节点的当前位置（从 1 开始）。</td>
+<td><code>//child[position()=1]</code> 选择第一个 <code>&lt;child&gt;</code> 节点。</td>
+</tr>
+<tr>
+<td><code>last()</code></td>
+<td>返回节点集的最后一个位置。</td>
+<td><code>//child[last()]</code> 选择最后一个 <code>&lt;child&gt;</code> 节点。</td>
+</tr>
+</tbody></table>
+<h4 id="1-3-文本选择"><a href="#1-3-文本选择" class="headerlink" title="1.3 文本选择"></a><strong>1.3 文本选择</strong></h4><table>
+<thead>
+<tr>
+<th><strong>表达式</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>text()</code></td>
+<td>选择节点的文本内容。</td>
+<td><code>//child/text()</code> 选择 <code>&lt;child&gt;</code> 节点的文本内容。</td>
+</tr>
+<tr>
+<td><code>contains()</code></td>
+<td>检查字符串是否包含子串。</td>
+<td><code>//child[contains(@name, &#39;part&#39;)]</code> 选择 <code>name</code> 属性包含 <code>part</code> 的节点。</td>
+</tr>
+<tr>
+<td><code>starts-with()</code></td>
+<td>检查字符串是否以某子串开头。</td>
+<td><code>//child[starts-with(@name, &#39;prefix&#39;)]</code> 选择 <code>name</code> 属性以 <code>prefix</code> 开头的节点。</td>
+</tr>
+</tbody></table>
+<h4 id="1-4-逻辑与算术运算"><a href="#1-4-逻辑与算术运算" class="headerlink" title="1.4 逻辑与算术运算"></a><strong>1.4 逻辑与算术运算</strong></h4><table>
+<thead>
+<tr>
+<th><strong>运算符</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>and</code></td>
+<td>与运算。</td>
+<td><code>//child[@id=&#39;1&#39; and @name=&#39;A&#39;]</code></td>
+</tr>
+<tr>
+<td><code>or</code></td>
+<td>或运算。</td>
+<td><code>//child[@id=&#39;1&#39; or @name=&#39;A&#39;]</code></td>
+</tr>
+<tr>
+<td><code>=</code></td>
+<td>等于。</td>
+<td><code>//child[@id=&#39;1&#39;]</code></td>
+</tr>
+<tr>
+<td><code>!=</code></td>
+<td>不等于。</td>
+<td><code>//child[@id!=&#39;1&#39;]</code></td>
+</tr>
+<tr>
+<td><code>&lt;</code> &#x2F; <code>&lt;=</code></td>
+<td>小于 &#x2F; 小于等于。</td>
+<td><code>//child[@count&lt;5]</code></td>
+</tr>
+<tr>
+<td><code>&gt;</code> &#x2F; <code>&gt;=</code></td>
+<td>大于 &#x2F; 大于等于。</td>
+<td><code>//child[@count&gt;10]</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-使用-lxml-的-XPath-功能"><a href="#2-使用-lxml-的-XPath-功能" class="headerlink" title="2. 使用 lxml 的 XPath 功能"></a><strong>2. 使用 <code>lxml</code> 的 XPath 功能</strong></h3><h4 id="2-1-基本用法"><a href="#2-1-基本用法" class="headerlink" title="2.1 基本用法"></a><strong>2.1 基本用法</strong></h4><p><code>lxml</code> 提供了以下方法用于执行 XPath 查询：</p>
+<table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>xpath(expression)</code></td>
+<td>返回匹配的节点、属性或值（可能是列表、单个节点或字符串）。</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="2-2-示例代码"><a href="#2-2-示例代码" class="headerlink" title="2.2 示例代码"></a><strong>2.2 示例代码</strong></h4><h5 id="（1）基本查询"><a href="#（1）基本查询" class="headerlink" title="（1）基本查询"></a><strong>（1）基本查询</strong></h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> lxml <span class="hljs-keyword">import</span> etree<br><br><span class="hljs-comment"># 创建 XML 文档</span><br>xml_data = <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">&lt;root&gt;</span><br><span class="hljs-string">    &lt;child id=&quot;1&quot; name=&quot;A&quot;&gt;Value A&lt;/child&gt;</span><br><span class="hljs-string">    &lt;child id=&quot;2&quot; name=&quot;B&quot;&gt;Value B&lt;/child&gt;</span><br><span class="hljs-string">    &lt;child id=&quot;3&quot; name=&quot;C&quot;&gt;Value C&lt;/child&gt;</span><br><span class="hljs-string">&lt;/root&gt;</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br>root = etree.fromstring(xml_data)<br><br><span class="hljs-comment"># 查询所有子节点</span><br>children = root.xpath(<span class="hljs-string">&quot;//child&quot;</span>)<br><span class="hljs-keyword">for</span> child <span class="hljs-keyword">in</span> children:<br>    <span class="hljs-built_in">print</span>(child.tag, child.attrib)  <span class="hljs-comment"># 输出子节点的标签和属性</span><br><br><span class="hljs-comment"># 查询特定属性的节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@name=&#x27;A&#x27;]&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].text)  <span class="hljs-comment"># 输出 &#x27;Value A&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="（2）查询文本和属性"><a href="#（2）查询文本和属性" class="headerlink" title="（2）查询文本和属性"></a><strong>（2）查询文本和属性</strong></h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 查询节点的文本内容</span><br>texts = root.xpath(<span class="hljs-string">&quot;//child/text()&quot;</span>)<br><span class="hljs-built_in">print</span>(texts)  <span class="hljs-comment"># 输出 [&#x27;Value A&#x27;, &#x27;Value B&#x27;, &#x27;Value C&#x27;]</span><br><br><span class="hljs-comment"># 查询特定属性</span><br>attributes = root.xpath(<span class="hljs-string">&quot;//child/@name&quot;</span>)<br><span class="hljs-built_in">print</span>(attributes)  <span class="hljs-comment"># 输出 [&#x27;A&#x27;, &#x27;B&#x27;, &#x27;C&#x27;]</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="（3）使用条件筛选"><a href="#（3）使用条件筛选" class="headerlink" title="（3）使用条件筛选"></a><strong>（3）使用条件筛选</strong></h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 筛选 id=2 的节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@id=&#x27;2&#x27;]&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].text)  <span class="hljs-comment"># 输出 &#x27;Value B&#x27;</span><br><br><span class="hljs-comment"># 筛选包含特定子串的节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[contains(@name, &#x27;C&#x27;)]&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].text)  <span class="hljs-comment"># 输出 &#x27;Value C&#x27;</span><br><br><span class="hljs-comment"># 筛选位置</span><br>first_child = root.xpath(<span class="hljs-string">&quot;//child[position()=1]&quot;</span>)<br><span class="hljs-built_in">print</span>(first_child[<span class="hljs-number">0</span>].text)  <span class="hljs-comment"># 输出 &#x27;Value A&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="（4）复杂查询与逻辑运算"><a href="#（4）复杂查询与逻辑运算" class="headerlink" title="（4）复杂查询与逻辑运算"></a><strong>（4）复杂查询与逻辑运算</strong></h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 查询同时满足多个条件的节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@id=&#x27;1&#x27; and @name=&#x27;A&#x27;]&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].text)  <span class="hljs-comment"># 输出 &#x27;Value A&#x27;</span><br><br><span class="hljs-comment"># 查询多个条件中满足任意一个的节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@id=&#x27;1&#x27; or @name=&#x27;C&#x27;]&quot;</span>)<br><span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> result:<br>    <span class="hljs-built_in">print</span>(r.text)  <span class="hljs-comment"># 输出 &#x27;Value A&#x27; 和 &#x27;Value C&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="（5）查询父节点、祖先节点"><a href="#（5）查询父节点、祖先节点" class="headerlink" title="（5）查询父节点、祖先节点"></a><strong>（5）查询父节点、祖先节点</strong></h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 查询父节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@id=&#x27;1&#x27;]/..&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].tag)  <span class="hljs-comment"># 输出 &#x27;root&#x27;</span><br><br><span class="hljs-comment"># 查询祖先节点</span><br>result = root.xpath(<span class="hljs-string">&quot;//child[@id=&#x27;1&#x27;]/ancestor::root&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].tag)  <span class="hljs-comment"># 输出 &#x27;root&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-XPath-高级用法"><a href="#3-XPath-高级用法" class="headerlink" title="3. XPath 高级用法"></a><strong>3. XPath 高级用法</strong></h3><h4 id="3-1-轴选择器（Axes）"><a href="#3-1-轴选择器（Axes）" class="headerlink" title="3.1 轴选择器（Axes）"></a><strong>3.1 轴选择器（Axes）</strong></h4><table>
+<thead>
+<tr>
+<th><strong>轴</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>child::</code></td>
+<td>子节点（默认轴，可省略）。</td>
+<td><code>child::child</code> 等同于 <code>child</code>。</td>
+</tr>
+<tr>
+<td><code>parent::</code></td>
+<td>父节点。</td>
+<td><code>//child/parent::root</code></td>
+</tr>
+<tr>
+<td><code>ancestor::</code></td>
+<td>祖先节点。</td>
+<td><code>//child/ancestor::root</code></td>
+</tr>
+<tr>
+<td><code>descendant::</code></td>
+<td>后代节点（不包括自身）。</td>
+<td><code>//root/descendant::child</code></td>
+</tr>
+<tr>
+<td><code>self::</code></td>
+<td>当前节点自身。</td>
+<td><code>//child/self::child</code></td>
+</tr>
+<tr>
+<td><code>following-sibling::</code></td>
+<td>当前节点的后续兄弟节点。</td>
+<td><code>//child[@id=&#39;1&#39;]/following-sibling::child</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="3-2-使用命名空间"><a href="#3-2-使用命名空间" class="headerlink" title="3.2 使用命名空间"></a><strong>3.2 使用命名空间</strong></h4><p>如果 XML 使用了命名空间，查询需要指定命名空间：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 带命名空间的 XML</span><br>xml_ns = <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">&lt;root xmlns:ns=&quot;http://example.com/ns&quot;&gt;</span><br><span class="hljs-string">    &lt;ns:child id=&quot;1&quot;&gt;Value A&lt;/ns:child&gt;</span><br><span class="hljs-string">&lt;/root&gt;</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br>root = etree.fromstring(xml_ns)<br><br><span class="hljs-comment"># 使用命名空间查询</span><br>ns = &#123;<span class="hljs-string">&#x27;ns&#x27;</span>: <span class="hljs-string">&#x27;http://example.com/ns&#x27;</span>&#125;<br>result = root.xpath(<span class="hljs-string">&quot;//ns:child&quot;</span>, namespaces=ns)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-number">0</span>].text)  <span class="hljs-comment"># 输出 &#x27;Value A&#x27;</span><br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="http://www.regexlab.com/zh/regref.htm">正则表达式参考文档 - Regular Expression Syntax Reference</a></p>
+<p>练习网站：</p>
+<p><a target="_blank" rel="noopener" href="https://regexr-cn.com/">RegExr: 学习、构建 和 测试 正则表达式 Test RegEx</a></p>
+<p><a target="_blank" rel="noopener" href="https://regexlearn.com/zh-cn/learn/regex101">Regex 101 - ZH-CN</a></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>元字符</th>
+<th>描述</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.</code></td>
+<td>匹配任意单个字符（除换行符外）</td>
+<td><code>a.c</code> 匹配 “abc”、”a1c” 等</td>
+</tr>
+<tr>
+<td><code>^</code></td>
+<td>匹配字符串的开头</td>
+<td><code>^abc</code> 匹配以 “abc” 开头的字符串</td>
+</tr>
+<tr>
+<td><code>$</code></td>
+<td>匹配字符串的结尾</td>
+<td><code>abc$</code> 匹配以 “abc” 结尾的字符串</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>匹配前一个字符0次或多次</td>
+<td><code>ab*c</code> 匹配 “ac”、”abc”、”abbc” 等</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>匹配前一个字符1次或多次</td>
+<td><code>ab+c</code> 匹配 “abc”、”abbc” 等，但不匹配 “ac”</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>匹配前一个字符0次或1次</td>
+<td><code>ab?c</code> 匹配 “ac” 或 “abc”</td>
+</tr>
+<tr>
+<td><code>&#123;n&#125;</code></td>
+<td>匹配前一个字符恰好n次</td>
+<td><code>a&#123;3&#125;</code> 匹配 “aaa”</td>
+</tr>
+<tr>
+<td><code>&#123;n,&#125;</code></td>
+<td>匹配前一个字符至少n次</td>
+<td><code>a&#123;2,&#125;</code> 匹配 “aa”、”aaa” 等</td>
+</tr>
+<tr>
+<td><code>&#123;n,m&#125;</code></td>
+<td>匹配前一个字符至少n次，至多m次</td>
+<td><code>a&#123;2,4&#125;</code> 匹配 “aa”、”aaa”、”aaaa”</td>
+</tr>
+<tr>
+<td><code>[...]</code></td>
+<td>匹配括号内的任意一个字符</td>
+<td><code>[abc]</code> 匹配 “a”、”b” 或 “c”</td>
+</tr>
+<tr>
+<td><code>[^...]</code></td>
+<td>匹配不在括号内的任意一个字符</td>
+<td><code>[^abc]</code> 匹配非 “a”、”b”、”c” 的字符</td>
+</tr>
+<tr>
+<td>&#96;</td>
+<td>&#96;</td>
+<td>或操作，匹配左边或右边的表达式</td>
+</tr>
+<tr>
+<td><code>()</code></td>
+<td>分组，将多个字符作为一个整体</td>
+<td><code>(abc)+</code> 匹配 “abc”、”abcabc” 等</td>
+</tr>
+<tr>
+<td><code>\d</code></td>
+<td>匹配任意数字字符（等价于 <code>[0-9]</code>）</td>
+<td><code>\d&#123;3&#125;</code> 匹配 “123”、”456” 等</td>
+</tr>
+<tr>
+<td><code>\D</code></td>
+<td>匹配任意非数字字符（等价于 <code>[^0-9]</code>）</td>
+<td><code>\D+</code> 匹配 “abc”、”!@#” 等</td>
+</tr>
+<tr>
+<td><code>\w</code></td>
+<td>匹配任意字母、数字或下划线（等价于 <code>[a-zA-Z0-9_]</code>）</td>
+<td><code>\w+</code> 匹配 “abc123”、”hello_world” 等</td>
+</tr>
+<tr>
+<td><code>\W</code></td>
+<td>匹配任意非字母、数字或下划线的字符（等价于 <code>[^a-zA-Z0-9_]</code>）</td>
+<td><code>\W+</code> 匹配 “!@#”、” “ 等</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td>匹配任意空白字符（包括空格、制表符、换行符等）</td>
+<td><code>\s+</code> 匹配 “ “、”\t” 等</td>
+</tr>
+<tr>
+<td><code>\S</code></td>
+<td>匹配任意非空白字符</td>
+<td><code>\S+</code> 匹配 “abc”、”123” 等</td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>匹配单词边界</td>
+<td><code>\bword\b</code> 匹配 “word” 但不匹配 “words”</td>
+</tr>
+<tr>
+<td><code>\B</code></td>
+<td>匹配非单词边界</td>
+<td><code>\Bword\B</code> 匹配 “swordfish” 中的 “word”</td>
+</tr>
+<tr>
+<td><code>\A</code></td>
+<td>匹配字符串的开头（类似 <code>^</code>，但不受多行模式影响）</td>
+<td><code>\Aabc</code> 匹配以 “abc” 开头的字符串</td>
+</tr>
+<tr>
+<td><code>\Z</code></td>
+<td>匹配字符串的结尾（类似 <code>$</code>，但不受多行模式影响）</td>
+<td><code>abc\Z</code> 匹配以 “abc” 结尾的字符串</td>
+</tr>
+<tr>
+<td><code>\n</code></td>
+<td>匹配换行符</td>
+<td><code>\n</code> 匹配换行符</td>
+</tr>
+<tr>
+<td><code>\t</code></td>
+<td>匹配制表符</td>
+<td><code>\t</code> 匹配制表符</td>
+</tr>
+<tr>
+<td><code>\r</code></td>
+<td>匹配回车符</td>
+<td><code>\r</code> 匹配回车符</td>
+</tr>
+<tr>
+<td><code>\f</code></td>
+<td>匹配换页符</td>
+<td><code>\f</code> 匹配换页符</td>
+</tr>
+<tr>
+<td><code>\v</code></td>
+<td>匹配垂直制表符</td>
+<td><code>\v</code> 匹配垂直制表符</td>
+</tr>
+<tr>
+<td><code>\x</code></td>
+<td>匹配十六进制字符</td>
+<td><code>\x41</code> 匹配 “A”</td>
+</tr>
+<tr>
+<td><code>\u</code></td>
+<td>匹配Unicode字符</td>
+<td><code>\u0041</code> 匹配 “A”</td>
+</tr>
+<tr>
+<td><code>\</code></td>
+<td>转义字符，用于匹配特殊字符</td>
+<td><code>\.</code> 匹配 “.”</td>
+</tr>
+</tbody></table>
+<h1 id="Beautiful-Soup"><a href="#Beautiful-Soup" class="headerlink" title="Beautiful Soup"></a>Beautiful Soup</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/">Beautiful Soup 4.12.0 文档 — Beautiful Soup 4.12.0 documentation</a></p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="category-chain-item">人工智能</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/" class="category-chain-item">数据采集(爬虫)</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%A4%84%E7%90%86/" class="print-no-link">#数据采集处理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>爬虫基础</div>
+      <div>https://hermes37.vercel.app/2025/05/09/人工智能/数据采集(爬虫)/爬虫基础/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/Scrapy%E4%BD%BF%E7%94%A8/" title="Scrapy使用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Scrapy使用</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E9%AA%8C%E8%AF%81%E7%A0%81/%E6%BB%91%E5%9D%97%E7%BC%BA%E5%8F%A3%E8%B7%9D%E7%A6%BB%E8%AF%86%E5%88%AB/" title="滑块缺口距离识别">
+                        <span class="hidden-mobile">滑块缺口距离识别</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
