@@ -1,0 +1,1016 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="调试调试的目的： 分析浏览器行为(js代码),寻找到相应逻辑并逆向复现以供第三方程序使用(自己编写的应用程序) 用户输入各阶段： 用户输入明文——&gt;经过一些方法——&gt;加密函数——&gt;拼装封包——&gt;发包函数——&gt;浏览器的发包函数 搜索断点调试定位位置：拼装发包 步骤：ctrl+shift+f  打开侧边栏搜素框，直接搜素关键字进行过滤【优点：定位的位置比较准确。缺点：搜到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="调试对抗">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/JS%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E8%B0%83%E8%AF%95%E5%AF%B9%E6%8A%97/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="调试调试的目的： 分析浏览器行为(js代码),寻找到相应逻辑并逆向复现以供第三方程序使用(自己编写的应用程序) 用户输入各阶段： 用户输入明文——&gt;经过一些方法——&gt;加密函数——&gt;拼装封包——&gt;发包函数——&gt;浏览器的发包函数 搜索断点调试定位位置：拼装发包 步骤：ctrl+shift+f  打开侧边栏搜素框，直接搜素关键字进行过滤【优点：定位的位置比较准确。缺点：搜到">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926190605032.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926200410105.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926192911899.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926193038836.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926194009867.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/1879e3f6d2c94295e8cb471e7d132bd9.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926195349360.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926195820488.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/06/LkaX1KWQEZjzNO2.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/06/8SdTvKwYBXs4F7E.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/06/uv4XVNYZhri1nb6.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/06/qOyrce8W32PRAHi.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/06/fgvRcjYs27iITHP.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/03/34qWYhmcpxQg5DN.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/03/FSv9IWgHsdupVfl.jpg">
+<meta property="article:published_time" content="2025-05-09T07:31:42.582Z">
+<meta property="article:modified_time" content="2026-03-26T06:47:10.957Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据采集处理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926190605032.png">
+  
+  
+  
+  <title>调试对抗 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="调试对抗"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          34 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">调试对抗</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h1><p>调试的目的：</p>
+<p><strong>分析浏览器行为(js代码),寻找到相应逻辑并逆向复现以供第三方程序使用(自己编写的应用程序)</strong></p>
+<p>用户输入各阶段：</p>
+<p>用户输入明文——&gt;经过一些方法——&gt;加密函数——&gt;拼装封包——&gt;发包函数——&gt;浏览器的发包函数</p>
+<h2 id="搜索断点调试"><a href="#搜索断点调试" class="headerlink" title="搜索断点调试"></a>搜索断点调试</h2><p>定位位置：拼装发包</p>
+<p>步骤：<em>ctrl+shift+f</em>  打开侧边栏搜素框，直接搜素关键字进行过滤【优点：定位的位置比较准确。缺点：搜到的位置比较多需要自己筛选】</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926190605032.png" srcset="/img/loading.gif" lazyload alt="image-20240926190605032"></p>
+<p>注意：格式化代码<img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926200410105.png" srcset="/img/loading.gif" lazyload alt="image-20240926200410105" style="zoom:25%;" /></p>
+<h2 id="本地调试-联调"><a href="#本地调试-联调" class="headerlink" title="本地调试(联调)"></a>本地调试(联调)</h2><p><strong>本质：挂代理——&gt;拦截数据——&gt;用自己写的代码动态更改浏览器代码——&gt;观察浏览器行为与响应</strong></p>
+<p>步骤：参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_46468720/article/details/127395360#:~:text=%E5%8F%AF%E4%BB%A5%E4%BD%BF%E7%94%A8js">js逆向笔记-js本地联调_志远js 联调-CSDN博客</a></p>
+<h2 id="DOM事件断点调试"><a href="#DOM事件断点调试" class="headerlink" title="DOM事件断点调试"></a>DOM事件断点调试</h2><p>定位位置：用户输入明文</p>
+<p>步骤：点击<img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926192911899.png" srcset="/img/loading.gif" lazyload alt="image-20240926192911899" style="zoom:25%;" />触发浏览器事件定位到相应页面html代码，并查看事件列表</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926193038836.png" srcset="/img/loading.gif" lazyload alt="image-20240926193038836"></p>
+<p>点击事件监听器进入事件找到相应逻辑断点，再次触发页面事件，即可跳转到断点处调试(注意观察调用栈)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926194009867.png" srcset="/img/loading.gif" lazyload alt="image-20240926194009867"></p>
+<h2 id="XHR断点调试-Ajax断点"><a href="#XHR断点调试-Ajax断点" class="headerlink" title="XHR断点调试(Ajax断点)"></a>XHR断点调试(Ajax断点)</h2><p>定位位置：发包函数</p>
+<p>步骤：两种断点方式【浏览器发包有两者方式：1,通过js发包(xmlhttp方法发包).2,通过html表单发包(浏览器html引擎发送)。该种调试方法只能拦截js发包】</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/1879e3f6d2c94295e8cb471e7d132bd9.png" srcset="/img/loading.gif" lazyload alt="1879e3f6d2c94295e8cb471e7d132bd9"></p>
+<p>断点的两种方式：</p>
+<p>1，xhr breakpoints 进行断点，也支持正则表达式</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926195349360.png" srcset="/img/loading.gif" lazyload alt="image-20240926195349360"></p>
+<p>2，network面板进入发包函数并断点</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wangxiaobai08/Picture@main/image-20240926195820488.png" srcset="/img/loading.gif" lazyload alt="image-20240926195820488"></p>
+<h1 id="反调试"><a href="#反调试" class="headerlink" title="反调试"></a>反调试</h1><h2 id="内存爆破"><a href="#内存爆破" class="headerlink" title="内存爆破"></a>内存爆破</h2><p>在<a target="_blank" rel="noopener" href="https://www.cnblogs.com/hkwJsxl/p/17165839.html">JS内存爆破问题 - hkwJsxl - 博客园</a>这篇文章提到：</p>
+<blockquote>
+<p>检测到调试，格式化等，疯狂的在<code>js</code>文件，或者<code>html</code>中进行读写，cookie重写追加，字节追加，导致内存不足够，卡死</p>
+<p>内存爆破，指<code>js</code>通过死循环&#x2F;频繁操作数据库(包括cookie)&#x2F;频繁调取history等方式，使浏览器崩溃的一种反调试手段。</p>
+<ul>
+<li>正常运行时，一切正常</li>
+<li>调试时利用时间差，将控制流推入循环</li>
+<li>利用正则<code>toString()</code>判断代码是否进行格式化</li>
+<li>利用浏览器指纹判断是否为浏览器环境</li>
+</ul>
+</blockquote>
+<p>其中利用正则<code>toString()</code>判断代码是否进行格式化</p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000042788830">javascript - 【JS 逆向百例】猿人学系列 web 比赛第二题：js 混淆 - 动态 cookie，详细剖析 - 个人文章 - SegmentFault 思否</a></p>
+<p>在猿人学第二题中就有所体现：</p>
+<p><img src="https://s2.loli.net/2024/12/06/LkaX1KWQEZjzNO2.png" srcset="/img/loading.gif" lazyload alt="image-20241206103759761"></p>
+<p><img src="https://s2.loli.net/2024/12/06/8SdTvKwYBXs4F7E.png" srcset="/img/loading.gif" lazyload alt="image-20241206111428349"></p>
+<p><em><strong>1.利用浏览器指纹判断是否为浏览器环境？</strong></em></p>
+<p>答：</p>
+<h2 id="Debugger巧用"><a href="#Debugger巧用" class="headerlink" title="Debugger巧用"></a>Debugger巧用</h2><p>而在<a target="_blank" rel="noopener" href="https://openatomworkshop.csdn.net/674591e33a01316874d8ce15.html?dp_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MzE3NDQ0MCwiZXhwIjoxNzM0MDAyOTgxLCJpYXQiOjE3MzMzOTgxODEsInVzZXJuYW1lIjoiSDIwNTU1NjY2In0.ybvwuxymhc2kICqPzOCpe42RNc3yb_CHR1hUvw-2a6o">爬虫（js逆向）调试干扰-处理debugger-调试检测-内存爆破-JS逆向举例（4）_javascript_稳稳C9-开放原子开发者工作坊</a>这篇文章中又提到：</p>
+<blockquote>
+<p>无限debugger，并不是真正意义上的<br>死循环debugger，会让整个页面卡死，要么在业务代码前，要么业务代码之后<br>无限debugger，还有一个非常靓丽的名字，叫debugger地狱<br>所以无限debugger真正，在业务操作的时候，只是实现很频繁的debugger，而不是真正的死循环</p>
+</blockquote>
+<blockquote>
+<p>因此安全实现一个debugger是用setTimeout（）或者setInterval，但是这个循环一定时有次数限制的</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhu6201976/article/details/135091427">JS逆向实战——开发者工具检测_开发者工具检测到了-CSDN博客</a>提到：</p>
+<blockquote>
+<h4 id="无限debugger的加入"><a href="#无限debugger的加入" class="headerlink" title="无限debugger的加入"></a><strong>无限<code>debugger</code>的加入</strong></h4><p>在JavaScript代码中插入无限循环的<code>debugger</code>语句，这会导致页面在打开开发者工具时停止响应。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/12/06/uv4XVNYZhri1nb6.png" srcset="/img/loading.gif" lazyload alt="image-20241206105133685"></p>
+<p>同一篇文章中的其他debugger形式以及相应的处理：</p>
+<p>eval实现debugger</p>
+<p> 通过function实现debugger</p>
+<p> 函数与匿名函数实现debugger</p>
+<p>高度混淆debugger</p>
+<p>在<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_46672080/article/details/130514995">js逆向-无限debugger的原理及绕过_js debugger-CSDN博客</a>这篇文章更有详细介绍</p>
+<h2 id="console-log-检测"><a href="#console-log-检测" class="headerlink" title="console.log()检测"></a>console.log()检测</h2><p>同样是猿人学第二题：</p>
+<p><img src="https://s2.loli.net/2024/12/06/qOyrce8W32PRAHi.png" srcset="/img/loading.gif" lazyload alt="image-20241206110044456"></p>
+<p>而在正常网页里：</p>
+<p><img src="https://s2.loli.net/2024/12/06/fgvRcjYs27iITHP.png" srcset="/img/loading.gif" lazyload alt="image-20241206110129332"></p>
+<p>说明存在正对console的检测,<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44646671/article/details/135453427">JavaScript：反调试——绕过反调试_前端反调试代码-CSDN博客</a>这篇文章提到：</p>
+<blockquote>
+<p>方法一：用console.log检测<br>代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">var</span> c = <span class="hljs-keyword">new</span> <span class="hljs-title class_">RegExp</span> (<span class="hljs-string">&quot;1&quot;</span>);<br><br>c.<span class="hljs-property">toString</span> = <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) &#123;<br><br><span class="hljs-title function_">alert</span>(<span class="hljs-string">&quot;检测到调试&quot;</span>)<br><br>&#125;<br><span class="hljs-variable language_">console</span>.<span class="hljs-property">log</span> (c);<br></code></pre></td></tr></table></figure>
+
+<p>原理：</p>
+<p>当console.log输出调试信息时，会将非字符串类型数据转成字符串，于是通过接管toString函数，判断是否有这样的行为，而如果没有打开调试窗口，即不会有console.log输出，从而识别是否于处调试状态。</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhu6201976/article/details/135091427">JS逆向实战——开发者工具检测_开发者工具检测到了-CSDN博客</a></p>
+<blockquote>
+<p>禁用<code>console.log</code>等控制台方法，使得爬虫无法通过控制台输出数据。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// 禁用console.log</span><br><span class="hljs-variable language_">console</span>.<span class="hljs-property">log</span> = <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br><span class="hljs-title function_">alert</span>(<span class="hljs-string">&#x27;Console log is disabled!&#x27;</span>);&#125;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Yy_Rose/article/details/126854940">【JavaScript 逆向】猿人学 web 第二题：动态 cookie_ooioql-CSDN博客</a></p>
+<ul>
+<li>提示 history 未定义，这里是在虚拟机中重写了 console.log，输入 console.log 会进入 while 循环，不断地判断环境中是否有 history.pushState，补这个环境也没用，只能改写输出方式</li>
+</ul>
+<p>无法在补环境中使用console.log</p>
+<h1 id="开发者工具检测"><a href="#开发者工具检测" class="headerlink" title="开发者工具检测"></a>开发者工具检测</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhu6201976/article/details/135091427">JS逆向实战——开发者工具检测_开发者工具检测到了-CSDN博客</a></p>
+<h2 id="反调试与反反调试"><a href="#反调试与反反调试" class="headerlink" title="反调试与反反调试"></a>反调试与反反调试</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;zh&quot;</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;UTF-8&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;viewport&quot;</span> <span class="hljs-attr">content</span>=<span class="hljs-string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>JavaScript 调试测试<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="language-css"></span><br><span class="language-css">        <span class="hljs-selector-tag">body</span> &#123;</span><br><span class="language-css">            <span class="hljs-attribute">font-family</span>: Arial, sans-serif;</span><br><span class="language-css">            <span class="hljs-attribute">display</span>: flex;</span><br><span class="language-css">            <span class="hljs-attribute">flex-direction</span>: column;</span><br><span class="language-css">            <span class="hljs-attribute">align-items</span>: center;</span><br><span class="language-css">            <span class="hljs-attribute">justify-content</span>: center;</span><br><span class="language-css">            <span class="hljs-attribute">height</span>: <span class="hljs-number">100vh</span>;</span><br><span class="language-css">            <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#f4f4f4</span>;</span><br><span class="language-css">        &#125;</span><br><span class="language-css"></span><br><span class="language-css">        <span class="hljs-selector-tag">input</span> &#123;</span><br><span class="language-css">            <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span>;</span><br><span class="language-css">            <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">10px</span>;</span><br><span class="language-css">        &#125;</span><br><span class="language-css"></span><br><span class="language-css">        <span class="hljs-selector-tag">button</span> &#123;</span><br><span class="language-css">            <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span>;</span><br><span class="language-css">            <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#4CAF50</span>;</span><br><span class="language-css">            <span class="hljs-attribute">color</span>: white;</span><br><span class="language-css">            <span class="hljs-attribute">border</span>: none;</span><br><span class="language-css">            <span class="hljs-attribute">cursor</span>: pointer;</span><br><span class="language-css">        &#125;</span><br><span class="language-css"></span><br><span class="language-css">        <span class="hljs-selector-tag">button</span><span class="hljs-selector-pseudo">:hover</span> &#123;</span><br><span class="language-css">            <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#45a049</span>;</span><br><span class="language-css">        &#125;</span><br><span class="language-css"></span><br><span class="language-css">        <span class="hljs-selector-id">#result</span> &#123;</span><br><span class="language-css">            <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">15px</span>;</span><br><span class="language-css">            <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;</span><br><span class="language-css">        &#125;</span><br><span class="language-css">    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>计算平方<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;number&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;numberInput&quot;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&quot;输入一个数字&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;calculateButton&quot;</span>&gt;</span>计算平方<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;result&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript"></span><br><span class="language-javascript">        <span class="hljs-comment">// 获取元素</span></span><br><span class="language-javascript">        <span class="hljs-keyword">const</span> calculateButton = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;calculateButton&#x27;</span>);</span><br><span class="language-javascript">        <span class="hljs-keyword">const</span> numberInput = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;numberInput&#x27;</span>);</span><br><span class="language-javascript">        <span class="hljs-keyword">const</span> resultDiv = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;result&#x27;</span>);</span><br><span class="language-javascript"></span><br><span class="language-javascript">        <span class="hljs-comment">// 添加按钮点击事件</span></span><br><span class="language-javascript">        calculateButton.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;</span><br><span class="language-javascript">            <span class="hljs-comment">// 获取输入值并转换为数字</span></span><br><span class="language-javascript">            <span class="hljs-keyword">const</span> number = <span class="hljs-title class_">Number</span>(numberInput.<span class="hljs-property">value</span>);</span><br><span class="language-javascript"></span><br><span class="language-javascript">            <span class="hljs-comment">// 检查输入是否有效</span></span><br><span class="language-javascript">            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">isNaN</span>(number)) &#123;</span><br><span class="language-javascript">                resultDiv.<span class="hljs-property">textContent</span> = <span class="hljs-string">&quot;请输入有效的数字！&quot;</span>;</span><br><span class="language-javascript">            &#125; <span class="hljs-keyword">else</span> &#123;</span><br><span class="language-javascript">                <span class="hljs-comment">// 计算平方</span></span><br><span class="language-javascript">                <span class="hljs-keyword">const</span> square = number * number;</span><br><span class="language-javascript"></span><br><span class="language-javascript">                <span class="hljs-comment">// 显示结果</span></span><br><span class="language-javascript">                resultDiv.<span class="hljs-property">textContent</span> = <span class="hljs-string">`结果: <span class="hljs-subst">$&#123;square&#125;</span>`</span>;</span><br><span class="language-javascript">            &#125;</span><br><span class="language-javascript">        &#125;);</span><br><span class="language-javascript">    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="检测调试"><a href="#检测调试" class="headerlink" title="检测调试"></a>检测调试</h3><h4 id="1-基于时间的检测"><a href="#1-基于时间的检测" class="headerlink" title="1. 基于时间的检测"></a>1. <strong>基于时间的检测</strong></h4><ul>
+<li><p><strong>原理</strong>：调试器可能会在断点或单步调试时引入延迟，通过监控执行时间或事件的延时来判断调试行为。</p>
+</li>
+<li><p><strong>相关方法</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>setInterval</code> 检测时间间隔</td>
+<td>定时调用指定函数以检查时间间隔。</td>
+</tr>
+<tr>
+<td><code>setTimeout</code> 检测</td>
+<td>使用 <code>setTimeout</code> 延时调用以检测执行时间。</td>
+</tr>
+<tr>
+<td>使用 <code>Date</code> 和 <code>performance</code> API 检测</td>
+<td>使用 <code>Date</code> 或 <code>performance.now()</code> 获取精确时间。</td>
+</tr>
+<tr>
+<td><code>requestAnimationFrame</code> 计时检测</td>
+<td>在下一次重绘之前调用函数进行检测。</td>
+</tr>
+<tr>
+<td><code>performance.now()</code> 计时检测</td>
+<td>获取高精度时间戳进行时间检测。</td>
+</tr>
+<tr>
+<td>事件队列监控</td>
+<td>监控事件队列中的事件处理时间。</td>
+</tr>
+</tbody></table>
+<p>代码中添加：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">var</span> startTime = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span> ();<br><br><span class="hljs-keyword">debugger</span>;<br><br><span class="hljs-keyword">var</span> endTime = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span> ();<br><br><span class="hljs-keyword">var</span> isDev = endTime-startTime&gt; <span class="hljs-number">100</span>;<br><br><span class="hljs-keyword">if</span> (isDev)&#123;<br><br><span class="hljs-title function_">alert</span>(<span class="hljs-string">&quot;检测到调试&quot;</span>)<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在按钮监听断点调试会出现：</p>
+<p><img src="https://s2.loli.net/2024/10/03/34qWYhmcpxQg5DN.png" srcset="/img/loading.gif" lazyload alt="image-20241003162846015"></p>
+</li>
+</ul>
+<h4 id="2-基于对象属性或函数的检测"><a href="#2-基于对象属性或函数的检测" class="headerlink" title="2. 基于对象属性或函数的检测"></a>2. <strong>基于对象属性或函数的检测</strong></h4><ul>
+<li><p><strong>原理</strong>：调试工具可能会修改 JavaScript 对象的某些属性或函数，检测这些变化可以判断是否在调试。</p>
+</li>
+<li><p><strong>相关方法</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>劫持 <code>Function</code> 的 <code>toString</code></td>
+<td>修改 <code>Function.prototype.toString</code> 方法以检查代码。</td>
+</tr>
+<tr>
+<td>劫持 <code>debugger</code> 行为</td>
+<td>重写 <code>debugger</code> 语句以执行自定义逻辑。</td>
+</tr>
+<tr>
+<td>检测 <code>console.log</code> 的行为</td>
+<td>检测 <code>console.log</code> 的调用情况。</td>
+</tr>
+<tr>
+<td><code>window.console</code> 劫持</td>
+<td>劫持整个 <code>console</code> 对象以监控所有日志。</td>
+</tr>
+<tr>
+<td>检查 <code>Chrome</code> 特有对象 (开发者人员工具变量)</td>
+<td>检查 <code>Chrome</code> 浏览器特有的对象以判断环境。</td>
+</tr>
+<tr>
+<td>拦截 <code>Function.prototype.call</code> 和 <code>apply</code></td>
+<td>劫持 <code>call</code> 和 <code>apply</code> 方法以监测调用情况。</td>
+</tr>
+<tr>
+<td>拦截 <code>Object.defineProperty</code></td>
+<td>劫持 <code>Object.defineProperty</code> 以监测属性定义。</td>
+</tr>
+<tr>
+<td>检测 <code>Proxy</code> 对象使用</td>
+<td>检测 <code>Proxy</code> 的创建和使用。</td>
+</tr>
+<tr>
+<td>检测全局 <code>window</code> 对象的属性异常增加</td>
+<td>监测 <code>window</code> 对象的属性动态增加情况。</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<p>以检测<code>console.log</code> 的行为   为例:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs js">(<span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-comment">// 保存原始的 console.log 函数</span><br>    <span class="hljs-keyword">const</span> originalConsoleLog = <span class="hljs-variable language_">console</span>.<span class="hljs-property">log</span>;<br><br>    <span class="hljs-comment">// 重写 console.log 函数</span><br>    <span class="hljs-variable language_">console</span>.<span class="hljs-property">log</span> = <span class="hljs-keyword">function</span>(<span class="hljs-params">...args</span>) &#123;<br>        <span class="hljs-comment">// 输出调用的参数</span><br>        originalConsoleLog.<span class="hljs-title function_">apply</span>(<span class="hljs-variable language_">console</span>, [<span class="hljs-string">&#x27;检测到 console.log 被调用:&#x27;</span>, ...args]);<br><br>        <span class="hljs-comment">// 自定义逻辑，例如触发警告或记录调用</span><br>        <span class="hljs-title function_">alert</span>(<span class="hljs-string">&#x27;检测到正在调试，console.log 被调用！&#x27;</span>);<br>        <br>        <span class="hljs-comment">// 调用原始的 console.log 方法以保留原有功能</span><br>        originalConsoleLog.<span class="hljs-title function_">apply</span>(<span class="hljs-variable language_">console</span>, args);<br>    &#125;;<br><br>    <span class="hljs-comment">// 可选：也可以检测其他函数，例如 debugger</span><br>    <span class="hljs-keyword">const</span> originalDebugger = <span class="hljs-keyword">debugger</span>; <span class="hljs-comment">// 保存原始的 debugger 行为（实际上，debugger 语句不能被直接重写）</span><br>    <span class="hljs-comment">// 在此处可以添加逻辑来监测 debugger 相关的行为，但由于 debugger 无法被重写，通常通过其他方法来检测（例如监测代码中是否有 debugger 语句）。</span><br>&#125;)();<br><br></code></pre></td></tr></table></figure>
+
+<p>检测开发者工具变量（例如 <code>window.__devtools</code>）是否为 <code>true</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs js">(<span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-comment">// 创建一个函数来检测开发者工具</span><br>    <span class="hljs-keyword">function</span> <span class="hljs-title function_">detectDevTools</span>(<span class="hljs-params"></span>) &#123;<br>        <span class="hljs-comment">// 检测 window.__devtools 是否存在并且为 true</span><br>        <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">window</span>.<span class="hljs-property">__devtools</span>) &#123;<br>            <span class="hljs-title function_">alert</span>(<span class="hljs-string">&quot;开发者工具已开启!&quot;</span>);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;开发者工具未开启&quot;</span>);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 定期检测</span><br>    <span class="hljs-built_in">setInterval</span>(detectDevTools, <span class="hljs-number">1000</span>);<br>&#125;)();<br><br></code></pre></td></tr></table></figure>
+
+<h4 id="3-基于浏览器特有行为的检测"><a href="#3-基于浏览器特有行为的检测" class="headerlink" title="3. 基于浏览器特有行为的检测"></a>3. <strong>基于浏览器特有行为的检测</strong></h4><ul>
+<li><p><strong>原理</strong>：某些调试工具会影响浏览器的内部行为或对象，通过检测这些异常的变化可以判断调试工具的存在。</p>
+</li>
+<li><p><strong>相关方法</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通过 <code>console.dir</code> 输出检测</td>
+<td>使用 <code>console.dir</code> 来输出对象的详细信息，从而检查潜在的调试行为。</td>
+</tr>
+<tr>
+<td>检测 <code>navigator.languages</code> 属性</td>
+<td>检查 <code>navigator.languages</code> 属性的值以识别是否在调试环境中。</td>
+</tr>
+<tr>
+<td><code>WebGL</code> 相关属性检测</td>
+<td>检查 <code>WebGL</code> 上下文的特性和行为，以防止被调试或逆向工程。</td>
+</tr>
+<tr>
+<td>监听 <code>window.onblur</code> 和 <code>window.onfocus</code> 事件</td>
+<td>监测窗口的失去焦点和重新获得焦点事件，判断用户是否在调试。</td>
+</tr>
+<tr>
+<td><code>Shadow DOM</code> 检测</td>
+<td>检测是否使用 <code>Shadow DOM</code> 来防止元素被调试工具直接访问。</td>
+</tr>
+<tr>
+<td>检查特定浏览器行为如 <code>performance</code> API 异常</td>
+<td>监测 <code>performance</code> API 的返回值是否异常，以判断调试状态。</td>
+</tr>
+<tr>
+<td>检测 <strong>DevTools 窗口的尺寸变化</strong></td>
+<td>监听 DevTools 窗口的尺寸变化，以识别用户是否正在使用调试工具。</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<p>以检测 <strong>DevTools 窗口的尺寸变化</strong>为例:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs js">(<span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">let</span> devToolsOpen = <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">let</span> threshold = <span class="hljs-number">160</span>; <span class="hljs-comment">// 设置阈值</span><br><br>    <span class="hljs-comment">// 监听窗口尺寸变化</span><br>    <span class="hljs-keyword">const</span> <span class="hljs-title function_">checkDevTools</span> = (<span class="hljs-params"></span>) =&gt; &#123;<br>        <span class="hljs-keyword">const</span> width = <span class="hljs-variable language_">window</span>.<span class="hljs-property">outerWidth</span> - <span class="hljs-variable language_">window</span>.<span class="hljs-property">innerWidth</span> &gt; threshold;<br>        <span class="hljs-keyword">const</span> height = <span class="hljs-variable language_">window</span>.<span class="hljs-property">outerHeight</span> - <span class="hljs-variable language_">window</span>.<span class="hljs-property">innerHeight</span> &gt; threshold;<br><br>        <span class="hljs-comment">// 如果检测到 DevTools 打开</span><br>        <span class="hljs-keyword">if</span> ((width || height) &amp;&amp; !devToolsOpen) &#123;<br>            devToolsOpen = <span class="hljs-literal">true</span>;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;检测到正在调试&#x27;</span>); <span class="hljs-comment">// 输出信息</span><br>        &#125;<br><br>        <span class="hljs-comment">// 如果 DevTools 关闭</span><br>        <span class="hljs-keyword">if</span> (!(width || height) &amp;&amp; devToolsOpen) &#123;<br>            devToolsOpen = <span class="hljs-literal">false</span>;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;DevTools 已关闭&#x27;</span>);<br>        &#125;<br>    &#125;;<br><br>    <span class="hljs-comment">// 每隔 100 毫秒检查一次</span><br>    <span class="hljs-built_in">setInterval</span>(checkDevTools, <span class="hljs-number">100</span>);<br>&#125;)();<br><br></code></pre></td></tr></table></figure>
+
+<h4 id="4-基于事件处理机制的检测"><a href="#4-基于事件处理机制的检测" class="headerlink" title="4. 基于事件处理机制的检测"></a>4. <strong>基于事件处理机制的检测</strong></h4><ul>
+<li><p><strong>原理</strong>：调试器可能会改变事件处理的行为，通过监听或处理关键事件可以检测调试器的介入。</p>
+</li>
+<li><p><strong>相关方法</strong>：</p>
+<ol>
+<li>劫持 <code>keydown</code> 事件检测开发工具 </li>
+<li>监控 JavaScript 事件队列</li>
+</ol>
+<p>以监听键盘为例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs js">(<span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-comment">// 记录是否触发了调试器相关的按键</span><br>    <span class="hljs-keyword">let</span> isDebuggerKeyPressed = <span class="hljs-literal">false</span>;<br><br>    <span class="hljs-comment">// 劫持 keydown 事件</span><br>    <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;keydown&#x27;</span>, <span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) &#123;<br>        <span class="hljs-comment">// 检测 F2 键或其他调试快捷键</span><br>        <span class="hljs-keyword">if</span> (event.<span class="hljs-property">key</span> === <span class="hljs-string">&#x27;F2&#x27;</span> || event.<span class="hljs-property">ctrlKey</span> &amp;&amp; event.<span class="hljs-property">key</span> === <span class="hljs-string">&#x27;d&#x27;</span>) &#123;<br>            isDebuggerKeyPressed = <span class="hljs-literal">true</span>;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;检测到调试器相关按键被按下&#x27;</span>);<br>            <span class="hljs-comment">// 这里可以执行其他反调试操作，比如跳转、隐藏内容等</span><br>        &#125;<br>    &#125;);<br><br>    <span class="hljs-comment">// 检测调试器状态</span><br>    <span class="hljs-keyword">const</span> <span class="hljs-title function_">checkDebugger</span> = (<span class="hljs-params"></span>) =&gt; &#123;<br>        <span class="hljs-keyword">if</span> (isDebuggerKeyPressed) &#123;<br>            <span class="hljs-comment">// 可以在这里执行反调试逻辑</span><br>            <span class="hljs-title function_">alert</span>(<span class="hljs-string">&#x27;检测到正在调试，请注意！&#x27;</span>);<br>            <span class="hljs-comment">// 重置标志</span><br>            isDebuggerKeyPressed = <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;;<br><br>    <span class="hljs-comment">// 每隔 500 毫秒检查状态</span><br>    <span class="hljs-built_in">setInterval</span>(checkDebugger, <span class="hljs-number">500</span>);<br>&#125;)();<br><br></code></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="5-其他"><a href="#5-其他" class="headerlink" title="5.其他"></a>5.其他</h4><table>
+<thead>
+<tr>
+<th>检测类型</th>
+<th>原理</th>
+<th>相关方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基于内存或性能检测</td>
+<td>调试工具可能会影响浏览器的性能或内存占用，通过分析这些指标，可以检测是否在调试。</td>
+<td>1. 检测内存使用的变化 (方法 18)  <br> 2. 监控 <code>canvas</code> 绘图操作 (方法 33) <br> 3. 检测 <code>WebAssembly</code> 的执行时间 (方法 16)</td>
+</tr>
+<tr>
+<td>基于网络请求的检测</td>
+<td>调试工具可能影响网络请求的延迟或响应，通过监控网络请求的行为可以判断是否在调试。</td>
+<td>1. 检测 <code>XMLHttpRequest</code> 延迟 (方法 31) <br> 2. 检测 <code>fetch</code> 请求行为 (方法 35)</td>
+</tr>
+<tr>
+<td>基于异常处理的检测</td>
+<td>调试工具可能影响异常处理机制或引入额外的异常，通过检测异常行为来判断是否在调试。</td>
+<td>1. 检测断点触发与异常处理 (方法 23) <br> 2. 使用错误抛出与捕获机制 (方法 9)</td>
+</tr>
+<tr>
+<td>基于堆栈深度的检测</td>
+<td>调试工具在设置断点或进行调试时可能会增加函数调用的堆栈深度，通过检测堆栈的深度可以判断调试器的介入。</td>
+<td>1. 检测 <code>callStack</code> 深度 (方法 36)</td>
+</tr>
+<tr>
+<td>基于异步操作的检测</td>
+<td>调试工具可能影响异步操作的时间顺序或行为，通过检测异步操作的延迟或中断可以判断调试行为。</td>
+<td>1. 检测异步断点 (方法 14)</td>
+</tr>
+</tbody></table>
+<p>以基于堆栈深度的检测为例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs js">(<span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>    <span class="hljs-keyword">const</span> stackThreshold = <span class="hljs-number">10</span>; <span class="hljs-comment">// 设置堆栈深度阈值</span><br><br>    <span class="hljs-keyword">function</span> <span class="hljs-title function_">checkCallStackDepth</span>(<span class="hljs-params"></span>) &#123;<br>        <span class="hljs-keyword">const</span> stackDepth = <span class="hljs-title function_">getCallStackDepth</span>();<br>        <br>        <span class="hljs-keyword">if</span> (stackDepth &gt; stackThreshold) &#123;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">warn</span>(<span class="hljs-string">`检测到堆栈深度异常：<span class="hljs-subst">$&#123;stackDepth&#125;</span>，可能正在调试`</span>);<br>            <span class="hljs-title function_">alert</span>(<span class="hljs-string">&#x27;检测到正在调试，请注意！&#x27;</span>);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">function</span> <span class="hljs-title function_">getCallStackDepth</span>(<span class="hljs-params"></span>) &#123;<br>        <span class="hljs-comment">// 创建一个新的函数并递归调用，以获取当前的堆栈深度</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-keyword">function</span> <span class="hljs-title function_">recursiveFunction</span>(<span class="hljs-params">depth</span>) &#123;<br>                <span class="hljs-keyword">if</span> (depth &gt; <span class="hljs-number">0</span>) &#123;<br>                    <span class="hljs-keyword">return</span> <span class="hljs-title function_">recursiveFunction</span>(depth - <span class="hljs-number">1</span>);<br>                &#125;<br>                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;获取调用栈&#x27;</span>);<br>            &#125;<br>            <span class="hljs-title function_">recursiveFunction</span>(<span class="hljs-number">20</span>); <span class="hljs-comment">// 使用较大的深度调用以确保获取调用栈</span><br>        &#125; <span class="hljs-keyword">catch</span> (e) &#123;<br>            <span class="hljs-comment">// 捕获错误并提取调用栈信息</span><br>            <span class="hljs-keyword">return</span> e.<span class="hljs-property">stack</span>.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;\n&#x27;</span>).<span class="hljs-property">length</span>; <span class="hljs-comment">// 堆栈深度</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// 如果没有异常，返回 0</span><br>    &#125;<br><br>    <span class="hljs-comment">// 每隔 500 毫秒检查一次堆栈深度</span><br>    <span class="hljs-built_in">setInterval</span>(checkCallStackDepth, <span class="hljs-number">500</span>);<br>&#125;)();<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="常见反调试"><a href="#常见反调试" class="headerlink" title="常见反调试"></a>常见反调试</h3><p><img src="https://s2.loli.net/2024/10/03/FSv9IWgHsdupVfl.jpg" srcset="/img/loading.gif" lazyload alt="625c34dd91561d293cef2a9559fbe6fc"></p>
+<h4 id="控制台禁用"><a href="#控制台禁用" class="headerlink" title="控制台禁用"></a>控制台禁用</h4><p>这种方法通过监听用户的键盘事件来禁用特定的键（如F12、Ctrl+Shift+I等），从而阻止调试器的打开。常见的实现方式如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;keydown&#x27;</span>, <span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) &#123;<br>    <span class="hljs-comment">// 禁用 F12</span><br>    <span class="hljs-keyword">if</span> (event.<span class="hljs-property">key</span> === <span class="hljs-string">&#x27;F12&#x27;</span>) &#123;<br>        event.<span class="hljs-title function_">preventDefault</span>();<br>    &#125;<br>    <span class="hljs-comment">// 禁用 Ctrl+Shift+I</span><br>    <span class="hljs-keyword">if</span> (event.<span class="hljs-property">ctrlKey</span> &amp;&amp; event.<span class="hljs-property">shiftKey</span> &amp;&amp; event.<span class="hljs-property">key</span> === <span class="hljs-string">&#x27;I&#x27;</span>) &#123;<br>        event.<span class="hljs-title function_">preventDefault</span>();<br>    &#125;<br>    <span class="hljs-comment">// 禁用 Ctrl+U（查看源代码）</span><br>    <span class="hljs-keyword">if</span> (event.<span class="hljs-property">ctrlKey</span> &amp;&amp; event.<span class="hljs-property">key</span> === <span class="hljs-string">&#x27;u&#x27;</span>) &#123;<br>        event.<span class="hljs-title function_">preventDefault</span>();<br>    &#125;<br>&#125;);<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="反反调试"><a href="#反反调试" class="headerlink" title="反反调试"></a>反反调试</h3><h4 id="绕过控制台禁用和键盘禁用"><a href="#绕过控制台禁用和键盘禁用" class="headerlink" title="绕过控制台禁用和键盘禁用"></a>绕过控制台禁用和键盘禁用</h4><ol>
+<li>通过浏览器的菜单找到开发者工具打开，例如Chrome浏览器可以在菜单-更多工具-开发者工具直接打开</li>
+<li>新建标签页，先打开开发者工具，再访问相关页面</li>
+</ol>
+<h4 id="绕过无限debugger"><a href="#绕过无限debugger" class="headerlink" title="绕过无限debugger"></a>绕过无限debugger</h4><ol>
+<li><p>如果只是为了开启开发者工具后也能够正常浏览网站，例如借鉴元素的样式，那么直接禁用所有断点即可，但是也无法继续调试</p>
+</li>
+<li><p>可以在断点的右键菜单，单独取消阻止调试的断点，但是有时会对匿名函数产生的断点失效</p>
+</li>
+<li><p>利用Hook阻止调用产生debugger的匿名函数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-title class_">Function</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">temp_constructor</span>= <span class="hljs-title class_">Function</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">constructor</span>;<br><span class="hljs-title class_">Function</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">constructor</span>=<span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)&#123;<br><span class="hljs-keyword">if</span> (<span class="hljs-variable language_">arguments</span> &amp;&amp; <span class="hljs-keyword">typeof</span> <span class="hljs-variable language_">arguments</span>[<span class="hljs-number">0</span>]===<span class="hljs-string">&quot;string&quot;</span>)&#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">arguments</span>[<span class="hljs-number">0</span>]===<span class="hljs-string">&quot;debugger&quot;</span>)<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&quot;</span><br>&#125;<br><span class="hljs-keyword">return</span> <span class="hljs-title class_">Function</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">temp_constructor</span>.<span class="hljs-title function_">apply</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-variable language_">arguments</span>);<br>&#125;;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>对于这个已知名称为check的检测函数，也可以在控制台进行置空，在执行前将其设置为空函数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs javascript">check = <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;&#125;<br></code></pre></td></tr></table></figure></li>
+</ol>
+<p>​             5.最稳妥的办法还是要用hook的方法。<br>​                (1) hook Function 原型的构造函数。<br>​                (2) hook 定时器函数。</p>
+<h4 id="绕过时间差检测"><a href="#绕过时间差检测" class="headerlink" title="绕过时间差检测"></a>绕过时间差检测</h4><p>这种计算时间差的反调试方法突破方式与上一种是相同的，都是阻止断点暂停或产生。</p>
+<p>对于该网站，由于已知存储定时器的对象位置为<code>window._windon_handler</code>，因此也可以利用<code>clearInterval</code>清除该定时器即可。</p>
+<h4 id="绕过内存爆破"><a href="#绕过内存爆破" class="headerlink" title="绕过内存爆破"></a>绕过内存爆破</h4><p>通常通过忽略该断点暂停以及取反判断标识可以处理，需要具体情况具体分析。</p>
+<hr>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/13845?time__1311=GqmxnD0GTxlh=iQGkDuWTuY47TpQYoD">JavaScript混淆防护与调试技术探析 - 先知社区</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" class="category-chain-item">机器学习</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/" class="category-chain-item">数据采集(爬虫)</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/JS%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" class="category-chain-item">JS逆向分析</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%A4%84%E7%90%86/" class="print-no-link">#数据采集处理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>调试对抗</div>
+      <div>https://hermes37.vercel.app/2025/05/09/机器学习/数据采集(爬虫)/JS逆向分析/调试对抗/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/JS%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%BC%82%E6%AD%A5%E8%B7%9F%E6%A0%88/" title="异步跟栈">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">异步跟栈</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/JS%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/Hook%E6%8A%80%E6%9C%AF/" title="Hook技术">
+                        <span class="hidden-mobile">Hook技术</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
