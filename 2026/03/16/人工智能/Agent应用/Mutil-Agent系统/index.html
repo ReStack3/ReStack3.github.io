@@ -1,0 +1,1069 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="背景 亚当·斯密在《国富论》中，用制针工厂说明——如果一个人从头到尾完成所有工序，一天可能做不出1枚针；但通过分工（拉丝、切断、磨尖、包装等），10个人一天能做出48000枚针。分工允许个体专注于某一环节，重复带来熟练，熟练催生技巧改进，最终形成专业知识的深度积累。人类文明的进步，很大程度上就是分工不断细化、深化的历史。  如果说大模型是个通才，已经具备了认知的核心。从之前的文章里，可以总结出：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mutil-Agent系统">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/03/16/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/Agent%E5%BA%94%E7%94%A8/Mutil-Agent%E7%B3%BB%E7%BB%9F/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="背景 亚当·斯密在《国富论》中，用制针工厂说明——如果一个人从头到尾完成所有工序，一天可能做不出1枚针；但通过分工（拉丝、切断、磨尖、包装等），10个人一天能做出48000枚针。分工允许个体专注于某一环节，重复带来熟练，熟练催生技巧改进，最终形成专业知识的深度积累。人类文明的进步，很大程度上就是分工不断细化、深化的历史。  如果说大模型是个通才，已经具备了认知的核心。从之前的文章里，可以总结出：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://autogen-five.vercel.app/assets/images/autogen_agentchat-250ca64b77b87e70d34766a080bf6ba8.png">
+<meta property="og:image" content="https://msdocs.cn/autogen/stable/_images/subscription.svg">
+<meta property="og:image" content="https://msdocs.cn/autogen/stable/_images/agent-lifecycle.svg">
+<meta property="article:published_time" content="2026-03-16T03:51:08.100Z">
+<meta property="article:modified_time" content="2026-03-27T07:59:37.545Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://autogen-five.vercel.app/assets/images/autogen_agentchat-250ca64b77b87e70d34766a080bf6ba8.png">
+  
+  
+  
+  <title>Mutil-Agent系统 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Mutil-Agent系统"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          53 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Mutil-Agent系统</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><blockquote>
+<p>亚当·斯密在《国富论》中，用制针工厂说明——如果一个人从头到尾完成所有工序，一天可能做不出1枚针；但通过分工（拉丝、切断、磨尖、包装等），10个人一天能做出48000枚针。分工允许个体专注于某一环节，重复带来熟练，熟练催生技巧改进，最终形成专业知识的深度积累。<strong>人类文明的进步，很大程度上就是分工不断细化、深化的历史。</strong></p>
+</blockquote>
+<p>如果说大模型是个通才，已经具备了认知的核心。从之前的文章里，可以总结出：</p>
+<ul>
+<li><strong>记忆系统赋予他经验，让他不再每次从零开始；</strong></li>
+<li><strong>MCP协议赋予他手脚，让他能真正作用于现实世界；</strong></li>
+<li><strong>系统提示词赋予他人格，让他扮演合适的角色；</strong></li>
+<li><strong>思考与规划赋予他理性，让他的行动有逻辑、有章法。</strong></li>
+</ul>
+<p>理论上看，这已构成一个万能智能体，<strong>足够聪明并能够足以应对任何任务。</strong></p>
+<p>但就像人类一样，Agent智能体也无法做到每一个领域样样精通【在具体领域（比如医疗诊断、法律分析、代码调试）往往不如专门的微调模型表现好。就像你不会请一个全科医生做心脏外科手术】。</p>
+<p>即使是最先进的模型，上下文窗口也有上限。当任务变得复杂时：</p>
+<ul>
+<li>单个智能体需要记住的信息量可能超过窗口限制</li>
+<li>长上下文中的“注意力稀释”会导致细节丢失</li>
+<li>长期任务需要记忆和状态管理，单智能体难以持续追踪</li>
+</ul>
+<p>更不要说单智能体本质上是串行处理的：一个任务接一个任务。但现实中很多场景需要并行：</p>
+<ul>
+<li>同时监控多个数据流</li>
+<li>同时与多个用户交互</li>
+<li>同时执行多个独立子任务</li>
+</ul>
+<p>这时如果从人类社会中借鉴点经验，让多个Agent担任不同的角色，进行不同的分工，协调完成任务。或许就可以大幅度提高生产效率。</p>
+<p>事实上，目前已经有多种mutil-agent框架出现了，比如CrewAI、AutoGen和Langgraph，其中CrewAI更是完全参考了人类团队运行的模板，比如其核心的几个概念：任务，团队，流程，协作 。这篇文章试做简单的介绍</p>
+<p><img src="https://autogen-five.vercel.app/assets/images/autogen_agentchat-250ca64b77b87e70d34766a080bf6ba8.png" srcset="/img/loading.gif" lazyload alt="AutoGen 概述"></p>
+<h1 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h1><h2 id="通信机制"><a href="#通信机制" class="headerlink" title="通信机制"></a>通信机制</h2><p>就像人类社会一样，团队成员可以通过发邮件进行合作，多Agent之间的协调工作势必要进行沟通交流。首先以AutoGen为例，其<strong>消息与通信</strong>主要通过<strong>主题和订阅</strong>来实现。</p>
+<p><img src="https://msdocs.cn/autogen/stable/_images/subscription.svg" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>AutoGen 核心中的代理可以对消息进行响应、发送和发布，消息是代理之间相互通信的唯一方式。而在langgraph中必须事先定义一个<strong>状态</strong>。</p>
+</blockquote>
+<p>不同的Agent必须事先定义一个共同的消息,比如：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment">#autogen</span><br><span class="hljs-keyword">from</span> dataclasses <span class="hljs-keyword">import</span> dataclass<br><br><span class="hljs-meta">@dataclass</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TextMessage</span>:<br>    content: <span class="hljs-built_in">str</span><br>    source: <span class="hljs-built_in">str</span><br><br><br><span class="hljs-meta">@dataclass</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ImageMessage</span>:<br>    url: <span class="hljs-built_in">str</span><br>    source: <span class="hljs-built_in">str</span><br>    <br><span class="hljs-comment">#langgraph</span><br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> Annotated<br><br><span class="hljs-keyword">from</span> typing_extensions <span class="hljs-keyword">import</span> TypedDict<br><br><span class="hljs-keyword">from</span> langgraph.graph <span class="hljs-keyword">import</span> StateGraph, START<br><span class="hljs-keyword">from</span> langgraph.graph.message <span class="hljs-keyword">import</span> add_messages<br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">State</span>(<span class="hljs-title class_ inherited__">TypedDict</span>):<br>    <span class="hljs-comment"># Messages have the type &quot;list&quot;. The `add_messages` function</span><br>    <span class="hljs-comment"># in the annotation defines how this state key should be updated</span><br>    <span class="hljs-comment"># (in this case, it appends messages to the list, rather than overwriting them)</span><br>    messages: Annotated[<span class="hljs-built_in">list</span>, add_messages]<br><br><br>graph_builder = StateGraph(State)<br></code></pre></td></tr></table></figure>
+
+<p>而在CrewAI中则简单很多，Agent 按<strong>预定义流程</strong>依次执行，通信本质是<strong>任务上下文传递</strong></p>
+<p><code>Crew → 按顺序执行 Task → 每个 Task 分配给指定 Agent</code></p>
+<p>Agent 之间<strong>不直接对话</strong>，通过 <code>Task</code> 的 <code>output</code> 传递给下一个 <code>Task</code> 的 <code>context</code>，支持<strong>委托</strong>（delegation）：一个 Agent 可以生成新任务交给另一个 Agent（但仍是流程化），通信是<strong>单向数据流</strong>，而非双向对话</p>
+<p>比对上述三种框架可以看出：</p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">AutoGen</th>
+<th align="left">CrewAI</th>
+<th align="left">LangGraph</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>通信模式</strong></td>
+<td align="left">点对点对话 + 群聊管理</td>
+<td align="left">任务链单向传递</td>
+<td align="left">中心化状态共享</td>
+</tr>
+<tr>
+<td align="left"><strong>通信显式程度</strong></td>
+<td align="left">高（Agent 主动发送）</td>
+<td align="left">中（通过任务隐式传递）</td>
+<td align="left">低（节点读写状态）</td>
+</tr>
+</tbody></table>
+<p>其本质大多是依赖<strong>公共内存</strong>，即多个 Agent <strong>实时共享</strong>的、可读写的内存空间，通常位于 RAM 中，用于当前运行会话内的状态同步。</p>
+<h2 id="跨-Agent-状态持久化"><a href="#跨-Agent-状态持久化" class="headerlink" title="跨 Agent 状态持久化"></a>跨 Agent 状态持久化</h2><p>每一家大型公司在软件项目开发之际都会要求开发人员写文档，目的之一便是为了让将来接手的新人能快速理解前人的工作。同理，在多 Agent 系统中，如果某个 Agent 在中途失败了，如何避免之前所有 Agent 的工作成果付诸东流？</p>
+<p>答案是一样的：<strong>留下必要的记录</strong>。</p>
+<p>通过将 Agent 间的共享状态持久化存储，即便某个节点崩溃，系统也能从最近一次记录中恢复，无需从头开始。这既是系统的“文档”，也是它的“断点续传”机制。</p>
+<p>回顾三大框架三大框架中的体现</p>
+<ul>
+<li>在AutoGen中需要自己实现（将对话历史存数据库，或用 <code>RedisAgent</code> 扩展）</li>
+<li>在CrewAI中<code>memory=True</code> 时启用长期记忆（向量数据库），存储的是<strong>知识片段</strong>而非运行状态</li>
+<li>在LangGraph中<code>checkpointer</code> 将每个超级步骤的 State 自动持久化到数据库</li>
+</ul>
+<p>LangGraph 的设计最能说明两者关系：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 公共内存：State 对象</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">State</span>(<span class="hljs-title class_ inherited__">TypedDict</span>):<br>    messages: <span class="hljs-built_in">list</span>      <span class="hljs-comment"># 所有 agent 共享</span><br>    user_info: <span class="hljs-built_in">dict</span>     <span class="hljs-comment"># 所有 agent 共享</span><br><br><span class="hljs-comment"># 持久化：checkpointer 自动保存每个 step 的 State</span><br>graph = builder.<span class="hljs-built_in">compile</span>(checkpointer=SqliteSaver.from_conn_string(<span class="hljs-string">&quot;db.sqlite&quot;</span>))<br><span class="hljs-comment"># 崩溃后，用 thread_id 恢复，State 回到断点处</span><br>config = &#123;<span class="hljs-string">&quot;configurable&quot;</span>: &#123;<span class="hljs-string">&quot;thread_id&quot;</span>: <span class="hljs-string">&quot;user-123&quot;</span>&#125;&#125;<br>graph.invoke(<span class="hljs-built_in">input</span>, config)  <span class="hljs-comment"># 自动从上次中断处继续</span><br></code></pre></td></tr></table></figure>
+
+<p>同前面的通信机制对比：</p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">公共内存</th>
+<th align="left">跨 Agent 状态持久化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>存储层级</strong></td>
+<td align="left">内存层</td>
+<td align="left">持久化层</td>
+</tr>
+<tr>
+<td align="left"><strong>生命周期</strong></td>
+<td align="left">单次运行&#x2F;会话</td>
+<td align="left">跨运行、跨会话</td>
+</tr>
+<tr>
+<td align="left"><strong>访问速度</strong></td>
+<td align="left">极快（微秒级）</td>
+<td align="left">较慢（毫秒级）</td>
+</tr>
+<tr>
+<td align="left"><strong>主要目的</strong></td>
+<td align="left">实时协作</td>
+<td align="left">记忆延续、恢复</td>
+</tr>
+<tr>
+<td align="left"><strong>是否可选</strong></td>
+<td align="left">多数框架内置</td>
+<td align="left">需主动配置</td>
+</tr>
+</tbody></table>
+<p>某种程度上可以将其视为整个团队的记忆系统。</p>
+<h2 id="Agent身份与生命周期"><a href="#Agent身份与生命周期" class="headerlink" title="Agent身份与生命周期"></a>Agent身份与生命周期</h2><p><img src="https://msdocs.cn/autogen/stable/_images/agent-lifecycle.svg" srcset="/img/loading.gif" lazyload alt="Agent Lifecycle"></p>
+<p>每个人都有各自的身份，Agent也不例外。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>AutoGen</th>
+<th>CrewAI</th>
+<th>LangGraph</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent 的本质</strong></td>
+<td>对象实例（有状态）</td>
+<td>对象实例（声明式）</td>
+<td>函数节点（无状态）</td>
+</tr>
+<tr>
+<td><strong>身份绑定</strong></td>
+<td>强绑定（实例名）</td>
+<td>中绑定（role 定义）</td>
+<td>弱绑定（节点 ID）</td>
+</tr>
+<tr>
+<td><strong>生命周期长度</strong></td>
+<td>长（整个会话）</td>
+<td>中（任务序列）</td>
+<td>短（单次调用）</td>
+</tr>
+<tr>
+<td><strong>状态存储位置</strong></td>
+<td>Agent 自身</td>
+<td>Agent + 可选长期记忆</td>
+<td>State 对象（集中）</td>
+</tr>
+<tr>
+<td><strong>运行时可变性</strong></td>
+<td>可动态注册行为</td>
+<td>执行前确定</td>
+<td>图编译后固定</td>
+</tr>
+<tr>
+<td><strong>销毁时机</strong></td>
+<td>显式或作用域结束</td>
+<td>Crew 执行完成</td>
+<td>节点调用返回后</td>
+</tr>
+</tbody></table>
+<h3 id="AutoGen"><a href="#AutoGen" class="headerlink" title="AutoGen"></a>AutoGen</h3><p>在AutoGen中每个 Agent 有明确的<strong>角色标签</strong>（Assistant、UserProxy、自定义），但身份是<strong>逻辑概念</strong>而非实例隔离，agent之间通过 <code>name</code> 属性区分，但多个同名 Agent 在群聊中会被视为不同个体，Agent 之间可以直接通过名称发送消息</p>
+<h4 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h4><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sqf">创建 → 注册（到 <span class="hljs-built_in">GroupChat</span>） → 参与对话 → 可选：休眠/激活 → 销毁<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创建</strong></td>
+<td>实例化时定义 system message、LLM 配置、工具</td>
+</tr>
+<tr>
+<td><strong>运行时</strong></td>
+<td><strong>长期存活</strong>，在对话循环中持续接收和发送消息</td>
+</tr>
+<tr>
+<td><strong>状态变化</strong></td>
+<td>可通过 <code>register_reply</code> 动态增减行为，但实例本身不变</td>
+</tr>
+<tr>
+<td><strong>销毁</strong></td>
+<td>显式删除或作用域结束</td>
+</tr>
+</tbody></table>
+<p>关键特征：</p>
+<ul>
+<li><strong>有状态</strong>：每个 Agent 维护自己的 <code>_oai_messages</code> 历史</li>
+<li><strong>长生命周期</strong>：设计上 Agent 创建后会持续存在整个会话</li>
+<li><strong>身份绑定</strong>：身份与实例强绑定，运行时不能替换 Agent 的“角色本质”</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># Agent 从创建到销毁贯穿整个对话</span><br>assistant = AssistantAgent(<span class="hljs-string">&quot;assistant&quot;</span>, llm_config=config)<br>user = UserProxyAgent(<span class="hljs-string">&quot;user&quot;</span>, human_input_mode=<span class="hljs-string">&quot;ALWAYS&quot;</span>)<br>groupchat = GroupChat([assistant, user], messages=[])<br><span class="hljs-comment"># 两个 agent 实例在整个对话过程中持续存在</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="CrewAI"><a href="#CrewAI" class="headerlink" title="CrewAI"></a>CrewAI</h3><p>而CrewAI则不同，Agent 由其 <code>role</code>、<code>goal</code>、<code>backstory</code> 定义，身份是<strong>声明式的</strong></p>
+<p>多个 Agent 组成 Crew，身份在 Crew 内唯一，而身份决定了可以调用哪些工具</p>
+<h4 id="生命周期-1"><a href="#生命周期-1" class="headerlink" title="生命周期"></a>生命周期</h4><figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ada">创建 → 分配到 <span class="hljs-keyword">Task</span> → 执行任务 → 输出结果 → 可选：下一个任务 → 释放<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创建</strong></td>
+<td>定义 role、goal、llm、tools</td>
+</tr>
+<tr>
+<td><strong>执行</strong></td>
+<td>每个 Agent 在<strong>单个任务期间</strong>活跃，任务完成后输出结果</td>
+</tr>
+<tr>
+<td><strong>复用</strong></td>
+<td>同一 Agent 实例可顺序执行多个任务，但<strong>不保留跨任务的状态</strong>（除非启用 memory）</td>
+</tr>
+<tr>
+<td><strong>销毁</strong></td>
+<td>Crew 执行完成后，Agent 实例通常被丢弃</td>
+</tr>
+</tbody></table>
+<p>关键特征</p>
+<ul>
+<li><strong>相对无状态</strong>：每个任务执行时，Agent 的上下文主要来自当前 Task 的输入</li>
+<li><strong>短生命周期倾向</strong>：虽然实例可以复用，但设计哲学是“Agent 完成任务即交付结果”</li>
+<li><strong>身份与任务解耦</strong>：同一个 Agent 可以执行不同 Task，但身份（role）通常暗示其适合的任务类型</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># Agent 创建后用于多个任务，但每个任务独立</span><br>researcher = Agent(role=<span class="hljs-string">&quot;研究员&quot;</span>, goal=<span class="hljs-string">&quot;收集数据&quot;</span>)<br>writer = Agent(role=<span class="hljs-string">&quot;作家&quot;</span>, goal=<span class="hljs-string">&quot;撰写报告&quot;</span>)<br><br>task1 = Task(description=<span class="hljs-string">&quot;收集资料&quot;</span>, agent=researcher)<br>task2 = Task(description=<span class="hljs-string">&quot;写报告&quot;</span>, agent=writer, context=[task1])<br><br>crew = Crew(agents=[researcher, writer], tasks=[task1, task2])<br>result = crew.kickoff()  <span class="hljs-comment"># 执行完成后，agent 实例不再使用</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="LangGraph"><a href="#LangGraph" class="headerlink" title="LangGraph"></a>LangGraph</h3><p>在LangGraph中，Agent 是图中的<strong>节点</strong>（node），身份由<strong>节点函数</strong>定义，而非对象，节点本身没有“名字”意义上的身份，只有节点标识符，节点只是函数，可以轻松替换实现，不改变图结构</p>
+<h4 id="生命周期-2"><a href="#生命周期-2" class="headerlink" title="生命周期"></a>生命周期</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">图编译 → 节点函数调用 → 返回状态更新 → 节点生命周期结束 → 下一个节点调用<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创建</strong></td>
+<td>定义节点函数（可以是 Agent 调用、工具、任何逻辑）</td>
+</tr>
+<tr>
+<td><strong>运行时</strong></td>
+<td><strong>每个节点在调用时临时存在</strong>，执行完即“消失”</td>
+</tr>
+<tr>
+<td><strong>状态传递</strong></td>
+<td>节点之间不保留实例，只通过 State 对象传递信息</td>
+</tr>
+<tr>
+<td><strong>复用</strong></td>
+<td>节点函数是无状态的，每次调用使用当前 State</td>
+</tr>
+</tbody></table>
+<p>关键特征：</p>
+<ul>
+<li><strong>无状态节点</strong>：Agent 节点本身不保留任何记忆，所有状态在 State 中</li>
+<li><strong>极短生命周期</strong>：节点在调用期间存在，返回后即可被垃圾回收</li>
+<li><strong>身份与行为分离</strong>：同一个节点函数可以被多个图复用，身份由图的组织方式决定</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># Agent 作为节点函数，而非持久化对象</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">researcher</span>(<span class="hljs-params">state: State</span>):<br>    <span class="hljs-comment"># 调用 LLM，返回结果</span><br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;messages&quot;</span>: [AIMessage(<span class="hljs-string">&quot;研究结果&quot;</span>)]&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">writer</span>(<span class="hljs-params">state: State</span>):<br>    <span class="hljs-comment"># 读取 state 中的研究结果，撰写报告</span><br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;messages&quot;</span>: [AIMessage(<span class="hljs-string">&quot;报告内容&quot;</span>)]&#125;<br><br>graph = StateGraph(State)<br>graph.add_node(<span class="hljs-string">&quot;researcher&quot;</span>, researcher)  <span class="hljs-comment"># 节点只是函数引用</span><br>graph.add_node(<span class="hljs-string">&quot;writer&quot;</span>, writer)<br><span class="hljs-comment"># 节点在运行时才被调用，调用完即结束</span><br></code></pre></td></tr></table></figure>
+
+<p>由此可以看出三者设计哲学差异和使用场景的不同：</p>
+<p>AutoGen：Agent 是“角色演员”， 是<strong>有身份、有记忆、持续存在的实体</strong></p>
+<ul>
+<li>适合：需要长期对话、Agent 之间建立关系的场景（如人机协作、多轮协商）</li>
+</ul>
+<p>CrewAI：Agent 是“岗位说明书”，是<strong>按需分配、完成任务即走的专业角色</strong></p>
+<ul>
+<li>适合：线性工作流、自动化处理（如内容生成、数据处理 pipeline）</li>
+</ul>
+<p>LangGraph：Agent 是“函数调用”，是<strong>无状态的计算步骤</strong>，所有智能体现在 State 和图结构中</p>
+<ul>
+<li>适合：复杂状态机、需要精确控制执行路径、需要断点恢复的场景</li>
+</ul>
+<h1 id="多代理设计模式"><a href="#多代理设计模式" class="headerlink" title="多代理设计模式"></a>多代理设计模式</h1><p>人类社会的演进，本质上是从个体到组织的发展脉络。我们不断探索如何将不同能力的个体，通过架构有效链接，共同完成超越个体极限的复杂任务。</p>
+<p>公司里的层级结构、职能划分、协作流程，正是这种组织架构的体现——它将独立的个人凝聚成有机整体。当新人加入时，组织架构本身就是知识的沉淀，岗位职责就是经验的固化。</p>
+<p>将这个视角投射到人工智能领域，也正经历类似的演进：从单一的智能体，走向多智能体协同的有机系统。这就是<strong>多代理设计模式（Multi-Agent）</strong> 的核心思想——通过定义不同角色的 Agent，设计通信机制与协作流程，让多个智能体像一家运转有序的公司那样，各司其职、相互配合，共同完成单个 AI 无法胜任的复杂任务。</p>
+<p>接下来介绍几个重点的架构方式：</p>
+<blockquote>
+<p>(这里以langgraph为例，其中autogen同理，crewai由于只有流程和协作 两种模式 适合简单固定任务，不做过多介绍)</p>
+</blockquote>
+<hr>
+<h2 id="群聊：从会议室讨论到多智能体协作"><a href="#群聊：从会议室讨论到多智能体协作" class="headerlink" title="群聊：从会议室讨论到多智能体协作"></a>群聊：从会议室讨论到多智能体协作</h2><blockquote>
+<p>人类社会中的会议讨论，往往需要一个主持人来维持秩序、决定谁发言、何时结束，否则会议将陷入混乱。</p>
+</blockquote>
+<p>在 LangGraph 中，群聊模式通过<strong>图结构</strong>和<strong>条件边</strong>来实现类似会议主持人的功能。多个 Agent 共享同一个 State，通过路由函数决定下一个发言者，并设定终止条件。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span><br><span class="hljs-keyword">from</span> langgraph.graph <span class="hljs-keyword">import</span> StateGraph, END<br><span class="hljs-keyword">from</span> langgraph.checkpoint <span class="hljs-keyword">import</span> MemorySaver<br><span class="hljs-keyword">from</span> langchain_openai <span class="hljs-keyword">import</span> ChatOpenAI<br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> TypedDict, Annotated<br><span class="hljs-keyword">import</span> operator<br><br><span class="hljs-comment"># 定义共享状态 - 相当于会议记录本</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ChatState</span>(<span class="hljs-title class_ inherited__">TypedDict</span>):<br>    messages: Annotated[<span class="hljs-built_in">list</span>, operator.add]  <span class="hljs-comment"># 所有发言记录</span><br>    current_speaker: <span class="hljs-built_in">str</span>                     <span class="hljs-comment"># 当前发言人</span><br>    round_count: <span class="hljs-built_in">int</span>                          <span class="hljs-comment"># 讨论轮次</span><br>    conclusion: <span class="hljs-built_in">str</span>                           <span class="hljs-comment"># 最终结论</span><br><br><span class="hljs-comment"># 初始化 LLM</span><br>llm = ChatOpenAI(model=<span class="hljs-string">&quot;gpt-4&quot;</span>)<br><br><span class="hljs-comment"># 定义三个不同角色的 Agent 节点</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">researcher</span>(<span class="hljs-params">state: ChatState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;研究员 Agent - 负责收集和分析事实&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是研究员，负责分析问题并提供事实依据。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;当前讨论：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;messages&#x27;</span>][-<span class="hljs-number">1</span>].content <span class="hljs-keyword">if</span> state[<span class="hljs-string">&#x27;messages&#x27;</span>] <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;开始讨论&#x27;</span>&#125;</span>&quot;</span>&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;messages&quot;</span>: [response], <span class="hljs-string">&quot;current_speaker&quot;</span>: <span class="hljs-string">&quot;researcher&quot;</span>&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">critic</span>(<span class="hljs-params">state: ChatState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;评论员 Agent - 负责质疑和提出反例&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是评论员，负责质疑观点、提出反例和潜在问题。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;当前讨论：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;messages&#x27;</span>][-<span class="hljs-number">1</span>].content <span class="hljs-keyword">if</span> state[<span class="hljs-string">&#x27;messages&#x27;</span>] <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;开始讨论&#x27;</span>&#125;</span>&quot;</span>&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;messages&quot;</span>: [response], <span class="hljs-string">&quot;current_speaker&quot;</span>: <span class="hljs-string">&quot;critic&quot;</span>&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">moderator</span>(<span class="hljs-params">state: ChatState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;主持人 Agent - 负责总结和决定是否继续&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是主持人，负责总结讨论并判断是否达成共识。如果达成共识，输出&#x27;END&#x27;，否则输出&#x27;CONTINUE&#x27;。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;讨论记录：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;messages&#x27;</span>]&#125;</span>&quot;</span>&#125;<br>    ])<br>    <br>    <span class="hljs-comment"># 判断终止条件</span><br>    should_end = <span class="hljs-string">&quot;END&quot;</span> <span class="hljs-keyword">in</span> response.content.upper()<br>    conclusion = response.content <span class="hljs-keyword">if</span> should_end <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;&quot;</span><br>    <br>    <span class="hljs-keyword">return</span> &#123;<br>        <span class="hljs-string">&quot;messages&quot;</span>: [response],<br>        <span class="hljs-string">&quot;current_speaker&quot;</span>: <span class="hljs-string">&quot;moderator&quot;</span>,<br>        <span class="hljs-string">&quot;round_count&quot;</span>: state.get(<span class="hljs-string">&quot;round_count&quot;</span>, <span class="hljs-number">0</span>) + <span class="hljs-number">1</span>,<br>        <span class="hljs-string">&quot;conclusion&quot;</span>: conclusion<br>    &#125;<br><br><span class="hljs-comment"># 构建群聊图</span><br>graph = StateGraph(ChatState)<br><br><span class="hljs-comment"># 添加节点</span><br>graph.add_node(<span class="hljs-string">&quot;researcher&quot;</span>, researcher)<br>graph.add_node(<span class="hljs-string">&quot;critic&quot;</span>, critic)<br>graph.add_node(<span class="hljs-string">&quot;moderator&quot;</span>, moderator)<br><br><span class="hljs-comment"># 设置入口</span><br>graph.set_entry_point(<span class="hljs-string">&quot;researcher&quot;</span>)<br><br><span class="hljs-comment"># 定义发言顺序路由函数 - 相当于会议主持人的议程安排</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">route_after_researcher</span>(<span class="hljs-params">state: ChatState</span>) -&gt; <span class="hljs-type">Literal</span>[<span class="hljs-string">&quot;critic&quot;</span>, <span class="hljs-string">&quot;moderator&quot;</span>]:<br>    <span class="hljs-string">&quot;&quot;&quot;研究员发言后，轮到评论员&quot;&quot;&quot;</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;critic&quot;</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">route_after_critic</span>(<span class="hljs-params">state: ChatState</span>) -&gt; <span class="hljs-type">Literal</span>[<span class="hljs-string">&quot;researcher&quot;</span>, <span class="hljs-string">&quot;moderator&quot;</span>]:<br>    <span class="hljs-string">&quot;&quot;&quot;评论员发言后，回到研究员或主持人&quot;&quot;&quot;</span><br>    <span class="hljs-comment"># 每三轮讨论后请主持人介入</span><br>    <span class="hljs-keyword">if</span> state.get(<span class="hljs-string">&quot;round_count&quot;</span>, <span class="hljs-number">0</span>) &gt;= <span class="hljs-number">3</span>:<br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;moderator&quot;</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;researcher&quot;</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">route_after_moderator</span>(<span class="hljs-params">state: ChatState</span>) -&gt; <span class="hljs-type">Literal</span>[<span class="hljs-string">&quot;researcher&quot;</span>, END]:<br>    <span class="hljs-string">&quot;&quot;&quot;主持人决定是否继续讨论&quot;&quot;&quot;</span><br>    <span class="hljs-keyword">if</span> state.get(<span class="hljs-string">&quot;conclusion&quot;</span>):<br>        <span class="hljs-keyword">return</span> END  <span class="hljs-comment"># 终止条件达成</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;researcher&quot;</span><br><br><span class="hljs-comment"># 添加条件边 - 控制发言顺序</span><br>graph.add_conditional_edges(<span class="hljs-string">&quot;researcher&quot;</span>, route_after_researcher)<br>graph.add_conditional_edges(<span class="hljs-string">&quot;critic&quot;</span>, route_after_critic)<br>graph.add_conditional_edges(<span class="hljs-string">&quot;moderator&quot;</span>, route_after_moderator)<br><br><span class="hljs-comment"># 编译图，启用持久化</span><br>app = graph.<span class="hljs-built_in">compile</span>(checkpointer=MemorySaver())<br><br><span class="hljs-comment"># 执行群聊</span><br>initial_state = &#123;<br>    <span class="hljs-string">&quot;messages&quot;</span>: [],<br>    <span class="hljs-string">&quot;current_speaker&quot;</span>: <span class="hljs-string">&quot;&quot;</span>,<br>    <span class="hljs-string">&quot;round_count&quot;</span>: <span class="hljs-number">0</span>,<br>    <span class="hljs-string">&quot;conclusion&quot;</span>: <span class="hljs-string">&quot;&quot;</span><br>&#125;<br><br>config = &#123;<span class="hljs-string">&quot;configurable&quot;</span>: &#123;<span class="hljs-string">&quot;thread_id&quot;</span>: <span class="hljs-string">&quot;discussion-001&quot;</span>&#125;&#125;<br>result = app.invoke(initial_state, config)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;=== 讨论结论 ===&quot;</span>)<br><span class="hljs-built_in">print</span>(result[<span class="hljs-string">&quot;conclusion&quot;</span>])<br></code></pre></td></tr></table></figure>
+
+<p><strong>输出结构</strong>：LangGraph 的群聊输出是一个完整的 State 对象，包含了所有消息历史、最终结论和讨论轮次。通过 <code>thread_id</code> 可以随时恢复中断的讨论。</p>
+<h2 id="多代理辩论：从法庭辩论到观点碰撞"><a href="#多代理辩论：从法庭辩论到观点碰撞" class="headerlink" title="多代理辩论：从法庭辩论到观点碰撞"></a>多代理辩论：从法庭辩论到观点碰撞</h2><blockquote>
+<p>法庭上的辩论遵循严格的程序：原告陈述、被告反驳、法官裁决。这种结构化对抗能够暴露观点的弱点和盲区。</p>
+</blockquote>
+<p>多代理辩论模式模仿了这种结构化对抗，通过定义正反双方和裁判角色，让不同 Agent 在观点碰撞中逼近真理。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> langgraph.graph <span class="hljs-keyword">import</span> StateGraph, END<br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Literal</span><br><br><span class="hljs-comment"># 定义辩论状态</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DebateState</span>(<span class="hljs-title class_ inherited__">TypedDict</span>):<br>    topic: <span class="hljs-built_in">str</span>                      <span class="hljs-comment"># 辩论主题</span><br>    proposition: <span class="hljs-built_in">str</span>                <span class="hljs-comment"># 正方观点</span><br>    opposition: <span class="hljs-built_in">str</span>                 <span class="hljs-comment"># 反方观点</span><br>    debate_history: Annotated[<span class="hljs-built_in">list</span>, operator.add]  <span class="hljs-comment"># 辩论记录</span><br>    current_round: <span class="hljs-built_in">int</span>              <span class="hljs-comment"># 当前轮次</span><br>    winner: <span class="hljs-built_in">str</span>                     <span class="hljs-comment"># 胜方</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">proposer</span>(<span class="hljs-params">state: DebateState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;正方 Agent - 支持和论证观点&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;你是正方辩手，支持：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;topic&#x27;</span>]&#125;</span>。请用论据支撑你的立场。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;反方上次观点：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;opposition&#x27;</span>]&#125;</span>。请反驳并阐述你的观点。&quot;</span>&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<br>        <span class="hljs-string">&quot;proposition&quot;</span>: response.content,<br>        <span class="hljs-string">&quot;debate_history&quot;</span>: [<span class="hljs-string">f&quot;正方：<span class="hljs-subst">&#123;response.content&#125;</span>&quot;</span>]<br>    &#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">opposer</span>(<span class="hljs-params">state: DebateState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;反方 Agent - 质疑和反驳&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;你是反方辩手，反对：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;topic&#x27;</span>]&#125;</span>。请找出正方观点的漏洞。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;正方观点：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;proposition&#x27;</span>]&#125;</span>。请提出质疑。&quot;</span>&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<br>        <span class="hljs-string">&quot;opposition&quot;</span>: response.content,<br>        <span class="hljs-string">&quot;debate_history&quot;</span>: [<span class="hljs-string">f&quot;反方：<span class="hljs-subst">&#123;response.content&#125;</span>&quot;</span>]<br>    &#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">judge</span>(<span class="hljs-params">state: DebateState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;裁判 Agent - 裁决胜负&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是辩论裁判，根据论据充分性、逻辑严谨性判断胜负。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;辩论记录：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;debate_history&#x27;</span>]&#125;</span>&quot;</span>&#125;<br>    ])<br>    <br>    <span class="hljs-comment"># 终止条件：达到最大轮次或裁判判定</span><br>    <span class="hljs-keyword">if</span> state.get(<span class="hljs-string">&quot;current_round&quot;</span>, <span class="hljs-number">0</span>) &gt;= <span class="hljs-number">5</span>:<br>        <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;winner&quot;</span>: <span class="hljs-string">&quot;proposer&quot;</span> <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;正方&quot;</span> <span class="hljs-keyword">in</span> response.content <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;opposer&quot;</span>&#125;<br>    <br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;winner&quot;</span>: <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;current_round&quot;</span>: state.get(<span class="hljs-string">&quot;current_round&quot;</span>, <span class="hljs-number">0</span>) + <span class="hljs-number">1</span>&#125;<br><br><span class="hljs-comment"># 构建辩论图</span><br>debate_graph = StateGraph(DebateState)<br>debate_graph.add_node(<span class="hljs-string">&quot;proposer&quot;</span>, proposer)<br>debate_graph.add_node(<span class="hljs-string">&quot;opposer&quot;</span>, opposer)<br>debate_graph.add_node(<span class="hljs-string">&quot;judge&quot;</span>, judge)<br><br>debate_graph.set_entry_point(<span class="hljs-string">&quot;proposer&quot;</span>)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">debate_route</span>(<span class="hljs-params">state: DebateState</span>) -&gt; <span class="hljs-type">Literal</span>[<span class="hljs-string">&quot;opposer&quot;</span>, <span class="hljs-string">&quot;judge&quot;</span>]:<br>    <span class="hljs-string">&quot;&quot;&quot;正方发言后，轮到反方&quot;&quot;&quot;</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;opposer&quot;</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">after_opposer</span>(<span class="hljs-params">state: DebateState</span>) -&gt; <span class="hljs-type">Literal</span>[<span class="hljs-string">&quot;proposer&quot;</span>, <span class="hljs-string">&quot;judge&quot;</span>]:<br>    <span class="hljs-string">&quot;&quot;&quot;反方发言后，回到正方或由裁判裁决&quot;&quot;&quot;</span><br>    <span class="hljs-keyword">if</span> state.get(<span class="hljs-string">&quot;current_round&quot;</span>, <span class="hljs-number">0</span>) &gt;= <span class="hljs-number">4</span>:<br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;judge&quot;</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;proposer&quot;</span><br><br>debate_graph.add_conditional_edges(<span class="hljs-string">&quot;proposer&quot;</span>, debate_route)<br>debate_graph.add_conditional_edges(<span class="hljs-string">&quot;opposer&quot;</span>, after_opposer)<br>debate_graph.add_edge(<span class="hljs-string">&quot;judge&quot;</span>, END)<br><br><span class="hljs-comment"># 执行辩论</span><br>result = debate_graph.invoke(&#123;<span class="hljs-string">&quot;topic&quot;</span>: <span class="hljs-string">&quot;人工智能应该拥有法律人格&quot;</span>, <span class="hljs-string">&quot;current_round&quot;</span>: <span class="hljs-number">0</span>&#125;)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;辩论胜方：<span class="hljs-subst">&#123;result[<span class="hljs-string">&#x27;winner&#x27;</span>]&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><strong>输出结构</strong>：辩论输出包含完整的辩论历史、正反方观点演进过程，以及裁判的最终裁决，类似于法庭的庭审记录。</p>
+<h2 id="反思模式：从工匠打磨到自我迭代"><a href="#反思模式：从工匠打磨到自我迭代" class="headerlink" title="反思模式：从工匠打磨到自我迭代"></a>反思模式：从工匠打磨到自我迭代</h2><blockquote>
+<p>工匠制作器物时，会反复审视自己的作品，发现问题、改进、再审视，直到满意为止。这种自我反思是技艺精进的源泉。</p>
+</blockquote>
+<p>反思模式让 Agent 像工匠一样审视自己的输出，通过“执行者-批评者”的双循环实现自我迭代优化。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> langgraph.graph <span class="hljs-keyword">import</span> StateGraph, END<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ReflectionState</span>(<span class="hljs-title class_ inherited__">TypedDict</span>):<br>    task: <span class="hljs-built_in">str</span>                       <span class="hljs-comment"># 待完成的任务</span><br>    draft: <span class="hljs-built_in">str</span>                      <span class="hljs-comment"># 当前草稿</span><br>    feedback: <span class="hljs-built_in">str</span>                   <span class="hljs-comment"># 反馈意见</span><br>    iteration: <span class="hljs-built_in">int</span>                  <span class="hljs-comment"># 迭代次数</span><br>    final_output: <span class="hljs-built_in">str</span>               <span class="hljs-comment"># 最终输出</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">executor</span>(<span class="hljs-params">state: ReflectionState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;执行者 Agent - 负责产出初稿&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是执行者，负责完成任务。根据反馈改进输出。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;任务：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;task&#x27;</span>]&#125;</span>\n上次反馈：<span class="hljs-subst">&#123;state.get(<span class="hljs-string">&#x27;feedback&#x27;</span>, <span class="hljs-string">&#x27;无&#x27;</span>)&#125;</span>\n请产出或改进你的作品。&quot;</span>&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;draft&quot;</span>: response.content, <span class="hljs-string">&quot;iteration&quot;</span>: state.get(<span class="hljs-string">&quot;iteration&quot;</span>, <span class="hljs-number">0</span>) + <span class="hljs-number">1</span>&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">critic</span>(<span class="hljs-params">state: ReflectionState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;批评者 Agent - 负责提出改进意见&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是批评者，负责找出问题并提出具体改进建议。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;作品：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;draft&#x27;</span>]&#125;</span>\n请给出建设性的批评意见。&quot;</span>&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;feedback&quot;</span>: response.content&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">should_continue</span>(<span class="hljs-params">state: ReflectionState</span>) -&gt; <span class="hljs-type">Literal</span>[<span class="hljs-string">&quot;executor&quot;</span>, END]:<br>    <span class="hljs-string">&quot;&quot;&quot;判断是否继续反思循环&quot;&quot;&quot;</span><br>    <span class="hljs-comment"># 终止条件：达到最大迭代次数或批评者认为已足够好</span><br>    <span class="hljs-keyword">if</span> state.get(<span class="hljs-string">&quot;iteration&quot;</span>, <span class="hljs-number">0</span>) &gt;= <span class="hljs-number">3</span>:<br>        <span class="hljs-keyword">return</span> END<br>    <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;通过&quot;</span> <span class="hljs-keyword">in</span> state.get(<span class="hljs-string">&quot;feedback&quot;</span>, <span class="hljs-string">&quot;&quot;</span>) <span class="hljs-keyword">or</span> <span class="hljs-string">&quot;满意&quot;</span> <span class="hljs-keyword">in</span> state.get(<span class="hljs-string">&quot;feedback&quot;</span>, <span class="hljs-string">&quot;&quot;</span>):<br>        <span class="hljs-keyword">return</span> END<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;executor&quot;</span><br><br><span class="hljs-comment"># 构建反思图</span><br>reflection_graph = StateGraph(ReflectionState)<br>reflection_graph.add_node(<span class="hljs-string">&quot;executor&quot;</span>, executor)<br>reflection_graph.add_node(<span class="hljs-string">&quot;critic&quot;</span>, critic)<br><br>reflection_graph.set_entry_point(<span class="hljs-string">&quot;executor&quot;</span>)<br>reflection_graph.add_edge(<span class="hljs-string">&quot;executor&quot;</span>, <span class="hljs-string">&quot;critic&quot;</span>)<br>reflection_graph.add_conditional_edges(<span class="hljs-string">&quot;critic&quot;</span>, should_continue)<br><br>result = reflection_graph.invoke(&#123;<br>    <span class="hljs-string">&quot;task&quot;</span>: <span class="hljs-string">&quot;写一篇关于气候变化的科普文章&quot;</span>,<br>    <span class="hljs-string">&quot;iteration&quot;</span>: <span class="hljs-number">0</span><br>&#125;)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;最终作品：<span class="hljs-subst">&#123;result[<span class="hljs-string">&#x27;draft&#x27;</span>]&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><strong>输出结构</strong>：反思模式的输出包含每一版的草稿、对应的批评意见，以及最终经过多轮打磨的成品，完整记录了从粗糙到精炼的演进过程。</p>
+<hr>
+<h2 id="并发代理：从工厂流水线到并行作业"><a href="#并发代理：从工厂流水线到并行作业" class="headerlink" title="并发代理：从工厂流水线到并行作业"></a>并发代理：从工厂流水线到并行作业</h2><blockquote>
+<p>现代工厂的生产线，多个工序同时进行，互不阻塞，极大提升了生产效率。这种并行作业模式是人类工业化的重要里程碑。</p>
+</blockquote>
+<p>并发代理模式允许多个 Agent 同时处理不同任务或同一任务的不同部分，通过共享状态实现结果的汇聚。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> asyncio<br><span class="hljs-keyword">from</span> langgraph.graph <span class="hljs-keyword">import</span> StateGraph, END<br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">List</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ParallelState</span>(<span class="hljs-title class_ inherited__">TypedDict</span>):<br>    query: <span class="hljs-built_in">str</span>                      <span class="hljs-comment"># 原始查询</span><br>    sub_queries: <span class="hljs-type">List</span>[<span class="hljs-built_in">str</span>]          <span class="hljs-comment"># 拆分的子任务</span><br>    partial_results: Annotated[<span class="hljs-built_in">list</span>, operator.add]  <span class="hljs-comment"># 并行结果</span><br>    merged_result: <span class="hljs-built_in">str</span>              <span class="hljs-comment"># 合并后的最终结果</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">decomposer</span>(<span class="hljs-params">state: ParallelState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;分解器 Agent - 负责任务拆分&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是任务分解专家，将复杂任务拆分为可并行的子任务，用JSON列表输出。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;任务：<span class="hljs-subst">&#123;state[<span class="hljs-string">&#x27;query&#x27;</span>]&#125;</span>&quot;</span>&#125;<br>    ])<br>    <br>    <span class="hljs-comment"># 解析子任务（示例中简化处理）</span><br>    <span class="hljs-keyword">import</span> json<br>    sub_queries = json.loads(response.content) <span class="hljs-keyword">if</span> response.content <span class="hljs-keyword">else</span> []<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;sub_queries&quot;</span>: sub_queries&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">worker</span>(<span class="hljs-params">state: ParallelState, sub_query: <span class="hljs-built_in">str</span></span>):<br>    <span class="hljs-string">&quot;&quot;&quot;工作者 Agent - 执行单个子任务（在并行节点中调用）&quot;&quot;&quot;</span><br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是领域专家，请针对子问题给出专业回答。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: sub_query&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;partial_results&quot;</span>: [&#123;<span class="hljs-string">&quot;query&quot;</span>: sub_query, <span class="hljs-string">&quot;answer&quot;</span>: response.content&#125;]&#125;<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">merger</span>(<span class="hljs-params">state: ParallelState</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;合并器 Agent - 汇聚并行结果&quot;&quot;&quot;</span><br>    combined = <span class="hljs-string">&quot;\n&quot;</span>.join([r[<span class="hljs-string">&quot;answer&quot;</span>] <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> state[<span class="hljs-string">&quot;partial_results&quot;</span>]])<br>    response = llm.invoke([<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你是整合专家，将多个部分答案合并成完整的回答。&quot;</span>&#125;,<br>        &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: combined&#125;<br>    ])<br>    <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;merged_result&quot;</span>: response.content&#125;<br><br><span class="hljs-comment"># 注意：LangGraph 原生支持并行节点执行</span><br>parallel_graph = StateGraph(ParallelState)<br>parallel_graph.add_node(<span class="hljs-string">&quot;decomposer&quot;</span>, decomposer)<br>parallel_graph.add_node(<span class="hljs-string">&quot;merger&quot;</span>, merger)<br><br><span class="hljs-comment"># 动态添加工作者节点（实际使用中根据 sub_queries 数量创建）</span><br>parallel_graph.set_entry_point(<span class="hljs-string">&quot;decomposer&quot;</span>)<br>parallel_graph.add_edge(<span class="hljs-string">&quot;decomposer&quot;</span>, <span class="hljs-string">&quot;merger&quot;</span>)  <span class="hljs-comment"># 简化示意</span><br>parallel_graph.add_edge(<span class="hljs-string">&quot;merger&quot;</span>, END)<br><br><span class="hljs-comment"># 完整实现需要在运行时根据 sub_queries 动态创建并行分支</span><br><span class="hljs-comment"># 这里展示核心结构，实际并行执行需要使用 asyncio.gather 或框架的并行节点功能</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>输出结构</strong>：并发模式的输出包含拆分的子任务清单、每个子任务的独立结果，以及合并后的完整答案，类似于项目管理中的 WBS 和最终交付物。</p>
+<table>
+<thead>
+<tr>
+<th>社会模式</th>
+<th>对应设计模式</th>
+<th>LangGraph 实现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>会议室讨论</td>
+<td>群聊</td>
+<td>条件边 + 路由函数</td>
+</tr>
+<tr>
+<td>法庭辩论</td>
+<td>多代理辩论</td>
+<td>正反方节点 + 裁判节点</td>
+</tr>
+<tr>
+<td>工匠打磨</td>
+<td>反思</td>
+<td>执行者-批评者循环</td>
+</tr>
+<tr>
+<td>工厂流水线</td>
+<td>并发代理</td>
+<td>状态共享 + 并行分支</td>
+</tr>
+</tbody></table>
+<p>当然更多的设计如下：</p>
+<table>
+<thead>
+<tr>
+<th>多代理设计模式</th>
+<th>功能简介</th>
+<th>单体公司使用场景</th>
+<th>优势</th>
+<th>注意点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>顺序工作流（Sequential Workflow）</strong></td>
+<td>任务按顺序由不同代理处理，每个代理完成后交给下一个</td>
+<td>财务报表生成流程、审批流程自动化</td>
+<td>易于调试和监控，每步可验证</td>
+<td>对任务失败敏感，需要异常处理</td>
+</tr>
+<tr>
+<td><strong>移交（Handover）</strong></td>
+<td>将任务从一个代理移交给更合适的代理</td>
+<td>客服场景：简单问题→复杂问题转人工或专家代理</td>
+<td>提高任务处理准确性</td>
+<td>需要明确移交条件</td>
+</tr>
+<tr>
+<td><strong>代理混合（Hybrid Agents）</strong></td>
+<td>同一任务由不同类型代理混合完成（LLM + 工具 + 人类）</td>
+<td>产品文档生成 + 自动校对</td>
+<td>灵活处理不同任务类型</td>
+<td>设计复杂，需要协调不同代理能力</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>参考</strong>：</p>
+<p><a target="_blank" rel="noopener" href="https://msdocs.cn/autogen/stable/user-guide/core-user-guide/quickstart.html">快速入门 — AutoGen 文档</a></p>
+<p><a target="_blank" rel="noopener" href="https://langgraph.com.cn/agents/agents.1.html">快速入门 - LangChain 框架</a></p>
+<p><a target="_blank" rel="noopener" href="https://crew-docs.role.fun/">CrewAI 中文文档</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="category-chain-item">人工智能</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/Agent%E5%BA%94%E7%94%A8/" class="category-chain-item">Agent应用</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Mutil-Agent系统</div>
+      <div>https://hermes37.vercel.app/2026/03/16/人工智能/Agent应用/Mutil-Agent系统/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月16日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/03/21/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/playwright%E4%BD%BF%E7%94%A8/" title="playwright使用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">playwright使用</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/03/16/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/Agent%E5%BA%94%E7%94%A8/RAG%E7%9F%A5%E8%AF%86%E5%BA%93/" title="RAG知识库">
+                        <span class="hidden-mobile">RAG知识库</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
