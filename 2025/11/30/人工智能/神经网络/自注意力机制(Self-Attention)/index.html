@@ -1,0 +1,818 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="语义相似度在自注意力机制中，语义相似度是通过查询向量和键向量的点积来计算的，这实际上是在衡量不同位置token之间的语义相关性。 1注意力分数 &#x3D; Query · Key^T   词向量的局限性传统静态词向量：123456&quot;银行&quot;的词向量 &#x3D; [0.2, 0.8, -0.3, ...]  # 固定不变问题：- &quot;我去银行取钱&quot;中的&quot;银行&quot;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自注意力机制(Self-Attention)">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/11/30/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6(Self-Attention)/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="语义相似度在自注意力机制中，语义相似度是通过查询向量和键向量的点积来计算的，这实际上是在衡量不同位置token之间的语义相关性。 1注意力分数 &#x3D; Query · Key^T   词向量的局限性传统静态词向量：123456&quot;银行&quot;的词向量 &#x3D; [0.2, 0.8, -0.3, ...]  # 固定不变问题：- &quot;我去银行取钱&quot;中的&quot;银行&quot;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/CMbpvf63B1wPg5H.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/6hW7U2YXVxJyCOL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/19/9M5zZWbUBTC7wQE.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/Kf8jxoJQ4TG97cw.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/1nPVbaqUyfQ5ep2.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/KzHvOQ6XAMYJd3o.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/19/zsTdNboDU7iYqfL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/19/mO683T4ZFSylBeX.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/1eZwIS8k9FxC53R.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/Lp5ebmrQcIwNDTo.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/19/GAnhHWelg8FDz5N.png">
+<meta property="article:published_time" content="2025-11-30T01:23:34.815Z">
+<meta property="article:modified_time" content="2026-03-31T02:28:27.740Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/11/30/CMbpvf63B1wPg5H.png">
+  
+  
+  
+  <title>自注意力机制(Self-Attention) - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="自注意力机制(Self-Attention)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">自注意力机制(Self-Attention)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="语义相似度"><a href="#语义相似度" class="headerlink" title="语义相似度"></a>语义相似度</h1><p>在自注意力机制中，<strong>语义相似度</strong>是通过查询向量和键向量的点积来计算的，这实际上是在衡量不同位置token之间的语义相关性。</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mathematica">注意力分数 <span class="hljs-operator">=</span> <span class="hljs-built_in">Query</span> · <span class="hljs-built_in">Key</span><span class="hljs-operator">^</span><span class="hljs-variable">T</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/11/30/CMbpvf63B1wPg5H.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="词向量的局限性"><a href="#词向量的局限性" class="headerlink" title="词向量的局限性"></a><strong>词向量的局限性</strong></h3><h4 id="传统静态词向量："><a href="#传统静态词向量：" class="headerlink" title="传统静态词向量："></a><strong>传统静态词向量：</strong></h4><figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli"><span class="hljs-string">&quot;银行&quot;</span>的词向量 = [0.2, 0.8, -0.3, <span class="hljs-string">...</span>]  <span class="hljs-comment"># 固定不变</span><br><br>问题：<br>- <span class="hljs-string">&quot;我去银行取钱&quot;</span>中的<span class="hljs-string">&quot;银行&quot;</span> → 金融机构<br>- <span class="hljs-string">&quot;河岸边的银行&quot;</span>中的<span class="hljs-string">&quot;银行&quot;</span> → 河岸<br>- 但词向量相同，无法区分多义性<br></code></pre></td></tr></table></figure>
+
+<h4 id="静态词向量的缺陷"><a href="#静态词向量的缺陷" class="headerlink" title="静态词向量的缺陷"></a><strong>静态词向量的缺陷</strong></h4><ul>
+<li><strong>一词多义问题</strong>：无法处理词语在不同上下文中的不同含义</li>
+<li><strong>上下文无关</strong>：每个词的表示是固定的，不随语境变化</li>
+<li><strong>刚性表示</strong>：缺乏语义的灵活性和适应性</li>
+</ul>
+<h3 id="自注意力的动态语义调整机制"><a href="#自注意力的动态语义调整机制" class="headerlink" title="自注意力的动态语义调整机制"></a><strong>自注意力的动态语义调整机制</strong></h3><p><strong>核心思想：让每个token根据上下文重新校准自己的语义表示</strong></p>
+<p><strong>具体过程：</strong></p>
+<ol>
+<li><p><strong>生成动态表示向量</strong></p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs stata">每个<span class="hljs-keyword">token</span>生成三个向量：<br>- <span class="hljs-keyword">Query</span>向量：我要查询其他<span class="hljs-keyword">token</span>的<span class="hljs-string">&quot;问题&quot;</span><br>- Key向量：我提供给其他<span class="hljs-keyword">token</span>的<span class="hljs-string">&quot;答案线索&quot;</span>  <br>- Value向量：我真正的<span class="hljs-string">&quot;语义内容&quot;</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>计算语义相似度（注意力权重）</strong></p>
+<figure class="highlight graphql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs graphql"><span class="hljs-string">&quot;我 爱 北京 天安门&quot;</span>中，<span class="hljs-string">&quot;爱&quot;</span>的查询过程：<br><br><span class="hljs-keyword">Query</span><span class="hljs-punctuation">(</span>爱<span class="hljs-punctuation">)</span> · Key<span class="hljs-punctuation">(</span>我<span class="hljs-punctuation">)</span>   <span class="hljs-punctuation">=</span> <span class="hljs-number">0.2</span>    <span class="hljs-comment"># 较低相关性</span><br><span class="hljs-keyword">Query</span><span class="hljs-punctuation">(</span>爱<span class="hljs-punctuation">)</span> · Key<span class="hljs-punctuation">(</span>爱<span class="hljs-punctuation">)</span>   <span class="hljs-punctuation">=</span> <span class="hljs-number">1.0</span>    <span class="hljs-comment"># 自身相关性</span><br><span class="hljs-keyword">Query</span><span class="hljs-punctuation">(</span>爱<span class="hljs-punctuation">)</span> · Key<span class="hljs-punctuation">(</span>北京<span class="hljs-punctuation">)</span> <span class="hljs-punctuation">=</span> <span class="hljs-number">0.8</span>    <span class="hljs-comment"># 较高相关性</span><br><span class="hljs-keyword">Query</span><span class="hljs-punctuation">(</span>爱<span class="hljs-punctuation">)</span> · Key<span class="hljs-punctuation">(</span>天安门<span class="hljs-punctuation">)</span> <span class="hljs-punctuation">=</span> <span class="hljs-number">0.7</span>  <span class="hljs-comment"># 较高相关性</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>加权聚合上下文信息</strong></p>
+<figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs isbl"><span class="hljs-string">&quot;爱&quot;</span>的新表示 = <br>     <span class="hljs-number">0.2</span> × <span class="hljs-function"><span class="hljs-title">Value</span>(我) + </span><br><span class="hljs-function">     <span class="hljs-number">1.0</span> × <span class="hljs-title">Value</span>(爱) + </span><br><span class="hljs-function">     <span class="hljs-number">0.8</span> × <span class="hljs-title">Value</span>(北京) + </span><br><span class="hljs-function">     <span class="hljs-number">0.7</span> × <span class="hljs-title">Value</span>(天安门)</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="与传统方法的对比"><a href="#与传统方法的对比" class="headerlink" title="与传统方法的对比"></a>与传统方法的对比</h3><table>
+<thead>
+<tr>
+<th>特征</th>
+<th>静态词向量</th>
+<th>自注意力动态表示</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>语义灵活性</strong></td>
+<td>固定不变</td>
+<td>随上下文动态变化</td>
+</tr>
+<tr>
+<td><strong>多义性处理</strong></td>
+<td>无法区分</td>
+<td>自动根据语境调整</td>
+</tr>
+<tr>
+<td><strong>上下文感知</strong></td>
+<td>无</td>
+<td>深度上下文理解</td>
+</tr>
+<tr>
+<td><strong>计算方式</strong></td>
+<td>预训练固定</td>
+<td>实时计算调整</td>
+</tr>
+</tbody></table>
+<p><strong>这种动态语义调整使得：</strong></p>
+<ol>
+<li><strong>词义消歧</strong>：自动识别词语在特定上下文中的真实含义</li>
+<li><strong>指代消解</strong>：准确理解代词指代的具体对象</li>
+<li><strong>语义组合</strong>：理解短语和句子的整体含义，而非简单词语叠加</li>
+<li><strong>语境适应</strong>：同一词语在不同领域、不同风格文本中的适应性理解</li>
+</ol>
+<h1 id="位置编码"><a href="#位置编码" class="headerlink" title="位置编码"></a>位置编码</h1><p><img src="https://s2.loli.net/2025/11/30/6hW7U2YXVxJyCOL.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>自注意力机制的缺陷：</strong>自注意力机制是<strong>排列不变</strong>的，即它对输入序列的顺序不敏感。例如：</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs 1c">序列<span class="hljs-number">1</span>: <span class="hljs-string">&quot;猫 追 老鼠&quot;</span>  <br>序列<span class="hljs-number">2</span>: <span class="hljs-string">&quot;老鼠 追 猫&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>对于标准的自注意力机制，这两个序列会产生相同的注意力权重，因为：它只计算词与词之间的相关性，完全忽略了词语在序列中的位置信息，但位置信息对理解语义至关重要</p>
+<p><strong>位置编码</strong>是一种向输入序列中添加位置信息的技术，使模型能够感知每个token在序列中的具体位置。</p>
+<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs gcode">原始输入:  词嵌入<span class="hljs-comment">(猫)</span> + 词嵌入<span class="hljs-comment">(追)</span> + 词嵌入<span class="hljs-comment">(老鼠)</span><br>添加位置编码后:  <br>    [词嵌入<span class="hljs-comment">(猫)</span> + 位置编码<span class="hljs-comment">(0)</span>] <br>    [词嵌入<span class="hljs-comment">(追)</span> + 位置编码<span class="hljs-comment">(1)</span>]<br>    [词嵌入<span class="hljs-comment">(老鼠)</span> + 位置编码<span class="hljs-comment">(2)</span>]<br></code></pre></td></tr></table></figure>
+
+<h1 id="自注意力机制"><a href="#自注意力机制" class="headerlink" title="自注意力机制"></a>自注意力机制</h1><blockquote>
+<p>attention原本是一个搜索算法，q就是查询的信息，k可以认为是关键特征，V是具体的数据。用数据管理的角度看这个过程,可以认为这个算法把输入看做了信息的压缩包，通过相互查询，把低层的碎片化信息整合成了高层级结构化的信息。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/07/19/9M5zZWbUBTC7wQE.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>单头注意力能捕获一类依赖关系，而多头注意力通过多子空间并行建模，让 Transformer 能在同一时间捕获多层语义关系，是其强大表现力的关键。</strong></p>
+<p><img src="https://s2.loli.net/2025/11/30/Kf8jxoJQ4TG97cw.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/11/30/1nPVbaqUyfQ5ep2.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="单头自注意力机制"><a href="#单头自注意力机制" class="headerlink" title="单头自注意力机制"></a>单头自注意力机制</h2><p>单头注意力机制本质上是一种加权求和操作：<br>$$<br>\text{Attention}(Q, K, V) &#x3D; \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V<br>$$<br>其中：</p>
+<ul>
+<li>Q（Query）：查询向量，代表当前要关注的“问题”；</li>
+<li>K（Key）：键向量，代表每个输入位置的“特征索引”；</li>
+<li>V（Value）：值向量，代表每个位置的实际信息；</li>
+<li>d_k：缩放因子，防止内积值过大导致梯度消失；</li>
+<li>softmax：将注意力权重归一化，使其和为 1。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/11/30/KzHvOQ6XAMYJd3o.png" srcset="/img/loading.gif" lazyload></p>
+<p>模型通过 QKT 计算每个 token 对其他 token 的“关注度”，再加权求和所有 V，形成加权信息聚合。<strong>单头注意力让每个位置关注到输入序列的不同部分，从而捕获语义依赖。</strong></p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn<br><span class="hljs-keyword">from</span> math <span class="hljs-keyword">import</span> sqrt<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SelfAttention</span>(nn.Module):<br>    <span class="hljs-string">&quot;&quot;&quot;自注意力机制（Self-Attention）实现</span><br><span class="hljs-string">    </span><br><span class="hljs-string">    参数:</span><br><span class="hljs-string">        dim_embedding (int): 输入词向量的维度（Dx）</span><br><span class="hljs-string">        dim_qk (int): Query 和 Key 的维度（Dq = Dk）</span><br><span class="hljs-string">        dim_v (int): Value 的维度（Dv）</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, dim_embedding, dim_qk, dim_v</span>):<br>        <span class="hljs-built_in">super</span>(SelfAttention, self).__init__()<br>        self.dim_embedding = dim_embedding<br>        self.dim_qk = dim_qk<br>        self.dim_v = dim_v<br><br>        <span class="hljs-comment"># 定义线性变换层（无偏置）</span><br>        self.linear_q = nn.Linear(dim_embedding, dim_qk, bias=<span class="hljs-literal">False</span>)  <span class="hljs-comment"># Wq: (Dx, Dq)</span><br>        self.linear_k = nn.Linear(dim_embedding, dim_qk, bias=<span class="hljs-literal">False</span>)  <span class="hljs-comment"># Wk: (Dx, Dk)</span><br>        self.linear_v = nn.Linear(dim_embedding, dim_v, bias=<span class="hljs-literal">False</span>)   <span class="hljs-comment"># Wv: (Dx, Dv)</span><br><br>        <span class="hljs-comment"># 缩放因子，防止 Q·K^T 的值过大（1/√Dk）</span><br>        self._norm_fact = <span class="hljs-number">1</span> / sqrt(dim_qk)<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, x</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;前向传播</span><br><span class="hljs-string">        </span><br><span class="hljs-string">        参数:</span><br><span class="hljs-string">            x (Tensor): 输入张量，形状为 (batch_size, seq_len, dim_embedding)</span><br><span class="hljs-string">        </span><br><span class="hljs-string">        返回:</span><br><span class="hljs-string">            Tensor: 自注意力加权后的输出，形状为 (batch_size, seq_len, dim_v)</span><br><span class="hljs-string">        &quot;&quot;&quot;</span><br>        batch_size, seq_len, dim_embedding = x.shape<br>        <span class="hljs-keyword">assert</span> dim_embedding == self.dim_embedding, <span class="hljs-string">&quot;输入维度不匹配！&quot;</span><br><br>        <span class="hljs-comment"># 计算 Q, K, V</span><br>        q = self.linear_q(x)  <span class="hljs-comment"># (batch_size, seq_len, dim_qk)</span><br>        k = self.linear_k(x)  <span class="hljs-comment"># (batch_size, seq_len, dim_qk)</span><br>        v = self.linear_v(x)  <span class="hljs-comment"># (batch_size, seq_len, dim_v)</span><br><br>        <span class="hljs-comment"># 计算注意力分数 Q·K^T / √Dk</span><br>        attn_scores = torch.bmm(q, k.transpose(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)) * self._norm_fact  <span class="hljs-comment"># (batch_size, seq_len, seq_len)</span><br><br>        <span class="hljs-comment"># Softmax 归一化（对每一行操作）</span><br>        attn_weights = torch.softmax(attn_scores, dim=-<span class="hljs-number">1</span>)  <span class="hljs-comment"># (batch_size, seq_len, seq_len)</span><br><br>        <span class="hljs-comment"># 加权求和：注意力权重 × Value</span><br>        output = torch.bmm(attn_weights, v)  <span class="hljs-comment"># (batch_size, seq_len, dim_v)</span><br><br>        <span class="hljs-keyword">return</span> output<br><br><br><span class="hljs-comment"># -------------------- 示例用法 --------------------</span><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    <span class="hljs-comment"># 输入参数</span><br>    batch_size = <span class="hljs-number">3</span>      <span class="hljs-comment"># 批量大小（3句话）</span><br>    seq_len = <span class="hljs-number">4</span>         <span class="hljs-comment"># 序列长度（每句话4个单词）</span><br>    dim_embedding = <span class="hljs-number">6</span>    <span class="hljs-comment"># 词向量维度（Dx=6）</span><br>    dim_qk = <span class="hljs-number">7</span>          <span class="hljs-comment"># Q和K的维度（Dq=Dk=7）</span><br>    dim_v = <span class="hljs-number">8</span>           <span class="hljs-comment"># V的维度（Dv=8）</span><br><br>    <span class="hljs-comment"># 随机生成输入数据（模拟3句话，每句4个单词，每个单词6维）</span><br>    x = torch.randn(batch_size, seq_len, dim_embedding)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;输入张量形状:&quot;</span>, x.shape)  <span class="hljs-comment"># 预期: (3, 4, 6)</span><br><br>    <span class="hljs-comment"># 初始化自注意力层</span><br>    self_attn = SelfAttention(dim_embedding, dim_qk, dim_v)<br><br>    <span class="hljs-comment"># 计算自注意力</span><br>    output = self_attn(x)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;输出张量形状:&quot;</span>, output.shape)  <span class="hljs-comment"># 预期: (3, 4, 8)</span><br><br>    <span class="hljs-comment"># 打印注意力权重（可选）</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n示例注意力权重矩阵（第一句话）:&quot;</span>)<br>    attn_weights = torch.softmax(<br>        torch.bmm(<br>            self_attn.linear_q(x[<span class="hljs-number">0</span>].unsqueeze(<span class="hljs-number">0</span>)),  <span class="hljs-comment"># Q (1, 4, 7)</span><br>            self_attn.linear_k(x[<span class="hljs-number">0</span>].unsqueeze(<span class="hljs-number">0</span>)).transpose(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)  <span class="hljs-comment"># K^T (1, 7, 4)</span><br>        ) * self_attn._norm_fact,<br>        dim=-<span class="hljs-number">1</span><br>    )<br>    <span class="hljs-built_in">print</span>(attn_weights.squeeze(<span class="hljs-number">0</span>).detach().numpy().<span class="hljs-built_in">round</span>(<span class="hljs-number">3</span>))<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="多头自注意力机制"><a href="#多头自注意力机制" class="headerlink" title="多头自注意力机制"></a>多头自注意力机制</h2><p><img src="https://s2.loli.net/2025/07/19/zsTdNboDU7iYqfL.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/19/mO683T4ZFSylBeX.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="计算QKV"><a href="#计算QKV" class="headerlink" title="计算QKV"></a>计算QKV</h3><p><img src="https://s2.loli.net/2025/11/30/1eZwIS8k9FxC53R.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/11/30/Lp5ebmrQcIwNDTo.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/19/GAnhHWelg8FDz5N.png" srcset="/img/loading.gif" lazyload></p>
+<p>多头注意力是在多个<strong>不同的子空间</strong>中并行执行多组注意力，然后将结果拼接融合：<br>$$<br>MultiHead(Q,K,V)&#x3D;Concat(head1,…,headh)W_O<br>$$</p>
+<p>$$<br> \text{head}_i &#x3D; \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)<br>$$</p>
+<p>其中：</p>
+<ul>
+<li>h：头的数量；</li>
+<li>每个 W_i^Q, W_i^K, W_i^V 是独立的线性变换矩阵；</li>
+<li>W^O：将所有注意力头拼接后映射回原空间。</li>
+</ul>
+<p><strong>单头</strong>注意力只能在一个表示空间上“关注”； 而<strong>多头注意力</strong>允许模型：在不同子空间捕捉不同类型的关系；有的头关注词法关系（如主谓一致），有的关注语义（如上下文依存）；综合多种视角，表达力更强。</p>
+<p>输入句子：“The animal didn’t cross the street because it was too tired.”</p>
+<ul>
+<li>一个注意力头可能关注 “it” ↔ “animal”；</li>
+<li>另一个可能关注 “it” ↔ “tired”；→ 多头机制让模型在不同语义层面同时建模。</li>
+</ul>
+<h3 id="代码实现-1"><a href="#代码实现-1" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># -*- coding: utf-8 -*-</span><br><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torch.nn.functional <span class="hljs-keyword">as</span> F<br><span class="hljs-keyword">import</span> math<br><span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MultiHeadAttention</span>(nn.Module):<br>    <span class="hljs-string">&quot;&quot;&quot;多头注意力机制（Multi-Head Attention）实现</span><br><span class="hljs-string">    </span><br><span class="hljs-string">    参数:</span><br><span class="hljs-string">        head (int): 注意力头的数量</span><br><span class="hljs-string">        d_model (int): 输入维度（必须能被 head 整除）</span><br><span class="hljs-string">        dropout (float): Dropout 概率（默认 0.1）</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">super</span>(MultiHeadAttention, self).__init__()<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">self_attention</span>(<span class="hljs-params">self, query, key, value, dropout=<span class="hljs-literal">None</span>, mask=<span class="hljs-literal">None</span></span>):<br>        <span class="hljs-string">&quot;&quot;&quot;单头自注意力计算</span><br><span class="hljs-string">        </span><br><span class="hljs-string">        参数:</span><br><span class="hljs-string">            query (Tensor): Query 张量</span><br><span class="hljs-string">            key (Tensor): Key 张量</span><br><span class="hljs-string">            value (Tensor): Value 张量</span><br><span class="hljs-string">            dropout (nn.Dropout): Dropout 层</span><br><span class="hljs-string">            mask (Tensor): 掩码（如解码器的未来掩码）</span><br><span class="hljs-string">        </span><br><span class="hljs-string">        返回:</span><br><span class="hljs-string">            Tensor: 注意力加权后的输出</span><br><span class="hljs-string">            Tensor: 注意力权重矩阵</span><br><span class="hljs-string">        &quot;&quot;&quot;</span><br>        d_k = query.size(-<span class="hljs-number">1</span>)  <span class="hljs-comment"># 获取词嵌入维度 d_k</span><br>        <span class="hljs-comment"># 计算 Q·K^T / √d_k</span><br>        scores = torch.matmul(query, key.transpose(-<span class="hljs-number">2</span>, -<span class="hljs-number">1</span>)) / math.sqrt(d_k)<br>        <br>        <span class="hljs-comment"># 掩码操作（如防止解码器看到未来信息）</span><br>        <span class="hljs-keyword">if</span> mask <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:<br>            scores = scores.masked_fill(mask == <span class="hljs-number">0</span>, -<span class="hljs-number">1e9</span>)<br>        <br>        <span class="hljs-comment"># Softmax 归一化</span><br>        self_attn = F.softmax(scores, dim=-<span class="hljs-number">1</span>)<br>        <br>        <span class="hljs-comment"># 可选的 Dropout</span><br>        <span class="hljs-keyword">if</span> dropout <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:<br>            self_attn = dropout(self_attn)<br>        <br>        <span class="hljs-comment"># 返回加权后的 Value 和注意力权重</span><br>        <span class="hljs-keyword">return</span> torch.matmul(self_attn, value), self_attn<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, head, d_model, query, key, value, dropout=<span class="hljs-number">0.1</span>, mask=<span class="hljs-literal">None</span></span>):<br>        <span class="hljs-string">&quot;&quot;&quot;前向传播</span><br><span class="hljs-string">        </span><br><span class="hljs-string">        参数:</span><br><span class="hljs-string">            head (int): 头数</span><br><span class="hljs-string">            d_model (int): 输入维度</span><br><span class="hljs-string">            query (Tensor): Query 张量</span><br><span class="hljs-string">            key (Tensor): Key 张量</span><br><span class="hljs-string">            value (Tensor): Value 张量</span><br><span class="hljs-string">            dropout (float): Dropout 概率</span><br><span class="hljs-string">            mask (Tensor): 掩码</span><br><span class="hljs-string">        </span><br><span class="hljs-string">        返回:</span><br><span class="hljs-string">            Tensor: 多头注意力输出，形状同输入</span><br><span class="hljs-string">        &quot;&quot;&quot;</span><br>        <span class="hljs-keyword">assert</span> d_model % head == <span class="hljs-number">0</span>, <span class="hljs-string">&quot;d_model 必须能被 head 整除&quot;</span><br>        self.d_k = d_model // head  <span class="hljs-comment"># 每个头的维度</span><br>        self.head = head<br>        self.d_model = d_model<br><br>        <span class="hljs-comment"># 定义线性变换层</span><br>        self.linear_query = nn.Linear(d_model, d_model)<br>        self.linear_key = nn.Linear(d_model, d_model)<br>        self.linear_value = nn.Linear(d_model, d_model)<br>        self.linear_out = nn.Linear(d_model, d_model)  <span class="hljs-comment"># 最终输出线性层</span><br>        self.dropout = nn.Dropout(p=dropout)<br>        self.attn = <span class="hljs-literal">None</span>  <span class="hljs-comment"># 存储注意力权重</span><br><br>        n_batch = query.size(<span class="hljs-number">0</span>)  <span class="hljs-comment"># 批量大小</span><br><br>        <span class="hljs-comment"># 线性变换 + 切分多头</span><br>        query = self.linear_query(query).view(n_batch, -<span class="hljs-number">1</span>, head, self.d_k).transpose(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)  <span class="hljs-comment"># [B, head, seq_len, d_k]</span><br>        key = self.linear_key(key).view(n_batch, -<span class="hljs-number">1</span>, head, self.d_k).transpose(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)<br>        value = self.linear_value(value).view(n_batch, -<span class="hljs-number">1</span>, head, self.d_k).transpose(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)<br><br>        <span class="hljs-comment"># 计算自注意力</span><br>        x, self.attn = self.self_attention(query, key, value, self.dropout, mask)  <span class="hljs-comment"># [B, head, seq_len, d_k]</span><br><br>        <span class="hljs-comment"># 合并多头</span><br>        x = x.transpose(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>).contiguous().view(n_batch, -<span class="hljs-number">1</span>, head * self.d_k)  <span class="hljs-comment"># [B, seq_len, d_model]</span><br>        x = self.linear_out(x)  <span class="hljs-comment"># 最终线性变换</span><br><br>        <span class="hljs-keyword">return</span> x<br><br><br><span class="hljs-comment"># -------------------- 示例用法 --------------------</span><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    <span class="hljs-comment"># 输入参数</span><br>    batch_size = <span class="hljs-number">3</span>      <span class="hljs-comment"># 批量大小</span><br>    seq_len = <span class="hljs-number">4</span>         <span class="hljs-comment"># 序列长度</span><br>    d_model = <span class="hljs-number">16</span>        <span class="hljs-comment"># 输入维度（需能被 head 整除）</span><br>    head_num = <span class="hljs-number">8</span>        <span class="hljs-comment"># 注意力头数</span><br><br>    <span class="hljs-comment"># 随机生成输入（模拟3句话，每句4个单词，每个单词16维）</span><br>    query = torch.randn(batch_size, seq_len, d_model)<br>    key = torch.randn(batch_size, seq_len, d_model)<br>    value = torch.randn(batch_size, seq_len, d_model)<br><br>    <span class="hljs-comment"># 初始化多头注意力</span><br>    mha = MultiHeadAttention()<br>    output = mha(head=head_num, d_model=d_model, query=query, key=key, value=value)<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;输入形状:&quot;</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Query:&quot;</span>, query.shape)  <span class="hljs-comment"># [3, 4, 16]</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Key:&quot;</span>, key.shape)      <span class="hljs-comment"># [3, 4, 16]</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Value:&quot;</span>, value.shape)  <span class="hljs-comment"># [3, 4, 16]</span><br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n输出形状:&quot;</span>, output.shape)  <span class="hljs-comment"># [3, 4, 16]</span><br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/beilizhang/article/details/115282604">PyTorch——自注意力（self-attention）机制实现（代码详解）_自注意力机制代码-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_42110638/article/details/134016569">一文搞定自注意力机制（Self-Attention）-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/366592542">(83 封私信 &#x2F; 94 条消息) 注意力,多头注意力,自注意力及Pytorch实现 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/zxuu/Self-Attention">zxuu&#x2F;Self-Attention: Transformer的完整实现。详细构建Encoder、Decoder、Self-attention。以实际例子进行展示，有完整的输入、训练、预测过程。可用于学习理解self-attention和Transformer</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1qo4y1F7Ep/?spm_id_from=333.337.search-card.all.click&vd_source=c7eb02093a12168065eed3a57c6ec35c">self-Attention｜自注意力机制 ｜位置编码 ｜ 理论 + 代码_哔哩哔哩_bilibili</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="category-chain-item">人工智能</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" class="category-chain-item">神经网络</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>自注意力机制(Self-Attention)</div>
+      <div>https://hermes37.vercel.app/2025/11/30/人工智能/神经网络/自注意力机制(Self-Attention)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年11月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/11/30/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E6%AE%8B%E5%B7%AE%E7%BD%91%E7%BB%9C/" title="残差网络">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">残差网络</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/11/29/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Golang/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" title="并发编程">
+                        <span class="hidden-mobile">并发编程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
