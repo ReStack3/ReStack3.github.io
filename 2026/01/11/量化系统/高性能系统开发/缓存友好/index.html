@@ -16,15 +16,15 @@
   <meta name="author" content="Ling">
   <meta name="keywords" content="">
   
-    <meta name="description" content="LingXiao�ĸ��˲���">
+    <meta name="description" content="什么是缓存友好程序 在存储 - Hermes中我们谈到在计算机组成原理中的高速缓存。比如我们了解到现代CPU不是直接从内存读数据，而是分层：  L1 Cache（最快，最小） L2 Cache L3 Cache 内存（最慢）   访问延迟大概是：    层级 延迟    L1 ~1ns   L2 ~3ns   L3 ~10ns   内存 ~100ns   如果一次缓存未命中（cache miss）">
 <meta property="og:type" content="article">
 <meta property="og:title" content="缓存友好">
 <meta property="og:url" content="https://hermes37.vercel.app/2026/01/11/%E9%87%8F%E5%8C%96%E7%B3%BB%E7%BB%9F/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B3%BB%E7%BB%9F%E5%BC%80%E5%8F%91/%E7%BC%93%E5%AD%98%E5%8F%8B%E5%A5%BD/">
 <meta property="og:site_name" content="Hermes">
-<meta property="og:description" content="LingXiao�ĸ��˲���">
+<meta property="og:description" content="什么是缓存友好程序 在存储 - Hermes中我们谈到在计算机组成原理中的高速缓存。比如我们了解到现代CPU不是直接从内存读数据，而是分层：  L1 Cache（最快，最小） L2 Cache L3 Cache 内存（最慢）   访问延迟大概是：    层级 延迟    L1 ~1ns   L2 ~3ns   L3 ~10ns   内存 ~100ns   如果一次缓存未命中（cache miss）">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-01-11T03:56:54.495Z">
-<meta property="article:modified_time" content="2026-04-04T03:13:37.654Z">
+<meta property="article:modified_time" content="2026-04-04T09:44:42.278Z">
 <meta property="article:author" content="Ling">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -220,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          1.3k 字
         
       </span>
     
@@ -231,7 +231,7 @@
         
         
         
-          1 分钟
+          11 分钟
         
       </span>
     
@@ -281,7 +281,94 @@
             
               <div class="markdown-body">
                 
-                
+                <h1 id="什么是缓存友好程序"><a href="#什么是缓存友好程序" class="headerlink" title="什么是缓存友好程序"></a>什么是缓存友好程序</h1><p> 在<a href="https://hermes37.vercel.app/2025/12/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/%E5%AD%98%E5%82%A8/">存储 - Hermes</a>中我们谈到在计算机组成原理中的高速缓存。比如我们了解到现代CPU不是直接从内存读数据，而是分层：</p>
+<ul>
+<li>L1 Cache（最快，最小）</li>
+<li>L2 Cache</li>
+<li>L3 Cache</li>
+<li>内存（最慢）</li>
+</ul>
+<p> 访问延迟大概是：</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>延迟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1</td>
+<td>~1ns</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>~3ns</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>~10ns</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>~100ns</td>
+</tr>
+</tbody></table>
+<p>如果<strong>一次缓存未命中（cache miss）≈ 性能下降一个数量级</strong>，所以在<strong>高性能系统开发</strong>里，“缓存友好（cache-friendly）”本质上是： <strong>让程序尽可能利用CPU缓存，而不是频繁访问慢速内存（RAM）</strong>。或者说代码访问数据的方式，符合CPU缓存加载机制（<strong>空间局部性 + 时间局部性</strong>）：</p>
+<ul>
+<li>CPU一次不是只加载一个变量，而是加载一整块（cache line，一般64字节）</li>
+<li>数据短时间内重复使用</li>
+</ul>
+<p>举一个最经典的例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> a[N][N];<br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; N; j++) &#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; N; i++) &#123;<br>        a[i][j] = <span class="hljs-number">0</span>;   <span class="hljs-comment">// 每次跳跃 N 个元素</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>该代码的<strong>内存访问模式</strong>：<code>a[0][0], a[1][0], a[2][0] ...</code> → 地址不连续，频繁 cache miss。正确的写法是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> a[N][N];<br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; N; i++) &#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; N; j++) &#123;<br>        a[i][j] = <span class="hljs-number">0</span>;   <span class="hljs-comment">// 内存连续访问</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>内存访问模式</strong>：<code>a[0][0], a[0][1], a[0][2] ...</code> → 预取有效，cache 命中率高。</p>
+<h1 id="如何做到缓存友好"><a href="#如何做到缓存友好" class="headerlink" title="如何做到缓存友好"></a>如何做到缓存友好</h1><h2 id="数据布局优化"><a href="#数据布局优化" class="headerlink" title="数据布局优化"></a>数据布局优化</h2><h3 id="优先使用连续内存容器"><a href="#优先使用连续内存容器" class="headerlink" title="优先使用连续内存容器"></a>优先使用连续内存容器</h3><p> <strong>用 <code>vector</code> &#x2F; <code>array</code> 代替链表、哈希表、字典</strong>。尽量不使用链表遍历其每次跳跃都可能 cache miss，若需灵活性，考虑 <strong>gap buffer</strong> 或 <strong>Judy array</strong>（结合数组与链表的优点）</p>
+<h3 id="将一起访问的变量放在相邻位置"><a href="#将一起访问的变量放在相邻位置" class="headerlink" title="将一起访问的变量放在相邻位置"></a>将一起访问的变量放在相邻位置</h3><p>如果有几个变量被一起访问，它们应该被逐一声明。这就增加了另一个变量在处理器访问后已经在缓存中的可能性。因为在处理器访问了第一个变量之后，另一个变量已经在缓存中了。从而避免了缓存的缺失。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 好：head 和 count 常一起用</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">free_memory_list</span> &#123;<br>    <span class="hljs-type">void</span>* head;      <span class="hljs-comment">// 先放</span><br>    <span class="hljs-type">int</span> count;       <span class="hljs-comment">// 紧接着</span><br>    Statistics stats;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="用值数组代替指针数组"><a href="#用值数组代替指针数组" class="headerlink" title="用值数组代替指针数组"></a>用值数组代替指针数组</h3><p><code>vector&lt;MyClass*&gt;</code> → 每次访问多一次间接寻址，破坏空间局部性。取而代之的使用 <code>vector&lt;MyClass&gt;</code> → 连续存储，缓存预取有效</p>
+<h3 id="对齐类-结构体到-cache-line（通常-64-字节）"><a href="#对齐类-结构体到-cache-line（通常-64-字节）" class="headerlink" title="对齐类&#x2F;结构体到 cache line（通常 64 字节）"></a>对齐类&#x2F;结构体到 cache line（通常 64 字节）</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// C++11</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">alignas</span>(<span class="hljs-number">64</span>) MyClass &#123;<br>    <span class="hljs-comment">// ...</span><br>&#125;;<br><br><span class="hljs-comment">// 堆分配对齐</span><br><span class="hljs-built_in">posix_memalign</span>((<span class="hljs-type">void</span>**)&amp;ptr, <span class="hljs-number">64</span>, size * <span class="hljs-built_in">sizeof</span>(MyClass));<br></code></pre></td></tr></table></figure>
+<p>避免一个对象跨两个 cache line（否则访问一次需两次内存加载）</p>
+<h3 id="重排成员变量，消除编译器填充"><a href="#重排成员变量，消除编译器填充" class="headerlink" title="重排成员变量，消除编译器填充"></a>重排成员变量，消除编译器填充</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//有填充：int(4) + 填充(4) + double(8) + int(4) + 填充(4) = 24</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bad</span> &#123;<br>    <span class="hljs-type">int</span> a;<br>    <span class="hljs-type">double</span> b;<br>    <span class="hljs-type">int</span> c;<br>&#125;;<br><br><span class="hljs-comment">// 无填充：double(8) + int(4) + int(4) = 16</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Good</span> &#123;<br>    <span class="hljs-type">double</span> b;<br>    <span class="hljs-type">int</span> a;<br>    <span class="hljs-type">int</span> c;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>可用 <code>pahole</code> 工具检测填充（Linux）</p>
+<h3 id="尽量使用最小够用的数据类型"><a href="#尽量使用最小够用的数据类型" class="headerlink" title="尽量使用最小够用的数据类型"></a>尽量使用最小够用的数据类型</h3><p>能用 <code>int</code> 不用 <code>long long</code>，多个 <code>bool</code> 用位域或 <code>char</code> 数组。 注意：过小类型可能降低速度（处理器原生字长效率最高）→ <strong>需实测</strong></p>
+<hr>
+<h2 id="访问模式优化"><a href="#访问模式优化" class="headerlink" title="访问模式优化"></a>访问模式优化</h2><h3 id="矩阵遍历必须行优先（C-C-内存布局）"><a href="#矩阵遍历必须行优先（C-C-内存布局）" class="headerlink" title="矩阵遍历必须行优先（C&#x2F;C++ 内存布局）"></a>矩阵遍历必须<strong>行优先</strong>（C&#x2F;C++ 内存布局）</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 快</span><br><span class="hljs-keyword">for</span> (i) <span class="hljs-keyword">for</span> (j) sum += a[i][j];<br><br><span class="hljs-comment">// 慢 10 倍以上</span><br><span class="hljs-keyword">for</span> (j) <span class="hljs-keyword">for</span> (i) sum += a[i][j];<br></code></pre></td></tr></table></figure>
+
+<h3 id="循环互换优化（以矩阵乘法为例）"><a href="#循环互换优化（以矩阵乘法为例）" class="headerlink" title="循环互换优化（以矩阵乘法为例）"></a>循环互换优化（以矩阵乘法为例）</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 原始：内层对列访问，in_matrix2 缓存不友好</span><br><span class="hljs-keyword">for</span> (i)<br>  <span class="hljs-keyword">for</span> (j)<br>    <span class="hljs-keyword">for</span> (k)<br>      res[i][j] += m1[i][k] * m2[k][j];<br><br><span class="hljs-comment">//优化：将 j 循环移到最内层，变成行访问</span><br><span class="hljs-keyword">for</span> (i)<br>  <span class="hljs-keyword">for</span> (k)<br>    <span class="hljs-keyword">for</span> (j)<br>      res[i][j] += m1[i][k] * m2[k][j];<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>仅此一项优化可提升 **76.6%**（Ulrich Drepper 实验）</p>
+</blockquote>
+<h3 id="合并同一数据的多次遍历"><a href="#合并同一数据的多次遍历" class="headerlink" title="合并同一数据的多次遍历"></a>合并同一数据的多次遍历</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//两次遍历</span><br>min = <span class="hljs-built_in">find_min</span>(arr);<br>max = <span class="hljs-built_in">find_max</span>(arr);<br><br><span class="hljs-comment">//一次遍历</span><br><span class="hljs-keyword">for</span> (i) &#123;<br>    min = std::<span class="hljs-built_in">min</span>(arr[i], min);<br>    max = std::<span class="hljs-built_in">max</span>(arr[i], max);<br>&#125;<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>大数组时数据只加载一次到缓存</p>
+</blockquote>
+<h3 id="尽量减少写内存"><a href="#尽量减少写内存" class="headerlink" title="尽量减少写内存"></a>尽量减少写内存</h3><p>写操作会使 cache line 变 “dirty”，最终需写回内存</p>
+<ul>
+<li>示例：选择排序中暂存最小值，最后只写一次</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//快 2 倍：暂存 min 和 min_index，循环结束后 swap 一次</span><br><span class="hljs-comment">// 慢：每次找到更小值就立即 swap</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="内存分配策略"><a href="#内存分配策略" class="headerlink" title="内存分配策略"></a>内存分配策略</h2><h3 id="尽可能使用栈分配"><a href="#尽可能使用栈分配" class="headerlink" title="尽可能使用栈分配"></a>尽可能使用栈分配</h3><p>栈顶几乎总在缓存中，分配&#x2F;释放极快，可变大小数组可用 <strong>变长数组（VLA）</strong>（GCC 支持）或 <code>alloca()</code></p>
+<h3 id="避免频繁-malloc-free"><a href="#避免频繁-malloc-free" class="headerlink" title="避免频繁 malloc&#x2F;free"></a>避免频繁 malloc&#x2F;free</h3><p>批量分配一大块，自己管理（内存池），重复使用同一类型对象时，缓存释放的对象而不是真的 free</p>
+<hr>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="正确对齐避免错位访问"><a href="#正确对齐避免错位访问" class="headerlink" title="正确对齐避免错位访问"></a>正确对齐避免错位访问</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 错位（char* 强转 int*）</span><br><span class="hljs-type">int</span>* p = (<span class="hljs-type">int</span>*)(serialized_data + <span class="hljs-number">3</span>);<br><span class="hljs-type">int</span> val = *p;   <span class="hljs-comment">// 可能崩溃或极慢</span><br><br><span class="hljs-comment">// 用 memcpy（不要求对齐）</span><br><span class="hljs-built_in">memcpy</span>(&amp;val, serialized_data + <span class="hljs-number">3</span>, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">int</span>));<br></code></pre></td></tr></table></figure>
+
+<h3 id="软件预取（随机访问场景有效）"><a href="#软件预取（随机访问场景有效）" class="headerlink" title="软件预取（随机访问场景有效）"></a>软件预取（随机访问场景有效）</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">__builtin_prefetch(&amp;array[预计访问的地址], <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);<br></code></pre></td></tr></table></figure>
+<p><strong>适用</strong>：二分查找、跳表、非线性访问</p>
+<p>大工作集可提速 <strong>20%+<strong>，</strong>注意</strong>：小数据集或顺序访问反而是负优化</p>
+<h3 id="缓存友好链表（unrolled-linked-list）"><a href="#缓存友好链表（unrolled-linked-list）" class="headerlink" title="缓存友好链表（unrolled linked list）"></a>缓存友好链表（unrolled linked list）</h3><p>每个节点存 <strong>多个值</strong>（如 4~8 个），遍历时间减少 **43%**，缓存缺失率从 10% 降至 3%</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">node</span> &#123;<br>    <span class="hljs-type">char</span> used[COUNT];        <span class="hljs-comment">// 标记哪些槽在用</span><br>    node* next;<br>    <span class="hljs-type">char</span> values[<span class="hljs-function">COUNT * <span class="hljs-title">sizeof</span><span class="hljs-params">(T)</span>]</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
                 
               </div>
             
