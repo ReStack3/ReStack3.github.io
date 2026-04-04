@@ -1,0 +1,1138 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在密码学体系框架 - The Peak Tower简单介绍了AES的基本流程，这篇主要来了解一下AES的数学计算原理和openssl对其的实现逆向 有限域Galois Field（伽罗华域&#x2F;伽罗瓦域）是代数学中的一个重要概念，广泛应用于密码学、编码理论、误差修正和许多其他数学及工程领域。它的命名源于法国数学家 Évariste Galois，他在19世纪提出了代数方程的解法和域的相关理论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AES算法原理与逆向练习">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AF%B9%E7%A7%B0%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81/AES%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86%E4%B8%8E%E9%80%86%E5%90%91%E7%BB%83%E4%B9%A0/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="在密码学体系框架 - The Peak Tower简单介绍了AES的基本流程，这篇主要来了解一下AES的数学计算原理和openssl对其的实现逆向 有限域Galois Field（伽罗华域&#x2F;伽罗瓦域）是代数学中的一个重要概念，广泛应用于密码学、编码理论、误差修正和许多其他数学及工程领域。它的命名源于法国数学家 Évariste Galois，他在19世纪提出了代数方程的解法和域的相关理论">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/xAdDujKoqkeUsH5.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/oRA82iwvzWnFsxy.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/ouF6t71QdCBqecV.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/iWTzHgNyu5IkMOC.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/5CbucgOGFxWQAHj.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/Sli3vnWP2G1mTMt.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/6ixw5lOKHRc7FPX.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/eOBpq4yQ2N9TaPn.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/TxFLRPGrtM4vd1m.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/4fjGXL3D2yrESza.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/eKYytOXI9RAWbZU.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/dyBzM9mn4Hetlbs.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/sO6ZP3iDl8QCL5G.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/g7GyJPqQSDHlxBd.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/sMCEOSlVqdtbmhJ.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/ZNQjK4JseO5qURy.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/Ckc4mnVAMqX5bRa.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/pKDcIJfzV5P7oHa.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/30/h7aXTbA8DmNnPjt.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/ufHeVrxXkd5AOqI.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/ovKLJGfCwHdU5Nc.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/pzSPL2n9Bf6ui48.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/hJ5xgArd2W6kEPR.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/gbSTr9ncWOXNBml.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/jv2CGrHU1RXBadF.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.601Z">
+<meta property="article:modified_time" content="2026-04-04T01:18:06.003Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/30/xAdDujKoqkeUsH5.png">
+  
+  
+  
+  <title>AES算法原理与逆向练习 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="AES算法原理与逆向练习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          63 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">AES算法原理与逆向练习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/07/15/%E5%AF%86%E7%A0%81%E5%AD%A6/">密码学体系框架 - The Peak Tower</a>简单介绍了AES的基本流程，这篇主要来了解一下AES的数学计算原理和openssl对其的实现逆向</p>
+<h1 id="有限域"><a href="#有限域" class="headerlink" title="有限域"></a>有限域</h1><p><strong>Galois Field（伽罗华域&#x2F;伽罗瓦域）</strong>是代数学中的一个重要概念，广泛应用于密码学、编码理论、误差修正和许多其他数学及工程领域。它的命名源于法国数学家 <strong>Évariste Galois</strong>，他在19世纪提出了代数方程的解法和域的相关理论。尽管 <strong>伽罗华域</strong> 和 <strong>伽罗瓦域</strong> 两个翻译在国内存在一定的差异，但它们指的都是同一个概念，即有限域（Finite Field）。</p>
+<h3 id="1-有限域的定义"><a href="#1-有限域的定义" class="headerlink" title="1. 有限域的定义"></a><strong>1. 有限域的定义</strong></h3><p>有限域是一个包含有限个元素的域（Field）。数学中，域是满足加法和乘法两种运算，并且这两种运算满足一些基本的代数性质的代数结构。有限域是指其中包含的元素个数是有限的，这些元素可以进行加法、乘法以及加法和乘法的逆运算。</p>
+<p>一个有限域的符号通常表示为 <strong>Fq</strong>，其中 <strong>q</strong> 表示域中元素的个数。有限域的元素个数 <strong>q</strong> 必须是一个素数 <strong>p</strong> 的某个幂，即 <strong>q&#x3D;p^n <strong>，其中 <strong>p</strong> 是素数，</strong>n</strong> 是正整数。</p>
+<ul>
+<li>当 <strong>q &#x3D; p</strong> 时，有限域被称为 <strong>素数域</strong> Fp</li>
+<li>当 <strong>q &#x3D; p^n</strong> 且 <strong>n &gt; 1</strong> 时，有限域被称为 <strong>扩展域</strong> F{p^n}，这个域包含 p^n 个元素。</li>
+</ul>
+<h3 id="2-Galois-Field（伽罗华域-伽罗瓦域）"><a href="#2-Galois-Field（伽罗华域-伽罗瓦域）" class="headerlink" title="2. Galois Field（伽罗华域&#x2F;伽罗瓦域）"></a><strong>2. Galois Field（伽罗华域&#x2F;伽罗瓦域）</strong></h3><p><strong>Galois Field</strong>，表示为 **GF(q)**，是一种特别的有限域，其中 <strong>q</strong> 为元素个数。Galois Field 是代数中描述代数结构的核心概念之一，特别适用于不可约多项式的构造和处理。</p>
+<p><strong>GF(2^M)</strong> 是常见的表示形式，表示一个包含 <strong>2^M</strong> 个元素的有限域。对于 **GF(2^M)**，它的元素可以用 <strong>M</strong> 位二进制数来表示，每个元素可以通过对 <strong>M</strong> 次方的多项式的系数进行运算来表示。在 <strong>GF(2^M)</strong> 中的加法和乘法运算都是在二进制下进行的。</p>
+<h3 id="3-本原多项式"><a href="#3-本原多项式" class="headerlink" title="3. 本原多项式"></a><strong>3. 本原多项式</strong></h3><p>在有限域中，运算的基础是一个本原多项式（Primitive Polynomial）。本原多项式是定义域的构造基准。通过这个本原多项式，我们可以实现多项式除法和域的加法、乘法等运算。</p>
+<h4 id="不可约多项式"><a href="#不可约多项式" class="headerlink" title="不可约多项式"></a><strong>不可约多项式</strong></h4><p>本原多项式通常是不可约多项式，这意味着它不能分解成两个较低次的多项式的乘积。有限域的构造依赖于不可约多项式，尤其是在扩展域（如 **GF(2^M)**）中。</p>
+<h4 id="例子：GF-2-8"><a href="#例子：GF-2-8" class="headerlink" title="例子：GF(2^8)"></a><strong>例子：GF(2^8)</strong></h4><p>对于 **GF(2^8)**，域中有 <strong>2^8 &#x3D; 256</strong> 个元素。为了构造这个有限域，我们需要一个不可约的多项式（本原多项式），该多项式是一个次数为 8 的多项式。常见的本原多项式包括：</p>
+<ul>
+<li><strong>P(x) &#x3D; x^8 + x^4 + x^3 + x^2 + 1</strong></li>
+<li><strong>AES中的本原多项式</strong>：<strong>P(x) &#x3D; x^8 + x^4 + x^3 + x^1 + 1</strong></li>
+</ul>
+<p>这两个多项式是不可约的，用于定义 <strong>GF(2^8)</strong> 域中的加法和乘法运算。通过模这个不可约多项式对多项式进行运算，可以得到有限域中的元素，并且实现加法、乘法和逆元运算。</p>
+<h3 id="4-GF-2-M-的构造"><a href="#4-GF-2-M-的构造" class="headerlink" title="4. GF(2^M) 的构造"></a><strong>4. GF(2^M) 的构造</strong></h3><p>对于 <strong>GF(2^M)<strong>，元素的表示通常采用 <strong>二进制位</strong>。例如，</strong>GF(2^8)</strong> 中的元素是 8 位二进制数，表示为 {0,1,2,…,255}或 {0,1,α,α2,…,α255}，其中 <strong>α</strong> 是一个生成元。</p>
+<p>每个元素可以表示为一个 <strong>M</strong> 次多项式的系数：</p>
+<ul>
+<li>例如，<strong>x^7 + x^3 + 1</strong> 在 <strong>GF(2^8)</strong> 中表示为 10100001210100001_2（二进制）。</li>
+<li>运算时，这些多项式会模一个不可约多项式进行运算，从而保证运算的封闭性。</li>
+</ul>
+<p>在密码学中，有限域特别是 <strong>GF(2^8)</strong> 被广泛应用于加密算法中。例如，<strong>AES（高级加密标准）</strong> 就是在 <strong>GF(2^8)</strong> 中进行的运算。AES使用 <strong>GF(2^8)</strong> 中的加法和乘法来执行代数运算，确保加密过程的安全性。</p>
+<p>在 AES 中，本原多项式 <strong>P(x) &#x3D; x^8 + x^4 + x^3 + x^1 + 1</strong> 定义了在 <strong>GF(2^8)</strong> 中的乘法运算，确保加密算法的复杂性和安全性。</p>
+<h1 id="有限域的加法与乘法运算"><a href="#有限域的加法与乘法运算" class="headerlink" title="有限域的加法与乘法运算"></a>有限域的加法与乘法运算</h1><p>有限域中的运算方式需要先把数值转化成多项式的形式，然后再进行相关运算。其中加法操作可以直接进行运算。</p>
+<h2 id="加法"><a href="#加法" class="headerlink" title="加法"></a>加法</h2><p>计算机异或运算</p>
+<p>加法例子：4+3</p>
+<p>展开多项式为: x^2 + (x^1 + x^0) &#x3D;&gt; 2^2 + 2^1 + 1 &#x3D;&gt; 4 + 2 + 1 &#x3D;&gt; 4 ^ 2 ^ 1 &#x3D; 7</p>
+<p>直接计算：4^3 &#x3D; 7</p>
+<h2 id="乘法"><a href="#乘法" class="headerlink" title="乘法"></a>乘法</h2><p>通过乘法结合律展开多项式，如果x的最高指数大于7，那么需要对本原多项式取余数（初二多项式除法运算），否则就是展开后的多项式做加法操作。</p>
+<p>取余操作有一个算法，参考《密码编码学与网络安全学原理》一书中提到的公式：</p>
+<p>已知GF(2^8)最长的多项式f(x)&#x3D;b7<em>x^7+b6</em>x^6+b5<em>x^5+b4</em>x^4+b3<em>x^3+b2</em>x^2+b1<em>x^1+b0</em>x^0</p>
+<p>x<em>f(x)&#x3D; b7</em>x^8+b6<em>x^7+b5</em>x^6+b4<em>x^5+b3</em>x^4+b2<em>x^3+b1</em>x^2+b0*x^1</p>
+<p>x*f(x)的情况如下：</p>
+<p>当b7&#x3D;0时，最高指数为7不需要取余，直接做异或加法运算。</p>
+<p>当b7&#x3D;1时，最高指数为8，大于7，则需要取m(x)的余数，推导如下：</p>
+<p>f(x) &#x3D; ( b7<em>x^8+b6</em>x^7+b5<em>x^6+b4</em>x^5+b3<em>x^4+b2</em>x^3+b1<em>x^2+b0</em>x^1 )mod m(x);</p>
+<p>这里有另外一个等式：x^8 mod m(x) &#x3D; [m(x) – x^8] &#x3D; (x^4 + x^3 + x + 1)</p>
+<p>所以根据上面的等式可以化简f(x) &#x3D; b6<em>x^7+b5</em>x^6+b4<em>x^5+b3</em>x^4+b2<em>x^3+b1</em>x^2+b0*x^1 + x^4 + x^3 + x +1</p>
+<p>而x^4 + x^3 + x + 1 就是十六进程的0x1B(因为2^4+2^3+2+1&#x3D;27),因此本原多项式取余的操作就等价于 异或本原多项式。公式如下：</p>
+<p><img src="https://s2.loli.net/2024/12/30/xAdDujKoqkeUsH5.png" srcset="/img/loading.gif" lazyload alt="image-20241230143827313"></p>
+<p>高阶的x可以重复使用这个公式，在程序实现部分会详细介绍下。</p>
+<p>乘法例子：7*4</p>
+<p>展开多项式为:(x^2+x^1+x^0)*(x^2) &#x3D;&gt; x^4 + x^2 + x^2 &#x3D;&gt; 2^4 + 2^2 + 2^2 &#x3D; 16 ^ 4 ^ 4 &#x3D; 16</p>
+<p>乘法例子：130*3</p>
+<p>展开多项式为:(x^7+x^1)*(x^1+x^0) &#x3D;&gt; x^8 + x^7 + x^1 + x^1 &#x3D;&gt; x^8 + x^7 +( x^8+x^4+x^3+x^1+x^0 ) ( 不可约多项式 ) &#x3D;&gt; x^7 + x^4+x^3+x^1+x^0 &#x3D;&gt; 2^7 + 2^4 + 2^3 + 2^1 + 1 &#x3D; 128 ^ 16 ^ 8 ^ 2 ^ 1 &#x3D; 155</p>
+<h1 id="不同加密模式和要求"><a href="#不同加密模式和要求" class="headerlink" title="不同加密模式和要求"></a>不同加密模式和要求</h1><p>AES 加密算法有多种加密模式，包括 <strong>ECB</strong>（电子密码本）、<strong>CBC</strong>（链式块加密）、<strong>CFB</strong>（加密反馈模式）、<strong>OFB</strong>（输出反馈模式）等。这些模式在如何加密和处理数据上有所不同，主要的差异体现在如何处理数据块、是否支持并行加密、加密的安全性等方面。下面是这些模式的详细对比。</p>
+<h3 id="AES-加密模式对比"><a href="#AES-加密模式对比" class="headerlink" title="AES 加密模式对比"></a>AES 加密模式对比</h3><table>
+<thead>
+<tr>
+<th><strong>加密模式</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>加密过程</strong></th>
+<th><strong>优点</strong></th>
+<th><strong>缺点</strong></th>
+<th><strong>适用场景</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ECB (Electronic Codebook)</strong></td>
+<td>每个数据块独立加密，最简单的模式。</td>
+<td>明文被分为固定大小的块（例如 128 位），每个块独立加密，使用相同的密钥。</td>
+<td>简单、高效，适合小数据量加密。</td>
+<td>相同的明文块加密结果相同，容易泄露模式信息，易受攻击。</td>
+<td>适用于简单加密任务，特别是独立的数据块加密，适合短文本加密。</td>
+</tr>
+<tr>
+<td><strong>CBC (Cipher Block Chaining)</strong></td>
+<td>每个数据块的加密结果依赖前一个块的密文（加密链接）。</td>
+<td>每个数据块与前一个加密块的密文异或，第一块使用随机的初始化向量（IV）。</td>
+<td>可以防止 ECB 中的模式泄漏问题，安全性较高。</td>
+<td>解密操作串行化，性能较差；需要随机生成 IV，且 IV 必须唯一。</td>
+<td>适用于大规模数据加密，如文件加密、磁盘加密。</td>
+</tr>
+<tr>
+<td><strong>CFB (Cipher Feedback)</strong></td>
+<td>通过反馈机制对明文进行加密，支持“流式”加密。</td>
+<td>明文被按位加密。每个块的密文会反馈给下一个加密块的输入。</td>
+<td>可以处理流数据，可以进行“流加密”。</td>
+<td>加密过程需要串行操作，无法并行化处理。</td>
+<td>适用于加密流数据，如网络传输、实时通信等。</td>
+</tr>
+<tr>
+<td><strong>OFB (Output Feedback)</strong></td>
+<td>明文加密时，每个加密块的反馈源来自加密后的输出，而不是密文。</td>
+<td>明文被加密时，反馈来自先前加密的输出，生成密钥流后与明文异或。</td>
+<td>与 CFB 模式相比，OFB 不会产生反馈延迟，适合连续加密流数据。</td>
+<td>对于错误传播较为敏感，一旦某个数据块损坏，后续数据会受到影响。</td>
+<td>用于需要流加密且对错误传播敏感性低的场景，如音视频流加密等。</td>
+</tr>
+<tr>
+<td><strong>CTR (Counter)</strong></td>
+<td>基于计数器的模式，支持并行化加密。</td>
+<td>生成一个计数器流，并与密钥进行异或，生成密钥流后与明文异或。</td>
+<td>高效并行化处理，适用于加密大量数据，且密文长度可以任意。</td>
+<td>需要确保计数器唯一，否则安全性丧失。</td>
+<td>适用于大数据流加密，如磁盘加密、VPN、SSL&#x2F;TLS 等。</td>
+</tr>
+<tr>
+<td><strong>GCM (Galois&#x2F;Counter Mode)</strong></td>
+<td>结合了 CTR 的加密特性和认证功能。</td>
+<td>加密和生成认证标签，保证数据的完整性和机密性。加密与认证同时进行。</td>
+<td>提供加密和认证，能保证数据完整性，支持并行化处理。</td>
+<td>IV 必须唯一，计算较复杂，标签生成可能会带来性能开销。</td>
+<td>适用于高安全性要求的加密和认证场景，如 TLS、IPSec、VPN 等。</td>
+</tr>
+</tbody></table>
+<h3 id="1-AES-的基本要求"><a href="#1-AES-的基本要求" class="headerlink" title="1. AES 的基本要求"></a>1. <strong>AES 的基本要求</strong></h3><h4 id="明文位数"><a href="#明文位数" class="headerlink" title="明文位数"></a><strong>明文位数</strong></h4><ul>
+<li><strong>AES</strong> 是基于 <strong>128 位</strong>（16 字节）数据块的加密算法，因此 AES 的明文长度必须是 128 位（16 字节）的整数倍。</li>
+<li>如果明文长度不是 128 位的整数倍，在加密前通常需要 <strong>填充</strong>（Padding）操作，以确保每个明文块大小为 128 位。常见的填充方法包括 PKCS7 或 ISO 10126。</li>
+</ul>
+<h4 id="密钥位数"><a href="#密钥位数" class="headerlink" title="密钥位数"></a><strong>密钥位数</strong></h4><p>AES 支持三种密钥长度：</p>
+<ul>
+<li><strong>128 位密钥</strong>：用于 AES-128。</li>
+<li><strong>192 位密钥</strong>：用于 AES-192。</li>
+<li><strong>256 位密钥</strong>：用于 AES-256。</li>
+</ul>
+<p>密钥长度决定了加密过程的 <strong>轮数</strong>：</p>
+<ul>
+<li><strong>AES-128</strong>：共进行 10 轮加密。</li>
+<li><strong>AES-192</strong>：共进行 12 轮加密。</li>
+<li><strong>AES-256</strong>：共进行 14 轮加密。</li>
+</ul>
+<h1 id="程序实现"><a href="#程序实现" class="headerlink" title="程序实现"></a>程序实现</h1><p>这里选取了aes_core.c进行分析：</p>
+<p>理论上下面这段代码更符合上面文章中的流程，但这段代码的作用是确保在没有汇编加速的情况下，如果启用了常量时间加密，就会选择常量时间的实现方式。但不是更通用的 AES 具体实现</p>
+<p><img src="https://s2.loli.net/2024/12/30/oRA82iwvzWnFsxy.png" srcset="/img/loading.gif" lazyload alt="image-20241230145535182"></p>
+<p>故接下来着重看<code>!defined(AES_ASM)</code>），即使用更通用的 AES 实现：</p>
+<p>具体来看：</p>
+<h2 id="预计算查找表"><a href="#预计算查找表" class="headerlink" title="预计算查找表"></a>预计算查找表</h2><p><img src="https://s2.loli.net/2024/12/30/ouF6t71QdCBqecV.png" srcset="/img/loading.gif" lazyload alt="image-20241230150349547"></p>
+<p>我们知道AES具体可分为：</p>
+<p><img src="https://s2.loli.net/2024/12/30/iWTzHgNyu5IkMOC.png" srcset="/img/loading.gif" lazyload alt="image-20241230150600478"></p>
+<p>其中字节代换是通过一个替换表（S盒）对每个字节进行替换(解密同理，唯一就是采用的是逆S盒)，而列混合实际上是为4<em>4的矩阵与另一个给定4</em>4矩阵:<img src="https://s2.loli.net/2024/12/30/5CbucgOGFxWQAHj.png" srcset="/img/loading.gif" lazyload alt="image-20241230150924232" style="zoom:25%;" /></p>
+<p>异或相乘(注意：矩阵元素的乘法和加法都是定义在基于GF(2^8)上的二元运算)</p>
+<p>而这里的预计算查找表实际上就是：根据 <code>S[x]</code>（代换表）和固定的常数（如 <code>02</code>, <code>03</code>, <code>01</code>）通过 <strong>有限域</strong> 运算（GF(2^8)）生成的。</p>
+<p><strong><code>Te</code> 和 <code>Td</code> 表的生成</strong>：它们通过对每个字节应用特定的矩阵乘法（基于有限域运算）来得到。每个字节的替代值由固定的常数和 <code>S[x]</code> 值与有限域乘法结合生成。</p>
+<p>接下来：</p>
+<p><img src="https://s2.loli.net/2024/12/30/Sli3vnWP2G1mTMt.png" srcset="/img/loading.gif" lazyload alt="image-20241230151232405"></p>
+<h2 id="AES-set-encrypt-key"><a href="#AES-set-encrypt-key" class="headerlink" title="AES_set_encrypt_key"></a>AES_set_encrypt_key</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">AES_set_encrypt_key</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *userKey, <span class="hljs-type">const</span> <span class="hljs-type">int</span> bits,AES_KEY *key)</span><br>&#123;<br>    u32 *rk;<br>    <span class="hljs-type">int</span> i = <span class="hljs-number">0</span>;<br>    u32 temp;<br><br>    <span class="hljs-keyword">if</span> (!userKey || !key)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    <span class="hljs-keyword">if</span> (bits != <span class="hljs-number">128</span> &amp;&amp; bits != <span class="hljs-number">192</span> &amp;&amp; bits != <span class="hljs-number">256</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-2</span>;<br><br>    rk = key-&gt;rd_key;<br><br>    <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">128</span>)<br>        key-&gt;rounds = <span class="hljs-number">10</span>;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">192</span>)<br>        key-&gt;rounds = <span class="hljs-number">12</span>;<br>    <span class="hljs-keyword">else</span><br>        key-&gt;rounds = <span class="hljs-number">14</span>;<br><br>    rk[<span class="hljs-number">0</span>] = GETU32(userKey     );<br>    rk[<span class="hljs-number">1</span>] = GETU32(userKey +  <span class="hljs-number">4</span>);<br>    rk[<span class="hljs-number">2</span>] = GETU32(userKey +  <span class="hljs-number">8</span>);<br>    rk[<span class="hljs-number">3</span>] = GETU32(userKey + <span class="hljs-number">12</span>);<br>    <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">128</span>) &#123;<br>        <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>            temp  = rk[<span class="hljs-number">3</span>];<br>            rk[<span class="hljs-number">4</span>] = rk[<span class="hljs-number">0</span>] ^<br>                (Te2[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0xff000000</span>) ^<br>                (Te3[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>                (Te0[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>                (Te1[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0x000000ff</span>) ^<br>                rcon[i];<br>            rk[<span class="hljs-number">5</span>] = rk[<span class="hljs-number">1</span>] ^ rk[<span class="hljs-number">4</span>];<br>            rk[<span class="hljs-number">6</span>] = rk[<span class="hljs-number">2</span>] ^ rk[<span class="hljs-number">5</span>];<br>            rk[<span class="hljs-number">7</span>] = rk[<span class="hljs-number">3</span>] ^ rk[<span class="hljs-number">6</span>];<br>            <span class="hljs-keyword">if</span> (++i == <span class="hljs-number">10</span>) &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>            &#125;<br>            rk += <span class="hljs-number">4</span>;<br>        &#125;<br>    &#125;<br>    rk[<span class="hljs-number">4</span>] = GETU32(userKey + <span class="hljs-number">16</span>);<br>    rk[<span class="hljs-number">5</span>] = GETU32(userKey + <span class="hljs-number">20</span>);<br>    <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">192</span>) &#123;<br>        <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>            temp = rk[ <span class="hljs-number">5</span>];<br>            rk[ <span class="hljs-number">6</span>] = rk[ <span class="hljs-number">0</span>] ^<br>                (Te2[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0xff000000</span>) ^<br>                (Te3[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>                (Te0[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>                (Te1[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0x000000ff</span>) ^<br>                rcon[i];<br>            rk[ <span class="hljs-number">7</span>] = rk[ <span class="hljs-number">1</span>] ^ rk[ <span class="hljs-number">6</span>];<br>            rk[ <span class="hljs-number">8</span>] = rk[ <span class="hljs-number">2</span>] ^ rk[ <span class="hljs-number">7</span>];<br>            rk[ <span class="hljs-number">9</span>] = rk[ <span class="hljs-number">3</span>] ^ rk[ <span class="hljs-number">8</span>];<br>            <span class="hljs-keyword">if</span> (++i == <span class="hljs-number">8</span>) &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>            &#125;<br>            rk[<span class="hljs-number">10</span>] = rk[ <span class="hljs-number">4</span>] ^ rk[ <span class="hljs-number">9</span>];<br>            rk[<span class="hljs-number">11</span>] = rk[ <span class="hljs-number">5</span>] ^ rk[<span class="hljs-number">10</span>];<br>            rk += <span class="hljs-number">6</span>;<br>        &#125;<br>    &#125;<br>    rk[<span class="hljs-number">6</span>] = GETU32(userKey + <span class="hljs-number">24</span>);<br>    rk[<span class="hljs-number">7</span>] = GETU32(userKey + <span class="hljs-number">28</span>);<br>    <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">256</span>) &#123;<br>        <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>            temp = rk[ <span class="hljs-number">7</span>];<br>            rk[ <span class="hljs-number">8</span>] = rk[ <span class="hljs-number">0</span>] ^<br>                (Te2[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0xff000000</span>) ^<br>                (Te3[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>                (Te0[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>                (Te1[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0x000000ff</span>) ^<br>                rcon[i];<br>            rk[ <span class="hljs-number">9</span>] = rk[ <span class="hljs-number">1</span>] ^ rk[ <span class="hljs-number">8</span>];<br>            rk[<span class="hljs-number">10</span>] = rk[ <span class="hljs-number">2</span>] ^ rk[ <span class="hljs-number">9</span>];<br>            rk[<span class="hljs-number">11</span>] = rk[ <span class="hljs-number">3</span>] ^ rk[<span class="hljs-number">10</span>];<br>            <span class="hljs-keyword">if</span> (++i == <span class="hljs-number">7</span>) &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>            &#125;<br>            temp = rk[<span class="hljs-number">11</span>];<br>            rk[<span class="hljs-number">12</span>] = rk[ <span class="hljs-number">4</span>] ^<br>                (Te2[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0xff000000</span>) ^<br>                (Te3[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>                (Te0[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>                (Te1[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x000000ff</span>);<br>            rk[<span class="hljs-number">13</span>] = rk[ <span class="hljs-number">5</span>] ^ rk[<span class="hljs-number">12</span>];<br>            rk[<span class="hljs-number">14</span>] = rk[ <span class="hljs-number">6</span>] ^ rk[<span class="hljs-number">13</span>];<br>            rk[<span class="hljs-number">15</span>] = rk[ <span class="hljs-number">7</span>] ^ rk[<span class="hljs-number">14</span>];<br><br>            rk += <span class="hljs-number">8</span>;<br>            &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="1-函数声明"><a href="#1-函数声明" class="headerlink" title="1. 函数声明"></a>1. <strong>函数声明</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">AES_set_encrypt_key</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *userKey, <span class="hljs-type">const</span> <span class="hljs-type">int</span> bits, AES_KEY *key)</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>**<code>userKey</code>**：输入的原始密钥，类型是 <code>unsigned char *</code>，通常是 128 位、192 位或 256 位。</li>
+<li>**<code>bits</code>**：指定密钥的位数，值可以是 128、192 或 256。</li>
+<li>**<code>key</code>**：指向 <code>AES_KEY</code> 结构体的指针，结构体中将存储扩展后的轮密钥。</li>
+</ul>
+<h3 id="2-基础验证"><a href="#2-基础验证" class="headerlink" title="2. 基础验证"></a>2. <strong>基础验证</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (!userKey || !key)<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><span class="hljs-keyword">if</span> (bits != <span class="hljs-number">128</span> &amp;&amp; bits != <span class="hljs-number">192</span> &amp;&amp; bits != <span class="hljs-number">256</span>)<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-2</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>首先检查 <code>userKey</code> 和 <code>key</code> 是否为 <code>NULL</code>，如果是，返回错误。</li>
+<li>然后检查 <code>bits</code> 是否为 128、192 或 256 中的一个，如果不是，返回错误。</li>
+</ul>
+<h3 id="3-设置轮数"><a href="#3-设置轮数" class="headerlink" title="3. 设置轮数"></a>3. <strong>设置轮数</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (bits == <span class="hljs-number">128</span>)<br>    key-&gt;rounds = <span class="hljs-number">10</span>;<br><span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">192</span>)<br>    key-&gt;rounds = <span class="hljs-number">12</span>;<br><span class="hljs-keyword">else</span><br>    key-&gt;rounds = <span class="hljs-number">14</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>AES 使用不同的轮数：<ul>
+<li>128 位密钥需要 10 轮。</li>
+<li>192 位密钥需要 12 轮。</li>
+<li>256 位密钥需要 14 轮。</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-初始化轮密钥"><a href="#4-初始化轮密钥" class="headerlink" title="4. 初始化轮密钥"></a>4. <strong>初始化轮密钥</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">rk = key-&gt;rd_key;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>rk</code> 是 <code>AES_KEY</code> 结构体中的 <code>rd_key</code> 字段，指向存储轮密钥的数组。</li>
+</ul>
+<h3 id="5-将用户密钥复制到轮密钥数组"><a href="#5-将用户密钥复制到轮密钥数组" class="headerlink" title="5. 将用户密钥复制到轮密钥数组"></a>5. <strong>将用户密钥复制到轮密钥数组</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">rk[<span class="hljs-number">0</span>] = GETU32(userKey);<br>rk[<span class="hljs-number">1</span>] = GETU32(userKey + <span class="hljs-number">4</span>);<br>rk[<span class="hljs-number">2</span>] = GETU32(userKey + <span class="hljs-number">8</span>);<br>rk[<span class="hljs-number">3</span>] = GETU32(userKey + <span class="hljs-number">12</span>);<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>GETU32()</code> 是一个宏，用于从输入字节流（<code>userKey</code>）中提取 32 位数据并存储到 <code>rk</code> 数组中。</li>
+<li>假设 <code>userKey</code> 是一个 16 字节（128 位）数组，<code>rk[0]</code> 到 <code>rk[3]</code> 存储这 16 字节的前 4 个 32 位块。</li>
+</ul>
+<h3 id="6-AES-128-位密钥扩展"><a href="#6-AES-128-位密钥扩展" class="headerlink" title="6. AES 128 位密钥扩展"></a>6. <strong>AES 128 位密钥扩展</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (bits == <span class="hljs-number">128</span>) &#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>        temp  = rk[<span class="hljs-number">3</span>];<br>        rk[<span class="hljs-number">4</span>] = rk[<span class="hljs-number">0</span>] ^<br>            (Te2[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0xff000000</span>) ^<br>            (Te3[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>            (Te0[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>            (Te1[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0x000000ff</span>) ^<br>            rcon[i];<br>        rk[<span class="hljs-number">5</span>] = rk[<span class="hljs-number">1</span>] ^ rk[<span class="hljs-number">4</span>];<br>        rk[<span class="hljs-number">6</span>] = rk[<span class="hljs-number">2</span>] ^ rk[<span class="hljs-number">5</span>];<br>        rk[<span class="hljs-number">7</span>] = rk[<span class="hljs-number">3</span>] ^ rk[<span class="hljs-number">6</span>];<br>        <span class="hljs-keyword">if</span> (++i == <span class="hljs-number">10</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>        &#125;<br>        rk += <span class="hljs-number">4</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong><code>rk[4]</code> 到 <code>rk[7]</code> 是通过一系列的操作扩展出来的轮密钥</strong>。<ul>
+<li>使用 <code>Te2</code>, <code>Te3</code>, <code>Te0</code>, <code>Te1</code> 查找表进行字节替换和列混合（即非线性变换）。</li>
+<li><strong><code>rcon[i]</code></strong> 是轮常量，它是一个固定的数列，在 AES 中用于增加加密的复杂性。</li>
+<li>每一轮的轮密钥是基于前一轮的结果和轮常量（<code>rcon[i]</code>）计算出来的。</li>
+<li>轮密钥扩展的核心是将前一轮的密钥与查找表的结果进行异或操作，得到当前轮的轮密钥。</li>
+</ul>
+</li>
+<li>该过程在 <code>i == 10</code> 时终止，因为 AES-128 有 10 轮。</li>
+</ul>
+<h3 id="7-AES-192-位密钥扩展"><a href="#7-AES-192-位密钥扩展" class="headerlink" title="7. AES 192 位密钥扩展"></a>7. <strong>AES 192 位密钥扩展</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c">rk[<span class="hljs-number">4</span>] = GETU32(userKey + <span class="hljs-number">16</span>);<br>rk[<span class="hljs-number">5</span>] = GETU32(userKey + <span class="hljs-number">20</span>);<br><span class="hljs-keyword">if</span> (bits == <span class="hljs-number">192</span>) &#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>        temp = rk[<span class="hljs-number">5</span>];<br>        rk[<span class="hljs-number">6</span>] = rk[<span class="hljs-number">0</span>] ^<br>            (Te2[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0xff000000</span>) ^<br>            (Te3[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>            (Te0[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>            (Te1[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0x000000ff</span>) ^<br>            rcon[i];<br>        rk[<span class="hljs-number">7</span>] = rk[<span class="hljs-number">1</span>] ^ rk[<span class="hljs-number">6</span>];<br>        rk[<span class="hljs-number">8</span>] = rk[<span class="hljs-number">2</span>] ^ rk[<span class="hljs-number">7</span>];<br>        rk[<span class="hljs-number">9</span>] = rk[<span class="hljs-number">3</span>] ^ rk[<span class="hljs-number">8</span>];<br>        <span class="hljs-keyword">if</span> (++i == <span class="hljs-number">8</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>        &#125;<br>        rk[<span class="hljs-number">10</span>] = rk[<span class="hljs-number">4</span>] ^ rk[<span class="hljs-number">9</span>];<br>        rk[<span class="hljs-number">11</span>] = rk[<span class="hljs-number">5</span>] ^ rk[<span class="hljs-number">10</span>];<br>        rk += <span class="hljs-number">6</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>对于 <strong>192 位密钥</strong>，同样使用类似的方法进行密钥扩展，但是轮密钥的数量和 <code>rcon[i]</code> 的使用略有不同。</li>
+<li>192 位密钥需要 12 轮，每一轮生成 6 个轮密钥（<code>rk += 6</code>）。</li>
+</ul>
+<h3 id="8-AES-256-位密钥扩展"><a href="#8-AES-256-位密钥扩展" class="headerlink" title="8. AES 256 位密钥扩展"></a>8. <strong>AES 256 位密钥扩展</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c">rk[<span class="hljs-number">6</span>] = GETU32(userKey + <span class="hljs-number">24</span>);<br>rk[<span class="hljs-number">7</span>] = GETU32(userKey + <span class="hljs-number">28</span>);<br><span class="hljs-keyword">if</span> (bits == <span class="hljs-number">256</span>) &#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>        temp = rk[<span class="hljs-number">7</span>];<br>        rk[<span class="hljs-number">8</span>] = rk[<span class="hljs-number">0</span>] ^<br>            (Te2[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0xff000000</span>) ^<br>            (Te3[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>            (Te0[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>            (Te1[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0x000000ff</span>) ^<br>            rcon[i];<br>        rk[<span class="hljs-number">9</span>] = rk[<span class="hljs-number">1</span>] ^ rk[<span class="hljs-number">8</span>];<br>        rk[<span class="hljs-number">10</span>] = rk[<span class="hljs-number">2</span>] ^ rk[<span class="hljs-number">9</span>];<br>        rk[<span class="hljs-number">11</span>] = rk[<span class="hljs-number">3</span>] ^ rk[<span class="hljs-number">10</span>];<br>        <span class="hljs-keyword">if</span> (++i == <span class="hljs-number">7</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>        &#125;<br>        temp = rk[<span class="hljs-number">11</span>];<br>        rk[<span class="hljs-number">12</span>] = rk[<span class="hljs-number">4</span>] ^<br>            (Te2[(temp &gt;&gt; <span class="hljs-number">24</span>)       ] &amp; <span class="hljs-number">0xff000000</span>) ^<br>            (Te3[(temp &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x00ff0000</span>) ^<br>            (Te0[(temp &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x0000ff00</span>) ^<br>            (Te1[(temp      ) &amp; <span class="hljs-number">0xff</span>] &amp; <span class="hljs-number">0x000000ff</span>);<br>        rk[<span class="hljs-number">13</span>] = rk[<span class="hljs-number">5</span>] ^ rk[<span class="hljs-number">12</span>];<br>        rk[<span class="hljs-number">14</span>] = rk[<span class="hljs-number">6</span>] ^ rk[<span class="hljs-number">13</span>];<br>        rk[<span class="hljs-number">15</span>] = rk[<span class="hljs-number">7</span>] ^ rk[<span class="hljs-number">14</span>];<br><br>        rk += <span class="hljs-number">8</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>256 位密钥</strong>扩展需要更多的轮密钥，并且生成过程和 192 位密钥相似，但每次生成更多的轮密钥（<code>rk += 8</code>），以满足 14 轮的要求。</li>
+</ul>
+<h2 id="AES-encrypt"><a href="#AES-encrypt" class="headerlink" title="AES_encrypt"></a>AES_encrypt</h2><h3 id="初识变换"><a href="#初识变换" class="headerlink" title="初识变换"></a>初识变换</h3><p><img src="https://s2.loli.net/2024/12/30/6ixw5lOKHRc7FPX.png" srcset="/img/loading.gif" lazyload alt="image-20241230151509443"></p>
+<p>通过左循环移位和右循环移位的结合，代码实现了对 32 位整数的字节顺序交换。原本从内存中读取的字节顺序（<code>B0 B1 B2 B3</code>）被调整为新顺序（<code>B3 B2 B1 B0</code>），即进行了字节交换操作。</p>
+<p><img src="https://s2.loli.net/2024/12/30/eOBpq4yQ2N9TaPn.png" srcset="/img/loading.gif" lazyload alt="image-20241230151938466"></p>
+<p>而这一部分就是初识变换，将子密钥与明文按字节异或操作</p>
+<p>接下来一个大大的9轮循环：</p>
+<p><img src="https://s2.loli.net/2024/12/30/TxFLRPGrtM4vd1m.png" srcset="/img/loading.gif" lazyload alt="image-20241230152143720"></p>
+<p>这里的字节代换和列混合都是经第一步的预计算查找表查表得到，快速完成这两个操作，而不需要每轮都执行复杂的运算。</p>
+<h3 id="SubBytes（字节替代）"><a href="#SubBytes（字节替代）" class="headerlink" title="SubBytes（字节替代）"></a>SubBytes（字节替代）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">t0 = Te0[(s0 &gt;&gt; <span class="hljs-number">24</span>)       ] ^ Te1[(s1 &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] ^<br>     Te2[(s2 &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] ^ Te3[(s3      ) &amp; <span class="hljs-number">0xff</span>] ^ rk[<span class="hljs-number">4</span>];<br></code></pre></td></tr></table></figure>
+
+<p>这里的 <code>Te0</code>~&#96;Te3&#96; 是查找表，包含了预先优化后的值。这些表将 <strong>S-Box 替换</strong> 和 <strong>MixColumns 操作</strong> 合并在一起，减少了独立的 SubBytes 操作。</p>
+<ul>
+<li><code>s0 &gt;&gt; 24</code> 取 <code>s0</code> 的最高 8 位。</li>
+<li><code>(s1 &gt;&gt; 16) &amp; 0xff</code> 取 <code>s1</code> 的次高 8 位。</li>
+<li><code>(s2 &gt;&gt; 8) &amp; 0xff</code> 取 <code>s2</code> 的次低 8 位。</li>
+<li><code>s3 &amp; 0xff</code> 取 <code>s3</code> 的最低 8 位。</li>
+</ul>
+<p>这相当于将当前状态的每个字节查表替换。</p>
+<h3 id="ShiftRows（行移位）"><a href="#ShiftRows（行移位）" class="headerlink" title="ShiftRows（行移位）"></a>ShiftRows（行移位）</h3><p><strong>作用：</strong><br>对状态矩阵的每一行进行偏移，第 1 行右移 0 位，第 2 行右移 1 位，依次类推。目的是增加列之间的混淆。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">t0 = Te0[(s0 &gt;&gt; <span class="hljs-number">24</span>)       ] ^ Te1[(s1 &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] ^<br>     Te2[(s2 &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] ^ Te3[(s3      ) &amp; <span class="hljs-number">0xff</span>] ^ rk[<span class="hljs-number">4</span>];<br>t1 = Te0[(s1 &gt;&gt; <span class="hljs-number">24</span>)       ] ^ Te1[(s2 &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] ^<br>     Te2[(s3 &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] ^ Te3[(s0      ) &amp; <span class="hljs-number">0xff</span>] ^ rk[<span class="hljs-number">5</span>];<br>t2 = Te0[(s2 &gt;&gt; <span class="hljs-number">24</span>)       ] ^ Te1[(s3 &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] ^<br>     Te2[(s0 &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] ^ Te3[(s1      ) &amp; <span class="hljs-number">0xff</span>] ^ rk[<span class="hljs-number">6</span>];<br>t3 = Te0[(s3 &gt;&gt; <span class="hljs-number">24</span>)       ] ^ Te1[(s0 &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xff</span>] ^<br>     Te2[(s1 &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xff</span>] ^ Te3[(s2      ) &amp; <span class="hljs-number">0xff</span>] ^ rk[<span class="hljs-number">7</span>];<br><br></code></pre></td></tr></table></figure>
+
+<p>从代码中可以看出，状态字的排列顺序已自然实现了行偏移：</p>
+<ul>
+<li><code>t0</code> 的字节依次使用了 <code>s0, s1, s2, s3</code>，其中每个状态对应于状态矩阵的一列。</li>
+<li><code>t1</code> 将 <code>s1</code>、<code>s2</code>、<code>s3</code> 和 <code>s0</code> 重新排列，完成了一次行移位。</li>
+</ul>
+<p>这种实现方式无需显式调用 <code>ShiftRows</code>，通过位移和查表间接完成了操作。</p>
+<h3 id="MixColumns（列混合）"><a href="#MixColumns（列混合）" class="headerlink" title="MixColumns（列混合）"></a>MixColumns（列混合）</h3><p><strong>作用：</strong><br>对状态矩阵的每一列进行多项式运算，增加字节之间的线性混淆。</p>
+<p><code>Te0</code>~&#96;Te3&#96; 查表中已经将 <strong>S-Box 替换</strong> 和 <strong>列混合</strong> 合并优化。</p>
+<p>以 <code>Te0</code> 为例，其每一项对应如下公式：</p>
+<p>Te0[x]&#x3D;(2⋅S[x],3⋅S[x],1⋅S[x],1⋅S[x])</p>
+<p>在预计算标志已经完成，而这里</p>
+<p><strong>查表操作</strong>：</p>
+<ul>
+<li><code>Te0[(s0 &gt;&gt; 24)]</code>：查找 <code>Te0</code> 表中索引为 <code>(s0 &gt;&gt; 24)</code> 的字节。</li>
+<li><code>Te1[(s1 &gt;&gt; 16) &amp; 0xff]</code>：查找 <code>Te1</code> 表中索引为 <code>(s1 &gt;&gt; 16) &amp; 0xff</code> 的字节。</li>
+<li><code>Te2[(s2 &gt;&gt; 8) &amp; 0xff]</code>：查找 <code>Te2</code> 表中索引为 <code>(s2 &gt;&gt; 8) &amp; 0xff</code> 的字节。</li>
+<li><code>Te3[(s3)]</code>：查找 <code>Te3</code> 表中索引为 <code>s3</code> 的字节。</li>
+</ul>
+<p><strong>按位异或（XOR）</strong>：</p>
+<ul>
+<li><code>^</code> 是按位异或操作符。在这里，它将从四个查找表中得到的字节进行按位异或合并。通过异或操作，将这些字节组合成一个新的加密状态。</li>
+</ul>
+<h3 id="AddRoundKey（轮密钥加）"><a href="#AddRoundKey（轮密钥加）" class="headerlink" title="AddRoundKey（轮密钥加）"></a>AddRoundKey（轮密钥加）</h3><p>轮密钥加的操作是通过对状态矩阵的每一列与轮密钥进行异或（XOR）来实现的。每一轮加密都会使用不同的轮密钥。</p>
+<p><strong>体现方式</strong>：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">t0</span> = ... ^ rk[<span class="hljs-number">4</span>]<span class="hljs-comment">;</span><br><span class="hljs-attr">t1</span> = ... ^ rk[<span class="hljs-number">5</span>]<span class="hljs-comment">;</span><br><span class="hljs-attr">t2</span> = ... ^ rk[<span class="hljs-number">6</span>]<span class="hljs-comment">;</span><br><span class="hljs-attr">t3</span> = ... ^ rk[<span class="hljs-number">7</span>]<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>分析</strong>：</p>
+<ul>
+<li>在每一轮的操作中，<code>rk[4]</code>, <code>rk[5]</code>, <code>rk[6]</code>, <code>rk[7]</code> 是轮密钥中的一部分，<code>rk[i]</code> 是密钥扩展过程中生成的密钥。每轮加密时都需要用当前轮的密钥和数据进行 <strong>异或操作</strong>，这就是轮密钥加的体现。</li>
+<li><code>rk[4]</code> 到 <code>rk[7]</code> 分别与 <code>t0</code>, <code>t1</code>, <code>t2</code>, <code>t3</code> 进行异或，从而实现了 <strong>AddRoundKey</strong>。</li>
+</ul>
+<h3 id="最后一轮"><a href="#最后一轮" class="headerlink" title="最后一轮"></a>最后一轮</h3><p><img src="https://s2.loli.net/2024/12/30/4fjGXL3D2yrESza.png" srcset="/img/loading.gif" lazyload alt="image-20241230155307659"></p>
+<p>最终轮的操作与普通轮类似，但<strong>省略了列混合（MixColumns）</strong>。最终轮包含以下三个步骤：</p>
+<ol>
+<li><strong>字节代换（SubBytes）</strong>。</li>
+<li><strong>行移位（ShiftRows）</strong>。</li>
+<li><strong>轮密钥加（AddRoundKey）</strong>。</li>
+</ol>
+<p>这是一个非常好的问题，确实涉及到 AES 加密最后一轮的实现细节和优化策略。我来详细解答一下这个问题。</p>
+<h4 id="1-S-Box-和-Te0-Te1-Te2-Te3-的背景"><a href="#1-S-Box-和-Te0-Te1-Te2-Te3-的背景" class="headerlink" title="1. S-Box 和 Te0, Te1, Te2, Te3 的背景"></a>1. <strong>S-Box 和 <code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code> 的背景</strong></h4><p>首先，我们需要区分两者：</p>
+<ul>
+<li><strong>传统的 S-Box</strong>：是 AES 加密中进行 <strong>字节替换</strong>（<code>SubBytes</code>）的基本操作。S-Box 是一个 16×16 的矩阵，处理的是每个字节的替换，不涉及列混合。</li>
+<li><strong><code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code> 查找表</strong>：这些查找表是 <strong>优化版的 S-Box</strong>，同时融合了 <strong>字节替换</strong>（SubBytes）和 <strong>列混合</strong>（MixColumns）操作的预计算形式。它们通过提前将字节替换和列混合操作计算到查找表中，提高了加密过程的效率。</li>
+</ul>
+<h4 id="2-为什么-Te0-Te1-Te2-Te3-不等同于列混合？"><a href="#2-为什么-Te0-Te1-Te2-Te3-不等同于列混合？" class="headerlink" title="2. 为什么 Te0, Te1, Te2, Te3 不等同于列混合？"></a>2. <strong>为什么 <code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code> 不等同于列混合？</strong></h4><p>虽然 <code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code> 包含了列混合的优化，它们并不等同于实际的 <strong>列混合操作</strong>。原因在于：</p>
+<ul>
+<li><strong>列混合</strong> 是在每轮的 <strong>中间轮次</strong>（即除了最后一轮）执行的，目的是增强加密的扩散性，使得每列的数据互相混合，提高加密的复杂度。</li>
+<li>在 <strong>最后一轮</strong>，AES 明确规定不执行列混合操作。原因是最后一轮的目的是确保输出的密文是密切结合轮密钥的，同时也要保持对称加密的特性。因此，最后一轮只包括 <strong>字节替换（SubBytes）</strong>、<strong>行移位（ShiftRows）</strong> 和 <strong>轮密钥加（AddRoundKey）</strong>。</li>
+</ul>
+<h4 id="3-Te0-Te1-Te2-Te3-的优化方式"><a href="#3-Te0-Te1-Te2-Te3-的优化方式" class="headerlink" title="3. Te0, Te1, Te2, Te3 的优化方式"></a>3. <strong><code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code> 的优化方式</strong></h4><ul>
+<li><strong><code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code></strong> 查找表虽然融合了列混合的元素，但它们并不意味着在 <strong>最后一轮</strong> 会执行列混合。它们的作用是通过提前计算字节替换和列混合的效果，将它们结合成查找表，从而节省计算时间。<strong>这些查找表的计算过程是在前几轮中完成的，不会影响到最后一轮的设计</strong>。</li>
+</ul>
+<h4 id="4-最后一轮为什么不进行列混合？"><a href="#4-最后一轮为什么不进行列混合？" class="headerlink" title="4. 最后一轮为什么不进行列混合？"></a>4. <strong>最后一轮为什么不进行列混合？</strong></h4><p>最后一轮的设计是为了确保加密过程的对称性和符合 AES 的设计规范。在最后一轮：</p>
+<ul>
+<li><strong>字节替换</strong> 仍然通过查找表（如 <code>Te0</code> 等）进行，但由于没有列混合的要求，查找表中的列混合部分被自动忽略。实际上，**<code>Te0</code>, <code>Te1</code>, <code>Te2</code>, <code>Te3</code>** 仅用于 <strong>字节替换</strong>，而不执行列混合操作。</li>
+<li>在实际实现中，查找表的每一项本质上是已经预计算好的，包含了在 <strong>前几轮中</strong>发生的列混合操作，但 <strong>不再影响最后一轮</strong>。因此，即使查找表融合了列混合，最后一轮中的计算仍然只是字节替换和轮密钥加操作。</li>
+</ul>
+<h1 id="逆向分析"><a href="#逆向分析" class="headerlink" title="逆向分析"></a>逆向分析</h1><h2 id="AES-set-encrypt-key-1"><a href="#AES-set-encrypt-key-1" class="headerlink" title="AES_set_encrypt_key"></a>AES_set_encrypt_key</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (!userKey || !key)<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><span class="hljs-keyword">if</span> (bits != <span class="hljs-number">128</span> &amp;&amp; bits != <span class="hljs-number">192</span> &amp;&amp; bits != <span class="hljs-number">256</span>)<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-2</span>;<br><br>rk = key-&gt;rd_key;<br><br><span class="hljs-keyword">if</span> (bits == <span class="hljs-number">128</span>)<br>    key-&gt;rounds = <span class="hljs-number">10</span>;<br><span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (bits == <span class="hljs-number">192</span>)<br>    key-&gt;rounds = <span class="hljs-number">12</span>;<br><span class="hljs-keyword">else</span><br>    key-&gt;rounds = <span class="hljs-number">14</span>;<br></code></pre></td></tr></table></figure>
+
+<p>汇编代码：</p>
+<p><img src="https://s2.loli.net/2024/12/30/eKYytOXI9RAWbZU.png" srcset="/img/loading.gif" lazyload alt="image-20241230164315412"></p>
+<p>可以看到其经过汇编优化后整体意思不变，但执行逻辑顺序发生了变化，似乎更加顺序执行了</p>
+<p>其中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">rk[<span class="hljs-number">0</span>] = GETU32(userKey     );<br>rk[<span class="hljs-number">1</span>] = GETU32(userKey +  <span class="hljs-number">4</span>);<br>rk[<span class="hljs-number">2</span>] = GETU32(userKey +  <span class="hljs-number">8</span>);<br>rk[<span class="hljs-number">3</span>] = GETU32(userKey + <span class="hljs-number">12</span>);<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/12/30/dyBzM9mn4Hetlbs.png" srcset="/img/loading.gif" lazyload alt="image-20241230165222776"></p>
+<p>注意留意LDR和STR指令的存取</p>
+<blockquote>
+<p>STR W9, [X2, #16] 将内存中的地址存到数组上</p>
+<p>LDR             W1, [X15,X8] 将数组上的值存到变量中</p>
+</blockquote>
+<p>REV是反转字节序的指令，记住开头的</p>
+<blockquote>
+<p>CMP             W1, #128</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/12/30/sO6ZP3iDl8QCL5G.png" srcset="/img/loading.gif" lazyload alt="image-20241230165545062"></p>
+<p>判断是否为128，不是则进行跳转</p>
+<p><img src="https://s2.loli.net/2024/12/30/g7GyJPqQSDHlxBd.png" srcset="/img/loading.gif" lazyload alt="image-20241230165635695"></p>
+<p>再次判断是否为192，不是再次进行跳转</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">rk</span>[<span class="hljs-number">4</span>] = GETU32(userKey + <span class="hljs-number">16</span>);<br><span class="hljs-attribute">rk</span>[<span class="hljs-number">5</span>] = GETU32(userKey + <span class="hljs-number">20</span>);<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/12/30/sMCEOSlVqdtbmhJ.png" srcset="/img/loading.gif" lazyload alt="image-20241230170756447"></p>
+<p>这里</p>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs arm"><span class="hljs-symbol">text:</span><span class="hljs-number">000000000023</span>A1E8                 <span class="hljs-keyword">LDRB</span>            <span class="hljs-built_in">W9</span>, [<span class="hljs-built_in">X8</span>,<span class="hljs-number">#20</span>]<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000023</span>A1EC                 <span class="hljs-keyword">LDRB</span>            <span class="hljs-built_in">W3</span>, [<span class="hljs-built_in">X8</span>,<span class="hljs-number">#21</span>]<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000023</span>A1F0                 <span class="hljs-keyword">LDRB</span>            <span class="hljs-built_in">W10</span>, [<span class="hljs-built_in">X8</span>,<span class="hljs-number">#22</span>]<br><span class="hljs-symbol">.text:</span><span class="hljs-number">000000000023</span>A1F4                 <span class="hljs-keyword">LDRB</span>            <span class="hljs-built_in">W17</span>, [<span class="hljs-built_in">X8</span>,<span class="hljs-number">#23</span>]<br></code></pre></td></tr></table></figure>
+
+<p>先一个字节一个字节的从数组x8中存到w9,w3,w10,w17扩展到32位。</p>
+<p>将 <code>W9</code> 中的值左移 24 位，并将结果存储到 <code>W11</code> 寄存器中。这样，<code>W9</code> 中的字节会被移动到 <code>W11</code> 的高字节部分。</p>
+<p>执行按位或操作 <code>W17</code> 和 <code>W10</code>，其中 <code>W10</code> 会先左移 8 位。结果存储到 <code>W16</code> 寄存器中。这通常用于将多个字节组合成一个更大的值。</p>
+<p>将 <code>W3</code> 左移 16 位后，执行按位或操作，将结果存储到 <code>W11</code> 中。这个操作结合了从 <code>W9</code> 和 <code>W3</code> 中来的数据。</p>
+<p>将 <code>W16</code> 和 <code>W11</code> 执行按位或操作，并将结果存储回 <code>W16</code>。这一步将前面的多个字节数据合并成一个32位的值。</p>
+<p>将 <code>W16</code> 寄存器中的 <strong>32位</strong> 数据存储到内存地址 <code>X2 + 20</code> 处。</p>
+<p>接着跳转到</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">rk[<span class="hljs-number">6</span>] = GETU32(userKey + <span class="hljs-number">24</span>);<br>rk[<span class="hljs-number">7</span>] = GETU32(userKey + <span class="hljs-number">28</span>);<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2024/12/30/ZNQjK4JseO5qURy.png" srcset="/img/loading.gif" lazyload alt="image-20241230171433492"></p>
+<p>下面接着分析256流程</p>
+<p><img src="https://s2.loli.net/2024/12/30/Ckc4mnVAMqX5bRa.png" srcset="/img/loading.gif" lazyload alt="image-20241230184035211"></p>
+<p><code>ADRL</code>指令的作用是加载一个标签的地址（即内存地址），而不是加载标签所指向的数据。而这里是将标签<code>Tex</code>的地址加载到寄存器<code>Xx</code>中</p>
+<p><img src="https://s2.loli.net/2024/12/30/pKDcIJfzV5P7oHa.png" srcset="/img/loading.gif" lazyload alt="image-20241230211321525"></p>
+<p>这段反编译后的代码长这样：</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scheme">(<span class="hljs-name">Te0</span>[<span class="hljs-name">4</span> * (<span class="hljs-name">unsigned</span> __int8)v58 + <span class="hljs-number">1</span>] &lt;&lt; <span class="hljs-number">8</span>)<br></code></pre></td></tr></table></figure>
+
+<p>但源代码是：</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scheme">(<span class="hljs-name">Te0</span>[(<span class="hljs-name">temp</span>      ) &amp; <span class="hljs-number">0</span>xff] &amp; <span class="hljs-number">0</span>x0000ff00)<br></code></pre></td></tr></table></figure>
+
+<p>**<code>(temp) &amp; 0xff</code>**：<br>这部分操作将 <code>temp</code> 变量的最低 8 位提取出来。例如，如果 <code>temp</code> 是一个 32 位整数，<code>(temp) &amp; 0xff</code> 会得到 <code>temp</code> 的最低字节（也就是 <code>temp</code> 的第 0 到 7 位），并传递给 <code>Te0</code> 查找表。</p>
+<p>**<code>Te0[(temp) &amp; 0xff]</code>**：<br>这部分操作将 <code>temp</code> 的最低 8 位作为索引传递给 <code>Te0</code> 查找表。假设 <code>Te0</code> 是一个具有 256 个条目的查找表（<code>Te0[0]</code> 到 <code>Te0[255]</code>），那么 <code>Te0[(temp) &amp; 0xff]</code> 就是查找 <code>Te0</code> 表中对应的值。</p>
+<p>**<code>&amp; 0x0000ff00</code>**：<br>这部分操作对查找表返回的结果进行掩码，目的是将只关心 <code>Te0</code> 查找结果的中间字节（第 8 到 15 位）保留下来。</p>
+<ul>
+<li>比如，如果 <code>Te0[(temp) &amp; 0xff]</code> 的结果是一个 32 位数 <code>0x12345678</code>，则 <code>(Te0[(temp) &amp; 0xff] &amp; 0x0000ff00)</code> 将把这个值限制为 <code>0x00005600</code>，即保留中间的 8 位。</li>
+</ul>
+<p>再看：</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scheme">(<span class="hljs-name">Te3</span>[(<span class="hljs-name">temp</span> &gt;&gt;  <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0</span>xff] &amp; <span class="hljs-number">0</span>x00ff0000)<br></code></pre></td></tr></table></figure>
+
+<p>这里&gt;&gt;  8 再配合&amp;0xff 实现了提取temp 32位中任意一个字节的作用</p>
+<p>注意这里的算数右移和逻辑右移的区别—&gt;符号位</p>
+<p>再看反编译代码的原理：</p>
+<p>**<code>(unsigned __int8)v58</code>**：</p>
+<ul>
+<li>这部分提取出 <code>v58</code> 变量的最低字节（即 <code>v58</code> 的低 8 位），假设 <code>v58 = 0x12345678</code>，那么 <code>(unsigned __int8)v58</code> 的结果就是 <code>0x78</code>。</li>
+</ul>
+<p>**<code>4 \* (unsigned __int8)v58 + 1</code>**：</p>
+<ul>
+<li>上面这个表达式计算出了查找表 <code>Te0</code> 的索引位置。因为每个条目是 4 字节，我们将字节值乘以 4（即 <code>4 * (unsigned __int8)v58</code>），然后加 1 来访问该条目中的第二个字节。</li>
+<li>假设 <code>(unsigned __int8)v58 = 0x78</code>，那么 <code>4 * 0x78 = 0x1F0</code>，所以 <code>4 * 0x78 + 1 = 0x1F1</code>，表示我们访问 <code>Te0[0x1F1]</code>，即查找表 <code>Te0</code> 中第 <code>0x1F1</code> 条目的第二个字节。</li>
+</ul>
+<p>**<code>Te0[4 \* (unsigned __int8)v58 + 1]</code>**：</p>
+<ul>
+<li>查找表 <code>Te0</code> 返回的是一个 32 位的值，假设 <code>Te0[0x1F1] = 0x12345678</code>。</li>
+<li>通过索引，我们提取出的是这个条目中的第二个字节，即 <code>0x34</code>（如果 <code>Te0[0x1F1]</code> 是 <code>0x12345678</code>）。</li>
+</ul>
+<p>**<code>&lt;&lt; 8</code>**：</p>
+<ul>
+<li>这部分操作是将提取出来的字节左移 8 位。假设查找表 <code>Te0[0x1F1]</code> 的值是 <code>0x12345678</code>，那么 <code>Te0[0x1F1]</code> 的第二个字节是 <code>0x34</code>，通过左移 8 位（<code>0x34 &lt;&lt; 8</code>），我们得到的是 <code>0x3400</code>。</li>
+</ul>
+<p>可以看出：</p>
+<p>这两者在字节提取和操作上有相似性：它们都旨在从一个 32 位数中提取出特定的字节并为后续的计算做好准备。</p>
+<p>​	其中：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">rk</span>[ <span class="hljs-number">9</span>] = rk[ <span class="hljs-number">1</span>] ^ rk[ <span class="hljs-number">8</span>];<br></code></pre></td></tr></table></figure>
+
+<p>这里的STP存两个寄存器值，这段代码一共四个x2刚好8个，x0又是前面x2数组+32的位置</p>
+<p>ARM 架构中的内存地址是按字节寻址的，即每个地址单元是 1 字节。遇到的常量通常是以<strong>字节为单位</strong></p>
+<p><img src="https://s2.loli.net/2024/12/30/h7aXTbA8DmNnPjt.png" srcset="/img/loading.gif" lazyload alt="image-20241230214231590"></p>
+<blockquote>
+<p>找弱点，特征(规律)</p>
+</blockquote>
+<h2 id="AES-encrypt-1"><a href="#AES-encrypt-1" class="headerlink" title="AES_encrypt"></a>AES_encrypt</h2><p>再看：</p>
+<p><img src="https://s2.loli.net/2024/12/31/ufHeVrxXkd5AOqI.png" srcset="/img/loading.gif" lazyload alt="image-20241231100714269"></p>
+<p>其中1：表示将一众寄存器存储在栈上，用于保存当前函数调用所需的寄存器状态到栈中，确保它们在函数执行过程中不会被修改。</p>
+<p>2：在汇编中，<code>LDP</code> 指令是 <strong>加载一对寄存器</strong>，每对寄存器加载两个 32 位数据。比如：LDP W8, W9, [X0]这条指令从内存地址 <code>X0</code> 加载两个 32 位值到 <code>W8</code> 和 <code>W9</code> 寄存器。如果 <code>X0</code> 指向 <code>in</code>，那么这条指令就加载了 <code>in[0..3]</code> 到 <code>W8</code> 和 <code>in[4..7]</code> 到 <code>W9</code>。</p>
+<p>3：对各自取得的字节进行异或操作。</p>
+<p>对应于：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">s0 = GETU32(in     ) ^ rk[<span class="hljs-number">0</span>];<br>s1 = GETU32(in +  <span class="hljs-number">4</span>) ^ rk[<span class="hljs-number">1</span>];<br>s2 = GETU32(in +  <span class="hljs-number">8</span>) ^ rk[<span class="hljs-number">2</span>];<br>s3 = GETU32(in + <span class="hljs-number">12</span>) ^ rk[<span class="hljs-number">3</span>];<br></code></pre></td></tr></table></figure>
+
+<p>其中每一个rk占4字节：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">const</span> <span class="hljs-type">u32</span> *rk;<br></code></pre></td></tr></table></figure>
+
+<p>对于9轮循环，我们只截取关键部分进行查看：</p>
+<p><img src="https://s2.loli.net/2024/12/31/ovKLJGfCwHdU5Nc.png" srcset="/img/loading.gif" lazyload alt="image-20241231102720499"></p>
+<p>在汇编中：</p>
+<blockquote>
+<p>UBFX            W4, W15, #8, #8</p>
+</blockquote>
+<p>实现了(s2 &gt;&gt;  8) &amp; 0xff提取字节的操作</p>
+<blockquote>
+<p>LDR             W4, [X11,W4,UXTW#2]</p>
+</blockquote>
+<p>实现了查表的操作：Te2[(s2 &gt;&gt;  8) &amp; 0xff]</p>
+<blockquote>
+<p>EOR             W0, W0, W3</p>
+</blockquote>
+<p>实现迭代异或的中间保存值</p>
+<blockquote>
+<p> LSR             W19, W15, #24</p>
+</blockquote>
+<p>逻辑右移操作</p>
+<p>这个过程：</p>
+<p><img src="https://s2.loli.net/2024/12/31/pzSPL2n9Bf6ui48.png" srcset="/img/loading.gif" lazyload alt="image-20241231113916900"></p>
+<p>两组合并：</p>
+<p><img src="https://s2.loli.net/2024/12/31/hJ5xgArd2W6kEPR.png" srcset="/img/loading.gif" lazyload alt="image-20241231114556615"></p>
+<p>反编译代码:</p>
+<p><img src="https://s2.loli.net/2024/12/31/gbSTr9ncWOXNBml.png" srcset="/img/loading.gif" lazyload alt="image-20241231114618462"></p>
+<blockquote>
+<p>汇编与高级语言有巨大差异，汇编会对一个变量的变化求根问底</p>
+</blockquote>
+<p>最后一轮</p>
+<p><img src="https://s2.loli.net/2024/12/31/jv2CGrHU1RXBadF.png" srcset="/img/loading.gif" lazyload alt="image-20241231114700152"></p>
+<p>反编译同前面的密钥扩展相似，不多介绍</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件逆向工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/" class="category-chain-item">密码学</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AF%B9%E7%A7%B0%E5%AF%86%E7%A0%81%E5%AD%A6/" class="category-chain-item">对称密码学</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AF%B9%E7%A7%B0%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81/" class="category-chain-item">分组密码</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/" class="print-no-link">#密码学</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>AES算法原理与逆向练习</div>
+      <div>https://hermes37.vercel.app/2025/05/09/软件逆向工程/密码学/对称密码学/分组密码/AES算法原理与逆向练习/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AF%B9%E7%A7%B0%E5%AF%86%E7%A0%81%E5%AD%A6/%E6%B5%81%E5%AF%86%E7%A0%81/RC4/" title="RC4">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">RC4</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/%E5%AF%86%E7%A0%81%E5%AD%A6/" title="密码学">
+                        <span class="hidden-mobile">密码学</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

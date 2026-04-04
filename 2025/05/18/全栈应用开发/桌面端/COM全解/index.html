@@ -1,0 +1,978 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="从C++到COM阶段1：直接使用C++类（暴露源码）代码结构1234567891011121314&#x2F;&#x2F; DB.h (直接暴露实现)class CDB &#123;public:    HRESULT Open();    HRESULT ExecSQL();    HRESULT Close();private:    int m_nState; &#x2F;&#x2F; 私有成员对客户可见&#125;;&#x2F;&#x2F; 客户代">
+<meta property="og:type" content="article">
+<meta property="og:title" content="COM全解">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/18/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E6%A1%8C%E9%9D%A2%E7%AB%AF/COM%E5%85%A8%E8%A7%A3/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="从C++到COM阶段1：直接使用C++类（暴露源码）代码结构1234567891011121314&#x2F;&#x2F; DB.h (直接暴露实现)class CDB &#123;public:    HRESULT Open();    HRESULT ExecSQL();    HRESULT Close();private:    int m_nState; &#x2F;&#x2F; 私有成员对客户可见&#125;;&#x2F;&#x2F; 客户代">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/DRTecYguWhj6HGi.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/7kp9ECntXiuI1WV.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/larCYvVXgKNHTfI.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/fsuemvEN5R98gJW.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/qvhjdwXsocKPbTk.png">
+<meta property="article:published_time" content="2025-05-18T05:54:35.869Z">
+<meta property="article:modified_time" content="2026-04-04T01:18:05.750Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/05/17/DRTecYguWhj6HGi.png">
+  
+  
+  
+  <title>COM全解 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="COM全解"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          38 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">COM全解</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="从C-到COM"><a href="#从C-到COM" class="headerlink" title="从C++到COM"></a>从C++到COM</h1><h3 id="阶段1：直接使用C-类（暴露源码）"><a href="#阶段1：直接使用C-类（暴露源码）" class="headerlink" title="阶段1：直接使用C++类（暴露源码）"></a><strong>阶段1：直接使用C++类（暴露源码）</strong></h3><h4 id="代码结构"><a href="#代码结构" class="headerlink" title="代码结构"></a><strong>代码结构</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// DB.h (直接暴露实现)</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CDB</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function">HRESULT <span class="hljs-title">Open</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function">HRESULT <span class="hljs-title">ExecSQL</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function">HRESULT <span class="hljs-title">Close</span><span class="hljs-params">()</span></span>;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> m_nState; <span class="hljs-comment">// 私有成员对客户可见</span><br>&#125;;<br><br><span class="hljs-comment">// 客户代码</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;DB.h&quot;</span></span><br>CDB db;<br>db.<span class="hljs-built_in">Open</span>();<br></code></pre></td></tr></table></figure>
+
+<p><strong>缺点</strong>:客户能看到所有私有成员和实现细节。修改头文件后必须重新编译所有客户程序。</p>
+<hr>
+<h3 id="阶段2：封装到DLL（隐藏源码）"><a href="#阶段2：封装到DLL（隐藏源码）" class="headerlink" title="阶段2：封装到DLL（隐藏源码）"></a><strong>阶段2：封装到DLL（隐藏源码）</strong></h3><h4 id="改造步骤"><a href="#改造步骤" class="headerlink" title="改造步骤"></a><strong>改造步骤</strong></h4><ol>
+<li><p><strong>导出类工厂和对象</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// DB.h (仅公开接口)</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DEF_DLL_PORT</span> CDB &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Open</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">ExecSQL</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Close</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Release</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>; <span class="hljs-comment">// 新增内存管理</span><br>&#125;;<br><br><span class="hljs-comment">// 类工厂声明</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DEF_DLL_PORT</span> CDBSrvFactory &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">CreateDB</span><span class="hljs-params">(CDB** ppObject)</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Release</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-comment">// DLL导出函数</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-function">DEF_DLL_PORT HRESULT <span class="hljs-title">DllGetClassFactory</span><span class="hljs-params">(CDBSrvFactory** ppFactory)</span></span>;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>实现DLL内部逻辑</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// DBImpl.cpp (隐藏实现)</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CDBImpl</span> : <span class="hljs-keyword">public</span> CDB &#123;<br>    <span class="hljs-type">int</span> m_nState; <span class="hljs-comment">// 客户不可见</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function">HRESULT <span class="hljs-title">Open</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123; <span class="hljs-comment">/*...*/</span> &#125;<br>    <span class="hljs-function">HRESULT <span class="hljs-title">Release</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123; <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>; &#125;<br>    <span class="hljs-comment">// ... 其他实现</span><br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CDBSrvFactoryImpl</span> : <span class="hljs-keyword">public</span> CDBSrvFactory &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function">HRESULT <span class="hljs-title">CreateDB</span><span class="hljs-params">(CDB** ppObject)</span> <span class="hljs-keyword">override</span> </span>&#123;<br>        *ppObject = <span class="hljs-keyword">new</span> <span class="hljs-built_in">CDBImpl</span>();<br>        <span class="hljs-keyword">return</span> S_OK;<br>    &#125;<br>    <span class="hljs-function">HRESULT <span class="hljs-title">Release</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123; <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>; &#125;<br>&#125;;<br><br><span class="hljs-comment">// 导出函数实现</span><br><span class="hljs-function">HRESULT <span class="hljs-title">DllGetClassFactory</span><span class="hljs-params">(CDBSrvFactory** ppFactory)</span> </span>&#123;<br>    *ppFactory = <span class="hljs-keyword">new</span> <span class="hljs-built_in">CDBSrvFactoryImpl</span>();<br>    <span class="hljs-keyword">return</span> S_OK;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="客户调用方式"><a href="#客户调用方式" class="headerlink" title="客户调用方式"></a><strong>客户调用方式</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;DB.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib, <span class="hljs-string">&quot;DB.lib&quot;</span>)</span><br><br>CDBSrvFactory* pFactory;<br><span class="hljs-built_in">DllGetClassFactory</span>(&amp;pFactory);<br><br>CDB* pDB;<br>pFactory-&gt;<span class="hljs-built_in">CreateDB</span>(&amp;pDB);<br>pDB-&gt;<span class="hljs-built_in">Open</span>();<br>pDB-&gt;<span class="hljs-built_in">Release</span>();<br>pFactory-&gt;<span class="hljs-built_in">Release</span>();<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>优点</strong>:隐藏了实现细节（私有成员和代码逻辑）。通过虚函数表（vtable）实现多态。</li>
+<li><strong>缺点</strong>:每个组件需自定义类工厂和导出函数。客户与组件通信代码重复。</li>
+</ul>
+<hr>
+<h3 id="阶段3：抽象基类（纯接口）"><a href="#阶段3：抽象基类（纯接口）" class="headerlink" title="阶段3：抽象基类（纯接口）"></a><strong>阶段3：抽象基类（纯接口）</strong></h3><h4 id="代码改造"><a href="#代码改造" class="headerlink" title="代码改造"></a><strong>代码改造</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// IDB.h (纯接口)</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">IDB</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Open</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">ExecSQL</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Close</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Release</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-comment">// 类工厂接口</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">IDBFactory</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">CreateDB</span><span class="hljs-params">(IDB** ppObject)</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Release</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-comment">// 导出函数声明</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-function">HRESULT <span class="hljs-title">CreateDBFactory</span><span class="hljs-params">(IDBFactory** ppFactory)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>优点</strong>:接口与实现完全分离。客户仅依赖接口头文件。</li>
+<li><strong>缺点</strong>:仍需手动管理内存和类工厂。缺乏标准化的对象生命周期管理。</li>
+</ul>
+<hr>
+<h3 id="阶段4：标准化COM组件"><a href="#阶段4：标准化COM组件" class="headerlink" title="阶段4：标准化COM组件"></a><strong>阶段4：标准化COM组件</strong></h3><h4 id="关键改造点"><a href="#关键改造点" class="headerlink" title="关键改造点"></a><strong>关键改造点</strong></h4><ol>
+<li><p><strong>继承COM基接口（IUnknown）</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// IDB.h</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unknwn.h&gt;</span></span><br>interface IDB : <span class="hljs-keyword">public</span> IUnknown &#123;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Open</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">ExecSQL</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">Close</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-comment">// 类工厂接口</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">IDBFactory</span> : <span class="hljs-keyword">public</span> IClassFactory &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// IClassFactory已包含CreateInstance和LockServer</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>实现COM标准导出函数</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// DllMain.cpp</span><br><span class="hljs-function">STDAPI <span class="hljs-title">DllGetClassObject</span><span class="hljs-params">(REFCLSID rclsid, REFIID riid, LPVOID* ppv)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (rclsid == CLSID_DB) &#123;<br>        IDBFactory* pFactory = <span class="hljs-keyword">new</span> <span class="hljs-built_in">CDBFactory</span>();<br>        <span class="hljs-keyword">return</span> pFactory-&gt;<span class="hljs-built_in">QueryInterface</span>(riid, ppv);<br>    &#125;<br>    <span class="hljs-keyword">return</span> CLASS_E_CLASSNOTAVAILABLE;<br>&#125;<br><br><span class="hljs-function">STDAPI <span class="hljs-title">DllCanUnloadNow</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> (g_cObjects == <span class="hljs-number">0</span> &amp;&amp; g_cLocks == <span class="hljs-number">0</span>) ? S_OK : S_FALSE;<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>注册表支持（自注册）</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">STDAPI <span class="hljs-title">DllRegisterServer</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 注册CLSID和ProgID</span><br>    <span class="hljs-keyword">return</span> S_OK;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="完整COM组件示例"><a href="#完整COM组件示例" class="headerlink" title="完整COM组件示例"></a><strong>完整COM组件示例</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// DBComponent.h</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CDBComponent</span> : <span class="hljs-keyword">public</span> IDB &#123;<br>    LONG m_cRef; <span class="hljs-comment">// 引用计数</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">CDBComponent</span>() : <span class="hljs-built_in">m_cRef</span>(<span class="hljs-number">1</span>) &#123;&#125;<br>    <br>    <span class="hljs-comment">// IUnknown方法</span><br>    <span class="hljs-built_in">STDMETHOD</span>(QueryInterface)(REFIID riid, <span class="hljs-type">void</span>** ppv) <span class="hljs-keyword">override</span> &#123;<br>        <span class="hljs-keyword">if</span> (riid == IID_IUnknown || riid == IID_IDB) &#123;<br>            *ppv = <span class="hljs-built_in">static_cast</span>&lt;IDB*&gt;(<span class="hljs-keyword">this</span>);<br>            <span class="hljs-built_in">AddRef</span>();<br>            <span class="hljs-keyword">return</span> S_OK;<br>        &#125;<br>        <span class="hljs-keyword">return</span> E_NOINTERFACE;<br>    &#125;<br>    <span class="hljs-built_in">STDMETHOD_</span>(ULONG, AddRef)() <span class="hljs-keyword">override</span> &#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">InterlockedIncrement</span>(&amp;m_cRef); &#125;<br>    <span class="hljs-built_in">STDMETHOD_</span>(ULONG, Release)() <span class="hljs-keyword">override</span> &#123;<br>        ULONG cRef = <span class="hljs-built_in">InterlockedDecrement</span>(&amp;m_cRef);<br>        <span class="hljs-keyword">if</span> (cRef == <span class="hljs-number">0</span>) <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>;<br>        <span class="hljs-keyword">return</span> cRef;<br>    &#125;<br><br>    <span class="hljs-comment">// IDB方法</span><br>    <span class="hljs-built_in">STDMETHOD</span>(Open)() <span class="hljs-keyword">override</span> &#123; <span class="hljs-comment">/*...*/</span> <span class="hljs-keyword">return</span> S_OK; &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="客户调用（标准COM方式）"><a href="#客户调用（标准COM方式）" class="headerlink" title="客户调用（标准COM方式）"></a><strong>客户调用（标准COM方式）</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;windows.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;IDB.h&quot;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">CoInitialize</span>(<span class="hljs-literal">NULL</span>);<br>    <br>    IDB* pDB = <span class="hljs-literal">NULL</span>;<br>    HRESULT hr = <span class="hljs-built_in">CoCreateInstance</span>(<br>        CLSID_DB, <span class="hljs-literal">NULL</span>, CLSCTX_INPROC_SERVER, IID_IDB, (<span class="hljs-type">void</span>**)&amp;pDB);<br>    <br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">SUCCEEDED</span>(hr)) &#123;<br>        pDB-&gt;<span class="hljs-built_in">Open</span>();<br>        pDB-&gt;<span class="hljs-built_in">Release</span>();<br>    &#125;<br>    <br>    <span class="hljs-built_in">CoUninitialize</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>对比：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接C++类</td>
+<td>简单直接</td>
+<td>暴露实现细节，耦合度高</td>
+</tr>
+<tr>
+<td>DLL封装</td>
+<td>隐藏实现</td>
+<td>需自定义内存管理和类工厂</td>
+</tr>
+<tr>
+<td>抽象基类</td>
+<td>接口与实现分离</td>
+<td>缺乏标准化生命周期管理</td>
+</tr>
+<tr>
+<td><strong>COM组件</strong></td>
+<td>标准化、跨语言、自动生命周期</td>
+<td>实现复杂度高</td>
+</tr>
+</tbody></table>
+<h1 id="COM基础知识"><a href="#COM基础知识" class="headerlink" title="COM基础知识"></a>COM基础知识</h1><h2 id="COM接口"><a href="#COM接口" class="headerlink" title="COM接口"></a>COM接口</h2><p>COM接口通常是一组函数的逻辑集合，COM对象可以提供多个COM接口，每个接口提供不同的服务，因此COM接口与COM对象一样，都是用GUID来标识的，客户通过GUID来获取接口指针，再通过接口指针获取对应的服务；<strong>标识COM接口的GUID称为：IID</strong>。<strong>COM接口的本质</strong>:</p>
+<p>COM接口是<strong>纯虚类（抽象类）</strong>，其核心特征：</p>
+<ul>
+<li><strong>命名规范</strong>：以大写 <code>I</code> 开头（如 <code>IMathCalculator</code>）</li>
+<li><strong>强制继承</strong>：必须直接或间接继承 <code>IUnknown</code></li>
+<li><strong>二进制标准</strong>：本质是<strong>函数指针表（vtable）</strong>，与语言无关</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// IUnknown的定义（winnt.h）</span><br>interface IUnknown &#123;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT STDMETHODCALLTYPE <span class="hljs-title">QueryInterface</span><span class="hljs-params">(REFIID riid, <span class="hljs-type">void</span>** ppv)</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> ULONG STDMETHODCALLTYPE <span class="hljs-title">AddRef</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> ULONG STDMETHODCALLTYPE <span class="hljs-title">Release</span><span class="hljs-params">()</span> </span>= <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+
+<p><strong>接口与实现的关系</strong>:</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>概念</strong></th>
+<th align="left"><strong>角色</strong></th>
+<th align="left"><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>接口</strong></td>
+<td align="left">定义行为契约（纯虚类）</td>
+<td align="left"><code>IMathCalculator</code></td>
+</tr>
+<tr>
+<td align="left"><strong>实现类</strong></td>
+<td align="left">具体实现接口的C++类</td>
+<td align="left"><code>class MathCalculator : public IMathCalculator</code></td>
+</tr>
+<tr>
+<td align="left"><strong>接口指针</strong></td>
+<td align="left">客户端通过它调用方法（实际指向vtable）</td>
+<td align="left"><code>IMathCalculator* pCalc</code></td>
+</tr>
+</tbody></table>
+<h3 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h3><h4 id="1-接口查询（QueryInterface）"><a href="#1-接口查询（QueryInterface）" class="headerlink" title="(1) 接口查询（QueryInterface）"></a><strong>(1) 接口查询（QueryInterface）</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 客户端代码示例</span><br>IMathCalculator* pCalc = <span class="hljs-literal">nullptr</span>;<br>pUnknown-&gt;<span class="hljs-built_in">QueryInterface</span>(IID_IMathCalculator, (<span class="hljs-type">void</span>**)&amp;pCalc); <span class="hljs-comment">// 从IUnknown获取其他接口</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>规则</strong>：必须支持 <code>IUnknown</code> 查询，必须对返回的指针调用 <code>AddRef</code>，必须返回 <code>E_NOINTERFACE</code> 表示不支持</p>
+<h4 id="2-生命周期管理（AddRef-Release）"><a href="#2-生命周期管理（AddRef-Release）" class="headerlink" title="(2) 生命周期管理（AddRef&#x2F;Release）"></a><strong>(2) 生命周期管理（AddRef&#x2F;Release）</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 正确使用示例</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">UseCalculator</span><span class="hljs-params">()</span> </span>&#123;<br>    IMathCalculator* pCalc = <span class="hljs-literal">nullptr</span>;<br>    <span class="hljs-built_in">CoCreateInstance</span>(..., &amp;pCalc); <span class="hljs-comment">// 内部已调用AddRef</span><br>    <br>    <span class="hljs-type">int</span> result;<br>    pCalc-&gt;<span class="hljs-built_in">Add</span>(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, &amp;result);<br>    <br>    pCalc-&gt;<span class="hljs-built_in">Release</span>(); <span class="hljs-comment">// 必须手动释放</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>黄金规则</strong>：</p>
+<ul>
+<li>获取接口指针后：<code>AddRef</code>（<code>CoCreateInstance</code> 已隐式调用）</li>
+<li>使用完毕后：必须调用 <code>Release</code></li>
+</ul>
+<h3 id="多接口实现示例"><a href="#多接口实现示例" class="headerlink" title="多接口实现示例"></a><strong>多接口实现示例</strong></h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 定义多个接口</span><br>interface ILog : IUnknown &#123;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> HRESULT <span class="hljs-title">WriteLog</span><span class="hljs-params">(LPCSTR msg)</span> </span>= <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-comment">// 实现类支持多接口</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MathService</span> : <span class="hljs-keyword">public</span> IMathCalculator, <span class="hljs-keyword">public</span> ILog &#123;<br>    <span class="hljs-comment">// IMathCalculator方法...</span><br>    <span class="hljs-function">HRESULT <span class="hljs-title">WriteLog</span><span class="hljs-params">(LPCSTR msg)</span> <span class="hljs-keyword">override</span> </span>&#123; <span class="hljs-comment">/* 实现日志 */</span> &#125;<br>    <br>    <span class="hljs-comment">// 多接口查询</span><br>    <span class="hljs-function">HRESULT <span class="hljs-title">QueryInterface</span><span class="hljs-params">(REFIID riid, <span class="hljs-type">void</span>** ppv)</span> <span class="hljs-keyword">override</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (riid == IID_ILog) &#123;<br>            *ppv = <span class="hljs-built_in">static_cast</span>&lt;ILog*&gt;(<span class="hljs-keyword">this</span>);<br>        &#125; <br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (riid == IID_IMathCalculator) &#123;<br>            *ppv = <span class="hljs-built_in">static_cast</span>&lt;IMathCalculator*&gt;(<span class="hljs-keyword">this</span>);<br>        &#125;<br>        <span class="hljs-comment">// ...其他接口检查</span><br>        <span class="hljs-built_in">AddRef</span>(); <span class="hljs-comment">// 必须！</span><br>        <span class="hljs-keyword">return</span> S_OK;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="COM对象"><a href="#COM对象" class="headerlink" title="COM对象"></a>COM对象</h2><p>COM对象其实就类似于C++中的对象，也就是说某个类的实例，包含了一组数据和操作。在COM模型中，COM对象的位置对于客户来说是透明的，即客户代码不需要直接初始化一个COM对象，而是COM库通过一个全局标识码GUID去对其进行初始化工作。GUID是一个128位的标识符，基本保证了COM对象的唯一性，另外COM接口也是用GUID来标识的。</p>
+<h3 id="GUID"><a href="#GUID" class="headerlink" title="GUID"></a>GUID</h3><p>GUID，又称之为全局唯一标识符，有16个字节，共128位二进制数，可以保证全球范围内不会重复，标识COM对象的GUID称为：CLSID。</p>
+<p>COM组件中，GUID的结构定义如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">_GUID</span> &#123;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>  Data1; <span class="hljs-comment">// 随机数</span><br>   <span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> Data2; <span class="hljs-comment">// 和时间有关</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> Data3; <span class="hljs-comment">// 和时间有关</span><br>   <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>  Data4[<span class="hljs-number">8</span>]; <span class="hljs-comment">// 和网卡MAC有关</span><br>&#125; GUID;<br></code></pre></td></tr></table></figure>
+
+<p>典型的GUID定义:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 典型的GUID定义（CLSID或IID）</span><br><span class="hljs-comment">// &#123;12345678-1234-1234-1234-123456789ABC&#125;</span><br><span class="hljs-type">static</span> <span class="hljs-type">const</span> GUID CLSID_MyObject = <br>&#123; <span class="hljs-number">0x12345678</span>, <span class="hljs-number">0x1234</span>, <span class="hljs-number">0x1234</span>, &#123; <span class="hljs-number">0x12</span>, <span class="hljs-number">0x34</span>, <span class="hljs-number">0x56</span>, <span class="hljs-number">0x78</span>, <span class="hljs-number">0x9a</span>, <span class="hljs-number">0xbc</span> &#125; &#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>CLSID</strong>：标识COM类（如 <code>CLSID_WordApplication</code>）</li>
+<li><strong>IID</strong>：标识接口（如 <code>IID_IUnknown</code>）</li>
+<li><strong>生成工具</strong>：<code>guidgen.exe</code> 或在线GUID生成器</li>
+</ul>
+<h3 id="COM对象的核心特性"><a href="#COM对象的核心特性" class="headerlink" title="COM对象的核心特性"></a><strong>COM对象的核心特性</strong></h3><table>
+<thead>
+<tr>
+<th align="left"><strong>特性</strong></th>
+<th align="left"><strong>说明</strong></th>
+<th align="left"><strong>类比C++</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>封装性</strong></td>
+<td align="left">包含数据和方法，但外部只能通过接口访问</td>
+<td align="left">类似类的实例，但所有成员私有化</td>
+</tr>
+<tr>
+<td align="left"><strong>位置透明</strong></td>
+<td align="left">客户端无需知道对象在本地（DLL）、跨进程（EXE）还是远程机器（DCOM）</td>
+<td align="left">类似指针，但实际可能是网络代理</td>
+</tr>
+<tr>
+<td align="left"><strong>GUID标识</strong></td>
+<td align="left">每个COM对象&#x2F;接口用128位全局唯一标识符（GUID）注册</td>
+<td align="left">类似类名，但绝对唯一</td>
+</tr>
+</tbody></table>
+<h3 id="代码示例-1"><a href="#代码示例-1" class="headerlink" title="代码示例"></a>代码示例</h3><h4 id="最简单的COM对象"><a href="#最简单的COM对象" class="headerlink" title="最简单的COM对象"></a><strong>最简单的COM对象</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// MyObject.h</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyObject</span> : <span class="hljs-keyword">public</span> IUnknown &#123;<br>    ULONG m_refCount = <span class="hljs-number">1</span>;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// IUnknown必须实现</span><br>    <span class="hljs-function">HRESULT <span class="hljs-title">QueryInterface</span><span class="hljs-params">(REFIID riid, <span class="hljs-type">void</span>** ppv)</span> <span class="hljs-keyword">override</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (riid == IID_IUnknown) &#123;<br>            *ppv = <span class="hljs-built_in">static_cast</span>&lt;IUnknown*&gt;(<span class="hljs-keyword">this</span>);<br>            <span class="hljs-built_in">AddRef</span>();<br>            <span class="hljs-keyword">return</span> S_OK;<br>        &#125;<br>        <span class="hljs-keyword">return</span> E_NOINTERFACE;<br>    &#125;<br>    <span class="hljs-function">ULONG <span class="hljs-title">AddRef</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123; <span class="hljs-keyword">return</span> ++m_refCount; &#125;<br>    <span class="hljs-function">ULONG <span class="hljs-title">Release</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123; <br>        <span class="hljs-keyword">if</span> (--m_refCount == <span class="hljs-number">0</span>) <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>; <br>        <span class="hljs-keyword">return</span> m_refCount;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="客户端调用"><a href="#客户端调用" class="headerlink" title="客户端调用"></a><strong>客户端调用</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++">IUnknown* pObj = <span class="hljs-literal">nullptr</span>;<br><span class="hljs-built_in">CoCreateInstance</span>(<br>    CLSID_MyObject,<br>    <span class="hljs-literal">nullptr</span>,<br>    CLSCTX_INPROC_SERVER,<br>    IID_IUnknown,<br>    (<span class="hljs-type">void</span>**)&amp;pObj<br>);<br><span class="hljs-keyword">if</span> (pObj) &#123;<br>    pObj-&gt;<span class="hljs-built_in">Release</span>(); <span class="hljs-comment">// 必须释放</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>必须遵守的规则</strong>:</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>规则</strong></th>
+<th align="left"><strong>原因</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">所有接口继承自 <code>IUnknown</code></td>
+<td align="left">保证引用计数和接口查询的统一性</td>
+</tr>
+<tr>
+<td align="left">返回指针必须调用 <code>AddRef</code></td>
+<td align="left">避免对象被提前释放</td>
+</tr>
+<tr>
+<td align="left">错误时返回明确 <code>HRESULT</code></td>
+<td align="left">提供可诊断的错误信息（如 <code>E_POINTER</code>, <code>E_NOINTERFACE</code>）</td>
+</tr>
+</tbody></table>
+<h2 id="COM应用模型"><a href="#COM应用模型" class="headerlink" title="COM应用模型"></a>COM应用模型</h2><h3 id="客户-服务模型"><a href="#客户-服务模型" class="headerlink" title="客户&#x2F;服务模型"></a>客户&#x2F;服务模型</h3><p>COM的核心是<strong>客户端-服务器</strong>架构，其交互方式如下：</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>角色</strong></th>
+<th align="left"><strong>职责</strong></th>
+<th align="left"><strong>典型示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>客户端</strong></td>
+<td align="left">通过接口调用服务，无需知道实现细节</td>
+<td align="left">Excel VBA调用Word组件</td>
+</tr>
+<tr>
+<td align="left"><strong>服务器</strong></td>
+<td align="left">实现COM接口并提供功能，分为进程内(DLL)&#x2F;本地进程外(EXE)&#x2F;远程(DCOM)三种</td>
+<td align="left">数学计算组件、打印机驱动</td>
+</tr>
+</tbody></table>
+<p><strong>位置透明性</strong>：客户端代码相同，无论服务在何处</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 客户端代码无需改变</span><br><span class="hljs-built_in">CoCreateInstance</span>(CLSID_MyService, ..., CLSCTX_LOCAL_SERVER, ...); <span class="hljs-comment">// 本地EXE</span><br><span class="hljs-built_in">CoCreateInstance</span>(CLSID_MyService, ..., CLSCTX_REMOTE_SERVER, ...); <span class="hljs-comment">// 远程机器</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>接口契约</strong>：双方严格通过接口交互，避免直接依赖</p>
+<p><img src="https://s2.loli.net/2025/05/17/DRTecYguWhj6HGi.png" srcset="/img/loading.gif" lazyload></p>
+<p>客户通过COM创建函数获取到COM库，COM库再通过DllGetClassObject获取组件，再通过组件获取类工厂对象接口指针，并用这个指针来调用各个方法。</p>
+<h3 id="COM库"><a href="#COM库" class="headerlink" title="COM库"></a>COM库</h3><h4 id="常见使用API"><a href="#常见使用API" class="headerlink" title="常见使用API"></a>常见使用API</h4><h5 id="初始化函数"><a href="#初始化函数" class="headerlink" title="初始化函数"></a>初始化函数</h5><p>1.CoBuildVersion：获取COM库的版本号<br>2.CoInitialize：初始化COM库<br>3.CoUnInitialize：终止CO服务<br>4.CoFreeUnsedLibraries：释放进程中所有不在使用的组件程序</p>
+<h5 id="GUID函数"><a href="#GUID函数" class="headerlink" title="GUID函数"></a>GUID函数</h5><p>1.IsEquaIGUID：判断两个GUID是否相等<br>2.IsEquaIIID：判断两个IID是否相等<br>3.ISEquaICLSID：判断两个CLSID是否相等<br>4.CLSIDFromProgID：把字符串形式的对像标识转换为CLSID结构形式<br>5.StringFromCLSID：把CLSID结构形式转化为字符串形式<br>6.IIDFromString：把字符串形式的接口标识转换为IID结构形式<br>7.StringFromIID：把IID结构形式转换为字符串形式<br>8.StringFromGUID2：把GUID结构形式转换为字符串形式<br>9.ProgIDFromCLSID：从CLSID获取对象标识</p>
+<h5 id="对象创建函数"><a href="#对象创建函数" class="headerlink" title="对象创建函数"></a>对象创建函数</h5><p>1.CoGetClassObiject：获取对象的类工厂<br>2.CoCreateInstance：创建COM对象<br>3.CoCreateInstanceEx：创建COM对象，可指定多个接口或远程对象<br>4.CoRegisterClassObject：登记一个对象，以便其它应用程序可以连接到该对象<br>5.CoRevokeClassObject：取消对象的登记操作<br>6.CoDisconnectObject：断开其他应用程序与对象的连接</p>
+<h5 id="内存管理函数"><a href="#内存管理函数" class="headerlink" title="内存管理函数"></a>内存管理函数</h5><p>1.CoTaskMemAlloc：内存分配函数<br>2.CoTaskMemRealloc: 內存重新分配函数<br>3.CoTaskMemFree：内存释放函数<br>4.CoGetMallo：获取COM库的内存管理器接口</p>
+<h4 id="HRESULT返回值"><a href="#HRESULT返回值" class="headerlink" title="HRESULT返回值"></a>HRESULT返回值</h4><p>COM要求所有的方法都会返回一个HRESULT类型的错误号，其就是一个类型定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> LONG HRESULT;<br></code></pre></td></tr></table></figure>
+
+<p>HRESULT类型的返回值反映了函数中的一些情况，其类型定义规范如下：</p>
+<p><img src="https://s2.loli.net/2025/05/17/7kp9ECntXiuI1WV.png" srcset="/img/loading.gif" lazyload></p>
+<p>自定义标记(29位)反映结果是否为自定义标识，1 为是，0 则不是；操作码(16-28位)表示结果操作来源，在Windows平台上，其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_WINDOWS         8</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_STORAGE         3</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_RPC             1</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_SSPI            9</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_WIN32           7</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_CONTROL         10</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_NULL            0</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_INTERNET        12</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_ITF             4</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_DISPATCH        2</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> FACILITY_CERT           11</span><br></code></pre></td></tr></table></figure>
+
+<p>操作结果码(0-15位)反映操作的状态，WinError.h定义了Win32函数所有可能返回结果。以下是一些经常用到的返回值和宏定义：</p>
+<p><img src="https://s2.loli.net/2025/05/17/larCYvVXgKNHTfI.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="COM组件"><a href="#COM组件" class="headerlink" title="COM组件"></a>COM组件</h2><h3 id="实现类工厂对象"><a href="#实现类工厂对象" class="headerlink" title="实现类工厂对象"></a>实现类工厂对象</h3><p>COM对象的创建是通过类工厂来完成的，类工厂是COM对象的生产基地，对应每一个COM类，都有一个类工厂专门用于该COM类的对象创建操作。</p>
+<p><img src="https://s2.loli.net/2025/05/17/fsuemvEN5R98gJW.png" srcset="/img/loading.gif" lazyload></p>
+<p>类厂本身也是一个COM对象，它支持一个特殊的接口IClassFactory，这个接口的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c">IClassFactory : public IUnknown<br>&#123;<br>public:<br> virtual <span class="hljs-comment">/* [local] */</span> HRESULT STDMETHODCALLTYPE <span class="hljs-title function_">CreateInstance</span><span class="hljs-params">( </span><br><span class="hljs-params">     <span class="hljs-comment">/* [unique][in] */</span> IUnknown *pUnkOuter,</span><br><span class="hljs-params">     <span class="hljs-comment">/* [in] */</span> REFIID riid,</span><br><span class="hljs-params">     <span class="hljs-comment">/* [iid_is][out] */</span> <span class="hljs-type">void</span> **ppvObject)</span> = <span class="hljs-number">0</span>;  <br> virtual <span class="hljs-comment">/* [local] */</span> HRESULT STDMETHODCALLTYPE <span class="hljs-title function_">LockServer</span><span class="hljs-params">( </span><br><span class="hljs-params">     <span class="hljs-comment">/* [in] */</span> BOOL fLock)</span> = <span class="hljs-number">0</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们可以看见它继承了IUnknown接口，并且多了两个成员函数：CreateInstance、LockServer。</p>
+<ul>
+<li>CreateInstance函数是IClassFactory接口中最重要的函数，<strong>它用于创建相应的COM对象</strong>，因为每个类厂只针对特定的COM对象，所以CreateInstance成员函数知道该创建什么样的COM对象。</li>
+<li>LockServer用于控制组件的生存周期，<strong>用于在多客户调用COM时，锁定COM，以免一个客户退出时销毁了COM</strong>，那么其他客户的调用将发生错误。</li>
+</ul>
+<h3 id="实现自动注册"><a href="#实现自动注册" class="headerlink" title="实现自动注册"></a>实现自动注册</h3><p>组件程序创建完成之后，必须要通过某种途径把它的信息注册到注册表中，然后客户程序才能根据注册表中的信息对组件程序进行操作。</p>
+<p>实现自注册组件必须提供两个导出函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">STDAPI <span class="hljs-title function_">DllRegisterServer</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> <br>STDAPI <span class="hljs-title function_">DllUnregisterServer</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> <br></code></pre></td></tr></table></figure>
+
+<p><strong>regsvr32 com组件路径</strong>命令实际是regsvr32.exe调用组件的DllRegisterServer函数，实际<strong>注册的操作是在组件的DllRegisterServer函数</strong>里完成的，同样执行<strong>regsvr32 &#x2F;u com组件路径</strong>命令可以进行反注册，实际进行<strong>反注册的操作是在组件的DllUnregisterServer函数</strong>里完成的。</p>
+<h3 id="实现自动卸载"><a href="#实现自动卸载" class="headerlink" title="实现自动卸载"></a>实现自动卸载</h3><p>只有当组件满足以下两个条件才能被卸载：</p>
+<ol>
+<li>组件中对象数为0；</li>
+<li>类厂的锁计数为0。</li>
+</ol>
+<p>COM中的<strong>CoFreeAllLibraries</strong>函数可以检测当前进程中的所有组件程序，当发现某个组件满足上面两个条件时，就调用FreeLibrary函数把该组件从内存中释放，有两个问题：</p>
+<ol>
+<li>谁来调用<strong>CoFreeAllLibraries</strong>函数？是<strong>由客户来调用</strong>，一般在程序空闲的时候调用。</li>
+<li>CoFreeAllLibraries函数怎么知道满足了上面说的可以卸载的条件？需要<strong>组件导出一个DllCanUnloadNow函数</strong>，如果DllCanUnloadNow函数返回<strong>S_OK表示对象可以被卸载</strong>。</li>
+</ol>
+<h2 id="COM数据类型"><a href="#COM数据类型" class="headerlink" title="COM数据类型"></a>COM数据类型</h2><p>COM常见的数据类型如下所示，其中字体加粗部分是我们暂时不了解的：</p>
+<blockquote>
+<p>CHAR, CHAR*, BYTE, BYTE*, SHORT, SHORT*, USHORT, USHORT*, INT, INT*, UINT, UINT*, LONG, LONG*, ULONG, ULONG*, FLOAT, FLOAT*, DOUBLE, DOUBLE*, <strong>VARIANT_BOOL, VARIANT_BOOL*, BSTR, BSTR*</strong>, IUnknown*, IUnknown**, <strong>VARIANT, VARIANT*</strong></p>
+</blockquote>
+<h3 id="VARIANT-BOOL"><a href="#VARIANT-BOOL" class="headerlink" title="VARIANT_BOOL"></a>VARIANT_BOOL</h3><p>数据类型VARIANT_BOOL的定义如下，其本质就是一个short类型：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-type">short</span> VARIANT_BOOL;<br></code></pre></td></tr></table></figure>
+
+<p>我们想要使用这个类型的话需要包含一个头文件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;oaidl.h&gt;</span></span><br></code></pre></td></tr></table></figure>
+
+<h3 id="BSTR"><a href="#BSTR" class="headerlink" title="BSTR"></a>BSTR</h3><p>数据类型BSTR是COM中的字符串类型，BSTR*也就是其的指针；BSTR是指向的是宽字符串的指针，是一个带有字符计数值的字符串，且这个计数值是保存在字符数组的开头的4字节中。</p>
+<p><img src="https://s2.loli.net/2025/05/17/qvhjdwXsocKPbTk.png" srcset="/img/loading.gif" lazyload></p>
+<p>在使用之前需要包含头文件（定义的文件），如果你包含了windows.h或者atlbase.h文件也可以：</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atlconv.h&gt;</span></span><br></code></pre></td></tr></table></figure>
+
+<p>使用BSTR不能直接赋值，需要借助函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c">BSTR bstrA = SysAllocString(<span class="hljs-string">L&quot;Hello BSTR&quot;</span>); <span class="hljs-comment">// 赋值</span><br>BSTR bstrB = SysAllocStringLen(bstrA, SysStringLen(bstrA)); <span class="hljs-comment">// 指定长度赋值</span><br>SysFreeString(bstrA); <span class="hljs-comment">// 释放</span><br>SysFreeString(bstrB); <span class="hljs-comment">// 释放</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="VARIANT"><a href="#VARIANT" class="headerlink" title="VARIANT"></a>VARIANT</h3><p>计算机语言多种多样，COM产生的目的之一就是要跨语言，而VARIANT数据类型就具有了跨语言的特性，同时它可能存储任何的数据类型，<strong>说夸张一点，它是万能数据类型</strong>。</p>
+<p>为实现万能类型的功能，在C++中，VARIANT是一个结构体，该结构体内部又有联合体（联合了多种基本的数据类型），<strong>又有变量类型标志VARTYPE vt</strong>，可见VARIANT被设置得多么巧妙、合理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-comment">/* [wire_marshal] */</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tagVARIANT</span> <span class="hljs-title">VARIANT</span>;</span><br> <br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tagVARIANT</span></span><br><span class="hljs-class">    &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">union</span> </span><br><span class="hljs-class">        &#123;</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> __<span class="hljs-title">tagVARIANT</span></span><br><span class="hljs-class">            &#123;</span><br>            VARTYPE vt;<br>            WORD wReserved1;<br>            WORD wReserved2;<br>            WORD wReserved3;<br>            <span class="hljs-class"><span class="hljs-keyword">union</span> </span><br><span class="hljs-class">                &#123;</span><br>                LONGLONG llVal;<br>                LONG lVal;<br>                BYTE bVal;<br>                SHORT iVal;<br>                FLOAT fltVal;<br>                DOUBLE dblVal;<br>                VARIANT_BOOL boolVal;<br>                _VARIANT_BOOL <span class="hljs-type">bool</span>;<br>                SCODE scode;<br>                CY cyVal;<br>                DATE date;<br>                BSTR bstrVal;<br>                IUnknown *punkVal;<br>                IDispatch *pdispVal;<br>                SAFEARRAY *parray;<br>                BYTE *pbVal;<br>                SHORT *piVal;<br>                LONG *plVal;<br>                LONGLONG *pllVal;<br>                FLOAT *pfltVal;<br>                DOUBLE *pdblVal;<br>                VARIANT_BOOL *pboolVal;<br>                _VARIANT_BOOL *pbool;<br>                SCODE *pscode;<br>                CY *pcyVal;<br>                DATE *pdate;<br>                BSTR *pbstrVal;<br>                IUnknown **ppunkVal;<br>                IDispatch **ppdispVal;<br>                SAFEARRAY **pparray;<br>                VARIANT *pvarVal;<br>                PVOID byref;<br>                CHAR cVal;<br>                USHORT uiVal;<br>                ULONG ulVal;<br>                ULONGLONG ullVal;<br>                INT intVal;<br>                UINT uintVal;<br>                DECIMAL *pdecVal;<br>                CHAR *pcVal;<br>                USHORT *puiVal;<br>                ULONG *pulVal;<br>                ULONGLONG *pullVal;<br>                INT *pintVal;<br>                UINT *puintVal;<br>                <span class="hljs-class"><span class="hljs-keyword">struct</span> __<span class="hljs-title">tagBRECORD</span></span><br><span class="hljs-class">                    &#123;</span><br>                    PVOID pvRecord;<br>                    IRecordInfo *pRecInfo;<br>                    &#125;   __VARIANT_NAME_4;<br>                &#125;   __VARIANT_NAME_3;<br>            &#125;   __VARIANT_NAME_2;<br>        DECIMAL decVal;<br>        &#125;   __VARIANT_NAME_1;<br>    &#125; ;<br></code></pre></td></tr></table></figure>
+
+<p><strong>变量类型标志VARTYPE vt</strong>，其有对应的值：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* VARIANT STRUCTURE</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> *  VARTYPE vt;</span><br><span class="hljs-comment"> *  WORD wReserved1;</span><br><span class="hljs-comment"> *  WORD wReserved2;</span><br><span class="hljs-comment"> *  WORD wReserved3;</span><br><span class="hljs-comment"> *  union &#123;</span><br><span class="hljs-comment"> *    LONGLONG       VT_I8</span><br><span class="hljs-comment"> *    LONG           VT_I4</span><br><span class="hljs-comment"> *    BYTE           VT_UI1</span><br><span class="hljs-comment"> *    SHORT          VT_I2</span><br><span class="hljs-comment"> *    FLOAT          VT_R4</span><br><span class="hljs-comment"> *    DOUBLE         VT_R8</span><br><span class="hljs-comment"> *    VARIANT_BOOL   VT_BOOL</span><br><span class="hljs-comment"> *    SCODE          VT_ERROR</span><br><span class="hljs-comment"> *    CY             VT_CY</span><br><span class="hljs-comment"> *    DATE           VT_DATE</span><br><span class="hljs-comment"> *    BSTR           VT_BSTR</span><br><span class="hljs-comment"> *    IUnknown *     VT_UNKNOWN</span><br><span class="hljs-comment"> *    IDispatch *    VT_DISPATCH</span><br><span class="hljs-comment"> *    SAFEARRAY *    VT_ARRAY</span><br><span class="hljs-comment"> *    BYTE *         VT_BYREF|VT_UI1</span><br><span class="hljs-comment"> *    SHORT *        VT_BYREF|VT_I2</span><br><span class="hljs-comment"> *    LONG *         VT_BYREF|VT_I4</span><br><span class="hljs-comment"> *    LONGLONG *     VT_BYREF|VT_I8</span><br><span class="hljs-comment"> *    FLOAT *        VT_BYREF|VT_R4</span><br><span class="hljs-comment"> *    DOUBLE *       VT_BYREF|VT_R8</span><br><span class="hljs-comment"> *    VARIANT_BOOL * VT_BYREF|VT_BOOL</span><br><span class="hljs-comment"> *    SCODE *        VT_BYREF|VT_ERROR</span><br><span class="hljs-comment"> *    CY *           VT_BYREF|VT_CY</span><br><span class="hljs-comment"> *    DATE *         VT_BYREF|VT_DATE</span><br><span class="hljs-comment"> *    BSTR *         VT_BYREF|VT_BSTR</span><br><span class="hljs-comment"> *    IUnknown **    VT_BYREF|VT_UNKNOWN</span><br><span class="hljs-comment"> *    IDispatch **   VT_BYREF|VT_DISPATCH</span><br><span class="hljs-comment"> *    SAFEARRAY **   VT_BYREF|VT_ARRAY</span><br><span class="hljs-comment"> *    VARIANT *      VT_BYREF|VT_VARIANT</span><br><span class="hljs-comment"> *    PVOID          VT_BYREF (Generic ByRef)</span><br><span class="hljs-comment"> *    CHAR           VT_I1</span><br><span class="hljs-comment"> *    USHORT         VT_UI2</span><br><span class="hljs-comment"> *    ULONG          VT_UI4</span><br><span class="hljs-comment"> *    ULONGLONG      VT_UI8</span><br><span class="hljs-comment"> *    INT            VT_INT</span><br><span class="hljs-comment"> *    UINT           VT_UINT</span><br><span class="hljs-comment"> *    DECIMAL *      VT_BYREF|VT_DECIMAL</span><br><span class="hljs-comment"> *    CHAR *         VT_BYREF|VT_I1</span><br><span class="hljs-comment"> *    USHORT *       VT_BYREF|VT_UI2</span><br><span class="hljs-comment"> *    ULONG *        VT_BYREF|VT_UI4</span><br><span class="hljs-comment"> *    ULONGLONG *    VT_BYREF|VT_UI8</span><br><span class="hljs-comment"> *    INT *          VT_BYREF|VT_INT</span><br><span class="hljs-comment"> *    UINT *         VT_BYREF|VT_UINT</span><br><span class="hljs-comment"> *  &#125;</span><br><span class="hljs-comment"> */</span><br></code></pre></td></tr></table></figure>
+
+<p>当我们想用VARIANT来保存LONG类型的时候可以这样写：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">VARIANT var;<br>VariantInit(&amp;var); <span class="hljs-comment">// 初始化</span><br>var.vt = VT_I4; <span class="hljs-comment">// 变量类型标志，如上所示VT_I4对应LONG类型</span><br>var.lVal = <span class="hljs-number">100</span>; <span class="hljs-comment">// 这里的成员lVal就表示着LONG，这个可以在VARIANT结构体的定义中找到</span><br> <br>VariantClear(&amp;var); <span class="hljs-comment">// 清空</span><br></code></pre></td></tr></table></figure>
+
+<p>存储学会了，接下来就要从VARIANT中读取存储的值了：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c">VARIANT var;<br>VariantInit(&amp;var); <span class="hljs-comment">// 初始化</span><br>var.vt = VT_I4; <span class="hljs-comment">// 变量类型标志，如上所示VT_I4对应LONG类型</span><br>var.lVal = <span class="hljs-number">100</span>; <span class="hljs-comment">// 这里的成员lVal就表示着LONG，这个可以在VARIANT结构体的定义中找到</span><br> <br><span class="hljs-keyword">if</span> (var.vt == VT_I4) <span class="hljs-comment">// 判断</span><br>&#123;<br>    LONG lVar = var.lVal; <span class="hljs-comment">// 获取</span><br>&#125;<br> <br>VariantClear(&amp;var); <span class="hljs-comment">// 清空</span><br></code></pre></td></tr></table></figure>
+
+<p>如果你想要将VARIANT进行数据类型的转换可以使用函数VariantChangeType：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">WINOLEAUTAPI <span class="hljs-title function_">VariantChangeType</span><span class="hljs-params">(</span><br><span class="hljs-params">    _Inout_ VARIANTARG * pvargDest, <span class="hljs-comment">// 目标VARIANT的指针</span></span><br><span class="hljs-params">    _In_ <span class="hljs-type">const</span> VARIANTARG * pvarSrc, <span class="hljs-comment">// 源VARIANT的指针</span></span><br><span class="hljs-params">    _In_ USHORT wFlags, <span class="hljs-comment">// 强制转化的控制符</span></span><br><span class="hljs-params">    _In_ VARTYPE vt <span class="hljs-comment">// 需要强制转化的类型</span></span><br><span class="hljs-params">)</span>;<br></code></pre></td></tr></table></figure>
+
+<h2 id="COM客户"><a href="#COM客户" class="headerlink" title="COM客户"></a>COM客户</h2><p>COM客户从只知道CLSID到获取到接口指针必须经过两步：</p>
+<ol>
+<li>得到该CLSID的类厂对象；</li>
+<li>由类厂对象创建COM对象，返回接口指针给客户。</li>
+</ol>
+<p>客户得到对象接口指针后，可以用指针调用接口的成员函数，还可以获得其他接口的指针，从而得到COM对象的所有服务。</p>
+<h1 id="ATL"><a href="#ATL" class="headerlink" title="ATL"></a>ATL</h1><p>ATL（Active Template Library）是微软开发的一个C++模板库，主要用于创建高效、轻量级的COM（Component Object Model）组件，它通过模板技术提供了创建COM对象所需的基础代码框架，显著减少了开发者需要编写的样板代码量，同时保持了高性能和灵活性。</p>
+<p>ATL最初设计用于开发ActiveX控件，但如今广泛应用于各种COM组件的开发，包括Windows服务、DLL插件和自动化服务器等；ATL的核心优势在于其模板化的实现方式，它通过编译时多态而非运行时多态来提高效率，避免了传统C++多重继承带来的复杂性和性能开销；</p>
+<p>ATL提供了诸如智能指针（CComPtr）、COM对象基类（CComObject）、接口映射宏（COM_INTERFACE_ENTRY）等工具，简化了COM接口的实现和管理；此外，ATL还内置了对双重接口（dual interface）、连接点（connection points）和属性页（property pages）等高级COM特性的支持；ATL的代码生成机制通过向导和宏大幅降低了开发难度，开发者只需专注于业务逻辑实现，而ATL负责处理COM对象的生命周期管理、引用计数、接口查询等底层细节；</p>
+<p>在Windows开发生态中，ATL与MFC（Microsoft Foundation Classes）形成互补关系，MFC更适合快速开发大型应用程序框架，而ATL则更适合需要高性能和精细控制的COM组件开发；</p>
+<p>现代Windows开发中，尽管.NET技术逐渐普及，但ATL仍然在某些高性能场景和系统级开发中占据重要地位，特别是对于需要直接与Windows系统深度集成的组件开发。</p>
+<p>详细使用参考：<a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/cpp/atl/active-template-library-atl-concepts?view=msvc-170">活动模板库 (ATL) 概念 | Microsoft Learn</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E6%A1%8C%E9%9D%A2%E7%AB%AF/" class="category-chain-item">桌面端</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>COM全解</div>
+      <div>https://hermes37.vercel.app/2025/05/18/全栈应用开发/桌面端/COM全解/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/18/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E6%A1%8C%E9%9D%A2%E7%AB%AF/MFC%E5%85%A8%E8%A7%A3/" title="MFC全解">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MFC全解</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/18/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E6%A1%8C%E9%9D%A2%E7%AB%AF/QT%E4%BF%A1%E5%8F%B7%E4%B8%8E%E6%A7%BD%E6%9C%BA%E5%88%B6/" title="QT信号与槽机制">
+                        <span class="hidden-mobile">QT信号与槽机制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

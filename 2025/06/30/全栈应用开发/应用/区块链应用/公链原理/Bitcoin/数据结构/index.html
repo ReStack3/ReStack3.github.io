@@ -1,0 +1,849 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="打开Bitcoin 浏览器区块列表 | 区块链浏览器可以看到：  一个区块1234567891011121314151617181920212223242526272829303132333435363738394041&#x2F;** * 比特币区块的完整数据结构，包含区块头和交易列表。 * 继承自CBlockHeader，添加交易数据及验证状态缓存。 *&#x2F;class CBlock : public">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/30/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Bitcoin/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="打开Bitcoin 浏览器区块列表 | 区块链浏览器可以看到：  一个区块1234567891011121314151617181920212223242526272829303132333435363738394041&#x2F;** * 比特币区块的完整数据结构，包含区块头和交易列表。 * 继承自CBlockHeader，添加交易数据及验证状态缓存。 *&#x2F;class CBlock : public">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/YUeoj3X8Izg2R9J.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/22/OTwMuviCXF3UZym.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/N6YDJAhOPcIa9Fs.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/D6LfZNSJHnayErY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/YLy6M58ATKuPN1X.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/7aPUDZXoWhrdsGw.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/NC3Fp5veO7SwWfd.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/tCYTmj8flOZXq4r.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/ofB6JWlLxrc98QM.png">
+<meta property="article:published_time" content="2025-06-30T06:22:50.181Z">
+<meta property="article:modified_time" content="2026-04-04T01:18:05.732Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/06/30/YUeoj3X8Izg2R9J.png">
+  
+  
+  
+  <title>数据结构 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="数据结构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">数据结构</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/06/30/YUeoj3X8Izg2R9J.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/06/22/OTwMuviCXF3UZym.png" srcset="/img/loading.gif" lazyload></p>
+<p>打开<a target="_blank" rel="noopener" href="https://www.oklink.com/zh-hans/bitcoin/block/903359">Bitcoin 浏览器区块列表 | 区块链浏览器</a>可以看到：</p>
+<p><img src="https://s2.loli.net/2025/06/30/N6YDJAhOPcIa9Fs.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="一个区块"><a href="#一个区块" class="headerlink" title="一个区块"></a>一个区块</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 比特币区块的完整数据结构，包含区块头和交易列表。</span><br><span class="hljs-comment"> * 继承自CBlockHeader，添加交易数据及验证状态缓存。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CBlock</span> : <span class="hljs-keyword">public</span> CBlockHeader &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 区块体：交易列表（按Merkle树顺序排列）。</span><br><span class="hljs-comment">     * - 第一笔交易必须是Coinbase交易（矿工奖励）。</span><br><span class="hljs-comment">     * - 交易以CTransactionRef（共享指针）形式存储，避免复制开销。</span><br><span class="hljs-comment">     */</span><br>    std::vector&lt;CTransactionRef&gt; vtx;<br><br>    <span class="hljs-comment">//...................</span><br><br>    <span class="hljs-built_in">CBlock</span>() &#123; <span class="hljs-built_in">SetNull</span>(); &#125;<br><br>    <span class="hljs-comment">/** </span><br><span class="hljs-comment">     * 通过区块头构造区块（交易列表为空）。</span><br><span class="hljs-comment">     * @param header 区块头数据（版本、前驱哈希、时间戳等）</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-built_in">CBlock</span>(<span class="hljs-type">const</span> CBlockHeader &amp;header) &#123;<br>        <span class="hljs-built_in">SetNull</span>();<br>        *(<span class="hljs-built_in">static_cast</span>&lt;CBlockHeader*&gt;(<span class="hljs-keyword">this</span>)) = header; <span class="hljs-comment">// 继承的区块头字段赋值</span><br>    &#125;<br><br>    <span class="hljs-comment">/** </span><br><span class="hljs-comment">     * 提取当前区块的区块头（用于PoW验证或链状态管理）。</span><br><span class="hljs-comment">     * @return 独立的CBlockHeader对象</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-function">CBlockHeader <span class="hljs-title">GetBlockHeader</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        CBlockHeader block;<br>        block.nVersion       = nVersion;<br>        block.hashPrevBlock  = hashPrevBlock;<br>        block.hashMerkleRoot = hashMerkleRoot;<br>        block.nTime          = nTime;<br>        block.nBits          = nBits;<br>        block.nNonce         = nNonce;<br>        <span class="hljs-keyword">return</span> block;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h1 id="区块头"><a href="#区块头" class="headerlink" title="区块头"></a>区块头</h1><p>在官方文档中：<a target="_blank" rel="noopener" href="https://developer.bitcoin.org/reference/block_chain.html">Block Chain — Bitcoin</a><a target="_blank" rel="noopener" href="https://developer.bitcoin.org/reference/block_chain.html">Block Chain — Bitcoin</a>区块头：</p>
+<p><img src="https://s2.loli.net/2025/06/30/D6LfZNSJHnayErY.png" srcset="/img/loading.gif" lazyload></p>
+<p>同样我们可以看到：</p>
+<p><img src="https://s2.loli.net/2025/06/30/YLy6M58ATKuPN1X.png" srcset="/img/loading.gif" lazyload></p>
+<p>源码中体现为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">CBlockHeader</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// header,区块版本号，表示本区块遵守的验证规则</span><br>    <span class="hljs-type">int32_t</span> nVersion;<br>	<span class="hljs-comment">//前一区块的哈希值，使用SHA256(SHA256(父区块头))计算</span><br>    uint256 hashPrevBlock;<br>	<span class="hljs-comment">//该区块中交易的Merkle树根的哈希值，同样采用SHA256(SHA256())计算</span><br>    uint256 hashMerkleRoot;<br>	<span class="hljs-comment">//该区块产生的近似时间</span><br>    <span class="hljs-type">uint32_t</span> nTime;<br>	<span class="hljs-comment">//该区块工作量证明算法的难度目标</span><br>    <span class="hljs-type">uint32_t</span> nBits;<br>	<span class="hljs-comment">//为了找到满足难度目标所设定的随机数</span><br>    <span class="hljs-type">uint32_t</span> nNonce;<br>    <br>    <span class="hljs-comment">//....................</span><br>  &#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="区块体"><a href="#区块体" class="headerlink" title="区块体"></a>区块体</h1><h2 id="交易"><a href="#交易" class="headerlink" title="交易"></a>交易</h2><p>在开始学习区块体之前，需要先看看一个典型的交易过程</p>
+<p><img src="https://s2.loli.net/2025/06/30/7aPUDZXoWhrdsGw.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><p><strong>交易哈希（TxID）</strong>:<br><code>bd4099185bec48e018d4cd34a7d0cc2da2e050aa4271aa19260fa9d7bc47dcc9</code><br>（这是这笔交易的唯一标识符，可以在区块链浏览器中查询详情）。</p>
+</li>
+<li><p><strong>打包时间</strong>:<code>2025-06-30 14:37:44</code></p>
+</li>
+<li><p><strong>所在区块</strong>:高度 <code>903359</code>（您之前查询的区块）</p>
+</li>
+<li><p><strong>输入地址</strong>: <code>bc1q3p...9zcyaz</code>该地址提供了 <strong>0.00426769 BTC</strong> 作，这笔钱可能来自之前的交易输出（UTXO）</p>
+</li>
+<li><p>交易有两个输出：</p>
+<ol>
+<li><p><strong>输出地址 1</strong>: <code>3QxSQt...oahcAtnxbJWPg7j</code>。（以 <code>3</code> 开头，属于传统多签或嵌套 SegWit 地址</p>
+<p>金额: <strong>0.0018482 BTC</strong>，可能是转账给他人或交易所的提现地址。</p>
+</li>
+<li><p><strong>输出地址 2</strong>: <code>bc1q3p...9zcyaz</code>（和输入地址相同）。</p>
+<p>金额: <strong>0.00213549 BTC</strong>，这是 <strong>找零地址</strong>（Change Address），即输入金额扣除转账金额后剩余的钱返回给自己。</p>
+</li>
+</ol>
+</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/06/30/NC3Fp5veO7SwWfd.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="UTXO模型"><a href="#UTXO模型" class="headerlink" title="UTXO模型"></a>UTXO模型</h3><h4 id="UTXO-集"><a href="#UTXO-集" class="headerlink" title="UTXO 集"></a><strong>UTXO 集</strong></h4><p>比特币全节点维护一个高效的 <strong>UTXO 集</strong>（存储在 LevelDB 或类似数据库中），用于快速验证交易输入的合法性。其作用在于：</p>
+<ul>
+<li>记录所有未被花费的交易输出（即“可用的钱”）。</li>
+<li>当新交易引用某个 <code>(txid, n)</code> 时，节点直接查询 UTXO 集，无需扫描历史区块。</li>
+</ul>
+<p><strong>UTXO 集的结构</strong>:</p>
+<ul>
+<li>键（Key）: <code>COutPoint</code>（即 <code>txid + n</code>）。</li>
+<li>值（Value）: 对应的 <code>CTxOut</code>（金额 + 锁定脚本）。</li>
+</ul>
+<h5 id="UTXO-集的更新机制"><a href="#UTXO-集的更新机制" class="headerlink" title="UTXO 集的更新机制"></a><strong>UTXO 集的更新机制</strong></h5><ul>
+<li><strong>新区块到来时</strong>:节点处理区块中的交易，删除被花费的 UTXO（输入），新增交易的输出（UTXO）。</li>
+<li><strong>数据库优化</strong>:UTXO 集使用 LevelDB 存储，支持快速随机访问。</li>
+</ul>
+<h5 id="轻节点（SPV）的验证"><a href="#轻节点（SPV）的验证" class="headerlink" title="轻节点（SPV）的验证"></a><strong>轻节点（SPV）的验证</strong></h5><p>轻节点（如手机钱包）不保存完整 UTXO 集，而是通过 <strong>Merkle Proof</strong> 向全节点验证某个 <code>(txid, n)</code> 的存在性和金额。如果引用的 <code>txid</code> 不在主链上（如未确认或分叉交易），节点会临时缓存该交易，直到其父交易被确认。</p>
+<h3 id="验证步骤"><a href="#验证步骤" class="headerlink" title="验证步骤"></a><strong>验证步骤</strong></h3><p>当需要验证交易的合法性需要进行以下几步：</p>
+<p><strong>步骤 1：检查 UTXO 是否存在</strong></p>
+<p>节点通过 <code>(txid, n)</code> 直接查询 UTXO 集：</p>
+<ul>
+<li><strong>如果存在</strong>: 表示该输出未被花费，可以用于当前交易。</li>
+<li><strong>如果不存在</strong>: 可能已被花费或从未存在（无效输入）。</li>
+</ul>
+<p><strong>步骤 2：验证锁定脚本（scriptPubKey）</strong></p>
+<p>从 UTXO 集中获取对应的 <code>CTxOut</code>，检查其 <code>scriptPubKey</code> 是否能被当前交易的 <code>scriptSig</code> 解锁（满足花费条件）。</p>
+<p><strong>步骤 3：检查双花</strong></p>
+<p>确保同一 <code>(txid, n)</code> 未被其他交易引用（通过内存池和区块链状态验证）。</p>
+<h2 id="剖析源码"><a href="#剖析源码" class="headerlink" title="剖析源码"></a>剖析源码</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 比特币交易的核心数据结构，表示一笔UTXO的转移操作。</span><br><span class="hljs-comment"> * 设计为不可变对象（const成员），哈希值预计算并缓存以提升性能。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CTransaction</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">/** 当前默认交易版本号（版本2支持SegWit） */</span><br>    <span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">uint32_t</span> CURRENT_VERSION&#123;<span class="hljs-number">2</span>&#125;;<br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 交易输入列表（指向要花费的UTXO）。</span><br><span class="hljs-comment">     * - 每个CTxIn包含一个prevout字段（COutPoint类型），通过哈希指针引用前一笔交易的输出。</span><br><span class="hljs-comment">     * - 必须提供有效的解锁脚本（scriptSig）证明所有权。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-type">const</span> std::vector&lt;CTxIn&gt; vin;<br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 交易输出列表（生成新的UTXO）。</span><br><span class="hljs-comment">     * - 每个CTxOut包含金额（nValue）和锁定脚本（scriptPubKey），定义未来花费条件。</span><br><span class="hljs-comment">     * - 比特币的“余额”本质上是所有属于用户的UTXO总和。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-type">const</span> std::vector&lt;CTxOut&gt; vout;<br>    <span class="hljs-comment">/** 交易版本号（用于协议升级，如SegWit） */</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">uint32_t</span> version;<br>    <span class="hljs-comment">/** </span><br><span class="hljs-comment">     * 锁定时间（区块高度或时间戳）。</span><br><span class="hljs-comment">     * - 若不为0，则需达到指定高度/时间后交易才生效。</span><br><span class="hljs-comment">     * - 用于实现时间锁功能。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">uint32_t</span> nLockTime;<br><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">/** 标记是否包含隔离见证（SegWit）数据 */</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">bool</span> m_has_witness;<br>    <span class="hljs-comment">/** 交易ID（传统哈希，不含见证数据） */</span><br>    <span class="hljs-type">const</span> Txid hash;<br>    <span class="hljs-comment">/** 见证哈希（Wtxid，包含见证数据，SegWit专用） */</span><br>    <span class="hljs-type">const</span> Wtxid m_witness_hash;<br>    <span class="hljs-comment">/** 计算交易ID（双SHA256哈希） */</span><br>    <span class="hljs-function">Txid <span class="hljs-title">ComputeHash</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <span class="hljs-comment">/** 计算见证哈希（SegWit交易使用） */</span><br>    <span class="hljs-function">Wtxid <span class="hljs-title">ComputeWitnessHash</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br>    <span class="hljs-comment">/** 检查交易是否包含见证数据 */</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">ComputeHasWitness</span><span class="hljs-params">()</span> <span class="hljs-type">const</span></span>;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">//...........</span><br>   <br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="输入"><a href="#输入" class="headerlink" title="输入"></a>输入</h3><p><img src="https://s2.loli.net/2025/06/30/tCYTmj8flOZXq4r.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">CTxIn</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-comment">//指向 前一笔交易的输出（UTXO），是比特币“哈希指针”的核心实现。</span><br>    COutPoint prevout;<br>    <span class="hljs-comment">//解锁脚本（Signature Script），提供签名和公钥，用于验证对该 UTXO 的使用权。</span><br>    CScript scriptSig;<br>    <span class="hljs-comment">//序列号，最初用于交易替换（Replace-by-Fee, RBF），后扩展为支持 相对时间锁（BIP 68/112/113）。</span><br>    <span class="hljs-type">uint32_t</span> nSequence;<br>    <span class="hljs-comment">// 隔离见证（SegWit）数据，存储见证信息（如 Schnorr 签名），不直接序列化到交易中。</span><br>    CScriptWitness scriptWitness; <br><br>    <span class="hljs-comment">//........</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">COutPoint</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-comment">// 前一笔交易的 交易哈希（Transaction ID），唯一标识交易的来源。</span><br>    Txid hash;<br>	<span class="hljs-comment">//前一笔交易中的 输出索引（从 0 开始），指定具体是第几个输出。</span><br>    <span class="hljs-type">uint32_t</span> n;<br>    <br>    <span class="hljs-comment">//......</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="输出"><a href="#输出" class="headerlink" title="输出"></a>输出</h3><p><img src="https://s2.loli.net/2025/06/30/ofB6JWlLxrc98QM.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">CTxOut</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">//表示该输出的 比特币金额，单位是 聪（satoshi）</span><br>    CAmount nValue;<br>    <span class="hljs-comment">// 锁定脚本（Pubkey Script），定义了花费这笔输出的条件（如需要特定签名或满足脚本逻辑）。</span><br>    CScript scriptPubKey;<br>    <br>    <span class="hljs-comment">//.......</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="默克尔树"><a href="#默克尔树" class="headerlink" title="默克尔树"></a>默克尔树</h3><table>
+<thead>
+<tr>
+<th align="left">函数名</th>
+<th align="left">作用</th>
+<th align="left">与默克尔树构造的关系</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong><code>ComputeMerkleRoot</code></strong></td>
+<td align="left">仅计算默克尔根（忽略路径）</td>
+<td align="left">调用<code>MerkleComputation</code>，仅取<code>proot</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>ComputeMerklePath</code></strong></td>
+<td align="left">仅生成指定位置的默克尔路径</td>
+<td align="left">调用<code>MerkleComputation</code>，仅取<code>path</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>BlockMerkleRoot</code></strong></td>
+<td align="left">为区块交易列表计算默克尔根</td>
+<td align="left">准备数据后调用<code>ComputeMerkleRoot</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>BlockWitnessMerkleRoot</code></strong></td>
+<td align="left">为区块隔离见证数据计算默克尔根（Coinbase特殊处理）</td>
+<td align="left">准备数据后调用<code>ComputeMerkleRoot</code></td>
+</tr>
+<tr>
+<td align="left"><strong><code>TransactionMerklePath</code></strong></td>
+<td align="left">生成区块中某交易的默克尔路径</td>
+<td align="left">准备数据后调用<code>ComputeMerklePath</code></td>
+</tr>
+</tbody></table>
+<p><code>TransactionMerklePath</code> 是一个用于生成<strong>比特币交易默克尔路径（Merkle Path）</strong>的函数，通常用于轻客户端（如SPV钱包）验证某个交易是否被包含在特定区块中。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">std::vector&lt;uint256&gt; <span class="hljs-title">TransactionMerklePath</span><span class="hljs-params">(<span class="hljs-type">const</span> CBlock&amp; block, <span class="hljs-type">uint32_t</span> position)</span></span><br><span class="hljs-function"></span>&#123;<br>    std::vector&lt;uint256&gt; leaves;<br>    leaves.<span class="hljs-built_in">resize</span>(block.vtx.<span class="hljs-built_in">size</span>());<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> s = <span class="hljs-number">0</span>; s &lt; block.vtx.<span class="hljs-built_in">size</span>(); s++) &#123;<br>        leaves[s] = block.vtx[s]-&gt;<span class="hljs-built_in">GetHash</span>();<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">ComputeMerklePath</span>(leaves, position);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">static</span> std::vector&lt;uint256&gt; <span class="hljs-title">ComputeMerklePath</span><span class="hljs-params">(<span class="hljs-type">const</span> std::vector&lt;uint256&gt;&amp; leaves, <span class="hljs-type">uint32_t</span> position)</span> </span>&#123;<br>    std::vector&lt;uint256&gt; ret;<br>    <span class="hljs-built_in">MerkleComputation</span>(leaves, <span class="hljs-literal">nullptr</span>, <span class="hljs-literal">nullptr</span>, position, &amp;ret);<br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="隐式构造默克尔树"><a href="#隐式构造默克尔树" class="headerlink" title="隐式构造默克尔树"></a><strong>隐式构造默克尔树</strong></h4><ol>
+<li>计算交易的默克尔根。</li>
+<li>检测默克尔树中的重复节点（突变，mutated）。</li>
+<li>为指定交易生成默克尔路径（用于SPV验证）。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">MerkleComputation</span><span class="hljs-params">(<span class="hljs-type">const</span> std::vector&lt;uint256&gt;&amp; leaves, uint256* proot, <span class="hljs-type">bool</span>* pmutated, <span class="hljs-type">uint32_t</span> leaf_pos, std::vector&lt;uint256&gt;* path)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (path) path-&gt;<span class="hljs-built_in">clear</span>();<br>    <span class="hljs-built_in">Assume</span>(leaves.<span class="hljs-built_in">size</span>() &lt;= UINT32_MAX);<br>    <span class="hljs-keyword">if</span> (leaves.<span class="hljs-built_in">size</span>() == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">if</span> (pmutated) *pmutated = <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">if</span> (proot) *proot = <span class="hljs-built_in">uint256</span>();<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <span class="hljs-type">bool</span> mutated = <span class="hljs-literal">false</span>;<br>    <span class="hljs-comment">// count is the number of leaves processed so far.</span><br>    <span class="hljs-type">uint32_t</span> count = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">// inner is an array of eagerly computed subtree hashes, indexed by tree</span><br>    <span class="hljs-comment">// level (0 being the leaves).</span><br>    <span class="hljs-comment">// For example, when count is 25 (11001 in binary), inner[4] is the hash of</span><br>    <span class="hljs-comment">// the first 16 leaves, inner[3] of the next 8 leaves, and inner[0] equal to</span><br>    <span class="hljs-comment">// the last leaf. The other inner entries are undefined.</span><br>    uint256 inner[<span class="hljs-number">32</span>];<br>    <span class="hljs-comment">// Which position in inner is a hash that depends on the matching leaf.</span><br>    <span class="hljs-type">int</span> matchlevel = <span class="hljs-number">-1</span>;<br>    <span class="hljs-comment">// First process all leaves into &#x27;inner&#x27; values.</span><br>    <span class="hljs-keyword">while</span> (count &lt; leaves.<span class="hljs-built_in">size</span>()) &#123;<br>        uint256 h = leaves[count];<br>        <span class="hljs-type">bool</span> matchh = count == leaf_pos;<br>        count++;<br>        <span class="hljs-type">int</span> level;<br>        <span class="hljs-comment">// For each of the lower bits in count that are 0, do 1 step. Each</span><br>        <span class="hljs-comment">// corresponds to an inner value that existed before processing the</span><br>        <span class="hljs-comment">// current leaf, and each needs a hash to combine it.</span><br>        <span class="hljs-keyword">for</span> (level = <span class="hljs-number">0</span>; !(count &amp; ((<span class="hljs-type">uint32_t</span>&#123;<span class="hljs-number">1</span>&#125;) &lt;&lt; level)); level++) &#123;<br>            <span class="hljs-keyword">if</span> (path) &#123;<br>                <span class="hljs-keyword">if</span> (matchh) &#123;<br>                    path-&gt;<span class="hljs-built_in">push_back</span>(inner[level]);<br>                &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (matchlevel == level) &#123;<br>                    path-&gt;<span class="hljs-built_in">push_back</span>(h);<br>                    matchh = <span class="hljs-literal">true</span>;<br>                &#125;<br>            &#125;<br>            mutated |= (inner[level] == h);<br>            h = <span class="hljs-built_in">Hash</span>(inner[level], h);<br>        &#125;<br>        <span class="hljs-comment">// Store the resulting hash at inner position level.</span><br>        inner[level] = h;<br>        <span class="hljs-keyword">if</span> (matchh) &#123;<br>            matchlevel = level;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// Do a final &#x27;sweep&#x27; over the rightmost branch of the tree to process</span><br>    <span class="hljs-comment">// odd levels, and reduce everything to a single top value.</span><br>    <span class="hljs-comment">// Level is the level (counted from the bottom) up to which we&#x27;ve sweeped.</span><br>    <span class="hljs-type">int</span> level = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">// As long as bit number level in count is zero, skip it. It means there</span><br>    <span class="hljs-comment">// is nothing left at this level.</span><br>    <span class="hljs-keyword">while</span> (!(count &amp; ((<span class="hljs-type">uint32_t</span>&#123;<span class="hljs-number">1</span>&#125;) &lt;&lt; level))) &#123;<br>        level++;<br>    &#125;<br>    uint256 h = inner[level];<br>    <span class="hljs-type">bool</span> matchh = matchlevel == level;<br>    <span class="hljs-keyword">while</span> (count != ((<span class="hljs-type">uint32_t</span>&#123;<span class="hljs-number">1</span>&#125;) &lt;&lt; level)) &#123;<br>        <span class="hljs-comment">// If we reach this point, h is an inner value that is not the top.</span><br>        <span class="hljs-comment">// We combine it with itself (Bitcoin&#x27;s special rule for odd levels in</span><br>        <span class="hljs-comment">// the tree) to produce a higher level one.</span><br>        <span class="hljs-keyword">if</span> (path &amp;&amp; matchh) &#123;<br>            path-&gt;<span class="hljs-built_in">push_back</span>(h);<br>        &#125;<br>        h = <span class="hljs-built_in">Hash</span>(h, h);<br>        <span class="hljs-comment">// Increment count to the value it would have if two entries at this</span><br>        <span class="hljs-comment">// level had existed.</span><br>        count += ((<span class="hljs-type">uint32_t</span>&#123;<span class="hljs-number">1</span>&#125;) &lt;&lt; level);<br>        level++;<br>        <span class="hljs-comment">// And propagate the result upwards accordingly.</span><br>        <span class="hljs-keyword">while</span> (!(count &amp; ((<span class="hljs-type">uint32_t</span>&#123;<span class="hljs-number">1</span>&#125;) &lt;&lt; level))) &#123;<br>            <span class="hljs-keyword">if</span> (path) &#123;<br>                <span class="hljs-keyword">if</span> (matchh) &#123;<br>                    path-&gt;<span class="hljs-built_in">push_back</span>(inner[level]);<br>                &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (matchlevel == level) &#123;<br>                    path-&gt;<span class="hljs-built_in">push_back</span>(h);<br>                    matchh = <span class="hljs-literal">true</span>;<br>                &#125;<br>            &#125;<br>            h = <span class="hljs-built_in">Hash</span>(inner[level], h);<br>            level++;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// Return result.</span><br>    <span class="hljs-keyword">if</span> (pmutated) *pmutated = mutated;<br>    <span class="hljs-keyword">if</span> (proot) *proot = h;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这段代码 <code>MerkleComputation</code> 是比特币核心中用于 <strong>计算默克尔树根哈希（Merkle Root）和生成默克尔路径（Merkle Path）</strong> 的核心函数，位于 <code>src/consensus/merkle.cpp</code>。它通过高效的位操作和层级哈希计算，同时支持以下功能：</p>
+<ol>
+<li>计算交易的默克尔根。</li>
+<li>检测默克尔树中的重复节点（突变，mutated）。</li>
+<li>为指定交易生成默克尔路径（用于SPV验证）。</li>
+</ol>
+<h4 id="计算默克尔根"><a href="#计算默克尔根" class="headerlink" title="计算默克尔根"></a>计算默克尔根</h4><p><strong>输入</strong>:<code>hashes</code>: 交易哈希列表（叶子节点），每个元素是 <code>uint256</code> 类型的交易哈希（双SHA-256结果）。<code>mutated</code>: 可选指针，用于返回是否检测到默克尔树“突变”（重复的中间节点，可能引发安全问题）。</p>
+<p><strong>输出</strong>:返回计算出的默克尔根（<code>uint256</code> 类型）。若输入为空，返回全零的 <code>uint256()</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">uint256 <span class="hljs-title">ComputeMerkleRoot</span><span class="hljs-params">(std::vector&lt;uint256&gt; hashes, <span class="hljs-type">bool</span>* mutated)</span> </span>&#123;<br>    <span class="hljs-type">bool</span> mutation = <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">while</span> (hashes.<span class="hljs-built_in">size</span>() &gt; <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-keyword">if</span> (mutated) &#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> pos = <span class="hljs-number">0</span>; pos + <span class="hljs-number">1</span> &lt; hashes.<span class="hljs-built_in">size</span>(); pos += <span class="hljs-number">2</span>) &#123;<br>                <span class="hljs-keyword">if</span> (hashes[pos] == hashes[pos + <span class="hljs-number">1</span>]) mutation = <span class="hljs-literal">true</span>;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">if</span> (hashes.<span class="hljs-built_in">size</span>() &amp; <span class="hljs-number">1</span>) &#123;<br>            hashes.<span class="hljs-built_in">push_back</span>(hashes.<span class="hljs-built_in">back</span>());<br>        &#125;<br>        <span class="hljs-built_in">SHA256D64</span>(hashes[<span class="hljs-number">0</span>].<span class="hljs-built_in">begin</span>(), hashes[<span class="hljs-number">0</span>].<span class="hljs-built_in">begin</span>(), hashes.<span class="hljs-built_in">size</span>() / <span class="hljs-number">2</span>);<br>        hashes.<span class="hljs-built_in">resize</span>(hashes.<span class="hljs-built_in">size</span>() / <span class="hljs-number">2</span>);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (mutated) *mutated = mutation;<br>    <span class="hljs-keyword">if</span> (hashes.<span class="hljs-built_in">size</span>() == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-built_in">uint256</span>();<br>    <span class="hljs-keyword">return</span> hashes[<span class="hljs-number">0</span>];<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/" class="category-chain-item">应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/" class="category-chain-item">区块链应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/" class="category-chain-item">公链原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Bitcoin/" class="category-chain-item">Bitcoin</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>数据结构</div>
+      <div>https://hermes37.vercel.app/2025/06/30/全栈应用开发/应用/区块链应用/公链原理/Bitcoin/数据结构/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/30/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Ethereum/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="数据结构">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">数据结构</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/29/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%BF%9B%E7%A8%8B%E7%BA%BF%E7%A8%8B/" title="进程线程">
+                        <span class="hidden-mobile">进程线程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

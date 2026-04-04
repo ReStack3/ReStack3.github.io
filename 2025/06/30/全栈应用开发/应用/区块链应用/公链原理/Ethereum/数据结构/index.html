@@ -1,0 +1,862 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="以太坊区块数据有三棵树，分别为状态树，交易树和收据树。整个以太坊系统中只有一棵状态树，记录整个以太坊系统的所有账户状态。每个区块保存着一棵交易树，记录该区块的交易情况，一棵收据树用来记录该区块的交易收据。 状态树采用Merkel-Patrica(MPT)树，而交易树和状态树采用Merkel树。   对于交易树和收据树来说，一旦树已经建立，花多少时间来编辑这棵树并不重要，因为树一旦建立了，它就会">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/30/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Ethereum/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="以太坊区块数据有三棵树，分别为状态树，交易树和收据树。整个以太坊系统中只有一棵状态树，记录整个以太坊系统的所有账户状态。每个区块保存着一棵交易树，记录该区块的交易情况，一棵收据树用来记录该区块的交易收据。 状态树采用Merkel-Patrica(MPT)树，而交易树和状态树采用Merkel树。   对于交易树和收据树来说，一旦树已经建立，花多少时间来编辑这棵树并不重要，因为树一旦建立了，它就会">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/7Oz5DvXw2aeKhfm.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/MiaD5jrIN6pl7Zq.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/30/dfYb5sCFDi3eptE.png">
+<meta property="article:published_time" content="2025-06-30T08:49:23.519Z">
+<meta property="article:modified_time" content="2026-04-04T01:18:05.736Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/06/30/7Oz5DvXw2aeKhfm.png">
+  
+  
+  
+  <title>数据结构 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="数据结构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          55 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">数据结构</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/06/30/7Oz5DvXw2aeKhfm.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>以太坊区块数据有三棵树，分别为状态树，交易树和收据树。整个以太坊系统中只有一棵状态树，记录整个以太坊系统的所有账户状态。每个区块保存着一棵交易树，记录该区块的交易情况，一棵收据树用来记录该区块的交易收据。 <strong>状态树采用Merkel-Patrica(MPT)树，而交易树和状态树采用Merkel树。</strong></p>
+</blockquote>
+<p> 对于交易树和收据树来说，一旦树已经建立，花多少时间来编辑这棵树并不重要，因为树一旦建立了，它就会永远存在并且不会改变。所以交易树和收据树采用Merkel树。 对于状态树，每个节点基本上包含了一个键值映射，其中的键是地址，而值包括账户的声明、余额、随机数nounce、代码以及每一个账户的存储。不同于交易历史记录，状态树需要经常地进行更新：账户余额和账户的随机数nonce经常会更变，更重要的是，新的账户会频繁地插入，存储的键也会经常被插入以及删除。我们需要这样的数据结构，它能在一次插入、更新、删除操作后快速计算到树根，而不需要重新计算整个树的Hash。Patricia树具有Trie树快速查找特点，并且比Trie树更加节省空间，所以以太坊中，对Merkel树改造成Merkel-Patrica(MPT)树。</p>
+<h1 id="MPT"><a href="#MPT" class="headerlink" title="MPT"></a>MPT</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Trie <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-comment">//树的根节点</span><br>    <span class="hljs-comment">//   - fullNode: 分支节点，包含 16 个子节点和 1 个值节点</span><br>    <span class="hljs-comment">//   - shortNode: 扩展节点，压缩共享前缀路径</span><br>    <span class="hljs-comment">//   - valueNode: 叶子节点，存储实际数据（RLP 编码）</span><br>    <span class="hljs-comment">//   - hashNode: 对子树的哈希引用（延迟加载）</span><br>	root  node<br>    <span class="hljs-comment">//标识树的归属者</span><br>	owner common.Hash<br>    <span class="hljs-comment">//标记树是否已提交（即所有修改已持久化到数据库）。</span><br>	committed <span class="hljs-type">bool</span><br>    <span class="hljs-comment">//未哈希的节点计数器，用于统计当前未计算哈希的节点数量。</span><br>	unhashed <span class="hljs-type">int</span><br>    <span class="hljs-comment">//未提交的节点计数器，表示内存中尚未写入数据库的节点数量。</span><br>	uncommitted <span class="hljs-type">int</span><br>    <span class="hljs-comment">//树节点的读取接口，负责从底层数据库加载节点数据</span><br>	reader *trieReader<br>    <span class="hljs-comment">//调试追踪器，记录树的修改历史（如插入、删除操作）。</span><br>	tracer *tracer<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> node <span class="hljs-keyword">interface</span> &#123;<br>	cache() (hashNode, <span class="hljs-type">bool</span>)<br>	encode(w rlp.EncoderBuffer)<br>	fstring(<span class="hljs-type">string</span>) <span class="hljs-type">string</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> (<br>    <span class="hljs-comment">//fullNode 表示 MPT 的分支节点，包含 16 个可能的十六进制路径分支和 1 个值节点。用于处理键路径分叉的场景（例如键 &quot;abc&quot; 和 &quot;abd&quot; 在第三个字符分叉）。</span><br>	fullNode <span class="hljs-keyword">struct</span> &#123;<br>		Children [<span class="hljs-number">17</span>]node <br>		flags    nodeFlag<br>	&#125;<br>    <br>    <span class="hljs-comment">// shortNode 表示 MPT 的扩展节点或叶子节点：</span><br>	<span class="hljs-comment">//   - 扩展节点：压缩共享前缀路径（如 &quot;abc&quot; → subtree）</span><br>	<span class="hljs-comment">//   - 叶子节点：键值对的实际存储（Val 为 valueNode）</span><br>	shortNode <span class="hljs-keyword">struct</span> &#123;<br>		Key   []<span class="hljs-type">byte</span><br>		Val   node<br>		flags nodeFlag<br>	&#125;<br>    <br>    <span class="hljs-comment">// hashNode 是对子树根哈希的引用，用于延迟加载。</span><br>	hashNode  []<span class="hljs-type">byte</span><br>    <span class="hljs-comment">//valueNode 存储键对应的实际值（RLP 编码的原始数据）。</span><br>	valueNode []<span class="hljs-type">byte</span><br><br>    <span class="hljs-comment">// fullnodeEncoder 专用于 fullNode 的 RLP 编码优化。直接操作子节点的原始字节切片，避免临时分配 fullNode 对象的内存开销。</span><br>	fullnodeEncoder <span class="hljs-keyword">struct</span> &#123;<br>		Children [<span class="hljs-number">17</span>][]<span class="hljs-type">byte</span><br>	&#125;<br><br>	<span class="hljs-comment">// extNodeEncoder 专用于 shortNode（扩展节点）的 RLP 编码优化。</span><br>	extNodeEncoder <span class="hljs-keyword">struct</span> &#123;<br>		Key []<span class="hljs-type">byte</span><br>		Val []<span class="hljs-type">byte</span><br>	&#125;<br><br>	<span class="hljs-comment">// leafNodeEncoder 专用于 shortNode（叶子节点）的 RLP 编码优化。</span><br>	leafNodeEncoder <span class="hljs-keyword">struct</span> &#123;<br>		Key []<span class="hljs-type">byte</span><br>		Val []<span class="hljs-type">byte</span><br>	&#125;<br>)<br></code></pre></td></tr></table></figure>
+
+<h1 id="一个区块"><a href="#一个区块" class="headerlink" title="一个区块"></a>一个区块</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Block 代表以太坊区块链中的一个完整区块。</span><br><span class="hljs-keyword">type</span> Block <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-comment">// 区块头，包含区块的元数据（如哈希、时间戳、难度等）</span><br>    header       *Header<br>    <span class="hljs-comment">// 叔区块的区块头列表。</span><br>    uncles       []*Header<br><br>    <span class="hljs-comment">// 区块中包含的交易列表。</span><br>    transactions Transactions<br><br>    withdrawals  Withdrawals<br>    witness *ExecutionWitness<br><br>    <span class="hljs-comment">// 区块哈希的缓存，首次访问时计算并存储。</span><br>    hash atomic.Pointer[common.Hash]<br><br>    <span class="hljs-comment">// 区块编码后的 RLP 字节大小缓存。</span><br>    size atomic.Uint64<br><br>    <span class="hljs-comment">// ReceivedAt 记录区块被本地节点接收的时间戳。</span><br>    ReceivedAt   time.Time<br><br>    <span class="hljs-comment">// ReceivedFrom 标记区块的来源（如 peer 节点 ID 或网络接口）。</span><br>    ReceivedFrom <span class="hljs-keyword">interface</span>&#123;&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="区块头"><a href="#区块头" class="headerlink" title="区块头"></a>区块头</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Header 代表以太坊区块链中的一个区块头，包含区块的元数据和状态验证根哈希。</span><br><span class="hljs-keyword">type</span> Header <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-comment">// 父区块的哈希值</span><br>    ParentHash  common.Hash    <span class="hljs-string">`json:&quot;parentHash&quot;       gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 叔区块列表的哈希,若区块无叔块，则值为空列表的哈希</span><br>    UncleHash   common.Hash    <span class="hljs-string">`json:&quot;sha3Uncles&quot;       gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 矿工（或验证者）的以太坊地址，接收区块奖励和燃料费。</span><br>    Coinbase    common.Address <span class="hljs-string">`json:&quot;miner&quot;`</span><br><br>    <br>    <span class="hljs-comment">// 状态树的根哈希，表示区块执行后全局账户状态的快照。</span><br>    Root        common.Hash    <span class="hljs-string">`json:&quot;stateRoot&quot;        gencodec:&quot;required&quot;`</span><br>    <span class="hljs-comment">// 交易树的根哈希，由区块中所有交易构建的默克尔帕特里夏树（MPT）的根。</span><br>    TxHash      common.Hash    <span class="hljs-string">`json:&quot;transactionsRoot&quot; gencodec:&quot;required&quot;`</span><br>    <span class="hljs-comment">// 收据树的根哈希，包含交易执行结果的默克尔树根。</span><br>    ReceiptHash common.Hash    <span class="hljs-string">`json:&quot;receiptsRoot&quot;     gencodec:&quot;required&quot;`</span><br><br>    <br>    <span class="hljs-comment">// 日志的布隆过滤器，用于快速查询合约事件日志。</span><br>    Bloom       Bloom          <span class="hljs-string">`json:&quot;logsBloom&quot;        gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 当前区块的 PoW 难度值（在 PoS 过渡后此字段可能被弃用）。</span><br>    Difficulty  *big.Int       <span class="hljs-string">`json:&quot;difficulty&quot;       gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 区块高度（创世块为 0）。</span><br>    Number      *big.Int       <span class="hljs-string">`json:&quot;number&quot;           gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 当前区块允许消耗的最大 Gas 总量。</span><br>    GasLimit    <span class="hljs-type">uint64</span>         <span class="hljs-string">`json:&quot;gasLimit&quot;         gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 区块中所有交易实际消耗的 Gas 总量。</span><br>    GasUsed     <span class="hljs-type">uint64</span>         <span class="hljs-string">`json:&quot;gasUsed&quot;          gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 区块时间戳（Unix 时间，单位为秒）。</span><br>    Time        <span class="hljs-type">uint64</span>         <span class="hljs-string">`json:&quot;timestamp&quot;        gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// 额外数据字段，可由矿工自由填充（通常包含协议标识或社区提案信息）。</span><br>    Extra       []<span class="hljs-type">byte</span>         <span class="hljs-string">`json:&quot;extraData&quot;        gencodec:&quot;required&quot;`</span><br><br>    <span class="hljs-comment">// PoW 算法的混合哈希（Ethash 要求），用于验证工作量证明。</span><br>    MixDigest   common.Hash    <span class="hljs-string">`json:&quot;mixHash&quot;`</span><br><br>    <span class="hljs-comment">// PoW 算法的随机数（Ethash 要求），与 MixDigest 共同验证区块有效性。</span><br>    Nonce       BlockNonce     <span class="hljs-string">`json:&quot;nonce&quot;`</span><br><br>   	<span class="hljs-comment">// BaseFee was added by EIP-1559 and is ignored in legacy headers.</span><br>	BaseFee *big.Int <span class="hljs-string">`json:&quot;baseFeePerGas&quot; rlp:&quot;optional&quot;`</span><br><br>	<span class="hljs-comment">// WithdrawalsHash was added by EIP-4895 and is ignored in legacy headers.</span><br>	WithdrawalsHash *common.Hash <span class="hljs-string">`json:&quot;withdrawalsRoot&quot; rlp:&quot;optional&quot;`</span><br><br>	<span class="hljs-comment">// BlobGasUsed was added by EIP-4844 and is ignored in legacy headers.</span><br>	BlobGasUsed *<span class="hljs-type">uint64</span> <span class="hljs-string">`json:&quot;blobGasUsed&quot; rlp:&quot;optional&quot;`</span><br><br>	<span class="hljs-comment">// ExcessBlobGas was added by EIP-4844 and is ignored in legacy headers.</span><br>	ExcessBlobGas *<span class="hljs-type">uint64</span> <span class="hljs-string">`json:&quot;excessBlobGas&quot; rlp:&quot;optional&quot;`</span><br><br>	<span class="hljs-comment">// ParentBeaconRoot was added by EIP-4788 and is ignored in legacy headers.</span><br>	ParentBeaconRoot *common.Hash <span class="hljs-string">`json:&quot;parentBeaconBlockRoot&quot; rlp:&quot;optional&quot;`</span><br><br>	<span class="hljs-comment">// RequestsHash was added by EIP-7685 and is ignored in legacy headers.</span><br>	RequestsHash *common.Hash <span class="hljs-string">`json:&quot;requestsHash&quot; rlp:&quot;optional&quot;`</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="交易结构"><a href="#交易结构" class="headerlink" title="交易结构"></a>交易结构</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Transaction 代表一个以太坊交易，包含共识层所需的全部数据，以及本地节点缓存的元信息（如哈希、签名恢复结果等）。</span><br><span class="hljs-keyword">type</span> Transaction <span class="hljs-keyword">struct</span> &#123;<br>	<span class="hljs-comment">// inner 是交易的核心数据，具体实现取决于交易类型（LegacyTx、AccessListTx、DynamicFeeTx等）。</span><br>	<span class="hljs-comment">// 由 TxData 接口定义，支持 EIP-1559 等不同协议版本。</span><br>	inner TxData<br><br>	<span class="hljs-comment">// time 是交易首次被本地节点接收到的时间戳，用于垃圾交易过滤（spam avoidance）。</span><br>	<span class="hljs-comment">// 非共识字段，不参与区块哈希计算。</span><br>	time time.Time<br><br>	<span class="hljs-comment">// 以下字段为缓存，避免重复计算（原子指针保证并发安全）：</span><br>	<br>	<span class="hljs-comment">// hash 缓存交易的哈希值（RLP 编码后的 Keccak256 哈希）。首次访问时计算并缓存，后续直接读取。</span><br>	hash atomic.Pointer[common.Hash]<br><br>	<span class="hljs-comment">// size 缓存交易的 RLP 编码后的字节大小。</span><br>	<span class="hljs-comment">// 用于计算区块的 Gas 限制和网络传输开销。</span><br>	size atomic.Uint64<br><br>	<span class="hljs-comment">// from 缓存从交易签名中恢复的发送者地址（ECDSA 恢复结果）。</span><br>	<span class="hljs-comment">// 避免对同一笔交易多次执行签名恢复操作。</span><br>	from atomic.Pointer[sigCache]<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="收据树"><a href="#收据树" class="headerlink" title="收据树"></a><strong>收据树</strong></h2><p>存储交易执行后的收据（如 Gas 消耗、日志事件、状态是否成功）。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Receipt <span class="hljs-keyword">struct</span> &#123;<br>	<span class="hljs-comment">// 基础字段</span><br>	Type              *hexutil.Uint64 <span class="hljs-string">`json:&quot;type,omitempty&quot;`</span>       <span class="hljs-comment">// 交易类型（0=Legacy, 1=EIP-2930, 2=EIP-1559）</span><br>	PostState         *hexutil.Bytes  <span class="hljs-string">`json:&quot;root&quot;`</span>                 <span class="hljs-comment">// 早期版本的状态根（现由Status替代）</span><br>	Status            *hexutil.Uint64 <span class="hljs-string">`json:&quot;status&quot;`</span>               <span class="hljs-comment">// 交易状态（1=成功, 0=失败）</span><br>	CumulativeGasUsed *hexutil.Uint64 <span class="hljs-string">`json:&quot;cumulativeGasUsed&quot;`</span>    <span class="hljs-comment">// 区块内累计Gas消耗</span><br>	Bloom             *Bloom          <span class="hljs-string">`json:&quot;logsBloom&quot;`</span>            <span class="hljs-comment">// 日志的Bloom过滤器（256字节）</span><br>	Logs              []*Log         <span class="hljs-string">`json:&quot;logs&quot;`</span>                <span class="hljs-comment">// 交易产生的事件日志</span><br>	TxHash            *common.Hash    <span class="hljs-string">`json:&quot;transactionHash&quot;`</span>      <span class="hljs-comment">// 关联的交易哈希</span><br>	ContractAddress   *common.Address <span class="hljs-string">`json:&quot;contractAddress&quot;`</span>      <span class="hljs-comment">// 合约创建地址（仅限合约创建交易）</span><br>	GasUsed           *hexutil.Uint64 <span class="hljs-string">`json:&quot;gasUsed&quot;`</span>             <span class="hljs-comment">// 交易实际消耗的Gas</span><br><br>	<span class="hljs-comment">// EIP-1559新增</span><br>	EffectiveGasPrice *hexutil.Big    <span class="hljs-string">`json:&quot;effectiveGasPrice&quot;`</span>   <span class="hljs-comment">// 实际支付的Gas单价（含基础费和小费）</span><br><br>	<span class="hljs-comment">// EIP-4844（Proto-Danksharding）新增</span><br>	BlobGasUsed       *hexutil.Uint64 <span class="hljs-string">`json:&quot;blobGasUsed,omitempty&quot;`</span> <span class="hljs-comment">// Blob数据的Gas消耗</span><br>	BlobGasPrice      *hexutil.Big    <span class="hljs-string">`json:&quot;blobGasPrice,omitempty&quot;`</span> <span class="hljs-comment">// Blob的Gas单价</span><br><br>	<span class="hljs-comment">// 区块上下文</span><br>	BlockHash         *common.Hash    <span class="hljs-string">`json:&quot;blockHash,omitempty&quot;`</span>   <span class="hljs-comment">// 所在区块的哈希</span><br>	BlockNumber       *hexutil.Big    <span class="hljs-string">`json:&quot;blockNumber,omitempty&quot;`</span> <span class="hljs-comment">// 区块高度</span><br>	TransactionIndex  *hexutil.Uint   <span class="hljs-string">`json:&quot;transactionIndex&quot;`</span>      <span class="hljs-comment">// 交易在区块中的索引</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="交易树"><a href="#交易树" class="headerlink" title="交易树"></a><strong>交易树</strong></h2><p>存储区块中所有交易的哈希索引，用于快速验证交易是否存在。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> TxData <span class="hljs-keyword">interface</span> &#123;<br>	<span class="hljs-comment">// 基础方法</span><br>	txType() <span class="hljs-type">byte</span>       <span class="hljs-comment">// 返回交易类型ID（如0x01=EIP-2930, 0x02=EIP-1559）</span><br>	<span class="hljs-built_in">copy</span>() TxData       <span class="hljs-comment">// 深拷贝交易数据（用于防止修改原始交易）</span><br><br>	<span class="hljs-comment">// 交易字段访问器</span><br>	chainID() *big.Int      <span class="hljs-comment">// 链ID（EIP-155重放攻击保护）</span><br>	accessList() AccessList <span class="hljs-comment">// EIP-2930访问列表（优化存储访问Gas）</span><br>	data() []<span class="hljs-type">byte</span>           <span class="hljs-comment">// 交易附加数据（合约调用时为calldata）</span><br>	gas() <span class="hljs-type">uint64</span>            <span class="hljs-comment">// 交易的Gas限额</span><br>	gasPrice() *big.Int     <span class="hljs-comment">// Legacy交易的Gas单价</span><br>	gasTipCap() *big.Int    <span class="hljs-comment">// EIP-1559的小费（优先费）</span><br>	gasFeeCap() *big.Int    <span class="hljs-comment">// EIP-1559的最大费用（含基础费）</span><br>	value() *big.Int        <span class="hljs-comment">// 转账金额（Wei）</span><br>	nonce() <span class="hljs-type">uint64</span>          <span class="hljs-comment">// 发送者nonce</span><br>	to() *common.Address    <span class="hljs-comment">// 接收者地址（nil为合约创建）</span><br><br>	<span class="hljs-comment">// 签名相关</span><br>	rawSignatureValues() (v, r, s *big.Int)      <span class="hljs-comment">// 返回原始签名值</span><br>	setSignatureValues(chainID, v, r, s *big.Int) <span class="hljs-comment">// 设置签名（用于验签后缓存）</span><br><br>	<span class="hljs-comment">// Gas计算</span><br>	effectiveGasPrice(dst *big.Int, baseFee *big.Int) *big.Int <span class="hljs-comment">// 计算实际支付的Gas价格</span><br><br>	<span class="hljs-comment">// 编码/解码</span><br>	encode(*bytes.Buffer) <span class="hljs-type">error</span> <span class="hljs-comment">// RLP编码</span><br>	decode([]<span class="hljs-type">byte</span>) <span class="hljs-type">error</span>        <span class="hljs-comment">// RLP解码</span><br><br>	<span class="hljs-comment">// 签名哈希生成</span><br>	sigHash(*big.Int) common.Hash <span class="hljs-comment">// 返回待签名数据的哈希</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Transaction <span class="hljs-keyword">struct</span> &#123;<br>	inner TxData    <span class="hljs-comment">// 交易的核心数据（包含所有共识相关字段）</span><br>	time  time.Time <span class="hljs-comment">// 交易首次被本地节点接收的时间（用于防止垃圾交易）</span><br><br>	<span class="hljs-comment">// 缓存字段（非持久化，仅内存优化）</span><br>	hash atomic.Pointer[common.Hash] <span class="hljs-comment">// 交易哈希的缓存</span><br>	size atomic.Uint64              <span class="hljs-comment">// 交易RLP编码大小的缓存</span><br>	from atomic.Pointer[sigCache]    <span class="hljs-comment">// 签名验证结果的缓存（发送者地址）</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="TxPool"><a href="#TxPool" class="headerlink" title="TxPool"></a>TxPool</h1><p><strong>Mempool（Memory Pool）</strong>：又称交易池，是 <strong>以太坊节点维护的一个内存集合</strong>，存放 <strong>已经广播到网络但还未打包进区块的交易</strong>。</p>
+<blockquote>
+<p>它类似一个 <strong>待处理队列</strong>，所有节点都会维护自己的 mempool（不是全局统一的，每个节点可能略有不同）。</p>
+</blockquote>
+<ol>
+<li><p><strong>单个交易对象（Transaction）</strong></p>
+<ul>
+<li>每个交易包含：<ul>
+<li><code>nonce</code>：账户发起交易序号</li>
+<li><code>from</code> &#x2F; <code>to</code> 地址</li>
+<li><code>value</code>：转账金额</li>
+<li><code>gasPrice</code> &#x2F; <code>maxFeePerGas</code> &#x2F; <code>maxPriorityFeePerGas</code></li>
+<li><code>gasLimit</code></li>
+<li><code>data</code>（如果是调用智能合约）</li>
+<li><code>signature</code>（签名验证交易合法性）</li>
+</ul>
+</li>
+<li>所以可以说 <strong>Mempool 是一个个交易组成的集合</strong>。</li>
+</ul>
+</li>
+<li><p><strong>按账户和 Gas 排序</strong></p>
+<p>节点通常会：</p>
+<ul>
+<li>按 <strong>账户 nonce 排序</strong>（确保顺序合法）</li>
+<li>按 <strong>Gas 价格&#x2F;优先级排序</strong>（矿工&#x2F;验证者优先打包高 Gas 交易）</li>
+</ul>
+</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// TxPool 是各种交易特定池的聚合器，共同跟踪节点认为所有值得关注的交易。</span><br><span class="hljs-comment">// 交易从网络接收或本地提交时进入池中，当它们被包含到区块链中或因资源限制被驱逐时退出池。</span><br><span class="hljs-keyword">type</span> TxPool <span class="hljs-keyword">struct</span> &#123;<br>	subpools []SubPool <span class="hljs-comment">// 用于专门处理不同类型交易的子池列表</span><br><br>	chain  BlockChain    <span class="hljs-comment">// 区块链接口，用于访问区块和状态信息</span><br>	signer types.Signer  <span class="hljs-comment">// 交易签名验证器</span><br><br>	stateLock sync.RWMutex   <span class="hljs-comment">// 用于保护状态实例的读写锁</span><br>	state     *state.StateDB <span class="hljs-comment">// 当前区块链头部的最新状态</span><br><br>	subs event.SubscriptionScope <span class="hljs-comment">// 事件订阅范围，用于在关闭时取消所有订阅</span><br>	quit <span class="hljs-keyword">chan</span> <span class="hljs-keyword">chan</span> <span class="hljs-type">error</span>         <span class="hljs-comment">// 退出通道，用于停止头部更新器</span><br>	term <span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125;           <span class="hljs-comment">// 终止通道，用于检测池是否已关闭</span><br><br>	sync <span class="hljs-keyword">chan</span> <span class="hljs-keyword">chan</span> <span class="hljs-type">error</span> <span class="hljs-comment">// 测试/模拟器通道，用于阻塞直到内部重置完成</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// SubPool 是交易子池的接口定义，用于专门处理特定类型的交易</span><br><span class="hljs-keyword">type</span> SubPool <span class="hljs-keyword">interface</span> &#123;<br>	<span class="hljs-comment">// Filter 是一个选择器，用于判断交易是否应该被添加到这个特定的子池中</span><br>	Filter(tx *types.Transaction) <span class="hljs-type">bool</span><br><br>	<span class="hljs-comment">// Init 初始化子池的基本参数，允许它从磁盘加载任何已保存的交易，</span><br>	<span class="hljs-comment">// 并启动内部维护例程。</span><br>	<span class="hljs-comment">//</span><br>	<span class="hljs-comment">// 这些参数不应通过构造函数传递 - 池也不应自行启动 - </span><br>	<span class="hljs-comment">// 以便保持多个子池之间的同步。</span><br>	Init(gasTip <span class="hljs-type">uint64</span>, head *types.Header, reserver Reserver) <span class="hljs-type">error</span><br><br>	<span class="hljs-comment">// Close 终止任何后台处理线程并释放所有持有的资源</span><br>	Close() <span class="hljs-type">error</span><br><br>	<span class="hljs-comment">// Reset 获取区块链的当前状态，并确保交易池的内容相对于链状态是有效的</span><br>	Reset(oldHead, newHead *types.Header)<br><br>	<span class="hljs-comment">// SetGasTip 更新子池对新交易要求的最低价格，并丢弃所有低于此阈值的交易</span><br>	SetGasTip(tip *big.Int)<br><br>	<span class="hljs-comment">// Has 返回一个指示器，表示子池是否缓存了具有给定哈希的交易</span><br>	Has(hash common.Hash) <span class="hljs-type">bool</span><br><br>	<span class="hljs-comment">// Get 如果交易存在于池中则返回该交易，否则返回 nil</span><br>	Get(hash common.Hash) *types.Transaction<br><br>	<span class="hljs-comment">// GetRLP 如果交易存在于池中则返回其 RLP 编码格式</span><br>	GetRLP(hash common.Hash) []<span class="hljs-type">byte</span><br><br>	<span class="hljs-comment">// GetMetadata 返回给定交易哈希的交易类型和交易大小</span><br>	GetMetadata(hash common.Hash) *TxMetadata<br><br>	<span class="hljs-comment">// ValidateTxBasics 根据共识规则检查交易是否有效，</span><br>	<span class="hljs-comment">// 但不检查状态相关的验证（如余额是否充足）。</span><br>	<span class="hljs-comment">// 此检查旨在作为静态检查，可以在不持有池互斥锁的情况下执行。</span><br>	ValidateTxBasics(tx *types.Transaction) <span class="hljs-type">error</span><br><br>	<span class="hljs-comment">// Add 将一批交易加入池中（如果它们有效）。由于交易变动较大，</span><br>	<span class="hljs-comment">// Add 可能会将交易的完全集成推迟到稍后时间点，以便将多个交易批量处理。</span><br>	Add(txs []*types.Transaction, sync <span class="hljs-type">bool</span>) []<span class="hljs-type">error</span><br><br>	<span class="hljs-comment">// Pending 获取所有当前可处理的交易，按来源账户分组并按 nonce 排序。</span><br>	<span class="hljs-comment">//</span><br>	<span class="hljs-comment">// 交易还可以通过动态费用组件进行预过滤，以减少下游子系统的分配和负载。</span><br>	Pending(filter PendingFilter) <span class="hljs-keyword">map</span>[common.Address][]*LazyTransaction<br><br>	<span class="hljs-comment">// SubscribeTransactions 订阅新交易事件。订阅者可以决定是仅接收新见交易的通知，</span><br>	<span class="hljs-comment">// 还是也接收因重组而失效的交易通知。</span><br>	SubscribeTransactions(ch <span class="hljs-keyword">chan</span>&lt;- core.NewTxsEvent, reorgs <span class="hljs-type">bool</span>) event.Subscription<br><br>	<span class="hljs-comment">// Nonce 返回账户的下一个 nonce，已应用池中所有可执行交易的影响</span><br>	Nonce(addr common.Address) <span class="hljs-type">uint64</span><br><br>	<span class="hljs-comment">// Stats 获取当前池的统计信息，即待处理交易数量和排队（不可执行）交易数量</span><br>	Stats() (<span class="hljs-type">int</span>, <span class="hljs-type">int</span>)<br><br>	<span class="hljs-comment">// Content 获取交易池的数据内容，返回所有待处理交易和排队交易，</span><br>	<span class="hljs-comment">// 按账户分组并按 nonce 排序</span><br>	Content() (<span class="hljs-keyword">map</span>[common.Address][]*types.Transaction, <span class="hljs-keyword">map</span>[common.Address][]*types.Transaction)<br><br>	<span class="hljs-comment">// ContentFrom 获取交易池的数据内容，返回指定地址的待处理交易和排队交易，</span><br>	<span class="hljs-comment">// 按 nonce 分组</span><br>	ContentFrom(addr common.Address) ([]*types.Transaction, []*types.Transaction)<br><br>	<span class="hljs-comment">// Status 返回已知交易哈希的状态（未知/待处理/排队中）</span><br>	Status(hash common.Hash) TxStatus<br><br>	<span class="hljs-comment">// Clear 从池中移除所有跟踪的交易</span><br>	Clear()<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="构造新的区块"><a href="#构造新的区块" class="headerlink" title="构造新的区块"></a>构造新的区块</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/klgzyq/p/15544059.html">ETH-以太坊的交易树与收据树（区块链技术与应用） - 不加糖不加奶 - 博客园</a></p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// NewBlock 根据给定的区块头、区块体、收据和哈希器，构造一个新的区块。</span><br><span class="hljs-comment">// 注意：此函数会深拷贝所有输入数据，确保返回的区块与输入数据无引用关系。</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewBlock</span><span class="hljs-params">(header *Header, body *Body, receipts []*Receipt, hasher TrieHasher)</span></span> *Block &#123;<br>	<span class="hljs-comment">// 处理空body情况</span><br>	<span class="hljs-keyword">if</span> body == <span class="hljs-literal">nil</span> &#123;<br>		body = &amp;Body&#123;&#125;<br>	&#125;<br><br>	<span class="hljs-comment">// 基于header创建基础区块（此时交易/叔块等字段为空）</span><br>	<span class="hljs-keyword">var</span> (<br>		b           = NewBlockWithHeader(header) <span class="hljs-comment">// 创建区块框架</span><br>		txs         = body.Transactions         <span class="hljs-comment">// 交易列表</span><br>		uncles      = body.Uncles               <span class="hljs-comment">// 叔块头列表</span><br>		withdrawals = body.Withdrawals          <span class="hljs-comment">// 提款列表</span><br>	)<br><br>	<span class="hljs-comment">// ================= 交易树处理 =================</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(txs) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-comment">// 空交易列表的特殊哈希值</span><br>		b.header.TxHash = EmptyTxsHash <br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-comment">// 计算交易树的默克尔根哈希（核心逻辑）</span><br>		b.header.TxHash = DeriveSha(Transactions(txs), hasher)<br>		<span class="hljs-comment">// 深拷贝交易列表（避免外部修改影响区块）</span><br>		b.transactions = <span class="hljs-built_in">make</span>(Transactions, <span class="hljs-built_in">len</span>(txs))<br>		<span class="hljs-built_in">copy</span>(b.transactions, txs)<br>	&#125;<br><br>	<span class="hljs-comment">// ================= 收据树处理 =================</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(receipts) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-comment">// 空收据列表的特殊哈希值</span><br>		b.header.ReceiptHash = EmptyReceiptsHash<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-comment">// 计算收据树的默克尔根哈希</span><br>		b.header.ReceiptHash = DeriveSha(Receipts(receipts), hasher)<br>		<span class="hljs-comment">// 合并所有收据的Bloom过滤器（用于轻节点快速过滤日志）</span><br>		b.header.Bloom = MergeBloom(receipts)<br>	&#125;<br><br>	<span class="hljs-comment">// ================= 叔块处理 =================</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(uncles) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-comment">// 空叔块列表的特殊哈希值</span><br>		b.header.UncleHash = EmptyUncleHash<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-comment">// 计算叔块头的RLP哈希（注意：叔块没有独立的树结构）</span><br>		b.header.UncleHash = CalcUncleHash(uncles)<br>		<span class="hljs-comment">// 深拷贝叔块头</span><br>		b.uncles = <span class="hljs-built_in">make</span>([]*Header, <span class="hljs-built_in">len</span>(uncles))<br>		<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> uncles &#123;<br>			b.uncles[i] = CopyHeader(uncles[i])<br>		&#125;<br>	&#125;<br><br>	<span class="hljs-comment">// ================= 提款处理（可选字段）=================</span><br>	<span class="hljs-keyword">if</span> withdrawals == <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-comment">// 未启用提款功能</span><br>		b.header.WithdrawalsHash = <span class="hljs-literal">nil</span><br>	&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(withdrawals) == <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-comment">// 空提款列表的特殊哈希值</span><br>		b.header.WithdrawalsHash = &amp;EmptyWithdrawalsHash<br>		b.withdrawals = Withdrawals&#123;&#125;<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-comment">// 计算提款列表的默克尔根哈希</span><br>		hash := DeriveSha(Withdrawals(withdrawals), hasher)<br>		b.header.WithdrawalsHash = &amp;hash<br>		<span class="hljs-comment">// 深拷贝提款列表</span><br>		b.withdrawals = slices.Clone(withdrawals)<br>	&#125;<br><br>	<span class="hljs-keyword">return</span> b<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// DeriveSha 计算给定列表的默克尔根哈希（用于交易树、收据树等）</span><br><span class="hljs-comment">// 输入：</span><br><span class="hljs-comment">//   - list: 可派生哈希的列表（如交易、收据等），需实现DerivableList接口</span><br><span class="hljs-comment">//   - hasher: 默克尔树哈希器（通常为StackTrie或常规Trie）</span><br><span class="hljs-comment">// 输出：</span><br><span class="hljs-comment">//   - common.Hash: 列表的默克尔根哈希</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">DeriveSha</span><span class="hljs-params">(list DerivableList, hasher TrieHasher)</span></span> common.Hash &#123;<br>	<span class="hljs-comment">// 重置哈希器状态（清除之前的临时数据）</span><br>	hasher.Reset()<br><br>	<span class="hljs-comment">// 从缓冲池获取临时buffer（减少内存分配）</span><br>	valueBuf := encodeBufferPool.Get().(*bytes.Buffer)<br>	<span class="hljs-keyword">defer</span> encodeBufferPool.Put(valueBuf) <span class="hljs-comment">// 用完后放回池中</span><br><br>	<span class="hljs-comment">// 特殊处理顺序：StackTrie要求按哈希升序插入数据，但list提供的顺序可能不满足。</span><br>	<span class="hljs-comment">// 因此分三阶段插入：</span><br>	<span class="hljs-comment">// 1. 插入索引1-127（0x7f）的元素</span><br>	<span class="hljs-comment">// 2. 插入索引0的元素</span><br>	<span class="hljs-comment">// 3. 插入索引128及之后的元素</span><br>	<span class="hljs-comment">// 注：此顺序是为了兼容StackTrie的优化需求，常规Trie可忽略顺序</span><br><br>	<span class="hljs-keyword">var</span> indexBuf []<span class="hljs-type">byte</span> <span class="hljs-comment">// 复用索引缓冲区</span><br>	<span class="hljs-comment">// 阶段1：处理索引1-127</span><br>	<span class="hljs-keyword">for</span> i := <span class="hljs-number">1</span>; i &lt; list.Len() &amp;&amp; i &lt;= <span class="hljs-number">0x7f</span>; i++ &#123;<br>		indexBuf = rlp.AppendUint64(indexBuf[:<span class="hljs-number">0</span>], <span class="hljs-type">uint64</span>(i)) <span class="hljs-comment">// RLP编码索引</span><br>		value := encodeForDerive(list, i, valueBuf)          <span class="hljs-comment">// 编码元素值</span><br>		hasher.Update(indexBuf, value)                       <span class="hljs-comment">// 插入到树</span><br>	&#125;<br>	<span class="hljs-comment">// 阶段2：处理索引0（单独处理以确保顺序）</span><br>	<span class="hljs-keyword">if</span> list.Len() &gt; <span class="hljs-number">0</span> &#123;<br>		indexBuf = rlp.AppendUint64(indexBuf[:<span class="hljs-number">0</span>], <span class="hljs-number">0</span>)<br>		value := encodeForDerive(list, <span class="hljs-number">0</span>, valueBuf)<br>		hasher.Update(indexBuf, value)<br>	&#125;<br>	<span class="hljs-comment">// 阶段3：处理索引128及以上</span><br>	<span class="hljs-keyword">for</span> i := <span class="hljs-number">0x80</span>; i &lt; list.Len(); i++ &#123;<br>		indexBuf = rlp.AppendUint64(indexBuf[:<span class="hljs-number">0</span>], <span class="hljs-type">uint64</span>(i))<br>		value := encodeForDerive(list, i, valueBuf)<br>		hasher.Update(indexBuf, value)<br>	&#125;<br><br>	<span class="hljs-comment">// 计算并返回最终的根哈希</span><br>	<span class="hljs-keyword">return</span> hasher.Hash()<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>矿工从交易池（TxPool）中选择交易，按优先级排序后生成 <code>[]*Transaction</code>。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs stylus">miner<span class="hljs-selector-class">.NewPendingBlock</span>()                          <span class="hljs-comment">// 矿工开始打包新区块</span><br>   └── core/types<span class="hljs-selector-class">.NewBlock</span>()                        <span class="hljs-comment">// 创建区块对象</span><br>       ├── <span class="hljs-built_in">DeriveSha</span>(<span class="hljs-built_in">Transactions</span>(txs), hasher)     <span class="hljs-comment">// 生成交易树根哈希</span><br>       │   ├── Transactions<span class="hljs-selector-class">.GetRlp</span>(i)                <span class="hljs-comment">// 获取交易的RLP编码</span><br>       │   └── hasher<span class="hljs-selector-class">.Update</span>(key, value)            <span class="hljs-comment">// 插入到MPT树</span><br>       └── <span class="hljs-selector-tag">header</span><span class="hljs-selector-class">.TxHash</span> = trie<span class="hljs-selector-class">.Hash</span>()              <span class="hljs-comment">// 根哈希写入区块头</span><br></code></pre></td></tr></table></figure>
+
+<p>交易执行后，EVM生成 <code>Receipt</code> 对象，填充以下字段：</p>
+<ul>
+<li><strong>Status</strong>: 交易状态（1&#x3D;成功，0&#x3D;失败）。</li>
+<li><strong>GasUsed</strong>: 交易实际消耗的Gas。</li>
+<li><strong>Logs</strong>: 合约触发的事件日志（如ERC-20转账）。</li>
+<li><strong>Bloom</strong>: 基于日志生成的Bloom过滤器（256字节）。</li>
+</ul>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs stylus">miner<span class="hljs-selector-class">.NewPendingBlock</span>()                          <span class="hljs-comment">// 矿工打包新区块</span><br>   └── core/types<span class="hljs-selector-class">.NewBlock</span>()                        <span class="hljs-comment">// 创建区块对象</span><br>       ├── <span class="hljs-built_in">DeriveSha</span>(<span class="hljs-built_in">Receipts</span>(receipts), hasher)    <span class="hljs-comment">// 生成收据树根哈希</span><br>       │   ├── Receipts<span class="hljs-selector-class">.GetRlp</span>(i)                   <span class="hljs-comment">// 获取收据的RLP编码</span><br>       │   └── hasher<span class="hljs-selector-class">.Update</span>(key, value)            <span class="hljs-comment">// 插入到MPT树</span><br>       ├── <span class="hljs-built_in">CreateBloom</span>(receipts)                    <span class="hljs-comment">// 生成Bloom过滤器</span><br>       └── <span class="hljs-selector-tag">header</span><span class="hljs-selector-class">.ReceiptHash</span> = trie<span class="hljs-selector-class">.Hash</span>()         <span class="hljs-comment">// 根哈希写入区块头</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="状态数据库"><a href="#状态数据库" class="headerlink" title="状态数据库"></a>状态数据库</h1><p>世界状态是地址（账户）到账户状态的映射(存储所有账户的全局状态（余额、Nonce、合约代码和存储根）)。由树来保存数据（此树也被称为状态数据库或者状态树）。世界状态可以被视作为随着交易的执行而持续更新的全局状态。以太坊就像一个去中心化的计算机，世界状态则是这台电脑的硬盘。</p>
+<p>以太坊中所有的账户信息都体现在世界状态之中，并由世界状态树保存。如果你想知道某一账户的余额，或者某智能合约当前的状态，就需要通过查询世界状态树来获取该账户的具体状态信息。</p>
+<blockquote>
+<p>账户存储树是保存与账户相关联数据的结构。该项只有合约账户才有，而在 EOA 中， storageRoot 留空、 codeHash 则是一串空字符串的哈希值。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/06/30/MiaD5jrIN6pl7Zq.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>世界状态不直接存在链上</strong>是因为如果每次交易都<strong>全量存储</strong>所有账户状态，区块链会变得极其臃肿（比如以太坊有数亿个账户，每个区块都存一遍不现实）。因此，<strong>只存变化的部分</strong>（交易），而状态由全节点<strong>动态计算</strong>。</p>
+<p>世界状态通过MPT组织：</p>
+<ul>
+<li><strong>只有状态树的根哈希（<code>stateRoot</code>）写入区块头</strong>。</li>
+<li>全节点在本地维护完整的键值数据库（如 LevelDB、RocksDB），存储所有账户状态。</li>
+<li>轻节点只需验证 <code>stateRoot</code> 即可信任某账户的状态（通过默克尔证明）。</li>
+</ul>
+<p>每个以太坊全节点都会在本地硬盘存储<strong>完整的世界状态</strong>（State DB）。数据是去中心化的，没有单点依赖。每个区块头包含 <code>stateRoot</code>，代表该区块处理后的世界状态。如果全节点篡改状态，<code>stateRoot</code> 会不一致，其他节点会拒绝。新节点同步时，会从创世区块开始<strong>重放所有交易</strong>，逐步构建最新状态。也可以直接下载快照（Snapshot）加速同步，但仍需验证 <code>stateRoot</code>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> StateDB <span class="hljs-keyword">struct</span> &#123;<br>	db         Database <span class="hljs-comment">//底层数据库接口，存储状态树的节点数据。</span><br>	prefetcher *triePrefetcher<br>	trie       Trie	<span class="hljs-comment">//状态树实例，存储所有账户状态。</span><br>	reader     Reader<br><br>	originalRoot common.Hash <span class="hljs-comment">//状态树的初始根哈希（区块处理前的状态）</span><br><br>	stateObjects <span class="hljs-keyword">map</span>[common.Address]*stateObject <span class="hljs-comment">//缓存当前活跃的账户状态（stateObject），包括 EOA 和合约账户。管理的所有需要修改的stateObject</span><br><br><span class="hljs-comment">//标记被删除的账户（如合约自毁 SELFDESTRUCT），记录删除前的原始状态。</span><br>	stateObjectsDestruct <span class="hljs-keyword">map</span>[common.Address]*stateObject<br><br>	<span class="hljs-comment">//跟踪账户状态的变更，用于合并多次修改，减少数据库写入次数。</span><br>	mutations <span class="hljs-keyword">map</span>[common.Address]*mutation<br><br>	dbErr <span class="hljs-type">error</span><br><br>	refund <span class="hljs-type">uint64</span><br><br>	thash   common.Hash<br>    <span class="hljs-comment">//当前交易的哈希和索引，用于关联交易日志。</span><br>	txIndex <span class="hljs-type">int</span><br>	logs    <span class="hljs-keyword">map</span>[common.Hash][]*types.Log<br>	logSize <span class="hljs-type">uint</span><br><br>	preimages <span class="hljs-keyword">map</span>[common.Hash][]<span class="hljs-type">byte</span><br><br>	accessList   *accessList<br>	accessEvents *AccessEvents<br><br>	transientStorage transientStorage<br> <br>    <span class="hljs-comment">//操作日志，记录所有状态修改（如余额变更、存储写入），支持回滚。</span><br>	journal *journal<br><br>	witness *stateless.Witness<br><br>	AccountReads    time.Duration<br>	AccountHashes   time.Duration<br>	AccountUpdates  time.Duration<br>	AccountCommits  time.Duration<br>	StorageReads    time.Duration<br>	StorageUpdates  time.Duration<br>	StorageCommits  time.Duration<br>	SnapshotCommits time.Duration<br>	TrieDBCommits   time.Duration<br><br>	AccountLoaded  <span class="hljs-type">int</span>          <br>	AccountUpdated <span class="hljs-type">int</span>         <br>	AccountDeleted <span class="hljs-type">int</span>         <br>	StorageLoaded  <span class="hljs-type">int</span>          <br>	StorageUpdated atomic.Int64 <br>	StorageDeleted atomic.Int64 <br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// stateObject 表示一个以太坊账户的状态对象，用于跟踪账户的当前状态和修改记录</span><br><span class="hljs-keyword">type</span> stateObject <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-comment">// 基础引用</span><br>    db       *StateDB                <span class="hljs-comment">// 关联的StateDB（状态数据库）</span><br>    address  common.Address          <span class="hljs-comment">// 账户的以太坊地址（20字节）</span><br>    addrHash common.Hash             <span class="hljs-comment">// 账户地址的Keccak256哈希（32字节）</span><br>    <br>    <span class="hljs-comment">// 账户数据</span><br>    origin   *types.StateAccount     <span class="hljs-comment">// 原始账户数据（未修改前的状态），nil表示账户原本不存在</span><br>    data     types.StateAccount      <span class="hljs-comment">// 当前区块范围内应用所有修改后的账户数据</span><br>    <br>    <span class="hljs-comment">// 存储和代码</span><br>    trie Trie                        <span class="hljs-comment">// 存储树（Storage Trie），首次访问时初始化</span><br>    code []<span class="hljs-type">byte</span>                      <span class="hljs-comment">// 合约字节码，加载代码时设置</span><br>    <br>    <span class="hljs-comment">// 存储修改记录</span><br>    originStorage  Storage           <span class="hljs-comment">// 当前区块内已访问的原始存储条目（读缓存）</span><br>    dirtyStorage   Storage           <span class="hljs-comment">// 当前交易内已修改的存储条目（待提交的写入）</span><br>    pendingStorage Storage           <span class="hljs-comment">// 当前区块内已修改但未提交的存储条目</span><br>    uncommittedStorage Storage       <span class="hljs-comment">// 未提交的存储修改（用于临时状态）</span><br>    <br>    <span class="hljs-comment">// 状态标记</span><br>    dirtyCode      <span class="hljs-type">bool</span>              <span class="hljs-comment">// 标记字节码是否被修改</span><br>    selfDestructed <span class="hljs-type">bool</span>              <span class="hljs-comment">// 标记账户是否已自毁（SELFDESTRUCT）</span><br>    newContract    <span class="hljs-type">bool</span>              <span class="hljs-comment">// 标记是否为新建合约</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// StateAccount 是以太坊共识层中账户的标准数据结构，</span><br><span class="hljs-comment">// 这些对象会被存储在主账户状态树（Account Trie）中。</span><br><span class="hljs-keyword">type</span> StateAccount <span class="hljs-keyword">struct</span> &#123;<br>    Nonce    <span class="hljs-type">uint64</span>         <span class="hljs-comment">// 账户的交易计数器（EOA）或合约创建次数（合约账户）</span><br>    Balance  *uint256.Int   <span class="hljs-comment">// 账户持有的以太币余额（以 Wei 为单位）</span><br>    Root     common.Hash    <span class="hljs-comment">// 存储树的默克尔根哈希（仅合约账户有效，EOA 为 emptyHash）</span><br>    CodeHash []<span class="hljs-type">byte</span>         <span class="hljs-comment">// 合约账户的 EVM 字节码哈希（EOA 为 emptyCodeHash）</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>以太坊中有两种账户类型：外部所有账户（Externally Owned Accounts 简称 EOA）以及合约账户</strong>。</p>
+<ul>
+<li>我们用来互相收发以太币、部署智能合约的账户就是 EOA 账户，</li>
+<li>而部署智能合约时自动生成的账户则是合约账户。</li>
+</ul>
+<p>每一个智能合约都有其独一无二的以太坊账户。</p>
+<p>账户状态中不容忽视的一个细节是，上述对象在内的所有对象都可变（除了 codeHash）。举例来说，当一个账户向其他账户发送以太币时，除了 nonce 会增加，账户的余额也会相应改变。</p>
+<p>而 codeHash 的不可变性使得，如果部署了有漏洞的智能合约，也无法修复更新此合约。对应的，只能部署一个新合约（而有漏洞的版本会一直存在于区块链上）。</p>
+<blockquote>
+<p>这也是为什么使用 Truffle 进行智能合约的开发和部署十分必要，并且用 Solidity 编程时要遵循 最佳实践 的要求。</p>
+</blockquote>
+<p>账户存储树是保存与账户相关联数据的结构。该项只有合约账户才有，而在 EOA 中， storageRoot 留空、 codeHash 则是一串空字符串的哈希值。所有智能合约的数据都以 32 字节映射的形式保存在账户存储树中。<strong>此处不再赘述账户状态树如何维持合约数据</strong>。账户状态中的 storageRoot 区域负责维持账户存储树根节点哈希值。</p>
+<p><img src="https://s2.loli.net/2025/06/30/dfYb5sCFDi3eptE.png" srcset="/img/loading.gif" lazyload></p>
+<p>举个例子：查询地址 <code>0x123</code> 的余额</p>
+<ol>
+<li>**初始化 <code>StateDB</code>**：从区块头读取 <code>stateRoot</code>（假设为 <code>0xabcd</code>）。从数据库加载 <code>Trie</code>（根节点哈希 &#x3D; <code>0xabcd</code>）。</li>
+<li>**查询 <code>Trie</code>**：计算 <code>key = keccak256(0x123)</code>。从 <code>Trie</code> 获取 <code>RLP(Account)</code>。</li>
+<li>**缓存到 <code>stateObjects</code>**：解码 <code>Account</code>，生成 <code>stateObject</code>，存入 <code>stateObjects</code>。</li>
+<li><strong>后续操作</strong>：如果该账户状态被修改（如 <code>SetBalance</code>），<code>stateObject</code> 会标记为 <code>dirty</code>。提交时，将 <code>dirty</code> 对象重新 RLP 编码并更新到 <code>Trie</code>，生成新的 <code>stateRoot</code>。</li>
+</ol>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1585653">【深度知识】以太坊区块数据结构及以太坊的4棵数-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ccbupt/p/11468791.html">以太坊解析：默克尔树、世界状态、交易及其他 - ccbupt - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/1314xf/p/14271106.html">死磕以太坊源码分析之state - 链上无名 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://switch-router-nat.github.io/blog/ethereum-account/">以太坊源码分析—账户的管理</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1585653">【深度知识】以太坊区块数据结构及以太坊的4棵数-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/3912">理解以太坊: Go-Ethereum 源码剖析(0): Geth Start | 登链社区 | 区块链技术社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/coderzjz/p/14025979.html">北京大学肖臻老师《区块链技术与应用》笔记 - ETH篇 - CoderZjz - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@alexanderxing/%E7%9B%91%E5%90%AC%E4%BB%A5%E5%A4%AA%E5%9D%8Amempool-6a3bda0c2f76">监听以太坊mempool. mempool | by Alexander Xing | Medium</a></p>
+<p><a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/13793">区块链 Mempool 它是如何工作的？ | 登链社区 | 区块链技术社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://learnblockchain.cn/2019/07/03/libra-mempool-module1">Libra 源码分析： 内存池mempool模块解读-1 | 登链社区 | 区块链技术社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://learnblockchain.cn/article/11814">如何过滤以太坊的内存池交易 | 登链社区 | 区块链技术社区</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/" class="category-chain-item">应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/" class="category-chain-item">区块链应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/" class="category-chain-item">公链原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Ethereum/" class="category-chain-item">Ethereum</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>数据结构</div>
+      <div>https://hermes37.vercel.app/2025/06/30/全栈应用开发/应用/区块链应用/公链原理/Ethereum/数据结构/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E4%B8%8E%E4%BF%A1%E5%8F%B7/" title="系统调用与信号">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">系统调用与信号</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/30/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%BA%94%E7%94%A8/%E5%85%AC%E9%93%BE%E5%8E%9F%E7%90%86/Bitcoin/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="数据结构">
+                        <span class="hidden-mobile">数据结构</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
