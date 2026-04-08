@@ -1,0 +1,1067 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="使用方式 先从使用路径入手，再深入底层实现。  OpenClaw 实际上有两种不同的通信路径：  Gateway ↔ 渠道（Channel），作为 Bot 客户端连接第三方服务器，出站 HTTPS 连接。是 Gateway 主动连接出去，不是外部连接进来 Gateway ↔ 远端设备（电脑&#x2F;手机），这里存在三种方式：  1234- VPN（主方案）- SSH（调试）- Tunnel（临时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安全机制">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/04/08/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/Agent%E5%BA%94%E7%94%A8/openclaw%E6%BA%90%E7%A0%81%E9%89%B4%E8%B5%8F/%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="使用方式 先从使用路径入手，再深入底层实现。  OpenClaw 实际上有两种不同的通信路径：  Gateway ↔ 渠道（Channel），作为 Bot 客户端连接第三方服务器，出站 HTTPS 连接。是 Gateway 主动连接出去，不是外部连接进来 Gateway ↔ 远端设备（电脑&#x2F;手机），这里存在三种方式：  1234- VPN（主方案）- SSH（调试）- Tunnel（临时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260408160400552.png">
+<meta property="article:published_time" content="2026-04-08T00:56:36.342Z">
+<meta property="article:modified_time" content="2026-04-08T14:04:25.622Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260408160400552.png">
+  
+  
+  
+  <title>安全机制 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="安全机制"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          35 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">安全机制</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h1><blockquote>
+<p>先从使用路径入手，再深入底层实现。</p>
+</blockquote>
+<p>OpenClaw 实际上有两种不同的通信路径：</p>
+<ul>
+<li><strong>Gateway ↔ 渠道（Channel）</strong>，作为 Bot 客户端连接第三方服务器，出站 HTTPS 连接。是 Gateway 主动连接出去，不是外部连接进来</li>
+<li><strong>Gateway ↔ 远端设备（电脑&#x2F;手机）</strong>，这里存在三种方式：</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-bullet">- </span>VPN（主方案）<br><span class="hljs-bullet">- </span>SSH（调试）<br><span class="hljs-bullet">- </span>Tunnel（临时）<br><span class="hljs-bullet">- </span>公网（禁止）<br></code></pre></td></tr></table></figure>
+
+<p>这里我们谈谈第二种方式中的   VPN方式  和  公网方式：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">手机 → Web界面 / Chat界面 → OpenClaw → 电脑执行<br></code></pre></td></tr></table></figure>
+
+<p>公网方式 将本地电脑设备当作了服务器，在电脑上部署 OpenClaw 后：</p>
+<ol>
+<li>启动服务（一般是 localhost:xxxx）</li>
+<li>用内网穿透（关键），如：ngrok</li>
+<li>手机打开内网穿透的网址，输入指令。</li>
+</ol>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">手机 → Telegram → <span class="hljs-keyword">Bot </span>→ OpenClaw → 电脑<br></code></pre></td></tr></table></figure>
+
+<p> VPN方式 将本地电脑设备当作了客户端。是通过内置的渠道将任务推送到后端服务器上，本地电脑实时请求该服务器获得指令任务。</p>
+<p>按照VPN方式，可以将整体架构分成：</p>
+<ul>
+<li>远程控制端（Client）</li>
+<li>Gateway服务端（Hub）</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">架构一：VPS常驻网关</th>
+<th align="left">架构二：台式机网关+笔记本远程</th>
+<th align="left">架构三：笔记本网关+远程访问</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Gateway位置</strong></td>
+<td align="left">VPS&#x2F;云服务器（24h在线）</td>
+<td align="left">家庭台式机（长期在线）</td>
+<td align="left">笔记本电脑（移动设备）</td>
+</tr>
+<tr>
+<td align="left"><strong>控制端位置</strong></td>
+<td align="left">笔记本&#x2F;手机</td>
+<td align="left">笔记本</td>
+<td align="left">其他台式机&#x2F;手机</td>
+</tr>
+<tr>
+<td align="left"><strong>连接方式</strong></td>
+<td align="left">Tailscale&#x2F;SSH隧道</td>
+<td align="left">SSH远程隧道</td>
+<td align="left">SSH隧道&#x2F;Tailscale Serve</td>
+</tr>
+<tr>
+<td align="left"><strong>Gateway.bind</strong></td>
+<td align="left"><code>&quot;loopback&quot;</code></td>
+<td align="left"><code>&quot;loopback&quot;</code></td>
+<td align="left"><code>&quot;loopback&quot;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>公网暴露</strong></td>
+<td align="left">无（仅VPN&#x2F;隧道）</td>
+<td align="left">无</td>
+<td align="left">无</td>
+</tr>
+<tr>
+<td align="left"><strong>渠道通信</strong></td>
+<td align="left">从VPS出站</td>
+<td align="left">从台式机出站</td>
+<td align="left">从笔记本出站</td>
+</tr>
+<tr>
+<td align="left"><strong>会话持久性</strong></td>
+<td align="left">高（永不掉线）</td>
+<td align="left">较高（台式机常开）</td>
+<td align="left">低（笔记本休眠会断）</td>
+</tr>
+<tr>
+<td align="left"><strong>延迟</strong></td>
+<td align="left">取决于VPS位置</td>
+<td align="left">家庭网络延迟</td>
+<td align="left">取决于笔记本网络</td>
+</tr>
+</tbody></table>
+<p>譬如：<a target="_blank" rel="noopener" href="https://docs.openclaw.ac.cn/gateway/remote">远程访问 - OpenClaw (Clawdbot) 文档</a>这里：</p>
+<blockquote>
+<p>将 <strong>网关主机</strong> 视为“代理驻留的地方”。它拥有会话、身份验证配置文件、频道和状态。您的笔记本电脑&#x2F;台式机（以及节点）都连接到该主机。</p>
+</blockquote>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs awk">手机 / 客户端<br>        ↓<br>   （渠道：Telegram <span class="hljs-regexp">/ Web /</span> App）<br>        ↓<br>   Gateway（中心服务器）<br>        ↓<br>WebSocket长连接<br>        ↓<br>电脑（OpenClaw节点）<br></code></pre></td></tr></table></figure>
+
+<p>可以看出此时电脑节点是 WebSocket客户端连接到 Gateway（服务器）并建立“持久连接”。后续并通过渠道将指令发送到 GateWay  路由到正确Agent，电脑通过 WebSocket <strong>被动接收推送任务</strong>。</p>
+<p>从安全性上看：</p>
+<p>公网方式 把电脑“暴露成一个公网服务”，其本质是Web直连。而 VPN方式 通过Bot中转( <strong>通常运行在一台服务器上</strong>)，使用VPN&#x2F;Tailnet 设置 <strong>等价于“内网调用”</strong>，不会直接暴露公网端口。进一步减少了攻击面【Tailscale 是一个基于 WireGuard 的零信任 VPN 服务<strong>，可以简单理解为：</strong>把所有设备组成一个安全的私有网络，无论这些设备在哪里（家里、公司、云端)】，所以一般人使用也大多使用第二种。</p>
+<hr>
+<p>虽然是我是搞逆向出身的但对于渗透测试也略懂一二。天下没有攻不破的系统，即使是内网环境下也可以通过横向移动进而控制整个系统。那么对于这样的部署方式，可能的攻击点有哪些呢？又该什么防御呢？</p>
+<p>这里我按照数据流的顺序，讲一讲每个环节的攻击点以及Openclaw是如何应对的：</p>
+<ul>
+<li>Gateway服务端怎么确认客户端的真实性并且防止重放攻击</li>
+<li>工具调用劫持怎么办？如何防范滥用工具对系统资源的破坏和权限提升？</li>
+</ul>
+<h1 id="Gateway安全连接与认证"><a href="#Gateway安全连接与认证" class="headerlink" title="Gateway安全连接与认证"></a>Gateway安全连接与认证</h1><blockquote>
+<p>这一个阶段主要用于验证客户端的真实性 并且 <strong>每次新连接都生成一个全新的、不可预测的 UUID 作为 nonce</strong> 用于防止重放攻击。</p>
+</blockquote>
+<h2 id="预认证与注册"><a href="#预认证与注册" class="headerlink" title="预认证与注册"></a>预认证与注册</h2><p>Gateway 的客户端认证主要靠 <strong>Token &#x2F; TLS（设备指纹）&#x2F; Tailscale &#x2F; Origin  ** 四个手段。这一过程的核心思想是</strong>先认证身份再检查权限再分配会话&#x2F;技能访问**</p>
+<blockquote>
+<p>src\gateway\server.impl.ts</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> &#123;<br>  canvasHost,                        <span class="hljs-comment">// Canvas 主机实例 - 管理动态内容渲染和用户脚本执行</span><br>  releasePluginRouteRegistry,       <span class="hljs-comment">// 释放插件路由注册表的函数 - 清理/卸载已注册的插件路由</span><br>  httpServer,                       <span class="hljs-comment">// 主 HTTP 服务器实例（监听主端口）</span><br>  httpServers,                      <span class="hljs-comment">// 多个 HTTP 服务器实例数组（监听不同端口或主机）</span><br>  httpBindHosts,                    <span class="hljs-comment">// HTTP 服务绑定的主机地址列表（如 [&#x27;0.0.0.0&#x27;, &#x27;127.0.0.1&#x27;]）</span><br>  wss,                              <span class="hljs-comment">// WebSocket 服务器实例（用于实时双向通信）</span><br>  preauthConnectionBudget,          <span class="hljs-comment">// 预认证连接预算 - 限制未认证连接数量，防止资源耗尽</span><br>  clients,                          <span class="hljs-comment">// 客户端连接管理 Map - 存储所有已连接的客户端信息</span><br>  broadcast,                        <span class="hljs-comment">// 广播函数 - 向所有连接的客户端发送消息</span><br>  broadcastToConnIds,               <span class="hljs-comment">// 向指定连接ID列表广播消息的函数</span><br>  agentRunSeq,                      <span class="hljs-comment">// Agent 运行序号/序列号（用于追踪执行顺序）</span><br>  dedupe,                           <span class="hljs-comment">// 去重函数/Map - 防止重复处理相同请求或消息</span><br>  chatRunState,                     <span class="hljs-comment">// 聊天运行状态 - 存储每个聊天会话的运行状态</span><br>  chatRunBuffers,                   <span class="hljs-comment">// 聊天运行缓冲区 - 缓存聊天消息数据</span><br>  chatDeltaSentAt,                  <span class="hljs-comment">// 聊天增量消息发送时间戳 - 记录最后一次发送增量消息的时间</span><br>  chatDeltaLastBroadcastLen,        <span class="hljs-comment">// 上次广播的聊天增量消息长度</span><br>  addChatRun,                       <span class="hljs-comment">// 添加聊天运行的函数 - 启动新的聊天会话</span><br>  removeChatRun,                    <span class="hljs-comment">// 移除聊天运行的函数 - 结束/清理聊天会话</span><br>  chatAbortControllers,             <span class="hljs-comment">// 聊天中止控制器 Map - 用于取消/中止正在进行的聊天请求</span><br>  toolEventRecipients,              <span class="hljs-comment">// 工具事件接收器 - 处理工具调用相关事件的监听器集合</span><br>&#125; = <span class="hljs-keyword">await</span> <span class="hljs-title function_">createGatewayRuntimeState</span>(&#123;<br>  <span class="hljs-comment">// HTTP 严格传输安全头（HSTS）配置，强制客户端使用 HTTPS</span><br>  strictTransportSecurityHeader,<br>  <span class="hljs-comment">// 解析后的认证配置（如 JWT、API Key、OAuth 等）</span><br>  resolvedAuth,<br>  <span class="hljs-comment">// 网关自身的 TLS/HTTPS 配置（证书、密钥、加密套件等）</span><br>  gatewayTls,<br>  <span class="hljs-comment">//.....</span><br>  &#125;);<br></code></pre></td></tr></table></figure>
+
+<p>Gateway 可启用 TLS 并验证指纹，确保控制端和 Gateway 之间的流量加密，同时校验身份。</p>
+<blockquote>
+<p>TLS（传输层安全协议）是一种加密协议，用于在计算机网络中提供安全通信。它的主要作用是确保两个应用程序（如Web服务器和浏览器）之间传输的数据具有<strong>机密性</strong>（不被窃听）、<strong>完整性</strong>（不被篡改）和<strong>身份验证</strong>（确认对方身份可信）。</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs TS"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">GatewayTlsRuntime</span> = &#123;<br>  <span class="hljs-attr">enabled</span>: <span class="hljs-built_in">boolean</span>;<span class="hljs-comment">// TLS 是否启用（true=开启 HTTPS，false=仅 HTTP）</span><br>  <span class="hljs-attr">required</span>: <span class="hljs-built_in">boolean</span>; <span class="hljs-comment">// TLS 是否强制（true=只允许 HTTPS 访问，false=HTTP/HTTPS 均可）</span><br>  certPath?: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// 证书文件路径（如 cert.pem）</span><br>  keyPath?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// 私钥文件路径（如 key.pem）</span><br>  caPath?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// CA 证书路径（用于双向 TLS/mTLS 验证客户端）</span><br>  fingerprintSha256?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// 证书的 SHA-256 指纹（用于证书固定校验）</span><br>  tlsOptions?: tls.<span class="hljs-property">TlsOptions</span>;<span class="hljs-comment">// Node.js TLS 底层选项（加密套件、TLS 版本、证书验证等）</span><br>  error?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// TLS 配置错误信息（如证书不存在、格式错误时填充）</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>同时启动时生成或配置的认证 token，每个客户端必须提供该 token 才能注册到 Gateway</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> runtimeConfig = <span class="hljs-keyword">await</span> <span class="hljs-title function_">resolveGatewayRuntimeConfig</span>(&#123;<br>    <span class="hljs-attr">cfg</span>: cfgAtStart,<br>    port,<br>    <span class="hljs-attr">bind</span>: opts.<span class="hljs-property">bind</span>,<br>    <span class="hljs-attr">host</span>: opts.<span class="hljs-property">host</span>,<br>    <span class="hljs-attr">controlUiEnabled</span>: opts.<span class="hljs-property">controlUiEnabled</span>,  <br>    <span class="hljs-attr">openAiChatCompletionsEnabled</span>: opts.<span class="hljs-property">openAiChatCompletionsEnabled</span>,<br>    <span class="hljs-attr">openResponsesEnabled</span>: opts.<span class="hljs-property">openResponsesEnabled</span>,<br>    <span class="hljs-attr">auth</span>: opts.<span class="hljs-property">auth</span>,<br>    <span class="hljs-attr">tailscale</span>: opts.<span class="hljs-property">tailscale</span>,<br>  &#125;);<br><br><span class="hljs-keyword">const</span> &#123;<br>    <span class="hljs-comment">//...</span><br>    strictTransportSecurityHeader,<br>    resolvedAuth,<br>    tailscaleConfig,<br>    tailscaleMode,<br>    <span class="hljs-comment">//....</span><br>  &#125; = runtimeConfig;<br><br><br></code></pre></td></tr></table></figure>
+
+<p>并且会检查控制 <strong>Origin 白名单</strong>【<strong>跨域请求控制机制</strong>】。Openclaw有一个控制 UI ，是一个由 Gateway 网关提供的小型 <strong>Vite + Lit</strong> 单页应用，它会<strong>直接连接到同一端口上的 Gateway 网关 WebSocket</strong>。该白名单用于限制哪些网站&#x2F;域名可以访问网关控制台 UI。</p>
+<p> <code>~/.openclaw/openclaw.json</code> 的配置：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">18789</span><span class="hljs-punctuation">,</span><br>   controlUi<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> dangerouslyDisableDeviceAuth<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;auth&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;mode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;token&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;token&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;自定义密码&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;reload&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;mode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;hybrid&quot;</span> <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>对企业或跨网络节点，用 Tailscale 作为身份和访问控制，设置配置<code>gateway.auth.allowTailscale: true</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json">tailscale?<span class="hljs-punctuation">:</span> import(<span class="hljs-string">&quot;../config/config.js&quot;</span>).GatewayTailscaleConfig;<br></code></pre></td></tr></table></figure>
+
+<p>当客户端接入 Gateway 时，会走 <strong>预认证和注册流程</strong>：</p>
+<ol>
+<li>客户端发起 WebSocket &#x2F; HTTP 请求。</li>
+<li>Gateway 验证 Token 、allowedOrigins 、 TLS 指纹。</li>
+<li>认证通过后，将客户端信息记录到 <code>clients</code> 或 <code>nodeRegistry</code>。</li>
+<li>分配 <strong>sessionKey &#x2F; agentRunSeq</strong> 等用于会话追踪。</li>
+</ol>
+<blockquote>
+<p>src\gateway\node-registry.ts</p>
+</blockquote>
+<p><code>nodeRegistry</code> 保存注册节点和它们可用的技能（agents）。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// Create auth rate limiters used by connect/auth flows.防止滥用</span><br>  <span class="hljs-keyword">const</span> rateLimitConfig = cfgAtStart.<span class="hljs-property">gateway</span>?.<span class="hljs-property">auth</span>?.<span class="hljs-property">rateLimit</span>;<br>  <span class="hljs-keyword">const</span> &#123; <span class="hljs-attr">rateLimiter</span>: authRateLimiter, <span class="hljs-attr">browserRateLimiter</span>: browserAuthRateLimiter &#125; =<br>    <span class="hljs-title function_">createGatewayAuthRateLimiters</span>(rateLimitConfig);<br></code></pre></td></tr></table></figure>
+
+<p>在<code>const sessionRow = loadGatewaySessionRow(sessionKey);</code>中注意<strong>Session Scope &#x2F; Subagent Role</strong>表示每个 agent 或客户端有独立的权限范围【不同客户端信任级别不同，权限需要分层】</p>
+<h2 id="WebSocket-握手与认证流程"><a href="#WebSocket-握手与认证流程" class="headerlink" title="WebSocket 握手与认证流程"></a>WebSocket 握手与认证流程</h2><p>还记的在前面的 <code>createGatewayRuntimeState</code>中我们初始化了WebSocket 服务器实例wss，它监听 <code>port</code>，处理所有客户端的 WebSocket 连接。<code>httpServer</code> 和 <code>httpServers</code> 是底层 HTTP&#x2F;HTTPS server，用于握手升级到 WebSocket。Gateway 在这里统一管理 HTTP&#x2F;WS 端口和安全配置。</p>
+<img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260408160400552.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+
+
+<blockquote>
+<p>src\gateway\server\ws-connection.ts</p>
+<p>attachGatewayWsHandlers—attachGatewayWsConnectionHandler—attachGatewayWsMessageHandler</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">//attachGatewayWsConnectionHandler:</span><br><span class="hljs-keyword">const</span> connectNonce = <span class="hljs-title function_">randomUUID</span>();  <span class="hljs-comment">// 每次 WebSocket 连接生成唯一的 nonce</span><br><span class="hljs-title function_">send</span>(&#123;<br>  <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;event&quot;</span>,<br>  <span class="hljs-attr">event</span>: <span class="hljs-string">&quot;connect.challenge&quot;</span>,<br>  <span class="hljs-attr">payload</span>: &#123; <span class="hljs-attr">nonce</span>: connectNonce, <span class="hljs-attr">ts</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() &#125;,<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>在 <code>attachGatewayWsMessageHandler</code> 函数中:</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> providedNonce = <span class="hljs-keyword">typeof</span> device.<span class="hljs-property">nonce</span> === <span class="hljs-string">&quot;string&quot;</span> ? device.<span class="hljs-property">nonce</span>.<span class="hljs-title function_">trim</span>() : <span class="hljs-string">&quot;&quot;</span>;<br><span class="hljs-keyword">if</span> (!providedNonce) &#123;<br>  <span class="hljs-title function_">rejectDeviceAuthInvalid</span>(<span class="hljs-string">&quot;device-nonce-missing&quot;</span>, <span class="hljs-string">&quot;device nonce required&quot;</span>);<br>  <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-keyword">if</span> (providedNonce !== connectNonce) &#123;  <span class="hljs-comment">// ← 核心防重放检查</span><br>  <span class="hljs-title function_">rejectDeviceAuthInvalid</span>(<span class="hljs-string">&quot;device-nonce-mismatch&quot;</span>, <span class="hljs-string">&quot;device nonce mismatch&quot;</span>);<br>  <span class="hljs-keyword">return</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过nonce可以有效解决重放攻击：</p>
+<table>
+<thead>
+<tr>
+<th align="left">攻击场景</th>
+<th align="left">防护机制</th>
+<th align="left">代码位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>攻击者截获之前的认证包并重放</strong></td>
+<td align="left">每次连接生成新的 <code>connectNonce</code>，旧的 nonce 会被拒绝</td>
+<td align="left"><code>providedNonce !== connectNonce</code></td>
+</tr>
+<tr>
+<td align="left"><strong>攻击者开新连接重放旧签名</strong></td>
+<td align="left">新连接有新 nonce，旧签名对应的是旧 nonce，不匹配</td>
+<td align="left">同上</td>
+</tr>
+<tr>
+<td align="left"><strong>攻击者尝试暴力猜测 nonce</strong></td>
+<td align="left">nonce 是 128 位 UUID (2^128 种可能)，不可猜测</td>
+<td align="left"><code>randomUUID()</code></td>
+</tr>
+<tr>
+<td align="left"><strong>攻击者重放但修改 nonce</strong></td>
+<td align="left">签名会失效，因为签名绑定了原始 nonce</td>
+<td align="left">签名验证</td>
+</tr>
+</tbody></table>
+<p>更详细的可以在<code>attachGatewayWsMessageHandler</code>找到：</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>设备绑定</strong></td>
+<td align="left">设备公钥与 scopes&#x2F;role 绑定，后续连接自动恢复权限</td>
+</tr>
+<tr>
+<td align="left"><strong>配对机制</strong></td>
+<td align="left">首次连接或权限升级需要管理员批准（通过广播 <code>device.pair.requested</code>）</td>
+</tr>
+<tr>
+<td align="left"><strong>来源校验</strong></td>
+<td align="left">对浏览器客户端强制 Origin 检查，可配置允许列表</td>
+</tr>
+<tr>
+<td align="left"><strong>本地客户端豁免</strong></td>
+<td align="left">本地回环连接可绕过部分检查（取决于配置）</td>
+</tr>
+<tr>
+<td align="left"><strong>防洪水</strong></td>
+<td align="left">未授权请求限流 + 超限断连</td>
+</tr>
+<tr>
+<td align="left"><strong>元数据钉固</strong></td>
+<td align="left">配对后 platform&#x2F;deviceFamily 不可随意更改，除非重新配对</td>
+</tr>
+</tbody></table>
+<h1 id="工具权限与沙盒隔离机制"><a href="#工具权限与沙盒隔离机制" class="headerlink" title="工具权限与沙盒隔离机制"></a>工具权限与沙盒隔离机制</h1><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  auth<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    profiles<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;openai-codex:default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        provider<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex&quot;</span><span class="hljs-punctuation">,</span><br>        mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;oauth&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  agents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    defaults<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      model<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        primary<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex/gpt-5.4&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;sandbox&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;mode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;non-main&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;scope&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;session&quot;</span><br>     <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      maxConcurrent<span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span><br>      subagents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        maxConcurrent<span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    list<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span><br>        id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;main&quot;</span><span class="hljs-punctuation">,</span><br>        model<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          primary<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex/gpt-5.4&quot;</span><span class="hljs-punctuation">,</span><br>          fallbacks<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;openai-codex/gpt-5.2&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        tools<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          profile<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;coding&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  channels<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    telegram<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      enabled<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>      dmPolicy<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pairing&quot;</span><span class="hljs-punctuation">,</span><br>      groupPolicy<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;allowlist&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  gateway<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    port<span class="hljs-punctuation">:</span> <span class="hljs-number">18789</span><span class="hljs-punctuation">,</span><br>    auth<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;token&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    controlUi<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      allowedOrigins<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;http://127.0.0.1:18789&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;http://localhost:18789&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>做计算机病毒分析时，刚入门的逆向工程师都不会直接把可疑样本直接扔进真实系统，而是搭建一个隔离的沙盒环境，</p>
+<blockquote>
+<ul>
+<li>Linux 下常用 <strong>Docker</strong></li>
+<li>Windows 下可以使用 <strong>Windows Sandbox</strong></li>
+<li>Android 系统中存在 <strong>VirtualApp</strong></li>
+</ul>
+</blockquote>
+<p>在“笼子”里观察病毒的每一个动作。即便病毒爆发，损失也仅限于这个可以一键还原的快照。</p>
+<p>OpenClaw 的 Agent 在某种意义上，就是一个“有益但不可预测的病毒”。当它以最高权限运行时，拥有读取文件、执行命令、修改配置的能力——这与勒索病毒的破坏力在技术层面没有什么区别。尤其是当LLM 犯错，出现幻觉乃至误解指令。一个“rm -rf &#x2F;”的误判，一个错误的文件覆写，就足以让“有益的助手”变成“灾难性的病毒”。</p>
+<p>所以我很好奇openclaw是怎么实现一个沙盒的？【蛮想知道的是怎么在windows下实现的（要是使用<strong>Hyper-V</strong>就更好了）】</p>
+<h2 id="Sandbox配置"><a href="#Sandbox配置" class="headerlink" title="Sandbox配置"></a>Sandbox配置</h2><table>
+<thead>
+<tr>
+<th>配置类别</th>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Mode</strong>(启用范围)</td>
+<td><code>off</code></td>
+<td>完全禁用沙盒，所有工具直接在宿主机运行（风险最高）</td>
+</tr>
+<tr>
+<td></td>
+<td><code>non-main</code> (默认)</td>
+<td>仅非主会话（群聊&#x2F;频道）启用沙盒，主会话（私聊）在宿主机运行</td>
+</tr>
+<tr>
+<td></td>
+<td><code>all</code></td>
+<td>所有会话强制使用沙盒，最高隔离级别</td>
+</tr>
+<tr>
+<td><strong>Scope</strong>(共享范围)</td>
+<td><code>session</code></td>
+<td>每个会话独立容器，隔离最彻底，资源开销大</td>
+</tr>
+<tr>
+<td></td>
+<td><code>agent</code> (默认)</td>
+<td>同一智能体的所有会话共享一个容器，资源利用率高</td>
+</tr>
+<tr>
+<td></td>
+<td><code>shared</code></td>
+<td>所有沙盒会话共享全局容器，资源开销最小但隔离弱</td>
+</tr>
+<tr>
+<td><strong>workspaceAccess</strong>(工作区访问)</td>
+<td><code>none</code> (默认)</td>
+<td>无法访问宿主机工作区，技能文件自动复制到容器临时目录</td>
+</tr>
+<tr>
+<td></td>
+<td><code>ro</code></td>
+<td>只读挂载工作区到 <code>/agent</code>，写入工具（write&#x2F;edit）自动禁用</td>
+</tr>
+<tr>
+<td></td>
+<td><code>rw</code></td>
+<td>读写挂载工作区，允许修改工作区内文件（无法访问外部系统文件）</td>
+</tr>
+</tbody></table>
+<p>遗憾的是，一顿搜索我只找到了：</p>
+<blockquote>
+<p>OpenClaw 可以<strong>在 Docker 容器中运行工具</strong>以减少爆炸半径。在<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/zh-CN/gateway/sandboxing">沙盒隔离 - OpenClaw</a>文档中提到：</p>
+<ul>
+<li><code>&quot;docker&quot;</code>（默认）：本地基于 Docker 的沙盒运行时。</li>
+<li><code>&quot;ssh&quot;</code>：通用的基于 SSH 的远程沙盒运行时。</li>
+<li><code>&quot;openshell&quot;</code>：基于 OpenShell 的沙盒运行时。</li>
+</ul>
+<p><code>agents.defaults.sandbox.backend</code> 控制<strong>由哪种运行时</strong>提供沙盒：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">Docker</th>
+<th align="left">SSH</th>
+<th align="left">OpenShell</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>运行位置</strong></td>
+<td align="left">本地容器</td>
+<td align="left">任意可通过 SSH 访问的主机</td>
+<td align="left">由 OpenShell 管理的沙盒</td>
+</tr>
+<tr>
+<td align="left"><strong>设置</strong></td>
+<td align="left"><code>scripts/sandbox-setup.sh</code></td>
+<td align="left">SSH 密钥 + 目标主机</td>
+<td align="left">启用 OpenShell 插件</td>
+</tr>
+<tr>
+<td align="left"><strong>Workspace 模型</strong></td>
+<td align="left">bind mount 或 copy</td>
+<td align="left">远程规范源（初始化一次）</td>
+<td align="left"><code>mirror</code> 或 <code>remote</code></td>
+</tr>
+<tr>
+<td align="left"><strong>网络控制</strong></td>
+<td align="left"><code>docker.network</code>（默认：none）</td>
+<td align="left">取决于远程主机</td>
+<td align="left">取决于 OpenShell</td>
+</tr>
+<tr>
+<td align="left"><strong>浏览器沙盒</strong></td>
+<td align="left">支持</td>
+<td align="left">不支持</td>
+<td align="left">尚不支持</td>
+</tr>
+<tr>
+<td align="left"><strong>Bind mounts</strong></td>
+<td align="left"><code>docker.binds</code></td>
+<td align="left">不适用</td>
+<td align="left">不适用</td>
+</tr>
+<tr>
+<td align="left"><strong>最适合</strong></td>
+<td align="left">本地开发，完全隔离</td>
+<td align="left">将执行卸载到远程机器</td>
+<td align="left">具有可选双向同步的受管远程沙盒</td>
+</tr>
+</tbody></table>
+<p>所以OpenClaw 在 Windows 下通常无法直接开启 Docker 沙盒模式，普遍建议在采用 SSH 或 OpenShell（远程 Linux）来做工具隔离。</p>
+<blockquote>
+<p>OpenClaw 通过 SSH 连接到远程主机（通常是 Linux），在远程主机上执行工具。远程主机本身不是完全隔离的容器，可以把远程主机的一个用户、目录或者 chroot&#x2F;容器作为“沙盒”来限制工具执行。OpenClaw 并不会在 SSH 后端额外创建 Docker 容器，它只是把远程机器当作受控执行环境，借助远程主机的权限和隔离机制来减少风险。</p>
+</blockquote>
+<blockquote>
+<p>OpenShell 提供了完整的沙盒生命周期管理：创建工作区、执行命令、同步文件、销毁环境。远程主机（通常是 Linux）在 OpenShell 管理下，被当作专门的“沙盒环境”。<strong>隔离主要靠文件系统路径和远程主机权限</strong>，不依赖 Linux Namespace&#x2F;Cgroups。可以用 chroot、虚拟用户、容器化命令（如果管理员手动启用）增强隔离，但默认只是逻辑隔离。适合 <strong>远程受控执行</strong>，可审计、可回溯，但隔离强度比 Docker 低。</p>
+</blockquote>
+<p>所以再看看基于docker 实现的沙盒：</p>
+<p>曾经我在<a href="https://hermes37.vercel.app/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/%E4%BB%80%E4%B9%88%E6%98%AFDocker/">什么是Docker - Hermes</a>这篇文章中，就已经了解过docker的底层实现原理了，记得当时还跟着这本书<a target="_blank" rel="noopener" href="https://weread.qq.com/web/reader/a8932240721e42b5a89f479">自己动手写Docker - 陈显鹭 - 微信读书</a> 写过一个demo。其本质是利用了Linux内核的三大支柱技术：</p>
+<ul>
+<li>Linux Namespace</li>
+<li>Linux Cgroups</li>
+<li>Union File System</li>
+</ul>
+<p>利用 <strong>Linux Namespace</strong> 实现环境隔离，<strong>Cgroups</strong> 实现资源限制，<strong>Union File System</strong> 实现写时复制（“省空间”）。这三项技术都已在内核层面经过十余年生产环境验证，成熟度极高。</p>
+<p>因此，OpenClaw 基于 Docker 构建沙盒环境，在技术上是完全可靠的。将 Agent 的文件读写、命令执行等高权限操作全部放入 Docker 容器中执行，即便容器内执行 <code>rm -rf /</code> 或恶意篡改系统配置，破坏范围也被严格限制在容器内部，宿主机丝毫无损。</p>
+<p>需要注意的是默认情况下，Docker 沙盒容器会在<strong>无网络</strong>模式下运行。 可通过 <code>agents.defaults.sandbox.docker.network</code> 覆盖。</p>
+<blockquote>
+<p>深入了解的话，可以看看<a href="https://hermes37.vercel.app/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/Docker%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/">Docker网络模型 - Hermes</a></p>
+</blockquote>
+<p>后面比较好奇的是想看看Openclaw在Docker沙盒怎么做工具权限管理的，有时间就继续读读源码再写一篇文章记录。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/" class="category-chain-item">全栈应用开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/" class="category-chain-item">应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/Agent%E5%BA%94%E7%94%A8/" class="category-chain-item">Agent应用</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/Agent%E5%BA%94%E7%94%A8/openclaw%E6%BA%90%E7%A0%81%E9%89%B4%E8%B5%8F/" class="category-chain-item">openclaw源码鉴赏</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>安全机制</div>
+      <div>https://hermes37.vercel.app/2026/04/08/全栈应用开发/应用/Agent应用/openclaw源码鉴赏/安全机制/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/08/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/Agent%E5%BA%94%E7%94%A8/openclaw%E6%BA%90%E7%A0%81%E9%89%B4%E8%B5%8F/Agent%E5%BA%94%E7%94%A8/" title="Agent应用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Agent应用</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/07/%E6%91%98%E5%BD%95%E4%B8%8E%E9%9A%8F%E7%AC%94/%E6%80%9D%E8%80%83/%E7%90%86%E6%83%B3%E4%B8%8B%E7%9A%84%E5%A4%A7%E5%AD%A6%E7%94%9F%E6%B4%BB/" title="理想下的大学生活">
+                        <span class="hidden-mobile">理想下的大学生活</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
