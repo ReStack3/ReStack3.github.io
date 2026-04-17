@@ -1,0 +1,786 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在Dex加载流程 - The Peak Tower这篇文章中，详细探讨了dex的加载流程，而类加载的整个过程如下：    步骤 描述 相关技术&#x2F;组件    1. 编译与打包 将 .java 源代码编译成 .class 文件，然后使用 d8 或 dx 工具将其转换为 .dex 文件，并打包到 APK 中。 d8、dx、APK   2. 应用启动 当应用启动时，系统加载 .dex 文件，准备">
+<meta property="og:type" content="article">
+<meta property="og:title" content="类加载流程">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="在Dex加载流程 - The Peak Tower这篇文章中，详细探讨了dex的加载流程，而类加载的整个过程如下：    步骤 描述 相关技术&#x2F;组件    1. 编译与打包 将 .java 源代码编译成 .class 文件，然后使用 d8 或 dx 工具将其转换为 .dex 文件，并打包到 APK 中。 d8、dx、APK   2. 应用启动 当应用启动时，系统加载 .dex 文件，准备">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/YNU83osbr7j6tKQ.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/22/S9zgVq4kNRPx2YE.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/22/8FJPWLdXoZ2qRaf.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/oi2XVYPfSazjW7I.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/22/1bwDHAv2tn8feVR.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/22/eQVpLgxDUlo2MYW.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/22/d2mhlM48NF7BD9y.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.574Z">
+<meta property="article:modified_time" content="2026-04-17T07:38:37.387Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/27/YNU83osbr7j6tKQ.png">
+  
+  
+  
+  <title>类加载流程 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="类加载流程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          24 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">类加载流程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/05/15/Dex%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/#DexFile">Dex加载流程 - The Peak Tower</a>这篇文章中，详细探讨了dex的加载流程，而类加载的整个过程如下：</p>
+<table>
+<thead>
+<tr>
+<th><strong>步骤</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>相关技术&#x2F;组件</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 编译与打包</strong></td>
+<td>将 <code>.java</code> 源代码编译成 <code>.class</code> 文件，然后使用 <code>d8</code> 或 <code>dx</code> 工具将其转换为 <code>.dex</code> 文件，并打包到 APK 中。</td>
+<td><code>d8</code>、<code>dx</code>、<code>APK</code></td>
+</tr>
+<tr>
+<td><strong>2. 应用启动</strong></td>
+<td>当应用启动时，系统加载 <code>.dex</code> 文件，准备执行其中的代码。</td>
+<td><code>Dalvik</code>（Android 5.0 之前）、<code>ART</code>（Android 5.0 及以上）</td>
+</tr>
+<tr>
+<td><strong>3. 类加载器加载</strong></td>
+<td>使用 <code>ClassLoader</code> 加载 <code>.dex</code> 文件中的类。根据不同场景使用不同的类加载器。</td>
+<td><code>DexClassLoader</code>、<code>PathClassLoader</code>、<code>InMemoryDexClassLoader</code>（Android 8.0 及以上）</td>
+</tr>
+<tr>
+<td><strong>4. 加载与执行</strong></td>
+<td>将 <code>.dex</code> 文件中的类加载到内存中，转换为 Java 类对象并进行执行。</td>
+<td><code>defineClass()</code>（加载类）</td>
+</tr>
+<tr>
+<td><strong>5. ART 的 AOT 编译</strong></td>
+<td>在 ART 中，<code>.dex</code> 文件可以通过 AOT 编译预先生成机器码，提高启动性能。</td>
+<td><code>AOT</code>（Ahead-of-Time Compilation）</td>
+</tr>
+<tr>
+<td><strong>6. 动态加载支持</strong></td>
+<td>支持动态加载额外的 <code>.dex</code> 文件，例如插件化和热更新场景。</td>
+<td><code>DexClassLoader</code>（动态加载）</td>
+</tr>
+</tbody></table>
+<p>自然的这章，我们将要讨论的是android中如何将类从.dex文件中加载到内存中，转换为 Java 类对象并进行执行。</p>
+<p>在一个类加载之前，其类对应的dex文件已经在内存中。</p>
+<p><img src="https://s2.loli.net/2024/12/27/YNU83osbr7j6tKQ.png" srcset="/img/loading.gif" lazyload alt="image-20241227110250246"></p>
+<hr>
+<h1 id="android类加载过程"><a href="#android类加载过程" class="headerlink" title="android类加载过程"></a>android类加载过程</h1><p>ClassLoader类是所有类加载器的虚基类，在静态&#x2F;动态加载一个类时会首先调用此虚基类的LoadClass函数。</p>
+<h2 id="LoadClass"><a href="#LoadClass" class="headerlink" title="LoadClass"></a>LoadClass</h2><p><img src="https://s2.loli.net/2024/10/22/S9zgVq4kNRPx2YE.png" srcset="/img/loading.gif" lazyload alt="image-20241022201826940"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="hljs-type">boolean</span> resolve) <span class="hljs-keyword">throws</span> ClassNotFoundException &#123;<br>    <span class="hljs-comment">// 第一步，检查类是否已经被加载</span><br>    Class&lt;?&gt; c = findLoadedClass(name);  <br>    <span class="hljs-keyword">if</span> (c == <span class="hljs-literal">null</span>) &#123;  <span class="hljs-comment">// 如果类没有被加载，则继续查找</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">// 如果父类加载器不为 null，则尝试使用父加载器加载</span><br>            <span class="hljs-keyword">if</span> (parent != <span class="hljs-literal">null</span>) &#123;<br>                c = parent.loadClass(name, <span class="hljs-literal">false</span>);  <span class="hljs-comment">// 调用父加载器的 loadClass 方法</span><br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                c = findBootstrapClassOrNull(name);  <span class="hljs-comment">// 如果没有父加载器，则尝试查找引导类（Bootstrap Class）</span><br>            &#125;<br>        &#125; <span class="hljs-keyword">catch</span> (ClassNotFoundException e) &#123;<br>            <span class="hljs-comment">// 如果父加载器找不到该类，则会抛出 ClassNotFoundException</span><br>            <span class="hljs-comment">// 这里捕获该异常，继续处理</span><br>        &#125;<br><br>        <span class="hljs-comment">// 如果父加载器仍然没有找到该类，则调用 findClass 方法查找类</span><br>        <span class="hljs-keyword">if</span> (c == <span class="hljs-literal">null</span>) &#123;<br>            c = findClass(name);  <span class="hljs-comment">// 使用当前加载器查找该类</span><br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> c;  <span class="hljs-comment">// 返回已加载的类，或者抛出 ClassNotFoundException</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>注意：c &#x3D; parent.loadClass(name, false);涉及到了双亲委派机制【双亲委派机制是 Java 类加载器（<code>ClassLoader</code>）的核心机制之一，旨在确保 Java 类的加载遵循一种优先级的委派模式。其基本思想是：当前类加载器请求加载一个类时，首先会将请求委派给父类加载器，如果父类加载器无法处理，则由当前类加载器处理。这种机制有助于避免类的重复加载和冲突。】具体可参考之前文章<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/12/19/%E5%88%9D%E8%AF%86JVM/">初识JVM - The Peak Tower</a></p>
+<h3 id="findClass"><a href="#findClass" class="headerlink" title="findClass"></a>findClass</h3><p>因为BaseDexClassLoader继承了ClassLoader虚类，其他加载器的类基本都继承于BaseDexClassLoader类，BaseDexClassLoader类中重写了findClass方法，所以上一步会去调用BaseDexClassLoader类中的findClass方法。</p>
+<p><img src="https://s2.loli.net/2024/10/22/8FJPWLdXoZ2qRaf.png" srcset="/img/loading.gif" lazyload alt="image-20241022201923215"></p>
+<p>从类路径中查找类，如果找不到，抛出一个带有附加信息的 <code>ClassNotFoundException</code> 异常，并将其他抑制的异常添加到这个异常中。</p>
+<p><code>pathList.findClass</code> 是查找类的关键步骤。<code>pathList</code> 代表一个类路径，它包含了可能包含类的文件（如 <code>.dex</code> 文件）。</p>
+<p><code>findClass</code> 方法会返回一个 <code>Class</code> 对象（如果找到类），或者返回 <code>null</code>（如果没有找到类）。</p>
+<p>BaseDexClassLoader的findclass会继续调用DexPathList的findClass方法</p>
+<p><img src="https://s2.loli.net/2024/12/27/oi2XVYPfSazjW7I.png" srcset="/img/loading.gif" lazyload alt="image-20241227111809430"></p>
+<p>这个 <code>findClass</code> 方法的作用是在 <code>dexElements</code> 中查找类 <code>name</code>。它遍历所有的 <code>Element</code>（每个 <code>Element</code> 通常表示一个 DEX 文件或类加载单元），尝试从中找到指定的类。如果找到，则返回该类；如果没有找到，并且在查找过程中发生了异常，它会将这些异常添加到 <code>suppressed</code> 列表中，然后返回 <code>null</code>。</p>
+<p>Element类的findClass方法去调用loadClassBinaryName函数，</p>
+<p><img src="https://s2.loli.net/2024/10/22/1bwDHAv2tn8feVR.png" srcset="/img/loading.gif" lazyload alt="image-20241022202335209"></p>
+<p>该方法的作用是尝试通过 <code>dexFile</code> 加载指定的类。如果 <code>dexFile</code> 不为 <code>null</code>，则通过 <code>dexFile</code> 来加载类；否则，返回 <code>null</code>。</p>
+<h4 id="loadClassBinaryName"><a href="#loadClassBinaryName" class="headerlink" title="loadClassBinaryName"></a>loadClassBinaryName</h4><p><img src="https://s2.loli.net/2024/10/22/eQVpLgxDUlo2MYW.png" srcset="/img/loading.gif" lazyload alt="image-20241022202450656"></p>
+<p><code>loadClassBinaryName</code> 是一个公开的方法，它负责加载指定名称的类。</p>
+<ul>
+<li><code>name</code>：要加载的类的名称（例如 <code>com.example.MyClass</code>）。</li>
+<li><code>loader</code>：用于加载该类的类加载器（<code>ClassLoader</code>）。</li>
+<li><code>suppressed</code>：一个 <code>List&lt;Throwable&gt;</code> 类型的参数，用来存储抑制的异常。</li>
+</ul>
+<p>该方法通过 <code>defineClass</code> 方法加载类并返回 <code>Class</code> 对象。<code>defineClass</code> 是一个静态方法，它的主要任务是通过 <code>defineClassNative</code>（本地方法）定义类。</p>
+<h5 id="defineClassNative"><a href="#defineClassNative" class="headerlink" title="defineClassNative"></a>defineClassNative</h5><p>loadClassBinaryName函数接着会调用defineClass-&gt;defineClassNative。defineClassNative函数是一个native函数在art虚拟机中实现。</p>
+<blockquote>
+<p>&#x2F;<a target="_blank" rel="noopener" href="http://aospxref.com/android-5.0.2_r3/xref/art/">art</a>&#x2F;<a target="_blank" rel="noopener" href="http://aospxref.com/android-5.0.2_r3/xref/art/runtime/">runtime</a>&#x2F;<a target="_blank" rel="noopener" href="http://aospxref.com/android-5.0.2_r3/xref/art/runtime/native/">native</a>&#x2F;<a target="_blank" rel="noopener" href="http://aospxref.com/android-5.0.2_r3/xref/art/runtime/native/dalvik_system_DexFile.cc">dalvik_system_DexFile.cc</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/10/22/d2mhlM48NF7BD9y.png" srcset="/img/loading.gif" lazyload alt="image-20241022203615592"></p>
+<h2 id="DexFile-defineClassNative"><a href="#DexFile-defineClassNative" class="headerlink" title="DexFile_defineClassNative"></a>DexFile_defineClassNative</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> jclass <span class="hljs-title function_">DexFile_defineClassNative</span><span class="hljs-params">(JNIEnv* env,</span><br><span class="hljs-params">                                        jclass,</span><br><span class="hljs-params">                                        jstring javaName,</span><br><span class="hljs-params">                                        jobject javaLoader,</span><br><span class="hljs-params">                                        jobject cookie,</span><br><span class="hljs-params">                                        jobject dexFile)</span> &#123;<br>    <span class="hljs-comment">// 创建一个空的 DexFile 数组，存储后续找到的 DexFile 对象</span><br>    <span class="hljs-built_in">std</span>::<span class="hljs-built_in">vector</span>&lt;<span class="hljs-type">const</span> DexFile*&gt; dex_files;<br>    <span class="hljs-type">const</span> OatFile* oat_file;<br><br>    <span class="hljs-comment">// 将传入的 Java cookie 转换为 DexFile 数组，并尝试找到 Oat 文件</span><br>    <span class="hljs-keyword">if</span> (!ConvertJavaArrayToDexFiles(env, cookie, <span class="hljs-comment">/*out*/</span> dex_files, <span class="hljs-comment">/*out*/</span> oat_file)) &#123;<br>        VLOG(class_linker) &lt;&lt; <span class="hljs-string">&quot;Failed to find dex_file&quot;</span>;<br>        DCHECK(env-&gt;ExceptionCheck());<br>        <span class="hljs-keyword">return</span> nullptr;<br>    &#125;<br><br>    <span class="hljs-comment">// 将传入的 Java 字符串 (类名) 转换为 C++ 字符串</span><br>    ScopedUtfChars <span class="hljs-title function_">class_name</span><span class="hljs-params">(env, javaName)</span>;<br>    <span class="hljs-keyword">if</span> (class_name.c_str() == nullptr) &#123;<br>        VLOG(class_linker) &lt;&lt; <span class="hljs-string">&quot;Failed to find class_name&quot;</span>;<br>        <span class="hljs-keyword">return</span> nullptr;<br>    &#125;<br><br>    <span class="hljs-comment">// 将类名从 &#x27;.&#x27; 格式转换为描述符格式，例如 &quot;java.lang.String&quot; -&gt; &quot;Ljava/lang/String;&quot;</span><br>    <span class="hljs-type">const</span> <span class="hljs-built_in">std</span>::<span class="hljs-built_in">string</span> <span class="hljs-title function_">descriptor</span><span class="hljs-params">(DotToDescriptor(class_name.c_str()))</span>;<br>    <br>    <span class="hljs-comment">// 计算类名的修改 UTF-8 哈希值，用于高效查找类</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">size_t</span> <span class="hljs-title function_">hash</span><span class="hljs-params">(ComputeModifiedUtf8Hash(descriptor.c_str()))</span>;<br><br>    <span class="hljs-comment">// 遍历所有 dex 文件，查找指定描述符的类</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; dex_file : dex_files) &#123;<br>        <span class="hljs-comment">// 从 dex 文件中查找类定义</span><br>        <span class="hljs-type">const</span> DexFile::ClassDef* dex_class_def =<br>            OatDexFile::FindClassDef(*dex_file, descriptor.c_str(), hash);<br>        <br>        <span class="hljs-comment">// 如果找到了类定义，则继续处理</span><br>        <span class="hljs-keyword">if</span> (dex_class_def != nullptr) &#123;<br>            ScopedObjectAccess <span class="hljs-title function_">soa</span><span class="hljs-params">(env)</span>;<br>            ClassLinker* class_linker = Runtime::Current()-&gt;GetClassLinker();<br>            <br>            <span class="hljs-comment">// 创建堆栈句柄，处理 ClassLoader 和 DexCache</span><br>            StackHandleScope&lt;1&gt; <span class="hljs-title function_">hs</span><span class="hljs-params">(soa.Self())</span>;<br>            Handle&lt;mirror::ClassLoader&gt; <span class="hljs-title function_">class_loader</span><span class="hljs-params">(</span><br><span class="hljs-params">                hs.NewHandle(soa.Decode&lt;mirror::ClassLoader&gt;(javaLoader)))</span>;<br><br>            <span class="hljs-comment">// 注册 Dex 文件，并将其关联到 ClassLoader</span><br>            ObjPtr&lt;mirror::DexCache&gt; dex_cache =<br>                class_linker-&gt;RegisterDexFile(*dex_file, class_loader.Get());<br><br>            <span class="hljs-comment">// 如果注册失败，返回 null</span><br>            <span class="hljs-keyword">if</span> (dex_cache == nullptr) &#123;<br>                <span class="hljs-comment">// OOME 或者 InternalError（可能是 dexFile 已经被不同的 class loader 注册）</span><br>                soa.Self()-&gt;AssertPendingException();<br>                <span class="hljs-keyword">return</span> nullptr;<br>            &#125;<br><br>            <span class="hljs-comment">// 使用 ClassLinker 定义类</span><br>            ObjPtr&lt;mirror::Class&gt; result = class_linker-&gt;DefineClass(soa.Self(),<br>                                                                   descriptor.c_str(),<br>                                                                   hash,<br>                                                                   class_loader,<br>                                                                   *dex_file,<br>                                                                   *dex_class_def);<br><br>            <span class="hljs-comment">// 将已使用的 Dex 文件插入到 ClassLoader 中（此步骤仅对于 DexFile.loadClass API 有用）</span><br>            class_linker-&gt;InsertDexFileInToClassLoader(soa.Decode&lt;mirror::Object&gt;(dexFile),<br>                                                       class_loader.Get());<br><br>            <span class="hljs-comment">// 如果成功定义类，返回类对象</span><br>            <span class="hljs-keyword">if</span> (result != nullptr) &#123;<br>                VLOG(class_linker) &lt;&lt; <span class="hljs-string">&quot;DexFile_defineClassNative returning &quot;</span> &lt;&lt; result<br>                                   &lt;&lt; <span class="hljs-string">&quot; for &quot;</span> &lt;&lt; class_name.c_str();<br>                <span class="hljs-keyword">return</span> soa.AddLocalReference&lt;jclass&gt;(result);<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 如果未找到类定义，输出日志并返回 null</span><br>    VLOG(class_linker) &lt;&lt; <span class="hljs-string">&quot;Failed to find dex_class_def &quot;</span> &lt;&lt; class_name.c_str();<br>    <span class="hljs-keyword">return</span> nullptr;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="DefineClass"><a href="#DefineClass" class="headerlink" title="DefineClass"></a>DefineClass</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 定义并加载类，过程包括类的注册、准备和连接等步骤。</span><br><span class="hljs-type">static</span> jclass <span class="hljs-title function_">ClassLinker::DefineClass</span><span class="hljs-params">(Thread* self,</span><br><span class="hljs-params">                                       <span class="hljs-type">const</span> <span class="hljs-type">char</span>* descriptor,<span class="hljs-type">size_t</span> hash,Handle&lt;mirror::ClassLoader&gt; class_loader,<span class="hljs-type">const</span> DexFile&amp; dex_file,<span class="hljs-type">const</span> DexFile::ClassDef&amp; dex_class_def)</span> &#123;<br>    StackHandleScope&lt;3&gt; <span class="hljs-title function_">hs</span><span class="hljs-params">(self)</span>;<br>    <span class="hljs-keyword">auto</span> klass = hs.NewHandle&lt;mirror::Class&gt;(nullptr);<br><br>    <span class="hljs-comment">// 如果初始化未完成，为一些常见类（如 Object, String, Class）分配类根</span><br>    <span class="hljs-keyword">if</span> (UNLIKELY(!init_done_)) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(descriptor, <span class="hljs-string">&quot;Ljava/lang/Object;&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>            klass.Assign(GetClassRoot(kJavaLangObject));<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(descriptor, <span class="hljs-string">&quot;Ljava/lang/Class;&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>            klass.Assign(GetClassRoot(kJavaLangClass));<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(descriptor, <span class="hljs-string">&quot;Ljava/lang/String;&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>            klass.Assign(GetClassRoot(kJavaLangString));<br>        &#125; <span class="hljs-comment">// ... (其他常见类)</span><br>    &#125;<br><br>    <span class="hljs-comment">// 如果未找到类根，则分配一个新类对象（尚未完全准备好）</span><br>    <span class="hljs-keyword">if</span> (klass == nullptr) &#123;<br>        klass.Assign(AllocClass(self, SizeOfClassWithoutEmbeddedTables(dex_file, dex_class_def)));<br>    &#125;<br>    <span class="hljs-keyword">if</span> (UNLIKELY(klass == nullptr)) &#123;<br>        self-&gt;AssertPendingOOMException();  <span class="hljs-comment">// 内存分配失败，抛出异常</span><br>        <span class="hljs-keyword">return</span> nullptr;<br>    &#125;<br><br>    <span class="hljs-comment">// 获取实际的 Dex 文件和类定义</span><br>    DexFile <span class="hljs-type">const</span>* new_dex_file = nullptr;<br>    DexFile::ClassDef <span class="hljs-type">const</span>* new_class_def = nullptr;<br><br>    <span class="hljs-comment">// 调用回调函数进行类定义前的处理</span><br>    Runtime::Current()-&gt;GetRuntimeCallbacks()-&gt;ClassPreDefine(descriptor, klass, class_loader,dex_file,<br>dex_class_def,&amp;new_dex_file,&amp;new_class_def);<br>    <span class="hljs-comment">// 如果发生异常，返回 null</span><br>    <span class="hljs-keyword">if</span> (self-&gt;IsExceptionPending()) &#123;<br>        <span class="hljs-keyword">return</span> nullptr;<br>    &#125;<br>    <span class="hljs-comment">// 注册 Dex 文件并将其关联到类</span><br>    ObjPtr&lt;mirror::DexCache&gt; dex_cache = RegisterDexFile(*new_dex_file, class_loader.Get());<br>    <span class="hljs-keyword">if</span> (dex_cache == nullptr) &#123;<br>        self-&gt;AssertPendingException();  <span class="hljs-comment">// 注册失败，抛出异常</span><br>        <span class="hljs-keyword">return</span> nullptr;<br>    &#125;<br>    klass-&gt;SetDexCache(dex_cache);<br><br>    <span class="hljs-comment">// 设置类的相关属性</span><br>    SetupClass(*new_dex_file, *new_class_def, klass, class_loader.Get());<br><br>    <span class="hljs-comment">// 对字符串类进行特殊标记</span><br>    <span class="hljs-keyword">if</span> (UNLIKELY(!init_done_) &amp;&amp; <span class="hljs-built_in">strcmp</span>(descriptor, <span class="hljs-string">&quot;Ljava/lang/String;&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>        klass-&gt;SetStringClass();<br>    &#125;<br><br>    <span class="hljs-comment">// 锁定类，设置初始化线程 ID 和接口表</span><br>    ObjectLock&lt;mirror::Class&gt; <span class="hljs-title function_">lock</span><span class="hljs-params">(self, klass)</span>;<br>    klass-&gt;SetClinitThreadId(self-&gt;GetTid());<br>    klass-&gt;SetIfTable(GetClassRoot(kJavaLangObject)-&gt;GetIfTable());<br><br>    <span class="hljs-comment">// 将类插入到类表中，如果已存在则返回已有类的引用</span><br>    ObjPtr&lt;mirror::Class&gt; existing = InsertClass(descriptor, klass.Get(), hash);<br>    <span class="hljs-keyword">if</span> (existing != nullptr) &#123;<br>        <span class="hljs-keyword">return</span> EnsureResolved(self, descriptor, existing);  <span class="hljs-comment">// 解决类加载冲突</span><br>    &#125;<br><br>    <span class="hljs-comment">// 加载类的字段等内容</span><br>    LoadClass(self, *new_dex_file, *new_class_def, klass);<br>    <span class="hljs-keyword">if</span> (self-&gt;IsExceptionPending()) &#123;<br>        <span class="hljs-keyword">if</span> (!klass-&gt;IsErroneous()) &#123;<br>            mirror::Class::SetStatus(klass, mirror::Class::kStatusErrorUnresolved, self);<br>        &#125;<br>        <span class="hljs-keyword">return</span> nullptr;  <span class="hljs-comment">// 加载失败</span><br>    &#125;<br><br>    <span class="hljs-comment">// 加载类的父类和接口</span><br>    <span class="hljs-keyword">if</span> (!LoadSuperAndInterfaces(klass, *new_dex_file)) &#123;<br>        <span class="hljs-keyword">if</span> (!klass-&gt;IsErroneous()) &#123;<br>            mirror::Class::SetStatus(klass, mirror::Class::kStatusErrorUnresolved, self);<br>        &#125;<br>        <span class="hljs-keyword">return</span> nullptr;  <span class="hljs-comment">// 加载失败</span><br>    &#125;<br><br>    <span class="hljs-comment">// 发布类加载事件，标记类为已加载</span><br>    Runtime::Current()-&gt;GetRuntimeCallbacks()-&gt;ClassLoad(klass);<br><br>    <span class="hljs-comment">// 链接类，确保类是完全准备好的</span><br>    <span class="hljs-keyword">auto</span> interfaces = hs.NewHandle&lt;mirror::ObjectArray&lt;mirror::Class&gt;&gt;(nullptr);<br>    MutableHandle&lt;mirror::Class&gt; h_new_class = hs.NewHandle&lt;mirror::Class&gt;(nullptr);<br>    <span class="hljs-keyword">if</span> (!LinkClass(self, descriptor, klass, interfaces, &amp;h_new_class)) &#123;<br>        <span class="hljs-keyword">if</span> (!klass-&gt;IsErroneous()) &#123;<br>            mirror::Class::SetStatus(klass, mirror::Class::kStatusErrorUnresolved, self);<br>        &#125;<br>        <span class="hljs-keyword">return</span> nullptr;  <span class="hljs-comment">// 链接失败</span><br>    &#125;<br><br>    <span class="hljs-comment">// 安装方法入口点（如果需要）</span><br>    <span class="hljs-keyword">if</span> (Runtime::Current()-&gt;GetInstrumentation()-&gt;AreExitStubsInstalled()) &#123;<br>        Runtime::Current()-&gt;GetInstrumentation()-&gt;InstallStubsForClass(h_new_class.Get());<br>    &#125;<br><br>    <span class="hljs-comment">// 发布类准备事件</span><br>    Runtime::Current()-&gt;GetRuntimeCallbacks()-&gt;ClassPrepare(klass, h_new_class);<br><br>    <span class="hljs-comment">// 通知 JIT 编译器有新类型加载</span><br>    jit::Jit::NewTypeLoadedIfUsingJit(h_new_class.Get());<br><br>    <span class="hljs-keyword">return</span> h_new_class.Get();  <span class="hljs-comment">// 返回已定义的类</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h4 id="LoadClass-1"><a href="#LoadClass-1" class="headerlink" title="LoadClass"></a>LoadClass</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 加载类的成员，包括字段、方法等</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">ClassLinker::LoadClass</span><span class="hljs-params">(Thread* self,</span><br><span class="hljs-params">                            <span class="hljs-type">const</span> DexFile&amp; dex_file,</span><br><span class="hljs-params">                            <span class="hljs-type">const</span> DexFile::ClassDef&amp; dex_class_def,</span><br><span class="hljs-params">                            Handle&lt;mirror::Class&gt; klass)</span> &#123;<br>    <span class="hljs-comment">// 获取类的数据部分</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">uint8_t</span>* class_data = dex_file.GetClassData(dex_class_def);<br>    <br>    <span class="hljs-comment">// 如果类数据为空，意味着该类没有字段或方法，可能是一个标记接口</span><br>    <span class="hljs-keyword">if</span> (class_data == nullptr) &#123;<br>        <span class="hljs-keyword">return</span>;  <span class="hljs-comment">// 不需要进一步处理</span><br>    &#125;<br>    <br>    <span class="hljs-comment">// 加载类的成员：字段、方法等</span><br>    LoadClassMembers(self, dex_file, class_data, klass);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h5 id="LoadClassMembers"><a href="#LoadClassMembers" class="headerlink" title="LoadClassMembers"></a>LoadClassMembers</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">ClassLinker::LoadClassMembers</span><span class="hljs-params">(Thread* self,<span class="hljs-type">const</span> DexFile&amp; dex_file,<span class="hljs-type">const</span> <span class="hljs-type">uint8_t</span>* class_data,Handle&lt;mirror::Class&gt; klass)</span> &#123;<br>    <span class="hljs-comment">// 禁止线程挂起，确保字段和方法数组设置完成后再进行线程操作</span><br>    ScopedAssertNoThreadSuspension <span class="hljs-title function_">nts</span><span class="hljs-params">(__FUNCTION__)</span>;<br>    <br>    <span class="hljs-comment">// 加载静态字段</span><br>    LinearAlloc* <span class="hljs-type">const</span> allocator = GetAllocatorForClassLoader(klass-&gt;GetClassLoader());<br>    ClassDataItemIterator <span class="hljs-title function_">it</span><span class="hljs-params">(dex_file, class_data)</span>;<br>    LengthPrefixedArray&lt;ArtField&gt;* sfields = AllocArtFieldArray(self, allocator, it.NumStaticFields());<br>    <span class="hljs-type">size_t</span> num_sfields = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">uint32_t</span> last_field_idx = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (; it.HasNextStaticField(); it.Next()) &#123;<br>        <span class="hljs-type">uint32_t</span> field_idx = it.GetMemberIndex();<br>        DCHECK_GE(field_idx, last_field_idx);  <span class="hljs-comment">// 验证字段顺序</span><br>        <span class="hljs-keyword">if</span> (num_sfields == <span class="hljs-number">0</span> || LIKELY(field_idx &gt; last_field_idx)) &#123;<br>            LoadField(it, klass, &amp;sfields-&gt;At(num_sfields));<br>            ++num_sfields;<br>            last_field_idx = field_idx;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 加载实例字段</span><br>    LengthPrefixedArray&lt;ArtField&gt;* ifields = AllocArtFieldArray(self, allocator, it.NumInstanceFields());<br>    <span class="hljs-type">size_t</span> num_ifields = <span class="hljs-number">0</span>;<br>    last_field_idx = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (; it.HasNextInstanceField(); it.Next()) &#123;<br>        <span class="hljs-type">uint32_t</span> field_idx = it.GetMemberIndex();<br>        DCHECK_GE(field_idx, last_field_idx);  <span class="hljs-comment">// 验证字段顺序</span><br>        <span class="hljs-keyword">if</span> (num_ifields == <span class="hljs-number">0</span> || LIKELY(field_idx &gt; last_field_idx)) &#123;<br>            LoadField(it, klass, &amp;ifields-&gt;At(num_ifields));<br>            ++num_ifields;<br>            last_field_idx = field_idx;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 检查并处理字段的重复定义</span><br>    <span class="hljs-keyword">if</span> (UNLIKELY(num_sfields != it.NumStaticFields()) || UNLIKELY(num_ifields != it.NumInstanceFields())) &#123;<br>        LOG(WARNING) &lt;&lt; <span class="hljs-string">&quot;Duplicate fields in class &quot;</span> &lt;&lt; klass-&gt;PrettyDescriptor()<br>                     &lt;&lt; <span class="hljs-string">&quot; (unique static fields: &quot;</span> &lt;&lt; num_sfields &lt;&lt; <span class="hljs-string">&quot;/&quot;</span> &lt;&lt; it.NumStaticFields()<br>                     &lt;&lt; <span class="hljs-string">&quot;, unique instance fields: &quot;</span> &lt;&lt; num_ifields &lt;&lt; <span class="hljs-string">&quot;/&quot;</span> &lt;&lt; it.NumInstanceFields() &lt;&lt; <span class="hljs-string">&quot;)&quot;</span>;<br>        <span class="hljs-keyword">if</span> (sfields != nullptr) &#123;<br>            sfields-&gt;SetSize(num_sfields);  <span class="hljs-comment">// 调整静态字段数组的大小</span><br>        &#125;<br>        <span class="hljs-keyword">if</span> (ifields != nullptr) &#123;<br>            ifields-&gt;SetSize(num_ifields);  <span class="hljs-comment">// 调整实例字段数组的大小</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 设置字段数组</span><br>    klass-&gt;SetSFieldsPtr(sfields);<br>    DCHECK_EQ(klass-&gt;NumStaticFields(), num_sfields);<br>    klass-&gt;SetIFieldsPtr(ifields);<br>    DCHECK_EQ(klass-&gt;NumInstanceFields(), num_ifields);<br><br>    <span class="hljs-comment">// 加载方法</span><br>    <span class="hljs-type">bool</span> has_oat_class = <span class="hljs-literal">false</span>;<br>    <span class="hljs-type">const</span> OatFile::OatClass oat_class =<br>        (Runtime::Current()-&gt;IsStarted() &amp;&amp; !Runtime::Current()-&gt;IsAotCompiler())<br>            ? OatFile::FindOatClass(dex_file, klass-&gt;GetDexClassDefIndex(), &amp;has_oat_class)<br>            : OatFile::OatClass::Invalid();<br>    <span class="hljs-type">const</span> OatFile::OatClass* oat_class_ptr = has_oat_class ? &amp;oat_class : nullptr;<br>    klass-&gt;SetMethodsPtr(<br>        AllocArtMethodArray(self, allocator, it.NumDirectMethods() + it.NumVirtualMethods()),<br>        it.NumDirectMethods(),<br>        it.NumVirtualMethods());<br>    <br>    <span class="hljs-type">size_t</span> class_def_method_index = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">uint32_t</span> last_dex_method_index = DexFile::kDexNoIndex;<br>    <span class="hljs-type">size_t</span> last_class_def_method_index = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">// 加载直接方法</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; it.HasNextDirectMethod(); i++, it.Next()) &#123;<br>        ArtMethod* method = klass-&gt;GetDirectMethodUnchecked(i, image_pointer_size_);<br>        LoadMethod(dex_file, it, klass, method);<br>        LinkCode(this, method, oat_class_ptr, class_def_method_index);<br>        <span class="hljs-type">uint32_t</span> it_method_index = it.GetMemberIndex();<br>        <span class="hljs-keyword">if</span> (last_dex_method_index == it_method_index) &#123;<br>            <span class="hljs-comment">// 处理重复的方法</span><br>            method-&gt;SetMethodIndex(last_class_def_method_index);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            method-&gt;SetMethodIndex(class_def_method_index);<br>            last_dex_method_index = it_method_index;<br>            last_class_def_method_index = class_def_method_index;<br>        &#125;<br>        class_def_method_index++;<br>    &#125;<br><br>    <span class="hljs-comment">// 加载虚方法</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; it.HasNextVirtualMethod(); i++, it.Next()) &#123;<br>        ArtMethod* method = klass-&gt;GetVirtualMethodUnchecked(i, image_pointer_size_);<br>        LoadMethod(dex_file, it, klass, method);<br>        DCHECK_EQ(class_def_method_index, it.NumDirectMethods() + i);<br>        LinkCode(this, method, oat_class_ptr, class_def_method_index);<br>        class_def_method_index++;<br>    &#125;<br>    DCHECK(!it.HasNext());<br><br>    <span class="hljs-comment">// 标记类的卡片以便垃圾回收</span><br>    Runtime::Current()-&gt;GetHeap()-&gt;WriteBarrierEveryFieldOf(klass.Get());<br>    <br>    <span class="hljs-comment">// 恢复线程挂起</span><br>    self-&gt;AllowThreadSuspension();<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>类加载流程</div>
+      <div>https://hermes37.vercel.app/2025/05/09/计算机科学与技术/内核原理/Andorid内核原理/装载链接运行/类加载流程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Web%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/AST%E6%B7%B7%E6%B7%86%E4%B8%8E%E5%8F%8D%E6%B7%B7%E6%B7%86/" title="AST混淆与反混淆">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">AST混淆与反混淆</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/So%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%93%BE%E6%8E%A5(linker)/" title="So加载和链接(linker)">
+                        <span class="hidden-mobile">So加载和链接(linker)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

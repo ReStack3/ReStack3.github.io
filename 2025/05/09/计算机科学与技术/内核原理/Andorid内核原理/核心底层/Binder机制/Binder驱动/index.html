@@ -1,0 +1,1204 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="站在巨人的肩膀上： Binder系列1—Binder Driver初探 - Gityuan博客 | 袁辉辉的技术博客 Binder系列2—Binder Driver再探 - Gityuan博客 | 袁辉辉的技术博客 linux源码解读（二十六）：android binder原理和实现方式 - 第七子007 - 博客园  前置知识为什么要有Bindre驱动？在第一篇文章缘起Binder - The">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Binder驱动">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/Binder%E9%A9%B1%E5%8A%A8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="站在巨人的肩膀上： Binder系列1—Binder Driver初探 - Gityuan博客 | 袁辉辉的技术博客 Binder系列2—Binder Driver再探 - Gityuan博客 | 袁辉辉的技术博客 linux源码解读（二十六）：android binder原理和实现方式 - 第七子007 - 博客园  前置知识为什么要有Bindre驱动？在第一篇文章缘起Binder - The">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/03/07/wUmIV3bfF4MC51Z.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/07/8OI3yhkuneqcmT4.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/OEL42Gh53CIfcb9.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/RGeIoJz7O8UtvKT.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/MlpKZ2jfwqTVUzI.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/07/LbMgTKmeZvUP1sa.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/07/7pRUmn1NIShfPGK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/AZrqtWXkOQD576J.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/wA4oQsy5pBtjqFe.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/ZsxpAf8lUdWSI5O.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/sZh1PDzoUinMgBa.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/iMtCxWjBk2ZYo6R.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/FADuc48rGdv7JI2.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/gJR4S5HO9KQreFL.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.464Z">
+<meta property="article:modified_time" content="2026-04-17T07:38:37.172Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="Andorid源码阅读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/03/07/wUmIV3bfF4MC51Z.png">
+  
+  
+  
+  <title>Binder驱动 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Binder驱动"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          67 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Binder驱动</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>站在巨人的肩膀上：</p>
+<p><a target="_blank" rel="noopener" href="https://gityuan.com/2015/11/01/binder-driver/">Binder系列1—Binder Driver初探 - Gityuan博客 | 袁辉辉的技术博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://gityuan.com/2015/11/02/binder-driver-2/">Binder系列2—Binder Driver再探 - Gityuan博客 | 袁辉辉的技术博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/theseventhson/p/15928203.html">linux源码解读（二十六）：android binder原理和实现方式 - 第七子007 - 博客园</a></p>
+</blockquote>
+<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><h2 id="为什么要有Bindre驱动？"><a href="#为什么要有Bindre驱动？" class="headerlink" title="为什么要有Bindre驱动？"></a>为什么要有Bindre驱动？</h2><p>在第一篇文章<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/06/01/%E7%BC%98%E8%B5%B7Binder/">缘起Binder - The Peak Tower</a>中涉及IPC机制谈到这么一句话：</p>
+<blockquote>
+<p>总结来说：对于用户空间，不同进程之间彼此是不能共享的，而内核空间却是可共享的。Client进程向Server进程通信，利用进程间可共享的内核内存空间来完成底层通信工作的。</p>
+</blockquote>
+<p>而我们知道用户态程序想要调用内核态程序，则必须进行系统调用(<code>syscall</code>)【在<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/01/25/%E5%A4%96%E5%AD%98%E7%AE%A1%E7%90%86%E3%80%90%E8%A1%A5%E5%85%85%E3%80%91/#%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F">外存管理【补充】 - The Peak Tower</a>有详细讨论过】。而在Binder机制中系统调用又有一番学问,先给出一个在之前文章谈到有关I&#x2F;O系统接口的截图：</p>
+<p><img src="https://s2.loli.net/2025/03/07/wUmIV3bfF4MC51Z.png" srcset="/img/loading.gif" lazyload></p>
+<p>为什么给出这个？因为应用程序想要调用内核也必须实现操作系统给出的通一接口，比如：open(),mmap()和ioctl等。而后内核通过<strong>中断向量表</strong>找到对应处理的内核程序。</p>
+<p>这里可以看到：Binder的底层调用内核实现IPC数据传输机制必须要实现在内核中那个“对应处理的内核程序”—&gt;驱动程序</p>
+<blockquote>
+<p>设备驱动程序作为操作系统的一部分，它位于操作系统与硬件之间，负责将操作系统的高层请求转换为适合具体硬件的低层命令，并处理硬件设备的控制器寄存器、缓冲区等不同的使用模式。</p>
+</blockquote>
+<p>Binder驱动难道要驱动一个具体的物理设备吗？</p>
+<p>答案是否定的。Binder注册的字符设备是<strong>虚拟设备</strong>，而非物理设备。它是Android系统在内核层实现的一种<strong>进程间通信（IPC）机制</strong>的抽象接口，<strong>通过Linux内核的字符设备驱动模型暴露给用户空间。</strong>以下是详细解释：</p>
+<p>虚拟<strong>字符设备</strong>是一种按字节流访问的抽象设备接口，用户程序通过<code>/dev</code>目录下的设备节点与内核驱动交互，好处在于：</p>
+<ul>
+<li><strong>标准化接口</strong>：通过字符设备接口（如<code>open()</code>、<code>ioctl()</code>、<code>mmap()</code>等），用户空间的Android应用可以方便地与内核中的Binder驱动通信。</li>
+<li><strong>内核权限</strong>：Binder需要在内核层管理进程间通信的安全性和资源隔离，而字符设备驱动天然具备在内核态和用户态之间传递数据的能力。</li>
+<li><strong>性能优化</strong>：内核态的Binder驱动可以直接处理进程间通信的上下文切换、内存映射等操作，避免用户态频繁陷入内核的开销。</li>
+</ul>
+<p>通过这种方式，用户层程序只需通过像操作文件那样(如：open(),read(),write()等)之间调用内核了。</p>
+<p><img src="https://s2.loli.net/2025/03/07/8OI3yhkuneqcmT4.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>比如打开Binder驱动方法的调用链为： open-&gt; __open() -&gt; binder_open()。 open()为用户空间的方法，__open()便是系统调用中相应的处理方法，通过查找，对应调用到内核binder驱动的binder_open()方法，至于其他的从用户态陷入内核态的流程也基本一致。</p>
+</blockquote>
+<p>搞懂了上述基本原理，算是对为什么要有Bindre驱动这个问题有了一定的理解。</p>
+<h2 id="共享内存—经典IPC机制"><a href="#共享内存—经典IPC机制" class="headerlink" title="共享内存—经典IPC机制"></a>共享内存—经典IPC机制</h2><p>RPC 一般基于 IPC 来实现的，IPC 就是跨进程数据传输，大白话就是在 A 进程可以访问到 B 进程中的数据，或者说 B 进程中的数据可以传递给 A 进程，都是一个意思。</p>
+<p>在 Linux 中，每个进程都有自己的<strong>虚拟内存地址空间</strong>。虚拟内存地址空间又分为了用户地址空间和内核地址空间。</p>
+<p><img src="https://s2.loli.net/2025/03/08/OEL42Gh53CIfcb9.png" srcset="/img/loading.gif" lazyload></p>
+<p>不同进程之间用户地址空间的变量和函数是不能相互访问的。</p>
+<p>使得 A 进程能访问到 B 进程中数据的手段我们就称之为 IPC。</p>
+<p>虽然用户地址空间是不能互相访问的，但是不同进程的内核地址空间是映射到相同物理地址的，它们是相同和共享的，我们可以借助内核地址空间作为中转站来实现进程间数据的传输。</p>
+<p>具体的我们在 B 进程使用 copy_from_user 将用户态数据 <code>int a</code> 拷贝到内核态，这样就可以在 A 进程的内核态中访问到 <code>int a</code>（<strong>管道、消息队列、信号量等，所有IPC机制的核心或本质就是在内核开辟一块空间，通信双方都从这块空间读写数据</strong>）</p>
+<p><img src="https://s2.loli.net/2025/03/08/RGeIoJz7O8UtvKT.png" srcset="/img/loading.gif" lazyload></p>
+<p>为了访问 <code>int a</code> ，需要拷贝两次数据。能不能优化一下？可以通过 mmap 将进程 A 的用户地址空间与内核地址空间进行映射，让他们指向相同的物理地址空间：</p>
+<p><img src="https://s2.loli.net/2025/03/08/MlpKZ2jfwqTVUzI.png" srcset="/img/loading.gif" lazyload></p>
+<p>这种就是Linux典型的IPC方案：<strong>共享内存</strong>。</p>
+<blockquote>
+<p>在前面<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/01/10/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/#%E8%BF%9B%E8%A1%8C%E6%8A%BD%E8%B1%A1-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4">内存管理 - The Peak Tower</a>已经介绍了虚拟内存的概念，不多解释</p>
+</blockquote>
+<p>共享内存区是把文件或者内存对象映射到多个进程的虚拟地址空间中，这样这些进程可以共享这些数据。但是从这些共享的内存区写入或者读取时通常需要某种形式的同步。当这种映射关系建立起来后，进程可以不再通过执行任何进入内核的系统调用就可直接操作这些内存区。共享内存是总所周知的直接对内存映射操作，速度最快的通信方式</p>
+<h3 id="共享存储映射"><a href="#共享存储映射" class="headerlink" title="共享存储映射"></a><strong>共享存储映射</strong></h3><p>存储映射I&#x2F;O (Memory-mapped I&#x2F;O) 使一个磁盘文件与存储空间中的一个缓冲区相映射。于是当从缓冲区中取数据，就相当于读文件中的相应字节。于此类似，将数据存入缓冲区，则相应的字节就自动写入文件。这样，就可在不使用read和write函数的情况下，使用地址（指针）完成I&#x2F;O操作。使用这种方法，首先应通知内核，将一个指定文件映射到存储区域中。</p>
+<p><img src="https://s2.loli.net/2025/03/07/LbMgTKmeZvUP1sa.png" srcset="/img/loading.gif" lazyload></p>
+<p>两个进程通过共享的内存进行通信：</p>
+<p><img src="https://s2.loli.net/2025/03/07/7pRUmn1NIShfPGK.png" srcset="/img/loading.gif" lazyload></p>
+<p>这个映射工作可以通过mmap函数来实现。</p>
+<blockquote>
+<p>mmap的使用可以参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.man7.org/linux/man-pages/man2/mmap.2.html">mmap(2) - Linux manual page</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41687938/article/details/119901916">linux库函数mmap()原理及用法详解_linux mmap函数-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44718794/article/details/106648703">Linux下IPC方式之共享存储映射（mmap）_ipc映射-CSDN博客</a></p>
+</blockquote>
+<h4 id="mmap的实现原理"><a href="#mmap的实现原理" class="headerlink" title="mmap的实现原理"></a>mmap的实现原理</h4><blockquote>
+<p>这里具体讲解一下mmap的实现原理：</p>
+</blockquote>
+<h2 id="Binder-mmap—软件安全-Android平台IPC实现"><a href="#Binder-mmap—软件安全-Android平台IPC实现" class="headerlink" title="Binder_mmap—软件安全, Android平台IPC实现"></a>Binder_mmap—软件安全, Android平台IPC实现</h2><p>相比传统的IPC，binder只需要拷贝1次，整个原理和流程如下图所示：</p>
+<p><img src="https://s2.loli.net/2025/03/08/AZrqtWXkOQD576J.png" srcset="/img/loading.gif" lazyload></p>
+<p>在这个流程中，数据从用户空间写入内核缓存区（生产者端）的方式保持不变。主要的改动集中在消费端：</p>
+<ol>
+<li><strong>内核建立数据接收缓存区</strong>：内核创建了一个数据接收缓存区，并与内核缓存区建立了映射，意味着它们共享同一块物理地址。</li>
+<li><strong>接收端进程空间映射</strong>：接收端进程的用户空间也与内核的数据接收缓存区建立了映射，同样使用同一块物理地址。</li>
+</ol>
+<p><strong>核心点</strong>：内核只使用了一块物理地址，但通过虚拟地址映射，这块物理地址同时映射到了两个虚拟地址空间（内核缓存区和接收端进程空间）。因此，数据在内核和接收端进程之间传递时，避免了额外的拷贝操作，提升了效率。</p>
+<p>与其这样为什么不直接使用共享内存的方式？</p>
+<blockquote>
+<p>见<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/06/01/%E7%BC%98%E8%B5%B7Binder/">缘起Binder - The Peak Tower</a></p>
+<p>0次复制操作那就与Linux标准内核的共享内存的IPC机制没有区别了，对于共享内存虽然效率高，但是对于多进程的同步问题比较复杂，而管道&#x2F;消息队列等IPC需要复制2两次，效率较低。这里就不先展开讨论Linux现有的各种IPC机制跟Binder的详细对比，总之Android选择Binder的基于速度和安全性的考虑。</p>
+</blockquote>
+<h2 id="C-S架构—RPC思想"><a href="#C-S架构—RPC思想" class="headerlink" title="C&#x2F;S架构—RPC思想"></a>C&#x2F;S架构—RPC思想</h2><p>首先要明确一点 Binder 是一个 RPC（框架，也就是说借助于 Binder，我们可以在 A 进程中访问 B 进程中的函数。</p>
+<p>那 Binder 的 RPC 是如何实现的？一般来说，Client 进程访问 Server 进程函数，我们需要：</p>
+<p>在 Client 进程中按照固定的规则打包数据，这些数据包含了：</p>
+<ul>
+<li><p>数据发给哪个进程，Binder 中是一个整型变量 Handle</p>
+</li>
+<li><p>要调用目标进程中的那个函数，Binder 中用一个整型变量 Code 表示</p>
+</li>
+<li><p>目标函数的参数</p>
+</li>
+<li><p>要执行具体什么操作，也就是 Binder 协议</p>
+</li>
+<li><p>Client 进程通过 IPC 机制将数据传输给 Server 进程 </p>
+</li>
+<li><p>Server 进程收到数据，按照固定的格式解析出数据，调用函数，并使用相同的格式将函数的返回值传递给 Client 进程。</p>
+</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/03/08/wA4oQsy5pBtjqFe.png" srcset="/img/loading.gif" lazyload></p>
+<p>了解完这些前置知识原理，再看源码就事半功倍了。</p>
+<h1 id="关键数据结构"><a href="#关键数据结构" class="headerlink" title="关键数据结构"></a>关键数据结构</h1><table>
+<thead>
+<tr>
+<th align="left">序号</th>
+<th align="left">结构体</th>
+<th align="left">名称</th>
+<th align="left">解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1</td>
+<td align="left">binder_proc</td>
+<td align="left">binder进程</td>
+<td align="left">每个进程调用open()打开binder驱动都会创建该结构体，用于管理IPC所需的各种信息</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">binder_thread</td>
+<td align="left">binder线程</td>
+<td align="left">对应于上层的binder线程</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">binder_node</td>
+<td align="left">binder实体</td>
+<td align="left">对应于BBinder对象，记录BBinder的进程、指针、引用计数等</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">binder_ref</td>
+<td align="left">binder引用</td>
+<td align="left">对应于BpBinder对象，记录BpBinder的引用计数、死亡通知、BBinder指针等</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">binder_ref_death</td>
+<td align="left">binder死亡引用</td>
+<td align="left">记录binder死亡的引用信息</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left">binder_write_read</td>
+<td align="left">binder读写</td>
+<td align="left">记录buffer中读和写的数据信息</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="left">binder_transaction_data</td>
+<td align="left">binder事务数据</td>
+<td align="left">记录传输数据内容，比如发送方pid&#x2F;uid，RPC数据</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="left">flat_binder_object</td>
+<td align="left">binder扁平对象</td>
+<td align="left">Binder对象在两个进程间传递的扁平结构</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="left">binder_buffer</td>
+<td align="left">binder内存</td>
+<td align="left">调用mmap()创建用于Binder传输数据的缓存区</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="left">binder_transaction</td>
+<td align="left">binder事务</td>
+<td align="left">记录传输事务的发送方和接收方线程、进程等</td>
+</tr>
+<tr>
+<td align="left">11</td>
+<td align="left">binder_work</td>
+<td align="left">binder工作</td>
+<td align="left">记录binder工作类型</td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="left">binder_state</td>
+<td align="left">binder状态</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>结构体主要字段和管理关系：</p>
+<p><img src="https://s2.loli.net/2025/03/08/ZsxpAf8lUdWSI5O.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="Binder驱动流程"><a href="#Binder驱动流程" class="headerlink" title="Binder驱动流程"></a>Binder驱动流程</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/kernel_3.18/xref/drivers/staging/android/binder.c">Cross Reference: &#x2F;drivers&#x2F;staging&#x2F;android&#x2F;binder.c</a></p>
+</blockquote>
+<h2 id="binder-open"><a href="#binder-open" class="headerlink" title="binder_open"></a>binder_open</h2><p>在内核中开辟的内核交换数据的空间在binder_buffer中，和binder_proc中的buffers的字段是关联的，所以binder驱动先生成binder_proc实例（本质是用来管理交换数据的公共内存，管理IPC所需的各种信息并拥有其他结构体的根结构体），初始化后加入链表队列binder_procs【通过<code>static HLIST_HEAD(binder_procs);</code>，创建了全局的哈希链表binder_procs】，整个过程在binder_open方法内部实现的。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title">binder_open</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> inode *nodp, <span class="hljs-keyword">struct</span> file *filp)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">binder_proc</span> *proc; <span class="hljs-comment">// binder进程 【见附录3.1】</span><br><br>    proc = <span class="hljs-built_in">kzalloc</span>(<span class="hljs-built_in">sizeof</span>(*proc), GFP_KERNEL); <span class="hljs-comment">// 为binder_proc结构体在分配kernel内存空间</span><br>    <span class="hljs-keyword">if</span> (proc == <span class="hljs-literal">NULL</span>)<br>        <span class="hljs-keyword">return</span> -ENOMEM;<br>    <span class="hljs-built_in">get_task_struct</span>(current);<br>    proc-&gt;tsk = current;   <span class="hljs-comment">//将当前线程的task保存到binder进程的tsk</span><br>    <span class="hljs-built_in">INIT_LIST_HEAD</span>(&amp;proc-&gt;todo); <span class="hljs-comment">//初始化todo列表</span><br>    <span class="hljs-built_in">init_waitqueue_head</span>(&amp;proc-&gt;wait); <span class="hljs-comment">//初始化wait队列</span><br>    proc-&gt;default_priority = <span class="hljs-built_in">task_nice</span>(current);  <span class="hljs-comment">//将当前进程的nice值转换为进程优先级</span><br><br>    <span class="hljs-built_in">binder_lock</span>(__func__);   <span class="hljs-comment">//同步锁，因为binder支持多线程访问</span><br>    <span class="hljs-built_in">binder_stats_created</span>(BINDER_STAT_PROC); <span class="hljs-comment">//BINDER_PROC对象创建数加1</span><br>    <span class="hljs-built_in">hlist_add_head</span>(&amp;proc-&gt;proc_node, &amp;binder_procs); <span class="hljs-comment">//将proc_node节点添加到binder_procs为表头的队列</span><br>    proc-&gt;pid = current-&gt;group_leader-&gt;pid;<br>    <span class="hljs-built_in">INIT_LIST_HEAD</span>(&amp;proc-&gt;delivered_death); <span class="hljs-comment">//初始化已分发的死亡通知列表</span><br>    filp-&gt;private_data = proc;       <span class="hljs-comment">//file文件指针的private_data变量指向binder_proc数据</span><br>    <span class="hljs-built_in">binder_unlock</span>(__func__); <span class="hljs-comment">//释放同步锁</span><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/03/08/sZh1PDzoUinMgBa.png" srcset="/img/loading.gif" lazyload></p>
+<p>binder_proc本质上是用来管理共用内存的结构体，这个实例化后就需要开始最重要的一步了：<strong>在进程虚拟地址申请内存，然后映射到内核的物理地址</strong>，这个过程是在binder_map中实现的。</p>
+<h2 id="binder-map"><a href="#binder-map" class="headerlink" title="binder_map"></a>binder_map</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">binder_mmap</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> file *filp, <span class="hljs-keyword">struct</span> vm_area_struct *vma)</span><br>&#123;<br>    <span class="hljs-type">int</span> ret;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">vm_struct</span> *<span class="hljs-title">area</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_proc</span> *<span class="hljs-title">proc</span> =</span> filp-&gt;private_data; <span class="hljs-comment">// 获取与文件关联的 binder_proc 结构体</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *failure_string;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_buffer</span> *<span class="hljs-title">buffer</span>;</span><br><br>    <span class="hljs-comment">// 检查当前进程是否与 binder_proc 关联的进程一致</span><br>    <span class="hljs-keyword">if</span> (proc-&gt;tsk != current)<br>        <span class="hljs-keyword">return</span> -EINVAL;<br><br>    <span class="hljs-comment">// 限制映射的大小不超过 4MB</span><br>    <span class="hljs-keyword">if</span> ((vma-&gt;vm_end - vma-&gt;vm_start) &gt; SZ_4M)<br>        vma-&gt;vm_end = vma-&gt;vm_start + SZ_4M;<br><br>    <span class="hljs-comment">// 打印调试信息：进程 ID、映射的虚拟地址范围、映射大小、vma 标志等</span><br>    binder_debug(BINDER_DEBUG_OPEN_CLOSE,<br>                 <span class="hljs-string">&quot;binder_mmap: %d %lx-%lx (%ld K) vma %lx pagep %lx\n&quot;</span>,<br>                 proc-&gt;pid, vma-&gt;vm_start, vma-&gt;vm_end,<br>                 (vma-&gt;vm_end - vma-&gt;vm_start) / SZ_1K, vma-&gt;vm_flags,<br>                 (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>)pgprot_val(vma-&gt;vm_page_prot));<br><br>    <span class="hljs-comment">// 检查 vma 的标志是否包含不允许的标志</span><br>    <span class="hljs-keyword">if</span> (vma-&gt;vm_flags &amp; FORBIDDEN_MMAP_FLAGS) &#123;<br>        ret = -EPERM;<br>        failure_string = <span class="hljs-string">&quot;bad vm_flags&quot;</span>;<br>        <span class="hljs-keyword">goto</span> err_bad_arg;<br>    &#125;<br><br>    <span class="hljs-comment">// 设置 vma 的标志：禁止复制，并移除可写权限</span><br>    vma-&gt;vm_flags = (vma-&gt;vm_flags | VM_DONTCOPY) &amp; ~VM_MAYWRITE;<br><br>    <span class="hljs-comment">// 加锁，保护对 proc-&gt;buffer 的访问</span><br>    mutex_lock(&amp;binder_mmap_lock);<br><br>    <span class="hljs-comment">// 检查是否已经映射过，避免重复映射</span><br>    <span class="hljs-keyword">if</span> (proc-&gt;buffer) &#123;<br>        ret = -EBUSY;<br>        failure_string = <span class="hljs-string">&quot;already mapped&quot;</span>;<br>        <span class="hljs-keyword">goto</span> err_already_mapped;<br>    &#125;<br><br>    <span class="hljs-comment">// 分配一个内核虚拟地址区域，大小为映射的大小</span><br>    area = get_vm_area(vma-&gt;vm_end - vma-&gt;vm_start, VM_IOREMAP);<br>    <span class="hljs-keyword">if</span> (area == <span class="hljs-literal">NULL</span>) &#123;<br>        ret = -ENOMEM;<br>        failure_string = <span class="hljs-string">&quot;get_vm_area&quot;</span>;<br>        <span class="hljs-keyword">goto</span> err_get_vm_area_failed;<br>    &#125;<br><br>    <span class="hljs-comment">// 将分配的虚拟地址区域保存到 proc-&gt;buffer</span><br>    proc-&gt;buffer = area-&gt;addr;<br><br>    <span class="hljs-comment">// 计算用户空间地址与内核空间地址的偏移量</span><br>    proc-&gt;user_buffer_offset = vma-&gt;vm_start - (<span class="hljs-type">uintptr_t</span>)proc-&gt;buffer;<br><br>    <span class="hljs-comment">// 解锁</span><br>    mutex_unlock(&amp;binder_mmap_lock);<br><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_CPU_CACHE_VIPT</span><br>    <span class="hljs-comment">// 如果 CPU 缓存是 VIPT（Virtually Indexed, Physically Tagged），检查地址对齐</span><br>    <span class="hljs-keyword">if</span> (cache_is_vipt_aliasing()) &#123;<br>        <span class="hljs-keyword">while</span> (CACHE_COLOUR((vma-&gt;vm_start ^ (<span class="hljs-type">uint32_t</span>)proc-&gt;buffer))) &#123;<br>            pr_info(<span class="hljs-string">&quot;binder_mmap: %d %lx-%lx maps %p bad alignment\n&quot;</span>, proc-&gt;pid, vma-&gt;vm_start, vma-&gt;vm_end, proc-&gt;buffer);<br>            vma-&gt;vm_start += PAGE_SIZE; <span class="hljs-comment">// 调整起始地址以对齐缓存</span><br>        &#125;<br>    &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>    <span class="hljs-comment">// 分配页面数组，用于管理映射的物理页面</span><br>    proc-&gt;pages = kzalloc(<span class="hljs-keyword">sizeof</span>(proc-&gt;pages[<span class="hljs-number">0</span>]) * ((vma-&gt;vm_end - vma-&gt;vm_start) / PAGE_SIZE), GFP_KERNEL);<br>    <span class="hljs-keyword">if</span> (proc-&gt;pages == <span class="hljs-literal">NULL</span>) &#123;<br>        ret = -ENOMEM;<br>        failure_string = <span class="hljs-string">&quot;alloc page array&quot;</span>;<br>        <span class="hljs-keyword">goto</span> err_alloc_pages_failed;<br>    &#125;<br><br>    <span class="hljs-comment">// 保存映射的缓冲区大小</span><br>    proc-&gt;buffer_size = vma-&gt;vm_end - vma-&gt;vm_start;<br><br>    <span class="hljs-comment">// 设置 vma 的操作函数为 binder_vm_ops</span><br>    vma-&gt;vm_ops = &amp;binder_vm_ops;<br><br>    <span class="hljs-comment">// 将 proc 结构体保存到 vma 的私有数据中</span><br>    vma-&gt;vm_private_data = proc;<br><br>    <span class="hljs-comment">// 更新页面范围，分配物理页面并映射到用户空间</span><br>    <span class="hljs-keyword">if</span> (binder_update_page_range(proc, <span class="hljs-number">1</span>, proc-&gt;buffer, proc-&gt;buffer + PAGE_SIZE, vma)) &#123;<br>        ret = -ENOMEM;<br>        failure_string = <span class="hljs-string">&quot;alloc small buf&quot;</span>;<br>        <span class="hljs-keyword">goto</span> err_alloc_small_buf_failed;<br>    &#125;<br><br>    <span class="hljs-comment">// 初始化 proc 的缓冲区链表</span><br>    buffer = proc-&gt;buffer;<br>    INIT_LIST_HEAD(&amp;proc-&gt;buffers);<br>    list_add(&amp;buffer-&gt;entry, &amp;proc-&gt;buffers);<br>    buffer-&gt;<span class="hljs-built_in">free</span> = <span class="hljs-number">1</span>;<br><br>    <span class="hljs-comment">// 将缓冲区插入空闲缓冲区列表</span><br>    binder_insert_free_buffer(proc, buffer);<br><br>    <span class="hljs-comment">// 设置异步空间的大小为缓冲区大小的一半</span><br>    proc-&gt;free_async_space = proc-&gt;buffer_size / <span class="hljs-number">2</span>;<br><br>    <span class="hljs-comment">// 内存屏障，确保数据同步</span><br>    barrier();<br><br>    <span class="hljs-comment">// 获取当前进程的文件结构体并保存到 proc 中</span><br>    proc-&gt;files = get_files_struct(current);<br><br>    <span class="hljs-comment">// 保存 vma 和 vma 的内存管理结构体</span><br>    proc-&gt;vma = vma;<br>    proc-&gt;vma_vm_mm = vma-&gt;vm_mm;<br><br>    <span class="hljs-comment">// 映射成功，返回 0</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br><span class="hljs-comment">// 错误处理部分</span><br>err_alloc_small_buf_failed:<br>    kfree(proc-&gt;pages); <span class="hljs-comment">// 释放页面数组</span><br>    proc-&gt;pages = <span class="hljs-literal">NULL</span>;<br>err_alloc_pages_failed:<br>    mutex_lock(&amp;binder_mmap_lock);<br>    vfree(proc-&gt;buffer); <span class="hljs-comment">// 释放虚拟地址区域</span><br>    proc-&gt;buffer = <span class="hljs-literal">NULL</span>;<br>err_get_vm_area_failed:<br>err_already_mapped:<br>    mutex_unlock(&amp;binder_mmap_lock);<br>err_bad_arg:<br>    <span class="hljs-comment">// 打印错误信息</span><br>    pr_err(<span class="hljs-string">&quot;binder_mmap: %d %lx-%lx %s failed %d\n&quot;</span>,<br>           proc-&gt;pid, vma-&gt;vm_start, vma-&gt;vm_end, failure_string, ret);<br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>主要功能：首先在内核虚拟地址空间，申请一块与用户虚拟内存相同大小的内存；然后再申请1个page大小的物理内存，再将同一块物理内存分别映射到内核虚拟地址空间和用户虚拟内存空间，从而实现了用户空间的Buffer和内核空间的Buffer同步操作的功能。</p>
+<hr>
+<p>这里面最核心的函数就是binder_update_page_range了，这个函数要么释放物理页，要么分配物理页；如果分配物理页，还会建立和进程虚拟地址空间的映射关系！其中真正建立虚拟内存和物理页映射关系的当属map_kernel_range_noflush和vm_insert_page函数了：前者是内核虚拟内存和物理页建立映射，后者是进程虚拟内存和物理页建立映射。</p>
+<h3 id="binder-update-page-range"><a href="#binder-update-page-range" class="headerlink" title="binder_update_page_range"></a>binder_update_page_range</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">binder_update_page_range</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_proc *proc, <span class="hljs-type">int</span> allocate,</span><br><span class="hljs-params">                                   <span class="hljs-type">void</span> *start, <span class="hljs-type">void</span> *end,</span><br><span class="hljs-params">                                   <span class="hljs-keyword">struct</span> vm_area_struct *vma)</span>&#123;<br>    <span class="hljs-type">void</span> *page_addr; <span class="hljs-comment">// 当前页面的内核虚拟地址</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> user_page_addr; <span class="hljs-comment">// 当前页面的用户虚拟地址</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">vm_struct</span> <span class="hljs-title">tmp_area</span>;</span> <span class="hljs-comment">// 临时内核虚拟地址区域</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">page</span> **<span class="hljs-title">page</span>;</span> <span class="hljs-comment">// 指向物理页面的指针</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mm_struct</span> *<span class="hljs-title">mm</span>;</span> <span class="hljs-comment">// 内存管理结构体</span><br><br>    <span class="hljs-comment">// 打印调试信息：当前进程 ID、操作类型（分配或释放）、地址范围</span><br>    binder_debug(BINDER_DEBUG_BUFFER_ALLOC,<br>                 <span class="hljs-string">&quot;%d: %s pages %p-%p\n&quot;</span>, proc-&gt;pid,<br>                 allocate ? <span class="hljs-string">&quot;allocate&quot;</span> : <span class="hljs-string">&quot;free&quot;</span>, start, end);<br><br>    <span class="hljs-comment">// 如果结束地址小于等于起始地址，直接返回</span><br>    <span class="hljs-keyword">if</span> (end &lt;= start)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">// 跟踪函数调用，用于调试</span><br>    trace_binder_update_page_range(proc, allocate, start, end);<br><br>    <span class="hljs-comment">// 如果 vma 不为空，mm 设置为 NULL；否则获取当前进程的内存管理结构体</span><br>    <span class="hljs-keyword">if</span> (vma)<br>        mm = <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-keyword">else</span><br>        mm = get_task_mm(proc-&gt;tsk);<br><br>    <span class="hljs-comment">// 如果 mm 不为空，获取 mmap_sem 信号量（用于同步）</span><br>    <span class="hljs-keyword">if</span> (mm) &#123;<br>        down_write(&amp;mm-&gt;mmap_sem); <span class="hljs-comment">// 加写锁</span><br>        vma = proc-&gt;vma; <span class="hljs-comment">// 获取 proc 的 vma</span><br>        <span class="hljs-keyword">if</span> (vma &amp;&amp; mm != proc-&gt;vma_vm_mm) &#123;<br>            <span class="hljs-comment">// 检查 vma 的内存管理结构体是否与当前进程一致</span><br>            pr_err(<span class="hljs-string">&quot;%d: vma mm and task mm mismatch\n&quot;</span>, proc-&gt;pid);<br>            vma = <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 如果不一致，清空 vma</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 如果是释放页面，跳转到 free_range 标签</span><br>    <span class="hljs-keyword">if</span> (allocate == <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> free_range;<br><br>    <span class="hljs-comment">// 如果 vma 为空，打印错误信息并跳转到错误处理</span><br>    <span class="hljs-keyword">if</span> (vma == <span class="hljs-literal">NULL</span>) &#123;<br>        pr_err(<span class="hljs-string">&quot;%d: binder_alloc_buf failed to map pages in userspace, no vma\n&quot;</span>,<br>               proc-&gt;pid);<br>        <span class="hljs-keyword">goto</span> err_no_vma;<br>    &#125;<br><br>    <span class="hljs-comment">// 遍历地址范围，逐页分配和映射</span><br>    <span class="hljs-keyword">for</span> (page_addr = start; page_addr &lt; end; page_addr += PAGE_SIZE) &#123;<br>        <span class="hljs-type">int</span> ret;<br><br>        <span class="hljs-comment">// 获取当前页面对应的 page 指针</span><br>        page = &amp;proc-&gt;pages[(page_addr - proc-&gt;buffer) / PAGE_SIZE];<br><br>        <span class="hljs-comment">// 检查页面是否已经分配（如果已分配，触发 BUG）</span><br>        BUG_ON(*page);<br><br>        <span class="hljs-comment">// 分配一个物理页面（使用 GFP_KERNEL 标志，允许休眠）</span><br>        *page = alloc_page(GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO);<br>        <span class="hljs-keyword">if</span> (*page == <span class="hljs-literal">NULL</span>) &#123;<br>            pr_err(<span class="hljs-string">&quot;%d: binder_alloc_buf failed for page at %p\n&quot;</span>,<br>                   proc-&gt;pid, page_addr);<br>            <span class="hljs-keyword">goto</span> err_alloc_page_failed; <span class="hljs-comment">// 分配失败，跳转到错误处理</span><br>        &#125;<br><br>        <span class="hljs-comment">// 设置临时虚拟地址区域</span><br>        tmp_area.addr = page_addr;<br>        tmp_area.size = PAGE_SIZE + PAGE_SIZE; <span class="hljs-comment">// 大小为 2 个页面（可能包含保护页）</span><br><br>        <span class="hljs-comment">// 将物理页面映射到内核虚拟地址空间</span><br>        ret = map_vm_area(&amp;tmp_area, PAGE_KERNEL, page);<br>        <span class="hljs-keyword">if</span> (ret) &#123;<br>            pr_err(<span class="hljs-string">&quot;%d: binder_alloc_buf failed to map page at %p in kernel\n&quot;</span>,<br>                   proc-&gt;pid, page_addr);<br>            <span class="hljs-keyword">goto</span> err_map_kernel_failed; <span class="hljs-comment">// 映射失败，跳转到错误处理</span><br>        &#125;<br><br>        <span class="hljs-comment">// 计算用户空间的虚拟地址</span><br>        user_page_addr = (<span class="hljs-type">uintptr_t</span>)page_addr + proc-&gt;user_buffer_offset;<br><br>        <span class="hljs-comment">// 将物理页面插入用户空间的 vma</span><br>        ret = vm_insert_page(vma, user_page_addr, page[<span class="hljs-number">0</span>]);<br>        <span class="hljs-keyword">if</span> (ret) &#123;<br>            pr_err(<span class="hljs-string">&quot;%d: binder_alloc_buf failed to map page at %lx in userspace\n&quot;</span>,<br>                   proc-&gt;pid, user_page_addr);<br>            <span class="hljs-keyword">goto</span> err_vm_insert_page_failed; <span class="hljs-comment">// 插入失败，跳转到错误处理</span><br>        &#125;<br>        <span class="hljs-comment">// vm_insert_page 不会增加页面的引用计数</span><br>    &#125;<br><br>    <span class="hljs-comment">// 如果 mm 不为空，释放 mmap_sem 信号量并减少 mm 的引用计数</span><br>    <span class="hljs-keyword">if</span> (mm) &#123;<br>        up_write(&amp;mm-&gt;mmap_sem); <span class="hljs-comment">// 释放写锁</span><br>        mmput(mm); <span class="hljs-comment">// 减少引用计数</span><br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// 成功返回</span><br><br><span class="hljs-comment">// 释放页面的逻辑</span><br>free_range:<br>    <span class="hljs-keyword">for</span> (page_addr = end - PAGE_SIZE; page_addr &gt;= start;<br>         page_addr -= PAGE_SIZE) &#123;<br>        page = &amp;proc-&gt;pages[(page_addr - proc-&gt;buffer) / PAGE_SIZE];<br>        <span class="hljs-keyword">if</span> (vma)<br>            <span class="hljs-comment">// 从用户空间取消映射</span><br>            zap_page_range(vma, (<span class="hljs-type">uintptr_t</span>)page_addr +<br>                          proc-&gt;user_buffer_offset, PAGE_SIZE, <span class="hljs-literal">NULL</span>);<br>err_vm_insert_page_failed:<br>        <span class="hljs-comment">// 从内核空间取消映射</span><br>        unmap_kernel_range((<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>)page_addr, PAGE_SIZE);<br>err_map_kernel_failed:<br>        <span class="hljs-comment">// 释放物理页面</span><br>        __free_page(*page);<br>        *page = <span class="hljs-literal">NULL</span>;<br>err_alloc_page_failed:<br>        ; <span class="hljs-comment">// 空语句，用于占位</span><br>    &#125;<br>err_no_vma:<br>    <span class="hljs-keyword">if</span> (mm) &#123;<br>        up_write(&amp;mm-&gt;mmap_sem); <span class="hljs-comment">// 释放写锁</span><br>        mmput(mm); <span class="hljs-comment">// 减少引用计数</span><br>    &#125;<br>    <span class="hljs-keyword">return</span> -ENOMEM; <span class="hljs-comment">// 返回内存不足错误</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>遍历指定的地址范围，逐页分配物理页面。通过 <code>alloc_page</code> 分配物理页面，并通过 <code>map_vm_area</code> 和 <code>vm_insert_page</code> 映射到内核和用户空间。使用 <code>mmap_sem</code> 信号量保护对用户空间内存的访问。</p>
+<p><img src="https://s2.loli.net/2025/03/08/iMtCxWjBk2ZYo6R.png" srcset="/img/loading.gif" lazyload></p>
+<p>内存映射完毕后，万事俱备，只欠数据了！通信双方都可以从内核缓存区读写数据，调用链条比较长，是这样的：binder_ioctl() -&gt; binder_get_thread() -&gt; binder_ioctl_write_read() -&gt; binder_thread_write()&#x2F;binder_thread_read()</p>
+<h2 id="binder-ioctl"><a href="#binder-ioctl" class="headerlink" title="binder_ioctl"></a>binder_ioctl</h2><p>首先实现处理 Binder 驱动的 IOCTL 请求，在两个进程间收发IPC数据和IPC reply数据。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">long</span> <span class="hljs-title function_">binder_ioctl</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> file *filp, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> cmd, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> arg)</span>&#123;<br>    <span class="hljs-type">int</span> ret; <span class="hljs-comment">// 返回值</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_proc</span> *<span class="hljs-title">proc</span> =</span> filp-&gt;private_data; <span class="hljs-comment">// 获取与文件关联的 binder_proc 结构体</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_thread</span> *<span class="hljs-title">thread</span>;</span> <span class="hljs-comment">// 当前线程的 binder_thread 结构体</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> size = _IOC_SIZE(cmd); <span class="hljs-comment">// 获取命令的数据大小</span><br>    <span class="hljs-type">void</span> __user *ubuf = (<span class="hljs-type">void</span> __user *)arg; <span class="hljs-comment">// 用户空间缓冲区指针</span><br><br>    <span class="hljs-comment">// 打印调试信息</span><br>    <span class="hljs-comment">/*pr_info(&quot;binder_ioctl: %d:%d %x %lx\n&quot;,</span><br><span class="hljs-comment">            proc-&gt;pid, current-&gt;pid, cmd, arg);*/</span><br><br>    <span class="hljs-comment">// 跟踪 IOCTL 调用，用于调试</span><br>    trace_binder_ioctl(cmd, arg);<br><br>    <span class="hljs-comment">// 等待用户错误状态恢复（binder_stop_on_user_error &lt; 2）</span><br>    ret = wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error &lt; <span class="hljs-number">2</span>);<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_unlocked; <span class="hljs-comment">// 如果被中断，跳转到错误处理</span><br><br>    <span class="hljs-comment">// 加锁，保护对 Binder 驱动的共享资源访问</span><br>    binder_lock(__func__);<br><br>    <span class="hljs-comment">// 获取当前线程的 binder_thread 结构体</span><br>    thread = binder_get_thread(proc);<br>    <span class="hljs-keyword">if</span> (thread == <span class="hljs-literal">NULL</span>) &#123;<br>        ret = -ENOMEM; <span class="hljs-comment">// 如果获取失败，返回内存不足错误</span><br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    <span class="hljs-comment">// 根据命令类型处理请求</span><br>    <span class="hljs-keyword">switch</span> (cmd) &#123;<br>    <span class="hljs-keyword">case</span> BINDER_WRITE_READ: <span class="hljs-comment">// 处理读写请求</span><br>        ret = binder_ioctl_write_read(filp, cmd, arg, thread);<br>        <span class="hljs-keyword">if</span> (ret)<br>            <span class="hljs-keyword">goto</span> err; <span class="hljs-comment">// 如果失败，跳转到错误处理</span><br>        <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> BINDER_SET_MAX_THREADS: <span class="hljs-comment">// 设置最大线程数</span><br>        <span class="hljs-keyword">if</span> (copy_from_user(&amp;proc-&gt;max_threads, ubuf, <span class="hljs-keyword">sizeof</span>(proc-&gt;max_threads))) &#123;<br>            ret = -EINVAL; <span class="hljs-comment">// 如果从用户空间拷贝数据失败，返回无效参数错误</span><br>            <span class="hljs-keyword">goto</span> err;<br>        &#125;<br>        <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> BINDER_SET_CONTEXT_MGR: <span class="hljs-comment">// 设置上下文管理器</span><br>        ret = binder_ioctl_set_ctx_mgr(filp);<br>        <span class="hljs-keyword">if</span> (ret)<br>            <span class="hljs-keyword">goto</span> err; <span class="hljs-comment">// 如果失败，跳转到错误处理</span><br>        ret = security_binder_set_context_mgr(proc-&gt;tsk);<br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">goto</span> err; <span class="hljs-comment">// 如果安全检查失败，跳转到错误处理</span><br>        <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> BINDER_THREAD_EXIT: <span class="hljs-comment">// 线程退出</span><br>        binder_debug(BINDER_DEBUG_THREADS, <span class="hljs-string">&quot;%d:%d exit\n&quot;</span>,<br>                     proc-&gt;pid, thread-&gt;pid);<br>        binder_free_thread(proc, thread); <span class="hljs-comment">// 释放线程资源</span><br>        thread = <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 清空线程指针</span><br>        <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> BINDER_VERSION: &#123; <span class="hljs-comment">// 获取 Binder 协议版本</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_version</span> __<span class="hljs-title">user</span> *<span class="hljs-title">ver</span> =</span> ubuf;<br><br>        <span class="hljs-keyword">if</span> (size != <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> binder_version)) &#123;<br>            ret = -EINVAL; <span class="hljs-comment">// 如果参数大小不匹配，返回无效参数错误</span><br>            <span class="hljs-keyword">goto</span> err;<br>        &#125;<br>        <span class="hljs-keyword">if</span> (put_user(BINDER_CURRENT_PROTOCOL_VERSION,<br>                     &amp;ver-&gt;protocol_version)) &#123;<br>            ret = -EINVAL; <span class="hljs-comment">// 如果向用户空间写入数据失败，返回无效参数错误</span><br>            <span class="hljs-keyword">goto</span> err;<br>        &#125;<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">default</span>: <span class="hljs-comment">// 未知命令</span><br>        ret = -EINVAL; <span class="hljs-comment">// 返回无效参数错误</span><br>        <span class="hljs-keyword">goto</span> err;<br>    &#125;<br><br>    ret = <span class="hljs-number">0</span>; <span class="hljs-comment">// 成功返回</span><br><br>err:<br>    <span class="hljs-comment">// 如果线程存在，清除其状态标志</span><br>    <span class="hljs-keyword">if</span> (thread)<br>        thread-&gt;looper &amp;= ~BINDER_LOOPER_STATE_NEED_RETURN;<br><br>    <span class="hljs-comment">// 解锁</span><br>    binder_unlock(__func__);<br><br>    <span class="hljs-comment">// 再次等待用户错误状态恢复</span><br>    wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error &lt; <span class="hljs-number">2</span>);<br><br>    <span class="hljs-comment">// 如果返回错误且不是 -ERESTARTSYS，打印错误信息</span><br>    <span class="hljs-keyword">if</span> (ret &amp;&amp; ret != -ERESTARTSYS)<br>        pr_info(<span class="hljs-string">&quot;%d:%d ioctl %x %lx returned %d\n&quot;</span>, proc-&gt;pid, current-&gt;pid, cmd, arg, ret);<br><br>err_unlocked:<br>    <span class="hljs-comment">// 跟踪 IOCTL 完成，用于调试</span><br>    trace_binder_ioctl_done(ret);<br>    <span class="hljs-keyword">return</span> ret; <span class="hljs-comment">// 返回结果</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>参数：</p>
+<ul>
+<li><code>filp</code>：文件指针，指向打开的文件对象。</li>
+<li><code>cmd</code>：IOCTL 命令，表示请求的类型。</li>
+<li><code>arg</code>：用户空间传递的参数。</li>
+</ul>
+</blockquote>
+<p>其中<strong>IOCTL 命令</strong>有：</p>
+<table>
+<thead>
+<tr>
+<th align="left">ioctl命令</th>
+<th align="left">数据类型</th>
+<th align="left">操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>BINDER_WRITE_READ</strong></td>
+<td align="left">struct binder_write_read</td>
+<td align="left">收发Binder IPC数据</td>
+</tr>
+<tr>
+<td align="left">BINDER_SET_MAX_THREADS</td>
+<td align="left">__u32</td>
+<td align="left">设置Binder线程最大个数</td>
+</tr>
+<tr>
+<td align="left">BINDER_SET_CONTEXT_MGR</td>
+<td align="left">__s32</td>
+<td align="left">设置Service Manager节点</td>
+</tr>
+<tr>
+<td align="left">BINDER_THREAD_EXIT</td>
+<td align="left">__s32</td>
+<td align="left">释放Binder线程</td>
+</tr>
+<tr>
+<td align="left">BINDER_VERSION</td>
+<td align="left">struct binder_version</td>
+<td align="left">获取Binder版本信息</td>
+</tr>
+<tr>
+<td align="left">BINDER_SET_IDLE_TIMEOUT</td>
+<td align="left">__s64</td>
+<td align="left">没有使用</td>
+</tr>
+<tr>
+<td align="left">BINDER_SET_IDLE_PRIORITY</td>
+<td align="left">__s32</td>
+<td align="left">没有使用</td>
+</tr>
+</tbody></table>
+<p>通过 <code>binder_lock</code> 和 <code>binder_unlock</code> 保护共享资源。通过 <code>binder_get_thread</code> 和 <code>binder_free_thread</code> 管理线程资源。并支持多种 IOCTL 命令，包括读写、设置上下文管理器、线程退出等。</p>
+<h3 id="binder-get-thread"><a href="#binder-get-thread" class="headerlink" title="binder_get_thread"></a>binder_get_thread</h3><p>在<code>binder_get_thread</code> 中从binder_proc中查找binder_thread,如果当前线程已经加入到proc的线程队列则直接返回，如果不存在则创建binder_thread，并将当前线程添加到当前的proc</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">struct</span> binder_thread *<span class="hljs-title function_">binder_get_thread</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_proc *proc)</span>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_thread</span> *<span class="hljs-title">thread</span> =</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 当前线程的 binder_thread 结构体</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rb_node</span> *<span class="hljs-title">parent</span> =</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 红黑树中当前节点的父节点</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rb_node</span> **<span class="hljs-title">p</span> =</span> &amp;proc-&gt;threads.rb_node; <span class="hljs-comment">// 指向红黑树根节点的指针</span><br><br>    <span class="hljs-comment">// 遍历红黑树，查找当前线程的 binder_thread</span><br>    <span class="hljs-keyword">while</span> (*p) &#123;<br>        parent = *p; <span class="hljs-comment">// 当前节点</span><br>        thread = rb_entry(parent, <span class="hljs-keyword">struct</span> binder_thread, rb_node); <span class="hljs-comment">// 获取 binder_thread 结构体</span><br><br>        <span class="hljs-comment">// 比较当前线程的 PID 和 binder_thread 的 PID</span><br>        <span class="hljs-keyword">if</span> (current-&gt;pid &lt; thread-&gt;pid)<br>            p = &amp;(*p)-&gt;rb_left; <span class="hljs-comment">// 如果当前线程 PID 较小，向左子树查找</span><br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (current-&gt;pid &gt; thread-&gt;pid)<br>            p = &amp;(*p)-&gt;rb_right; <span class="hljs-comment">// 如果当前线程 PID 较大，向右子树查找</span><br>        <span class="hljs-keyword">else</span><br>            <span class="hljs-keyword">break</span>; <span class="hljs-comment">// 如果找到匹配的线程，跳出循环</span><br>    &#125;<br><br>    <span class="hljs-comment">// 如果未找到匹配的线程，创建一个新的 binder_thread</span><br>    <span class="hljs-keyword">if</span> (*p == <span class="hljs-literal">NULL</span>) &#123;<br>        <span class="hljs-comment">// 分配内存</span><br>        thread = kzalloc(<span class="hljs-keyword">sizeof</span>(*thread), GFP_KERNEL);<br>        <span class="hljs-keyword">if</span> (thread == <span class="hljs-literal">NULL</span>)<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 如果分配失败，返回 NULL</span><br><br>        <span class="hljs-comment">// 更新统计信息：创建的线程数</span><br>        binder_stats_created(BINDER_STAT_THREAD);<br><br>        <span class="hljs-comment">// 初始化 binder_thread 结构体</span><br>        thread-&gt;proc = proc; <span class="hljs-comment">// 关联到当前进程</span><br>        thread-&gt;pid = current-&gt;pid; <span class="hljs-comment">// 设置线程 PID</span><br>        init_waitqueue_head(&amp;thread-&gt;wait); <span class="hljs-comment">// 初始化等待队列</span><br>        INIT_LIST_HEAD(&amp;thread-&gt;todo); <span class="hljs-comment">// 初始化待办任务链表</span><br><br>        <span class="hljs-comment">// 将新节点插入红黑树</span><br>        rb_link_node(&amp;thread-&gt;rb_node, parent, p); <span class="hljs-comment">// 链接节点</span><br>        rb_insert_color(&amp;thread-&gt;rb_node, &amp;proc-&gt;threads); <span class="hljs-comment">// 调整红黑树颜色</span><br><br>        <span class="hljs-comment">// 设置线程的初始状态</span><br>        thread-&gt;looper |= BINDER_LOOPER_STATE_NEED_RETURN; <span class="hljs-comment">// 设置 looper 状态</span><br>        thread-&gt;return_error = BR_OK; <span class="hljs-comment">// 初始化返回错误码</span><br>        thread-&gt;return_error2 = BR_OK; <span class="hljs-comment">// 初始化第二个返回错误码</span><br>    &#125;<br><br>    <span class="hljs-keyword">return</span> thread; <span class="hljs-comment">// 返回 binder_thread 结构体</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="binder-ioctl-write-read"><a href="#binder-ioctl-write-read" class="headerlink" title="binder_ioctl_write_read"></a>binder_ioctl_write_read</h4><p>然后通过binder_ioctl_write_read处理 <code>BINDER_WRITE_READ</code> 命令，实现 Binder 驱动的读写。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">binder_ioctl_write_read</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> file *filp,</span><br><span class="hljs-params">                                   <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> cmd, <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> arg,</span><br><span class="hljs-params">                                   <span class="hljs-keyword">struct</span> binder_thread *thread)</span>&#123;<br>    <span class="hljs-type">int</span> ret = <span class="hljs-number">0</span>; <span class="hljs-comment">// 返回值</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_proc</span> *<span class="hljs-title">proc</span> =</span> filp-&gt;private_data; <span class="hljs-comment">// 获取与文件关联的 binder_proc 结构体</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> size = _IOC_SIZE(cmd); <span class="hljs-comment">// 获取命令的数据大小</span><br>    <span class="hljs-type">void</span> __user *ubuf = (<span class="hljs-type">void</span> __user *)arg; <span class="hljs-comment">// 用户空间缓冲区指针</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_write_read</span> <span class="hljs-title">bwr</span>;</span> <span class="hljs-comment">// 用于存储读写请求的结构体</span><br><br>    <span class="hljs-comment">// 检查参数大小是否合法</span><br>    <span class="hljs-keyword">if</span> (size != <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> binder_write_read)) &#123;<br>        ret = -EINVAL; <span class="hljs-comment">// 如果大小不匹配，返回无效参数错误</span><br>        <span class="hljs-keyword">goto</span> out;<br>    &#125;<br><br>    <span class="hljs-comment">// 从用户空间拷贝数据到内核空间</span><br>    <span class="hljs-keyword">if</span> (copy_from_user(&amp;bwr, ubuf, <span class="hljs-keyword">sizeof</span>(bwr))) &#123;<br>        ret = -EFAULT; <span class="hljs-comment">// 如果拷贝失败，返回内存访问错误</span><br>        <span class="hljs-keyword">goto</span> out;<br>    &#125;<br><br>    <span class="hljs-comment">// 打印调试信息：进程 ID、线程 ID、读写缓冲区大小和地址</span><br>    binder_debug(BINDER_DEBUG_READ_WRITE,<br>                 <span class="hljs-string">&quot;%d:%d write %lld at %016llx, read %lld at %016llx\n&quot;</span>,<br>                 proc-&gt;pid, thread-&gt;pid,<br>                 (u64)bwr.write_size, (u64)bwr.write_buffer,<br>                 (u64)bwr.read_size, (u64)bwr.read_buffer);<br><br>    <span class="hljs-comment">// 处理写请求</span><br>    <span class="hljs-keyword">if</span> (bwr.write_size &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">// 调用 binder_thread_write 处理写操作</span><br>        ret = binder_thread_write(proc, thread,<br>                                  bwr.write_buffer,<br>                                  bwr.write_size,<br>                                  &amp;bwr.write_consumed);<br>        trace_binder_write_done(ret); <span class="hljs-comment">// 跟踪写操作完成</span><br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>            bwr.read_consumed = <span class="hljs-number">0</span>; <span class="hljs-comment">// 如果写操作失败，设置已读取数据为 0</span><br>            <span class="hljs-keyword">if</span> (copy_to_user(ubuf, &amp;bwr, <span class="hljs-keyword">sizeof</span>(bwr)))<br>                ret = -EFAULT; <span class="hljs-comment">// 如果拷贝回用户空间失败，返回内存访问错误</span><br>            <span class="hljs-keyword">goto</span> out;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 处理读请求</span><br>    <span class="hljs-keyword">if</span> (bwr.read_size &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">// 调用 binder_thread_read 处理读操作</span><br>        ret = binder_thread_read(proc, thread, bwr.read_buffer,<br>                                 bwr.read_size,<br>                                 &amp;bwr.read_consumed,<br>                                 filp-&gt;f_flags &amp; O_NONBLOCK);<br>        trace_binder_read_done(ret); <span class="hljs-comment">// 跟踪读操作完成</span><br>        <span class="hljs-keyword">if</span> (!list_empty(&amp;proc-&gt;todo))<br>            wake_up_interruptible(&amp;proc-&gt;wait); <span class="hljs-comment">// 如果有待办任务，唤醒等待队列</span><br>        <span class="hljs-keyword">if</span> (ret &lt; <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">if</span> (copy_to_user(ubuf, &amp;bwr, <span class="hljs-keyword">sizeof</span>(bwr)))<br>                ret = -EFAULT; <span class="hljs-comment">// 如果拷贝回用户空间失败，返回内存访问错误</span><br>            <span class="hljs-keyword">goto</span> out;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 打印调试信息：已写入和读取的数据量</span><br>    binder_debug(BINDER_DEBUG_READ_WRITE,<br>                 <span class="hljs-string">&quot;%d:%d wrote %lld of %lld, read return %lld of %lld\n&quot;</span>,<br>                 proc-&gt;pid, thread-&gt;pid,<br>                 (u64)bwr.write_consumed, (u64)bwr.write_size,<br>                 (u64)bwr.read_consumed, (u64)bwr.read_size);<br><br>    <span class="hljs-comment">// 将更新后的 bwr 结构体拷贝回用户空间</span><br>    <span class="hljs-keyword">if</span> (copy_to_user(ubuf, &amp;bwr, <span class="hljs-keyword">sizeof</span>(bwr))) &#123;<br>        ret = -EFAULT; <span class="hljs-comment">// 如果拷贝失败，返回内存访问错误</span><br>        <span class="hljs-keyword">goto</span> out;<br>    &#125;<br><br>out:<br>    <span class="hljs-keyword">return</span> ret; <span class="hljs-comment">// 返回结果</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="binder-thread-write"><a href="#binder-thread-write" class="headerlink" title="binder_thread_write"></a>binder_thread_write</h5><p><code>binder_thread_write</code> 函数的主要作用是<strong>处理从用户空间传递到 Binder 驱动的写请求</strong>，解析并执行 Binder 协议命令（BC 码）。它是 Binder 通信的核心部分，负责管理 Binder 对象的引用计数、处理事务请求、管理线程状态以及处理死亡通知等.</p>
+<blockquote>
+<p><strong>BC 码（Binder Command Code）</strong> 是 Android Binder 驱动中用于表示<strong>用户空间向内核空间发送的命令</strong>的标识符。它是 Binder 通信协议的一部分，定义了用户空间进程与 Binder 驱动之间的交互行为。BC 码的作用是告诉 Binder 驱动需要执行什么操作，例如事务处理、引用计数管理、线程状态管理等。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">请求码</th>
+<th align="left">参数类型</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">BC_TRANSACTION</td>
+<td align="left">binder_transaction_data</td>
+<td align="left">Client向Binder驱动发送请求数据</td>
+</tr>
+<tr>
+<td align="left">BC_REPLY</td>
+<td align="left">binder_transaction_data</td>
+<td align="left">Server向Binder驱动发送请求数据</td>
+</tr>
+<tr>
+<td align="left">BC_FREE_BUFFER</td>
+<td align="left">binder_uintptr_t(指针)</td>
+<td align="left">释放内存</td>
+</tr>
+<tr>
+<td align="left">BC_INCREFS</td>
+<td align="left">__u32(descriptor)</td>
+<td align="left">binder_ref弱引用加1操作</td>
+</tr>
+<tr>
+<td align="left">BC_DECREFS</td>
+<td align="left">__u32(descriptor)</td>
+<td align="left">binder_ref弱引用减1操作</td>
+</tr>
+<tr>
+<td align="left">BC_ACQUIRE</td>
+<td align="left">__u32(descriptor)</td>
+<td align="left">binder_ref强引用加1操作</td>
+</tr>
+<tr>
+<td align="left">BC_RELEASE</td>
+<td align="left">__u32(descriptor)</td>
+<td align="left">binder_ref强引用减1操作</td>
+</tr>
+<tr>
+<td align="left">BC_ACQUIRE_DONE</td>
+<td align="left">binder_ptr_cookie</td>
+<td align="left">binder_node强引用减1操作</td>
+</tr>
+<tr>
+<td align="left">BC_INCREFS_DONE</td>
+<td align="left">binder_ptr_cookie</td>
+<td align="left">binder_node弱引用减1操作</td>
+</tr>
+<tr>
+<td align="left">BC_REGISTER_LOOPER</td>
+<td align="left">无参数</td>
+<td align="left">创建新的looper线程</td>
+</tr>
+<tr>
+<td align="left">BC_ENTER_LOOPER</td>
+<td align="left">无参数</td>
+<td align="left">应用线程进入looper</td>
+</tr>
+<tr>
+<td align="left">BC_EXIT_LOOPER</td>
+<td align="left">无参数</td>
+<td align="left">应用线程退出looper</td>
+</tr>
+<tr>
+<td align="left">BC_REQUEST_DEATH_NOTIFICATION</td>
+<td align="left">binder_handle_cookie</td>
+<td align="left">注册死亡通知</td>
+</tr>
+<tr>
+<td align="left">BC_CLEAR_DEATH_NOTIFICATION</td>
+<td align="left">binder_handle_cookie</td>
+<td align="left">取消注册的死亡通知</td>
+</tr>
+<tr>
+<td align="left">BC_DEAD_BINDER_DONE</td>
+<td align="left">binder_uintptr_t(指针)</td>
+<td align="left">已完成binder的死亡通知</td>
+</tr>
+<tr>
+<td align="left">BC_ACQUIRE_RESULT</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">BC_ATTEMPT_ACQUIRE</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+</tbody></table>
+<p>循环读取cmd，根据不同的cmd才取不同的动作；具体读写数据时，因为涉及到内核和用户进程之间的拷贝，最终调用的还是copy_from_user和copy_to_user.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c">binder_thread_write()&#123;<br>    <span class="hljs-keyword">while</span> (ptr &lt; end &amp;&amp; thread-&gt;return_error == BR_OK) &#123;<br>        get_user(cmd, (<span class="hljs-type">uint32_t</span> __user *)ptr)；<span class="hljs-comment">//获取IPC数据中的Binder协议(BC码)</span><br>        <span class="hljs-keyword">switch</span> (cmd) &#123;<br>            <span class="hljs-keyword">case</span> BC_INCREFS: ...<br>            <span class="hljs-keyword">case</span> BC_ACQUIRE: ...<br>            <span class="hljs-keyword">case</span> BC_RELEASE: ...<br>            <span class="hljs-keyword">case</span> BC_DECREFS: ...<br>            <span class="hljs-keyword">case</span> BC_INCREFS_DONE: ...<br>            <span class="hljs-keyword">case</span> BC_ACQUIRE_DONE: ...<br>            <span class="hljs-keyword">case</span> BC_FREE_BUFFER: ... <span class="hljs-keyword">break</span>;<br>            <br>            <span class="hljs-keyword">case</span> BC_TRANSACTION:<br>            <span class="hljs-keyword">case</span> BC_REPLY: &#123;<br>                <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_transaction_data</span> <span class="hljs-title">tr</span>;</span><br>                copy_from_user(&amp;tr, ptr, <span class="hljs-keyword">sizeof</span>(tr))； <span class="hljs-comment">//拷贝用户空间tr到内核</span><br>                <span class="hljs-comment">// 【见小节2.2.1】</span><br>                binder_transaction(proc, thread, &amp;tr, cmd == BC_REPLY);<br>                <span class="hljs-keyword">break</span>;<br><br>            <span class="hljs-keyword">case</span> BC_REGISTER_LOOPER: ...<br>            <span class="hljs-keyword">case</span> BC_ENTER_LOOPER: ...<br>            <span class="hljs-keyword">case</span> BC_EXIT_LOOPER: ...<br>            <span class="hljs-keyword">case</span> BC_REQUEST_DEATH_NOTIFICATION: ...<br>            <span class="hljs-keyword">case</span> BC_CLEAR_DEATH_NOTIFICATION:  ...<br>            <span class="hljs-keyword">case</span> BC_DEAD_BINDER_DONE: ...<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>上述述通过读写公共内存通信的方式原理很简单，实现的时候还有点需要注意：记得介绍linux IPC时的poll么？ binder面临同样的问题：读取数据的进程是怎么知道公共内存有数据的了？</p>
+<h6 id="binder-transaction"><a href="#binder-transaction" class="headerlink" title="binder_transaction"></a>binder_transaction</h6><p>这个问题是在binder_transaction解决的：binder_thread_write函数执行完后会调用binder_transaction，<strong>最后两行代码就是唤醒目标线程了，刚好和binder_thread_read中的循环探查数据完美闭环</strong>！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">binder_transaction</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_proc *proc,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> binder_thread *thread,</span><br><span class="hljs-params">               <span class="hljs-keyword">struct</span> binder_transaction_data *tr, <span class="hljs-type">int</span> reply)</span>&#123;<br>    <span class="hljs-comment">//根据各种判定，获取以下信息：</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_thread</span> *<span class="hljs-title">target_thread</span>； //目标线程</span><br><span class="hljs-class">    <span class="hljs-keyword">struct</span> <span class="hljs-title">binder_proc</span> *<span class="hljs-title">target_proc</span>；    //目标进程</span><br><span class="hljs-class">    <span class="hljs-keyword">struct</span> <span class="hljs-title">binder_node</span> *<span class="hljs-title">target_node</span>；    //目标<span class="hljs-title">binder</span>节点</span><br><span class="hljs-class">    <span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> *<span class="hljs-title">target_list</span>；      //目标<span class="hljs-title">TODO</span>队列</span><br><span class="hljs-class">    <span class="hljs-title">wait_queue_head_t</span> *<span class="hljs-title">target_wait</span>；     //目标等待队列</span><br><span class="hljs-class">    ...</span><br><span class="hljs-class">    </span><br><span class="hljs-class">    //分配两个结构体内存</span><br><span class="hljs-class">    <span class="hljs-keyword">struct</span> <span class="hljs-title">binder_transaction</span> *<span class="hljs-title">t</span> =</span> kzalloc(<span class="hljs-keyword">sizeof</span>(*t), GFP_KERNEL);<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_work</span> *<span class="hljs-title">tcomplete</span> =</span> kzalloc(<span class="hljs-keyword">sizeof</span>(*tcomplete), GFP_KERNEL);<br>    <span class="hljs-comment">//从target_proc分配一块buffer【见小节3.2】</span><br>    t-&gt;buffer = binder_alloc_buf(target_proc, tr-&gt;data_size,<br><br>    <span class="hljs-keyword">for</span> (; offp &lt; off_end; offp++) &#123;<br>        <span class="hljs-keyword">switch</span> (fp-&gt;type) &#123;<br>        <span class="hljs-keyword">case</span> BINDER_TYPE_BINDER: ...<br>        <span class="hljs-keyword">case</span> BINDER_TYPE_WEAK_BINDER: ...<br>        <span class="hljs-keyword">case</span> BINDER_TYPE_HANDLE: ...<br>        <span class="hljs-keyword">case</span> BINDER_TYPE_WEAK_HANDLE: ...<br>        <span class="hljs-keyword">case</span> BINDER_TYPE_FD: ...<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">//向目标进程的target_list添加BINDER_WORK_TRANSACTION事务</span><br>    t-&gt;work.type = BINDER_WORK_TRANSACTION;<br>    list_add_tail(&amp;t-&gt;work.entry, target_list);<br>    <span class="hljs-comment">//向当前线程的todo队列添加BINDER_WORK_TRANSACTION_COMPLETE事务</span><br>    tcomplete-&gt;type = BINDER_WORK_TRANSACTION_COMPLETE;<br>    list_add_tail(&amp;tcomplete-&gt;entry, &amp;thread-&gt;todo);<br>    <span class="hljs-keyword">if</span> (target_wait)<br>        <span class="hljs-comment">//唤醒目标线程,确保事务能够及时处理。</span><br>        wake_up_interruptible(target_wait);<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>处理 Binder 事务</strong>，将事务从当前线程传递到目标线程或目标进程。它是 Binder 通信的核心部分，负责事务的分配、Binder 对象的处理以及事务的提交和完成通知。</p>
+<p>其中<code>struct binder_work</code> 是 Binder 驱动中用于表示待处理工作项的核心结构体。它通过 <code>type</code> 字段区分不同的工作项类型，并通过 <code>entry</code> 字段将工作项添加到链表中，支持 Binder 通信、Binder 对象生命周期管理等功能。</p>
+<p>这里的binder_work类型有：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_work</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">entry</span>;</span> <span class="hljs-comment">// 链表节点，用于将 binder_work 添加到链表中</span><br>    <span class="hljs-class"><span class="hljs-keyword">enum</span> &#123;</span><br>        BINDER_WORK_TRANSACTION = <span class="hljs-number">1</span>, <span class="hljs-comment">// 事务工作项</span><br>        BINDER_WORK_TRANSACTION_COMPLETE, <span class="hljs-comment">// 事务完成工作项</span><br>        BINDER_WORK_NODE, <span class="hljs-comment">// Binder 节点工作项</span><br>        BINDER_WORK_DEAD_BINDER, <span class="hljs-comment">// Binder 对象死亡工作项</span><br>        BINDER_WORK_DEAD_BINDER_AND_CLEAR, <span class="hljs-comment">// Binder 对象死亡并清除工作项</span><br>        BINDER_WORK_CLEAR_DEATH_NOTIFICATION, <span class="hljs-comment">// 清除死亡通知工作项</span><br>    &#125; type; <span class="hljs-comment">// 工作项类型</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/03/08/FADuc48rGdv7JI2.png" srcset="/img/loading.gif" lazyload></p>
+<h5 id="binder-thread-read"><a href="#binder-thread-read" class="headerlink" title="binder_thread_read"></a>binder_thread_read</h5><p><strong><code>binder_thread_read</code><strong>处理读请求，将数据从 Binder 驱动读取到用户空间。核心思路是：</strong>检查当前线程是否被唤醒。如果是，核心功能就是执行copy_to_user让3环的进程把数据拷贝走</strong>！如果不是就继续retry循环，核心代码如下：<strong>有个while死循环，在循环中探查是否有数据；如果没数据就回到retry继续等待唤醒！</strong></p>
+<blockquote>
+<p><strong>Binder 响应码（Binder Return Code，简称 BR 码）</strong> 是 Android Binder 驱动中用于表示<strong>内核空间向用户空间返回的响应</strong>的标识符。它是 Binder 通信协议的一部分，定义了 Binder 驱动对用户空间请求的响应类型。BR 码的作用是通知用户空间 Binder 驱动的操作结果，例如事务处理结果、引用计数变化、线程状态变化等。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">响应码</th>
+<th align="left">参数类型</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">BR_ERROR</td>
+<td align="left">__s32</td>
+<td align="left">操作发生错误</td>
+</tr>
+<tr>
+<td align="left">BR_OK</td>
+<td align="left">无参数</td>
+<td align="left">操作完成</td>
+</tr>
+<tr>
+<td align="left">BR_NOOP</td>
+<td align="left">无参数</td>
+<td align="left">不做任何事</td>
+</tr>
+<tr>
+<td align="left">BR_SPAWN_LOOPER</td>
+<td align="left">无参数</td>
+<td align="left">创建新的Looper线程</td>
+</tr>
+<tr>
+<td align="left">BR_TRANSACTION</td>
+<td align="left">binder_transaction_data</td>
+<td align="left">Binder驱动向Server端发送请求数据</td>
+</tr>
+<tr>
+<td align="left">BR_REPLY</td>
+<td align="left">binder_transaction_data</td>
+<td align="left">Binder驱动向Client端发送回复数据</td>
+</tr>
+<tr>
+<td align="left">BR_TRANSACTION_COMPLETE</td>
+<td align="left">无参数</td>
+<td align="left">对请求发送的成功反馈</td>
+</tr>
+<tr>
+<td align="left">BR_DEAD_REPLY</td>
+<td align="left">无参数</td>
+<td align="left">回复失败，往往是线程或节点为空</td>
+</tr>
+<tr>
+<td align="left">BR_FAILED_REPLY</td>
+<td align="left">无参数</td>
+<td align="left">回复失败，往往是transaction出错导致</td>
+</tr>
+<tr>
+<td align="left">BR_INCREFS</td>
+<td align="left">binder_ptr_cookie</td>
+<td align="left">binder_ref弱引用加1操作（Server端）</td>
+</tr>
+<tr>
+<td align="left">BR_DECREFS</td>
+<td align="left">binder_ptr_cookie</td>
+<td align="left">binder_ref弱引用减1操作（Server端）</td>
+</tr>
+<tr>
+<td align="left">BR_ACQUIRE</td>
+<td align="left">binder_ptr_cookie</td>
+<td align="left">binder_ref强引用加1操作（Server端）</td>
+</tr>
+<tr>
+<td align="left">BR_RELEASE</td>
+<td align="left">binder_ptr_cookie</td>
+<td align="left">binder_ref强引用减1操作（Server端）</td>
+</tr>
+<tr>
+<td align="left">BR_DEAD_BINDER</td>
+<td align="left">binder_uintptr_t(指针)</td>
+<td align="left">Binder驱动向client端发送死亡通知</td>
+</tr>
+<tr>
+<td align="left">BR_CLEAR_DEATH_NOTIFICATION_DONE</td>
+<td align="left">binder_uintptr_t(指针)</td>
+<td align="left">BC_CLEAR_DEATH_NOTIFICATION命令对应的响应码</td>
+</tr>
+<tr>
+<td align="left">BR_ACQUIRE_RESULT</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">BR_ATTEMPT_ACQUIRE</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">BR_FINISHED</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+</tbody></table>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs c">binder_thread_read()&#123;<br>    wait_for_proc_work = thread-&gt;transaction_stack == <span class="hljs-literal">NULL</span> &amp;&amp;<br>            list_empty(&amp;thread-&gt;todo);<br>    <span class="hljs-comment">//根据wait_for_proc_work来决定wait在当前线程还是进程的等待队列</span><br>    <span class="hljs-keyword">if</span> (wait_for_proc_work) &#123;<br>        ret = wait_event_freezable_exclusive(proc-&gt;wait, binder_has_proc_work(proc, thread));<br>        ...<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        ret = wait_event_freezable(thread-&gt;wait, binder_has_thread_work(thread));<br>        ...<br>    &#125;<br>    <br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-comment">//当&amp;thread-&gt;todo和&amp;proc-&gt;todo都为空时，goto到retry标志处，否则往下执行：</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_transaction_data</span> <span class="hljs-title">tr</span>;</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_transaction</span> *<span class="hljs-title">t</span> =</span> <span class="hljs-literal">NULL</span>;<br>        <span class="hljs-keyword">switch</span> (w-&gt;type) &#123;<br>          <span class="hljs-keyword">case</span> BINDER_WORK_TRANSACTION: ...<br>          <span class="hljs-keyword">case</span> BINDER_WORK_TRANSACTION_COMPLETE: ...<br>          <span class="hljs-keyword">case</span> BINDER_WORK_NODE: ...<br>          <span class="hljs-keyword">case</span> BINDER_WORK_DEAD_BINDER: ...<br>          <span class="hljs-keyword">case</span> BINDER_WORK_DEAD_BINDER_AND_CLEAR: ...<br>          <span class="hljs-keyword">case</span> BINDER_WORK_CLEAR_DEATH_NOTIFICATION: ...<br>        &#125;<br>        ...<br>    &#125;<br>done:<br>    *consumed = ptr - buffer;<br>    <span class="hljs-comment">//当满足请求线程加已准备线程数等于0，已启动线程数小于最大线程数(15)，</span><br>    <span class="hljs-comment">//且looper状态为已注册或已进入时创建新的线程。</span><br>    <span class="hljs-keyword">if</span> (proc-&gt;requested_threads + proc-&gt;ready_threads == <span class="hljs-number">0</span> &amp;&amp;<br>        proc-&gt;requested_threads_started &lt; proc-&gt;max_threads &amp;&amp;<br>        (thread-&gt;looper &amp; (BINDER_LOOPER_STATE_REGISTERED |<br>         BINDER_LOOPER_STATE_ENTERED))) &#123;<br>        proc-&gt;requested_threads++;<br>        <span class="hljs-comment">// 生成BR_SPAWN_LOOPER命令，用于创建新的线程</span><br>        put_user(BR_SPAWN_LOOPER, (<span class="hljs-type">uint32_t</span> __user *)buffer)；<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>binder_thread_read</code> 函数的主要作用是<strong>从 Binder 驱动读取数据</strong>，将事务或事件从内核空间传递到用户空间。它负责处理待办任务列表中的任务，并根据需要创建新的线程，确保 Binder 通信的高效性和可靠性。</p>
+<p>至此，完成了从Binder在进程间数据通信全流程：</p>
+<p><img src="https://s2.loli.net/2025/03/08/gJR4S5HO9KQreFL.png" srcset="/img/loading.gif" lazyload></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/" class="category-chain-item">核心底层</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/" class="category-chain-item">Binder机制</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Andorid%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" class="print-no-link">#Andorid源码阅读</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Binder驱动</div>
+      <div>https://hermes37.vercel.app/2025/05/09/计算机科学与技术/内核原理/Andorid内核原理/核心底层/Binder机制/Binder驱动/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/ServiceManager%E5%90%AF%E5%8A%A8%E4%B8%8E%E8%8E%B7%E5%8F%96/" title="ServiceManager启动与获取">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ServiceManager启动与获取</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/Binder%E5%9C%A8FrameWork%E5%B1%82/" title="Binder在FrameWork层">
+                        <span class="hidden-mobile">Binder在FrameWork层</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

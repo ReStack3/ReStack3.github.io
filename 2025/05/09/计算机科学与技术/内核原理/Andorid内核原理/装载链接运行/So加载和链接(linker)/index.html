@@ -1,0 +1,1060 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文以android 9源码进行分析  命名空间(namespace机制)主要参考Android 8.0 - 基于命名空间的动态链接—— 隔离 Android 中应用程序和系统的本地库 - 张同光 - 博客园总结来说： 概念命名空间是为了在 Android 操作系统中管理动态链接库（so 库）的加载和共享，确保系统和应用程序的本地库（so 库）得到有效的隔离和管理。这项机制的核心目标是提高系统的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="So加载和链接(linker)">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/So%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%93%BE%E6%8E%A5(linker)/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="本文以android 9源码进行分析  命名空间(namespace机制)主要参考Android 8.0 - 基于命名空间的动态链接—— 隔离 Android 中应用程序和系统的本地库 - 张同光 - 博客园总结来说： 概念命名空间是为了在 Android 操作系统中管理动态链接库（so 库）的加载和共享，确保系统和应用程序的本地库（so 库）得到有效的隔离和管理。这项机制的核心目标是提高系统的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/12/22/uM7JnZ54v8IQYft.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/98lLUWaV6qd5XAn.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/LBp16Sm7YTcROdw.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/PDnfB2tOzc1Whqy.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/r9iqlag2IOxf4RG.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/yXWOYAcgw7QZkj4.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/9dlAX3xyU2JjpGD.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/qfZOGA8maJD3sMk.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/JGLOySqPtNAc6Mu.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/OBLKityonI4sZWx.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/k3DrPJKXstvMQil.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/oKMnOLaRYrkSiVz.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/BweX9okmyKROQ2M.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/buw8SDLqKTrYWA9.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/VnSPedL7pKXB4z5.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/A5Li8pzubdH1OJP.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.572Z">
+<meta property="article:modified_time" content="2026-04-17T07:38:37.380Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/12/22/uM7JnZ54v8IQYft.png">
+  
+  
+  
+  <title>So加载和链接(linker) - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="So加载和链接(linker)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          87 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">So加载和链接(linker)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本文以android 9源码进行分析</p>
+</blockquote>
+<h1 id="命名空间-namespace机制"><a href="#命名空间-namespace机制" class="headerlink" title="命名空间(namespace机制)"></a>命名空间(namespace机制)</h1><p>主要参考<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ztguang/p/12644484.html">Android 8.0 - 基于命名空间的动态链接—— 隔离 Android 中应用程序和系统的本地库 - 张同光 - 博客园</a>总结来说：</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>命名空间是为了在 Android 操作系统中管理动态链接库（so 库）的加载和共享，确保系统和应用程序的本地库（so 库）得到有效的隔离和管理。这项机制的核心目标是提高系统的安全性、稳定性，并防止应用程序滥用系统资源，特别是访问或修改不应该访问的库。</p>
+<table>
+<thead>
+<tr>
+<th><strong>概念</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>作用</strong></th>
+<th><strong>相关命名空间</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>隔离</strong></td>
+<td>每个命名空间中的库被隔离，防止它们之间的冲突和无意间的相互干扰。</td>
+<td>确保每个命名空间只加载所需的库，应用程序库与系统库相互隔离，避免不必要的干扰。</td>
+<td>系统命名空间、应用程序命名空间、VNDK 命名空间、sphal 命名空间等</td>
+</tr>
+<tr>
+<td><strong>共享</strong></td>
+<td>通过命名空间链接，不同命名空间之间可以共享某些库，但共享是经过控制的。</td>
+<td>仅允许特定的库（如公共系统库）在多个命名空间之间共享，减少重复加载的开销，确保安全性和稳定性。</td>
+<td>系统命名空间与应用程序命名空间、VNDK 命名空间、sphal 命名空间等</td>
+</tr>
+<tr>
+<td><strong>灰名单（Greylist）</strong></td>
+<td>允许应用访问系统的私有库，但这种访问是受限制的，且带有性能和安全风险。</td>
+<td>应用可以访问一些被标记为不安全或过时的库，但这种访问受到限制，且会增加内存开销和潜在安全风险。</td>
+<td>系统命名空间、应用程序命名空间</td>
+</tr>
+<tr>
+<td><strong>VNDK 命名空间</strong></td>
+<td>用于管理供应商提供的本地库，隔离供应商层的库与系统框架库。</td>
+<td>确保供应商库与系统库隔离，减少不同版本的供应商库与系统框架库之间的冲突，提升系统的稳定性和兼容性。</td>
+<td>VNDK 命名空间</td>
+</tr>
+<tr>
+<td><strong>sphal 命名空间</strong></td>
+<td>用于管理硬件抽象层（HAL）相关的库，提供系统与供应商的硬件接口。</td>
+<td>管理硬件抽象层库，允许系统与供应商之间的硬件接口正确交互，同时与其他命名空间隔离，避免冲突。</td>
+<td>sphal 命名空间</td>
+</tr>
+</tbody></table>
+<h2 id="应用要加载-SO-库的流程"><a href="#应用要加载-SO-库的流程" class="headerlink" title="应用要加载 SO 库的流程"></a>应用要加载 SO 库的流程</h2><p><img src="https://s2.loli.net/2025/12/22/uM7JnZ54v8IQYft.png" srcset="/img/loading.gif" lazyload></p>
+<table>
+<thead>
+<tr>
+<th><strong>步骤</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>关键函数</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 查找共享库文件</strong></td>
+<td>系统系统根据指定的路径查找库文件，包括应用的私有库路径和系统库路径。</td>
+<td><code>load_library()</code></td>
+</tr>
+<tr>
+<td><strong>2. 映射库到内存</strong></td>
+<td>使用 <code>mmap</code> 或类似技术将库映射到内存中。</td>
+<td><code>load_library()</code></td>
+</tr>
+<tr>
+<td><strong>3. 创建 <code>soinfo</code> 结构体</strong></td>
+<td>为每个加载的库创建并初始化 <code>soinfo</code> 结构体，存储库的基本信息、动态段、符号表等。</td>
+<td><code>soinfo</code></td>
+</tr>
+<tr>
+<td><strong>4. 解析动态段</strong></td>
+<td>读取 ELF 文件的动态段（<code>dynamic</code>），解析动态符号、重定位信息等。</td>
+<td><code>link_image()</code></td>
+</tr>
+<tr>
+<td><strong>5. 符号解析</strong></td>
+<td>查找并解析库中的符号（函数、变量等），处理符号依赖关系。</td>
+<td><code>dlsym()</code></td>
+</tr>
+<tr>
+<td><strong>6. 重定位</strong></td>
+<td>根据重定位表（<code>rel</code>）更新符号地址。</td>
+<td><code>relocate()</code></td>
+</tr>
+<tr>
+<td><strong>7. 执行库初始化</strong></td>
+<td>执行库中的初始化代码，例如 <code>_init</code> 或构造函数。</td>
+<td><code>call_constructors()</code></td>
+</tr>
+</tbody></table>
+<h2 id="命名空间类型"><a href="#命名空间类型" class="headerlink" title="命名空间类型"></a>命名空间类型</h2><table>
+<thead>
+<tr>
+<th><strong>命名空间类别</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>用途</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>系统命名空间</strong></td>
+<td>默认命名空间，包含所有系统共享的库。</td>
+<td>加载操作系统和框架的共享库，供系统进程和应用程序使用。</td>
+<td><code>libc.so</code>、<code>libm.so</code>、<code>libandroid.so</code> 等</td>
+</tr>
+<tr>
+<td><strong>应用程序命名空间</strong></td>
+<td>每个 Android 应用程序的私有命名空间。</td>
+<td>加载应用程序自己的共享库，确保库的隔离和应用私有性。</td>
+<td>应用程序的私有 <code>.so</code> 库</td>
+</tr>
+<tr>
+<td><strong>VNDK 命名空间</strong></td>
+<td>用于管理供应商库（Vendor Native Development Kit）。</td>
+<td>隔离供应商代码和框架代码，确保系统稳定性，兼容性。</td>
+<td><code>libhidl.so</code>、<code>libstagefright.so</code> 等供应商库</td>
+</tr>
+<tr>
+<td><strong>SPHAL 命名空间</strong></td>
+<td>系统与供应商之间的硬件抽象层库。</td>
+<td>管理硬件抽象层（HAL）库，允许系统与供应商硬件库正确交互。</td>
+<td><code>libhwbinder.so</code> 等 HAL 相关库</td>
+</tr>
+<tr>
+<td><strong>Greylist 命名空间</strong></td>
+<td>包含灰名单库，允许有限制地访问某些私有或过时的库。</td>
+<td>允许应用访问某些系统库（灰名单库），但访问受限制，通常用于过时或即将弃用的功能。</td>
+<td>被标记为灰名单的系统库（如特定版本的 <code>libc</code>）</td>
+</tr>
+<tr>
+<td><strong>供应商命名空间</strong></td>
+<td>用于管理设备供应商特定的库。</td>
+<td>供应商层的库，仅在供应商定制化的代码中使用。</td>
+<td>硬件解码库、传感器库等硬件特定的库</td>
+</tr>
+</tbody></table>
+<h1 id="JAVA层调用SO"><a href="#JAVA层调用SO" class="headerlink" title="JAVA层调用SO"></a>JAVA层调用SO</h1><p>Android 应用程序通过 <code>System.loadLibrary()</code> 或 <code>Runtime.loadLibrary()</code> 加载本地库。这些本地库通常是 <code>.so</code> 文件，它们包含了通过 JNI 与 Java 代码交互的本地方法。Android 的类加载机制和虚拟机（ART）会负责解析这些库，并将其加载到内存中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span>&#123;<br>    System.loadLibrary(<span class="hljs-string">&quot;native-lib&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="LoadLibrary"><a href="#LoadLibrary" class="headerlink" title="LoadLibrary()"></a>LoadLibrary()</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/libcore/ojluni/src/main/java/java/lang/System.java#1651">http://androidxref.com/9.0.0_r3/xref/libcore/ojluni/src/main/java/java/lang/System.java#1651</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/12/22/98lLUWaV6qd5XAn.png" srcset="/img/loading.gif" lazyload alt="image-20241222112316647"></p>
+<p>在 Java 中，<code>Runtime</code> 是一个代表当前 Java 应用程序运行时环境的类。它提供了与 Java 虚拟机（JVM）进行交互的多种功能，如内存管理、运行时参数管理、执行系统命令等。</p>
+<p><code>loadLibrary0</code>：</p>
+<ul>
+<li>这是 <code>Runtime</code> 类的一个本地方法，实际上是通过 JNI (Java Native Interface) 调用底层操作系统的功能来加载共享库。在 <code>Runtime.getRuntime().loadLibrary0()</code> 中，<code>loadLibrary0</code> 负责执行具体的库加载工作，通常由 JVM 实现和操作系统平台提供支持。</li>
+</ul>
+<p><code>VMStack.getCallingClassLoader()</code>：</p>
+<ul>
+<li>这个方法返回调用当前方法的类加载器（<code>ClassLoader</code>）。类加载器负责加载类和资源，而 <code>VMStack.getCallingClassLoader()</code> 是获取调用当前方法的类加载器。该加载器通常是调用 <code>loadLibrary</code> 方法的类的 <code>ClassLoader</code>。在 Android 中，<code>VMStack.getCallingClassLoader()</code> 通过获取调用当前方法的类加载器来确定在当前上下文中加载共享库的路径。Android 中的类加载器负责加载 Java 类，并且在加载库时，会根据不同的 <code>ClassLoader</code> 来决定如何查找本地库（包括从 <code>lib</code> 目录、<code>apk</code> 文件中等）。</li>
+</ul>
+<p>这里的getRuntime()只是Runtime的实例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-type">Runtime</span> <span class="hljs-variable">currentRuntime</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Runtime</span>();<br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Runtime <span class="hljs-title function_">getRuntime</span><span class="hljs-params">()</span> &#123;<br>       <span class="hljs-keyword">return</span> currentRuntime;<br> &#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="LoadLibrary0"><a href="#LoadLibrary0" class="headerlink" title="LoadLibrary0()"></a>LoadLibrary0()</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/libcore/ojluni/src/main/java/java/lang/Runtime.java#58">http://androidxref.com/9.0.0_r3/xref/libcore/ojluni/src/main/java/java/lang/Runtime.java#58</a></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs java">  <span class="hljs-keyword">synchronized</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">loadLibrary0</span><span class="hljs-params">(ClassLoader loader, String libname)</span> &#123;<br>    <span class="hljs-comment">// 检查库名中是否包含路径分隔符</span><br>    <span class="hljs-keyword">if</span> (libname.indexOf((<span class="hljs-type">int</span>)File.separatorChar) != -<span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UnsatisfiedLinkError</span>(<br>            <span class="hljs-string">&quot;Directory separator should not appear in library name: &quot;</span> + libname);<br>    &#125;<br>    <span class="hljs-type">String</span> <span class="hljs-variable">libraryName</span> <span class="hljs-operator">=</span> libname;<br>    <span class="hljs-comment">// 如果提供了类加载器（ClassLoader），尝试通过该加载器查找库文件</span><br>    <span class="hljs-keyword">if</span> (loader != <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-type">String</span> <span class="hljs-variable">filename</span> <span class="hljs-operator">=</span> loader.findLibrary(libraryName);  <span class="hljs-comment">// 通过类加载器查找库文件</span><br>        <span class="hljs-keyword">if</span> (filename == <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-comment">// 如果找不到库文件，抛出异常</span><br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UnsatisfiedLinkError</span>(loader + <span class="hljs-string">&quot; couldn&#x27;t find \&quot;&quot;</span> +<br>                                            System.mapLibraryName(libraryName) + <span class="hljs-string">&quot;\&quot;&quot;</span>);<br>        &#125;<br>        <span class="hljs-comment">// 尝试加载库</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">error</span> <span class="hljs-operator">=</span> nativeLoad(filename, loader);<br>        <span class="hljs-keyword">if</span> (error != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-comment">// 如果加载失败，抛出异常</span><br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UnsatisfiedLinkError</span>(error);<br>        &#125;<br>        <span class="hljs-keyword">return</span>;  <span class="hljs-comment">// 成功加载库，退出方法</span><br>    &#125;<br>    <span class="hljs-comment">// 如果没有类加载器，直接构造库文件的完整名称</span><br>    <span class="hljs-type">String</span> <span class="hljs-variable">filename</span> <span class="hljs-operator">=</span> System.mapLibraryName(libraryName);<br>    <span class="hljs-comment">// 用于保存尝试加载库的所有路径候选</span><br>    List&lt;String&gt; candidates = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;String&gt;();<br>    <span class="hljs-type">String</span> <span class="hljs-variable">lastError</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>    <span class="hljs-comment">// 遍历可能的库路径目录，尝试加载库</span><br>    <span class="hljs-keyword">for</span> (String directory : getLibPaths()) &#123;<br>        <span class="hljs-type">String</span> <span class="hljs-variable">candidate</span> <span class="hljs-operator">=</span> directory + filename;  <span class="hljs-comment">// 拼接完整路径</span><br>        candidates.add(candidate);<br><br>        <span class="hljs-comment">// 如果可以读取该文件，则尝试加载</span><br>        <span class="hljs-keyword">if</span> (IoUtils.canOpenReadOnly(candidate)) &#123;<br>            <span class="hljs-type">String</span> <span class="hljs-variable">error</span> <span class="hljs-operator">=</span> nativeLoad(candidate, loader);<br>            <span class="hljs-keyword">if</span> (error == <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-keyword">return</span>; <span class="hljs-comment">// 成功加载库，退出方法</span><br>            &#125;<br>            lastError = error;  <span class="hljs-comment">// 记录加载失败的错误信息</span><br>        &#125;<br><br>    <span class="hljs-comment">// 如果所有路径尝试加载失败，抛出最后的错误信息</span><br>    <span class="hljs-keyword">if</span> (lastError != <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UnsatisfiedLinkError</span>(lastError);<br>    &#125;<br>    <span class="hljs-comment">// 如果都没有找到库，抛出异常并列出所有尝试的路径</span><br>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UnsatisfiedLinkError</span>(<span class="hljs-string">&quot;Library &quot;</span> + libraryName + <span class="hljs-string">&quot; not found; tried &quot;</span> + candidates);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>这里的nativeLoad()是native层方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">native</span> String <span class="hljs-title function_">nativeLoad</span><span class="hljs-params">(String filename, ClassLoader loader)</span>;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Native层"><a href="#Native层" class="headerlink" title="Native层"></a>Native层</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/libcore/ojluni/src/main/native/Runtime.c">http://androidxref.com/9.0.0_r3/xref/libcore/ojluni/src/main/native/Runtime.c</a></p>
+</blockquote>
+<p>这段代码通过 JNI 接口获取库名和类加载器，然后将它们传递给 JVM 的底层函数 <code>JVM_NativeLoad</code>，由该函数负责实际的库加载工作。</p>
+<p><img src="https://s2.loli.net/2024/12/22/LBp16Sm7YTcROdw.png" srcset="/img/loading.gif" lazyload alt="image-20241222113855201"></p>
+<p>**<code>JNIEnv env</code>**：这是指向 Java 环境的指针，提供与 Java 虚拟机交互的接口。所有 JNI 函数调用都需要这个环境对象。native调用java层方法的接口</p>
+<p>**<code>jobject javaLoader</code>**：这是调用 <code>loadLibrary</code> 的 Java 类加载器（<code>ClassLoader</code> 对象）。该加载器用于查找和加载库文件。</p>
+<blockquote>
+<p>JVM 底层的代码是 <code>native</code>，这意味着它是用 C 或 C++ 等底层语言编写的，而不是 Java 语言。JVM（Java虚拟机）本身的实现与 Java 层的代码通过 Java Native Interface（JNI）进行交互。</p>
+</blockquote>
+<h2 id="JVM-NativeLoad"><a href="#JVM-NativeLoad" class="headerlink" title="JVM_NativeLoad()"></a>JVM_NativeLoad()</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/art/openjdkjvm/OpenjdkJvm.cc#323">http://androidxref.com/9.0.0_r3/xref/art/openjdkjvm/OpenjdkJvm.cc#323</a></p>
+</blockquote>
+<p>这部分是 JNI 函数的定义。<code>JNIEXPORT</code> 是 JNI 中用于声明函数的关键字，<code>jstring</code> 表示返回类型是一个 Java 字符串。<code>env</code> 是一个指向 <code>JNIEnv</code> 结构体的指针，它提供了与 JVM 交互的接口，<code>javaFilename</code> 和 <code>javaLoader</code> 是传入的 Java 字符串和 Java 对象。</p>
+<p><img src="https://s2.loli.net/2024/12/22/PDnfB2tOzc1Whqy.png" srcset="/img/loading.gif" lazyload alt="image-20241222113823277"></p>
+<p><code>ScopedUtfChars</code> 是一个辅助类，它将传入的 <code>jstring</code> (<code>javaFilename</code>) 转换为 UTF-8 编码的 C 字符串。<code>filename</code> 现在是 <code>javaFilename</code> 对应的 UTF-8 编码字符串。</p>
+<p><code>filename.c_str()</code> 返回 C 风格的字符串。如果转换失败（即 <code>filename</code> 为 <code>NULL</code>），则直接返回 <code>NULL</code>。</p>
+<p>这里获取当前 Java 虚拟机实例 <code>vm</code>，<code>art::JavaVMExt</code> 是 Android 运行时（ART）的 JavaVM 类，<code>art::Runtime::Current()</code> 获取当前 ART 运行时实例。</p>
+<p><code>GetJavaVM()</code> 方法返回当前的 Java 虚拟机。</p>
+<p>调用 <code>LoadNativeLibrary</code> 函数加载本地库。</p>
+<h3 id="LoadNativeLibrary"><a href="#LoadNativeLibrary" class="headerlink" title="LoadNativeLibrary()"></a>LoadNativeLibrary()</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/art/runtime/java_vm_ext.cc#854">http://androidxref.com/9.0.0_r3/xref/art/runtime/java_vm_ext.cc#854</a></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 检查库是否已加载</strong></td>
+<td>函数首先检查是否已经加载该库。如果库已加载，并且类加载器相同，则返回成功；如果类加载器不同，生成错误信息并返回 <code>false</code>。</td>
+</tr>
+<tr>
+<td><strong>2. 解码类加载器</strong></td>
+<td>解码传入的类加载器对象，并检查是否为 <code>BootClassLoader</code>。如果是，设置为 <code>nullptr</code>，否则获取类加载器的分配器。</td>
+</tr>
+<tr>
+<td><strong>3. 打开共享库</strong></td>
+<td>调用 <code>android::OpenNativeLibrary</code> 使用 <code>dlopen</code> 加载共享库。如果加载失败，返回 <code>false</code>，并在 <code>error_msg</code> 中记录错误。</td>
+</tr>
+<tr>
+<td><strong>4. 创建共享库对象</strong></td>
+<td>创建 <code>SharedLibrary</code> 对象表示已加载的库，并通过加锁保证线程安全，将库添加到全局库列表中。</td>
+</tr>
+<tr>
+<td><strong>5. 调用 <code>JNI_OnLoad</code></strong></td>
+<td>检查库中是否包含 <code>JNI_OnLoad</code> 函数，如果有，调用它进行初始化。如果返回错误版本，记录错误信息；否则标记为成功。</td>
+</tr>
+<tr>
+<td><strong>6. 返回加载结果</strong></td>
+<td>设置共享库的加载结果并返回是否成功。</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2024/12/22/r9iqlag2IOxf4RG.png" srcset="/img/loading.gif" lazyload alt="image-20241222121528343"></p>
+<h4 id="OpenNativeLibrary"><a href="#OpenNativeLibrary" class="headerlink" title="OpenNativeLibrary()"></a>OpenNativeLibrary()</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/system/core/libnativeloader/native_loader.cpp#637">http://androidxref.com/9.0.0_r3/xref/system/core/libnativeloader/native_loader.cpp#637</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/12/22/yXWOYAcgw7QZkj4.png" srcset="/img/loading.gif" lazyload alt="image-20241222121435312"></p>
+<h5 id="dlopen"><a href="#dlopen" class="headerlink" title="dlopen()"></a>dlopen()</h5><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/bionic/libdl/libdl.cpp">http://androidxref.com/9.0.0_r3/xref/bionic/libdl/libdl.cpp</a></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span>* <span class="hljs-title function_">dlopen</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* filename, <span class="hljs-type">int</span> flag)</span> &#123;<br> <span class="hljs-type">const</span> <span class="hljs-type">void</span>* caller_addr = __builtin_return_address(<span class="hljs-number">0</span>);<br>  <span class="hljs-keyword">return</span> __loader_dlopen(filename, flag, caller_addr);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>**<code>__builtin_return_address(0)</code>**：</p>
+<ul>
+<li>这是一个 GCC 提供的内建函数，用来获取当前函数的调用者的返回地址。</li>
+<li>传入的参数 <code>0</code> 表示获取当前函数的调用者的返回地址。如果传入 <code>1</code>，则表示获取当前调用者的调用者的返回地址。</li>
+<li>该返回地址可以用来了解调用栈的位置，通常用于调试或记录调用路径。</li>
+</ul>
+<p>**<code>__loader_dlopen</code>**：</p>
+<ul>
+<li>这是 <code>dlopen</code> 的底层实现，负责加载共享库。通过传递 <code>caller_addr</code>，它可能会记录加载请求的调用源，或者用于进一步的调试&#x2F;分析。</li>
+<li><code>__loader_dlopen</code> 可能是一个与操作系统或具体实现相关的自定义函数，通常用于封装 <code>dlopen</code> 的实际底层操作。</li>
+</ul>
+<p>**<code>dlopen</code>**：</p>
+<ul>
+<li><code>dlopen</code> 是动态库加载的标准函数，用于加载共享库（.so 文件）到当前进程的内存空间中。</li>
+<li><code>filename</code> 是共享库的路径，<code>flag</code> 用于指定加载的方式（例如：是否立即绑定符号，是否允许卸载等）。</li>
+</ul>
+<h6 id="do-dlopen"><a href="#do-dlopen" class="headerlink" title="do_dlopen()"></a>do_dlopen()</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/bionic/linker/dlfcn.cpp#dlopen_ext">http://androidxref.com/9.0.0_r3/xref/bionic/linker/dlfcn.cpp#dlopen_ext</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/12/22/9dlAX3xyU2JjpGD.png" srcset="/img/loading.gif" lazyload alt="image-20241222121214603"></p>
+<h4 id="FindSymbol-—调用JNI-OnLoad"><a href="#FindSymbol-—调用JNI-OnLoad" class="headerlink" title="FindSymbol()—调用JNI_OnLoad"></a>FindSymbol()—调用JNI_OnLoad</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span>* sym = library-&gt;FindSymbol(<span class="hljs-string">&quot;JNI_OnLoad&quot;</span>, nullptr);<br><span class="hljs-keyword">if</span> (sym == nullptr) &#123;<br>  VLOG(jni) &lt;&lt; <span class="hljs-string">&quot;[No JNI_OnLoad found in \&quot;&quot;</span> &lt;&lt; path &lt;&lt; <span class="hljs-string">&quot;\&quot;]&quot;</span>;<br>  was_successful = <span class="hljs-literal">true</span>;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>.....<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="dlsym"><a href="#dlsym" class="headerlink" title="dlsym()"></a>dlsym()</h5><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/art/runtime/ti/agent.cc#154">http://androidxref.com/9.0.0_r3/xref/art/runtime/ti/agent.cc#154</a></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><br><span class="hljs-type">void</span>* <span class="hljs-title function_">Agent::FindSymbol</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-built_in">std</span>::<span class="hljs-built_in">string</span>&amp; name)</span> <span class="hljs-type">const</span> &#123;<br>  CHECK(dlopen_handle_ != nullptr) &lt;&lt; <span class="hljs-string">&quot;Cannot find symbols in an unloaded agent library &quot;</span> &lt;&lt; this;<br>  <span class="hljs-keyword">return</span> dlsym(dlopen_handle_, name.c_str());<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在 Android 和 Linux 系统中，<code>dlsym()</code> 是一个用于动态获取共享库中符号地址的函数，它是 POSIX 标准的一部分，主要用于在运行时动态加载共享库并解析其中的符号（函数或变量）。并返回该符号的地址。这通常用于在程序运行时动态加载库，并通过符号名称调用库中的函数或访问库中的变量。</p>
+<p><code>dlsym()</code> 查找符号时，并不直接支持 C++ 命名空间。也就是说，如果一个符号在 C++ 中被定义在某个命名空间中，<code>dlsym()</code> 需要使用符号的完全限定名称来查找。比如：<code>mynamespace::my_function</code> 来查找符号。这通常是因为 C++ 编译器会将符号的名称进行修饰（name mangling）以区分同名的符号</p>
+<h1 id="Liner入口"><a href="#Liner入口" class="headerlink" title="Liner入口"></a>Liner入口</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/bionic/linker/linker.cpp">http://androidxref.com/9.0.0_r3/xref/bionic/linker/linker.cpp</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/12/23/qfZOGA8maJD3sMk.png" srcset="/img/loading.gif" lazyload alt="image-20241223160431041"></p>
+<p>根据传入的地址查找该地址所属的共享库。它通过遍历共享库链表，并检查每个共享库的内存地址范围来判断地址是否属于某个共享库。如果找到了，返回对应的 <code>soinfo</code>；否则返回 <code>nullptr</code>。</p>
+<p>有必要看一看soinfo是什么？</p>
+<p><img src="https://s2.loli.net/2024/12/27/JGLOySqPtNAc6Mu.png" srcset="/img/loading.gif" lazyload alt="image-20241227122804586"></p>
+<p>还有很多，简化一下就是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">soinfo</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name;              <span class="hljs-comment">// 库的名称</span><br>    <span class="hljs-type">void</span>* base;                    <span class="hljs-comment">// 库的基地址</span><br>    <span class="hljs-type">size_t</span> size;                   <span class="hljs-comment">// 库的大小</span><br>    Elf32_Dyn* dynamic;            <span class="hljs-comment">// 动态段表</span><br>    Elf32_Sym* symtab;             <span class="hljs-comment">// 符号表</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* strtab;            <span class="hljs-comment">// 字符串表</span><br>    Elf32_Rel* rel;                <span class="hljs-comment">// 重定位表</span><br>    Elf32_Rela* rela;              <span class="hljs-comment">// 带有附加信息的重定位表</span><br>    <span class="hljs-type">unsigned</span> flags;                <span class="hljs-comment">// 标志位</span><br>    soinfo* next;                  <span class="hljs-comment">// 指向下一个 soinfo 结构体的指针</span><br>    <span class="hljs-comment">// 其他与共享库相关的信息</span><br>&#125;;<br><br></code></pre></td></tr></table></figure>
+
+<p><code>soinfo</code> 结构体定义了与共享库相关的各种信息，包括库的名称、路径、状态、符号表、动态链接表等。它用于动态链接器中管理加载的共享库。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c">soinfo* <span class="hljs-title function_">find_containing_library</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">void</span>* p)</span> &#123;<br>    <span class="hljs-comment">// 将传入的地址 &#x27;p&#x27; 转换为适当的类型（ElfW(Addr)）</span><br>    ElfW(Addr) address = reinterpret_cast&lt;ElfW(Addr)&gt;(p);<br>    <span class="hljs-comment">// 遍历共享库链表，从头开始</span><br>    <span class="hljs-keyword">for</span> (soinfo* si = solist_get_head(); si != nullptr; si = si-&gt;next) &#123;<br>        <span class="hljs-comment">// 检查地址是否位于当前共享库的地址范围内</span><br>        <span class="hljs-keyword">if</span> (address &gt;= si-&gt;base &amp;&amp; address - si-&gt;base &lt; si-&gt;size) &#123;<br>            <span class="hljs-comment">// 如果是，返回该共享库信息</span><br>            <span class="hljs-keyword">return</span> si;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// 如果没有找到，返回 nullptr</span><br>    <span class="hljs-keyword">return</span> nullptr;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="find-libratry"><a href="#find-libratry" class="headerlink" title="find_libratry()"></a>find_libratry()</h2><p><img src="https://s2.loli.net/2024/12/23/OBLKityonI4sZWx.png" srcset="/img/loading.gif" lazyload alt="image-20241223160507460"></p>
+<p><img src="https://s2.loli.net/2024/12/23/k3DrPJKXstvMQil.png" srcset="/img/loading.gif" lazyload alt="image-20241223160815792"></p>
+<h3 id="find-libraries"><a href="#find-libraries" class="headerlink" title="find_libraries()"></a>find_libraries()</h3><p>先了解一下<code>LoadTask</code> 类</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LoadTask</span> &#123;</span><br><span class="hljs-comment">// 1. deleter_t: 自定义析构器</span><br><span class="hljs-comment">// 用于销毁 LoadTask 对象并释放内存。</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">deleter_t</span> &#123;</span><br>  <span class="hljs-type">void</span> <span class="hljs-title function_">operator</span><span class="hljs-params">()</span><span class="hljs-params">(LoadTask* t)</span> &#123;<br>    t-&gt;~LoadTask();  <span class="hljs-comment">// 调用析构函数</span><br>    TypeBasedAllocator&lt;LoadTask&gt;::<span class="hljs-built_in">free</span>(t);  <span class="hljs-comment">// 释放内存</span><br>  &#125;<br>&#125;;<br><br><span class="hljs-comment">// 2. create() 方法: 工厂方法</span><br><span class="hljs-comment">// 用于创建并初始化一个 LoadTask 对象，分配内存并构造对象。</span><br><span class="hljs-type">static</span> LoadTask* <span class="hljs-title function_">create</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* name,</span><br><span class="hljs-params">                        soinfo* needed_by,</span><br><span class="hljs-params">                        <span class="hljs-type">android_namespace_t</span>* start_from,</span><br><span class="hljs-params">                        <span class="hljs-built_in">std</span>::<span class="hljs-built_in">unordered_map</span>&lt;<span class="hljs-type">const</span> soinfo*, ElfReader&gt;* readers_map)</span> &#123;<br>  LoadTask* ptr = TypeBasedAllocator&lt;LoadTask&gt;::alloc();  <span class="hljs-comment">// 分配内存</span><br>  <span class="hljs-keyword">return</span> new (ptr) LoadTask(name, needed_by, start_from, readers_map);  <span class="hljs-comment">// 在分配的内存上构造 LoadTask 对象</span><br>&#125;<br><br><span class="hljs-comment">// 3. getter 和 setter 方法</span><br><span class="hljs-comment">// 提供访问 LoadTask 对象各个成员变量的方法，供外部使用。</span><br><span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title function_">get_name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> &#123; <span class="hljs-keyword">return</span> name_; &#125;<br>soinfo* <span class="hljs-title function_">get_needed_by</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> &#123; <span class="hljs-keyword">return</span> needed_by_; &#125;<br>soinfo* <span class="hljs-title function_">get_soinfo</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> &#123; <span class="hljs-keyword">return</span> si_; &#125;<br><span class="hljs-type">void</span> <span class="hljs-title function_">set_soinfo</span><span class="hljs-params">(soinfo* si)</span> &#123; si_ = si; &#125;<br><span class="hljs-comment">// 其他 getter 和 setter 方法用于访问和修改成员变量。</span><br><br><span class="hljs-comment">// 4. get_elf_reader() 方法</span><br><span class="hljs-comment">// 返回与当前 soinfo 对象相关联的 ElfReader 对象，用于读取 ELF 文件。</span><br><span class="hljs-type">const</span> ElfReader&amp; <span class="hljs-title function_">get_elf_reader</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> &#123;<br>  CHECK(si_ != nullptr);  <span class="hljs-comment">// 确保 si_ 不为空</span><br>  <span class="hljs-keyword">return</span> (*elf_readers_map_)[si_];  <span class="hljs-comment">// 获取 ElfReader 对象</span><br>&#125;<br><br>ElfReader&amp; <span class="hljs-title function_">get_elf_reader</span><span class="hljs-params">()</span> &#123;<br>  CHECK(si_ != nullptr);  <span class="hljs-comment">// 确保 si_ 不为空</span><br>  <span class="hljs-keyword">return</span> (*elf_readers_map_)[si_];  <span class="hljs-comment">// 获取 ElfReader 对象</span><br>&#125;<br><br><span class="hljs-comment">// 5. read() 方法</span><br><span class="hljs-comment">// 使用 ElfReader 读取指定的 ELF 文件。</span><br><span class="hljs-comment">// 参数: realpath（文件路径）、file_size（文件大小）</span><br><span class="hljs-type">bool</span> <span class="hljs-title function_">read</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* realpath, <span class="hljs-type">off64_t</span> file_size)</span> &#123;<br>  ElfReader&amp; elf_reader = get_elf_reader();  <span class="hljs-comment">// 获取 ElfReader 对象</span><br>  <span class="hljs-keyword">return</span> elf_reader.Read(realpath, fd_, file_offset_, file_size);  <span class="hljs-comment">// 调用 ElfReader 的 Read 方法</span><br>&#125;<br><br><span class="hljs-comment">// 6. load() 方法</span><br><span class="hljs-comment">// 使用 ElfReader 加载 ELF 文件并将加载的信息填充到 soinfo 结构体中。</span><br><span class="hljs-type">bool</span> <span class="hljs-title function_">load</span><span class="hljs-params">()</span> &#123;<br>  ElfReader&amp; elf_reader = get_elf_reader();  <span class="hljs-comment">// 获取 ElfReader 对象</span><br>  <span class="hljs-keyword">if</span> (!elf_reader.Load(extinfo_)) &#123;  <span class="hljs-comment">// 调用 Load 方法加载 ELF 文件</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;  <span class="hljs-comment">// 加载失败</span><br>  &#125;<br><br>  <span class="hljs-comment">// 填充 soinfo 结构体</span><br>  si_-&gt;base = elf_reader.load_start();  <span class="hljs-comment">// 设置库基地址</span><br>  si_-&gt;size = elf_reader.load_size();  <span class="hljs-comment">// 设置库大小</span><br>  si_-&gt;set_mapped_by_caller(elf_reader.is_mapped_by_caller());  <span class="hljs-comment">// 是否由调用者映射</span><br>  si_-&gt;load_bias = elf_reader.load_bias();  <span class="hljs-comment">// 加载偏移</span><br>  si_-&gt;phnum = elf_reader.phdr_count();  <span class="hljs-comment">// 段表数量</span><br>  si_-&gt;phdr = elf_reader.loaded_phdr();  <span class="hljs-comment">// 段表指针</span><br><br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;  <span class="hljs-comment">// 加载成功</span><br>&#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>LoadTask</code> 类管理了一个库的加载过程，其中包括：</p>
+<ol>
+<li>**<code>create()</code>**：通过工厂方法创建 <code>LoadTask</code> 实例。</li>
+<li>**<code>read()</code>**：读取 ELF 文件的内容。</li>
+<li>**<code>load()</code>**：加载 ELF 文件到内存，并填充相关的库信息（如基地址、大小等）。</li>
+<li>通过 <code>ElfReader</code> 类来处理 ELF 格式文件的加载和解析。</li>
+</ol>
+<p>下文的task就是<code>LoadTask</code> 类的实例。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><br><span class="hljs-comment">//Step 0: 准备工作</span><br><span class="hljs-comment">//初始化必要的数据结构，包括库读取器 readers_map 和加载任务列表 load_tasks。</span><br>std::unordered_map&lt;<span class="hljs-type">const</span> soinfo*, ElfReader&gt; readers_map;<br>LoadTaskList load_tasks;<br><br><span class="hljs-comment">//Step 1: 扩展加载任务</span><br><span class="hljs-comment">//根据传入的库名称，创建对应的加载任务，并将这些任务添加到 load_tasks 列表中。</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; library_names_count; ++i) &#123;<br>  <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = library_names[i];<br>  load_tasks.<span class="hljs-built_in">push_back</span>(LoadTask::<span class="hljs-built_in">create</span>(name, start_with, ns, &amp;readers_map));<br>&#125;<br><span class="hljs-comment">//Step 2: 处理 soinfos 数组</span><br><span class="hljs-comment">//如果 soinfos 为空，则动态分配一个大小为库数量的数组。</span><br><span class="hljs-keyword">if</span> (soinfos == <span class="hljs-literal">nullptr</span>) &#123;<br>  <span class="hljs-type">size_t</span> soinfos_size = <span class="hljs-built_in">sizeof</span>(soinfo*) * library_names_count;<br>  soinfos = reinterpret<br>      _cast&lt;soinfo**&gt;(<span class="hljs-built_in">alloca</span>(soinfos_size));<br>  <span class="hljs-built_in">memset</span>(soinfos, <span class="hljs-number">0</span>, soinfos_size);<br>&#125;<br><span class="hljs-comment">//Step 3: 加载库</span><br><span class="hljs-comment">//将所有的加载任务遍历一次，更新每个库的加载信息，设置是否需要从当前库加载更多的依赖库。然后开始调用 find_library_internal 来实际加载库。</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; load_tasks.<span class="hljs-built_in">size</span>(); ++i) &#123;<br>  LoadTask* task = load_tasks[i];<br>  soinfo* needed_by = task-&gt;<span class="hljs-built_in">get_needed_by</span>();<br>  <span class="hljs-type">bool</span> is_dt_needed = needed_by != <span class="hljs-literal">nullptr</span> &amp;&amp; (needed_by != start_with || add_as_children);<br>  task-&gt;<span class="hljs-built_in">set_extinfo</span>(is_dt_needed ? <span class="hljs-literal">nullptr</span> : extinfo);<br>  task-&gt;<span class="hljs-built_in">set_dt_needed</span>(is_dt_needed);<br>  <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">find_library_internal</span>(<span class="hljs-built_in">const_cast</span>&lt;<span class="hljs-type">android_namespace_t</span>*&gt;(task-&gt;<span class="hljs-built_in">get_start_from</span>()),<br>                             task,<br>                             &amp;zip_archive_cache,<br>                             &amp;load_tasks,<br>                             rtld_flags,<br>                             search_linked_namespaces || is_dt_needed)) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>  &#125;<br>&#125;<br><span class="hljs-comment">//Step 4: 预加载库</span><br><span class="hljs-comment">//如果 ld_preloads 不为空，则将预加载的库添加到该列表中，并保证它们正确加载。</span><br><span class="hljs-keyword">if</span> (ld_preloads != <span class="hljs-literal">nullptr</span> &amp;&amp; soinfos_count &lt; ld_preloads_count) &#123;<br>  ld_preloads-&gt;<span class="hljs-built_in">push_back</span>(si);<br>&#125;<br>  LoadTaskList load_list;<br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; task : load_tasks) &#123;<br>    soinfo* si = task-&gt;<span class="hljs-built_in">get_soinfo</span>();<br>    <span class="hljs-keyword">auto</span> pred = [&amp;](<span class="hljs-type">const</span> LoadTask* t) &#123;<br>      <span class="hljs-keyword">return</span> t-&gt;<span class="hljs-built_in">get_soinfo</span>() == si;<br>    &#125;;<br><br>    <span class="hljs-keyword">if</span> (!si-&gt;<span class="hljs-built_in">is_linked</span>() &amp;&amp;<br>        std::<span class="hljs-built_in">find_if</span>(load_list.<span class="hljs-built_in">begin</span>(), load_list.<span class="hljs-built_in">end</span>(), pred) == load_list.<span class="hljs-built_in">end</span>() ) &#123;<br>      load_list.<span class="hljs-built_in">push_back</span>(task);<br>    &#125;<br>  &#125;<br><span class="hljs-comment">//</span><br><span class="hljs-comment">//随机打乱加载顺序以避免依赖关系的问题（如 b/24047022 错误）。</span><br>  <span class="hljs-built_in">shuffle</span>(&amp;load_list);<br><br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; task : load_list) &#123;<br>    <span class="hljs-keyword">if</span> (!task-&gt;<span class="hljs-built_in">load</span>()) &#123;<br>     <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>  &#125;<br><span class="hljs-comment">//Step 5: 预链接所有 DT_NEEDED 库</span><br><span class="hljs-comment">//预先链接所有 DT_NEEDED 库，确保它们可以顺利链接。</span><br><span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; task : load_tasks) &#123;<br>  soinfo* si = task-&gt;<span class="hljs-built_in">get_soinfo</span>();<br>  <span class="hljs-keyword">if</span> (!si-&gt;<span class="hljs-built_in">is_linked</span>() &amp;&amp; !si-&gt;<span class="hljs-built_in">prelink_image</span>()) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>  &#125;<br>&#125;<br><span class="hljs-comment">//Step 6: 构建全局组</span><br><span class="hljs-comment">//在加载所有库后，处理全局库组，包括为预加载的库强制设置 DF_1_GLOBAL 标志，并将其加入到全局组中。</span><br><span class="hljs-keyword">if</span> (ld_preloads != <span class="hljs-literal">nullptr</span>) &#123;<br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; si : *ld_preloads) &#123;<br>    si-&gt;<span class="hljs-built_in">set_dt_flags_1</span>(si-&gt;<span class="hljs-built_in">get_dt_flags_1</span>() | DF_1_GLOBAL);<br>  &#125;<br>&#125;<br><span class="hljs-comment">//Step 7: 链接跨命名空间的库</span><br><span class="hljs-comment">//在库链接时，可能会跨命名空间边界，需要收集这些库的根节点，并进行分组链接。</span><br><span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; task : load_tasks) &#123;<br>  soinfo* si = task-&gt;<span class="hljs-built_in">get_soinfo</span>();<br>  soinfo* needed_by = task-&gt;<span class="hljs-built_in">get_needed_by</span>();<br>  <span class="hljs-type">bool</span> is_dt_needed = needed_by != <span class="hljs-literal">nullptr</span> &amp;&amp; (needed_by != start_with || add_as_children);<br>  <span class="hljs-type">android_namespace_t</span>* needed_by_ns =<br>      is_dt_needed ? needed_by-&gt;<span class="hljs-built_in">get_primary_namespace</span>() : ns;<br><br>  <span class="hljs-keyword">if</span> (!si-&gt;<span class="hljs-built_in">is_linked</span>() &amp;&amp; si-&gt;<span class="hljs-built_in">get_primary_namespace</span>() != needed_by_ns) &#123;<br>    local_group_roots.<span class="hljs-built_in">push_back</span>(si);<br>  &#125;<br>&#125;<br><span class="hljs-comment">//Step 8: 链接本地组</span><br><span class="hljs-comment">//对所有本地库组进行链接，确保它们能够顺利链接，且不会跨命名空间错误。</span><br><span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> root : local_group_roots) &#123;<br>  <span class="hljs-type">soinfo_list_t</span> local_group;<br>  <span class="hljs-type">android_namespace_t</span>* local_group_ns = root-&gt;<span class="hljs-built_in">get_primary_namespace</span>();<br>  <span class="hljs-built_in">walk_dependencies_tree</span>(root, [&amp;](soinfo* si) &#123;<br>    <span class="hljs-keyword">if</span> (local_group_ns-&gt;<span class="hljs-built_in">is_accessible</span>(si)) &#123;<br>      local_group.<span class="hljs-built_in">push_back</span>(si);<br>      <span class="hljs-keyword">return</span> kWalkContinue;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>      <span class="hljs-keyword">return</span> kWalkSkip;<br>    &#125;<br>  &#125;);<br>&#125;<br><span class="hljs-comment">//Step 9: 增加引用计数并标记链接</span><br><span class="hljs-comment">//标记所有加载的库为“已链接”，并更新引用计数，确保库之间的依赖关系得到正确处理。</span><br><span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; task : load_tasks) &#123;<br>  soinfo* si = task-&gt;<span class="hljs-built_in">get_soinfo</span>();<br>  si-&gt;<span class="hljs-built_in">set_linked</span>();<br>&#125;<br><span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp;&amp; task : load_tasks) &#123;<br>  soinfo* si = task-&gt;<span class="hljs-built_in">get_soinfo</span>();<br>  soinfo* needed_by = task-&gt;<span class="hljs-built_in">get_needed_by</span>();<br>  <span class="hljs-keyword">if</span> (needed_by != <span class="hljs-literal">nullptr</span> &amp;&amp;<br>      needed_by != start_with &amp;&amp;<br>      needed_by-&gt;<span class="hljs-built_in">get_local_group_root</span>() != si-&gt;<span class="hljs-built_in">get_local_group_root</span>()) &#123;<br>    si-&gt;<span class="hljs-built_in">increment_ref_count</span>();<br>  &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>加载库</strong>是动态加载、解决依赖关系的过程，通常在运行时进行；而<strong>预加载库</strong>是在程序启动时提前加载，确保一些库在程序启动时就已经准备好，避免后续的延迟和重复加载。</p>
+</blockquote>
+<h4 id="Step-3-加载库–find-library-internal"><a href="#Step-3-加载库–find-library-internal" class="headerlink" title="Step 3: 加载库–find_library_internal()"></a>Step 3: 加载库–find_library_internal()</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//查找已加载的库：(通过 find_loaded_library_by_soname 函数检查库是否已经在当前命名空间或关联的命名空间中加载。如果找到已经加载的库，直接将其 soinfo 设置到 task 中并返回 true。)</span><br><span class="hljs-keyword">if</span> (<span class="hljs-built_in">find_loaded_library_by_soname</span>(ns, task-&gt;<span class="hljs-built_in">get_name</span>(), search_linked_namespaces, &amp;candidate)) &#123;<br>    task-&gt;<span class="hljs-built_in">set_soinfo</span>(candidate);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><span class="hljs-comment">//如果库尚未加载，则调用 load_library 尝试加载该库。如果加载成功，返回 true。</span><br><span class="hljs-keyword">if</span> (<span class="hljs-built_in">load_library</span>(ns, task, zip_archive_cache, load_tasks, rtld_flags, search_linked_namespaces)) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><span class="hljs-comment">//如果库未在当前命名空间找到，并且设置了 search_linked_namespaces 为 true，则会在当前命名空间的所有关联命名空间中查找该库。这是跨命名空间查找库的过程。</span><br><span class="hljs-keyword">if</span> (search_linked_namespaces) &#123;<br>    DlErrorRestorer dlerror_restorer;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; linked_namespace : ns-&gt;<span class="hljs-built_in">linked_namespaces</span>()) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">find_library_in_linked_namespace</span>(linked_namespace, task)) &#123;<br>            <span class="hljs-comment">// ...</span><br>        &#125;<br>    &#125;<br>&#125;<br><span class="hljs-comment">//如果库在关联命名空间中找到，且该库未加载，系统会尝试在该命名空间中加载库。false 表示不再搜索其他关联命名空间。</span><br><span class="hljs-keyword">if</span> (<span class="hljs-built_in">load_library</span>(linked_namespace.<span class="hljs-built_in">linked_namespace</span>(), task, zip_archive_cache, load_tasks, rtld_flags, <span class="hljs-literal">false</span>)) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><span class="hljs-comment">//如果库已经加载（通过 find_library_in_linked_namespace 找到并已设置 soinfo），则直接返回 true。</span><br><span class="hljs-keyword">if</span> (task-&gt;<span class="hljs-built_in">get_soinfo</span>() == <span class="hljs-literal">nullptr</span>) &#123;<br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><span class="hljs-comment">//如果在当前命名空间及所有关联命名空间中都未找到该库，则返回 false。</span><br><span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br></code></pre></td></tr></table></figure>
+
+<p>这个函数执行流程为：</p>
+<ol>
+<li>使用find_load_library函数在已经加载的动态链接库链表里面查找该动态库，如果找到了，就返回该动态库的soinfo，否则第二步</li>
+<li>此时，说明指定的动态链接库还没有被加载，就使用load_library函数来加载该动态库。</li>
+</ol>
+<h5 id="load-library"><a href="#load-library" class="headerlink" title="load_library()"></a>load_library()</h5><p>加载一个共享库，并通过一系列步骤来处理库的路径、文件描述符（FD）、偏移量等信息。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//提取任务中的信息：name：获取任务所需的库的名称。</span><br><span class="hljs-comment">//needed_by：获取该库被哪个库依赖。</span><br><span class="hljs-comment">//extinfo：获取扩展信息，包含额外的加载配置，如库的文件描述符等。</span><br><span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = task-&gt;<span class="hljs-built_in">get_name</span>();<br>soinfo* needed_by = task-&gt;<span class="hljs-built_in">get_needed_by</span>();<br><span class="hljs-type">const</span> android_dlextinfo* extinfo = task-&gt;<span class="hljs-built_in">get_extinfo</span>();<br><span class="hljs-comment">//如果 extinfo 中包含 ANDROID_DLEXT_USE_LIBRARY_FD 标志，表示通过文件描述符来加载库。文件描述符可能是由调用者提供的，可以用来直接访问库文件。</span><br><span class="hljs-comment">//file_offset 会根据扩展信息中的偏移量来设置。如果 ANDROID_DLEXT_USE_LIBRARY_FD_OFFSET 被设置，则会使用提供的 library_fd_offset。</span><br><span class="hljs-comment">//如果无法通过 realpath_fd 获取库的实际路径，则使用库的名称作为路径。</span><br><span class="hljs-comment">//然后，将文件描述符和文件偏移量设置到任务中，并递归调用 load_library 来加载库。</span><br><span class="hljs-keyword">if</span> (extinfo != <span class="hljs-literal">nullptr</span> &amp;&amp; (extinfo-&gt;flags &amp; ANDROID_DLEXT_USE_LIBRARY_FD) != <span class="hljs-number">0</span>) &#123;<br>    file_offset = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">if</span> ((extinfo-&gt;flags &amp; ANDROID_DLEXT_USE_LIBRARY_FD_OFFSET) != <span class="hljs-number">0</span>) &#123;<br>        file_offset = extinfo-&gt;library_fd_offset;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">realpath_fd</span>(extinfo-&gt;library_fd, &amp;realpath)) &#123;<br>        <span class="hljs-built_in">PRINT</span>(<span class="hljs-string">&quot;warning: unable to get realpath for the library \&quot;%s\&quot; by extinfo-&gt;library_fd. &quot;</span><br>              <span class="hljs-string">&quot;Will use given name.&quot;</span>, name);<br>        realpath = name;<br>    &#125;<br>    task-&gt;<span class="hljs-built_in">set_fd</span>(extinfo-&gt;library_fd, <span class="hljs-literal">false</span>);<br>    task-&gt;<span class="hljs-built_in">set_file_offset</span>(file_offset);<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">load_library</span>(ns, task, load_tasks, rtld_flags, realpath, search_linked_namespaces);<br>&#125;<br><span class="hljs-comment">//如果没有通过文件描述符加载库，代码会尝试通过调用 open_library 打开库文件。</span><br><span class="hljs-comment">//如果打开失败，返回 false 并打印错误信息。</span><br><span class="hljs-type">int</span> fd = <span class="hljs-built_in">open_library</span>(ns, zip_archive_cache, name, needed_by, &amp;file_offset, &amp;realpath);<br><span class="hljs-keyword">if</span> (fd == <span class="hljs-number">-1</span>) &#123;<br>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;library \&quot;%s\&quot; not found&quot;</span>, name);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><span class="hljs-comment">//如果成功打开库文件，将文件描述符和偏移量设置到 task 中。</span><br>task-&gt;<span class="hljs-built_in">set_fd</span>(fd, <span class="hljs-literal">true</span>);<br>task-&gt;<span class="hljs-built_in">set_file_offset</span>(file_offset);<br><span class="hljs-comment">//调用 load_library，传入库的实际路径 realpath，继续加载库。</span><br><span class="hljs-keyword">return</span> <span class="hljs-built_in">load_library</span>(ns, task, load_tasks, rtld_flags, realpath, search_linked_namespaces);<br><br></code></pre></td></tr></table></figure>
+
+<h5 id="load-library-重载"><a href="#load-library-重载" class="headerlink" title="load_library(重载)"></a>load_library(重载)</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">bool</span> <span class="hljs-title">load_library</span><span class="hljs-params">(<span class="hljs-type">android_namespace_t</span>* ns,</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-number">1189</span>                         LoadTask* task,</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-number">1190</span>                         LoadTaskList* load_tasks,</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-number">1191</span>                         <span class="hljs-type">int</span> rtld_flags,</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-number">1192</span>                         <span class="hljs-type">const</span> std::string&amp; realpath,</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-number">1193</span>                         <span class="hljs-type">bool</span> search_linked_namespaces)</span> </span>&#123;<br>    <span class="hljs-comment">//文件偏移检查：加载共享库时，文件偏移必须是页面对齐的 (file_offset % PAGE_SIZE == 0)。</span><br><span class="hljs-comment">//负值检查：如果文件偏移为负数，也会返回错误。</span><br><span class="hljs-number">1194</span>  <span class="hljs-type">off64_t</span> file_offset = task-&gt;<span class="hljs-built_in">get_file_offset</span>();<br><span class="hljs-number">1195</span>  <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name = task-&gt;<span class="hljs-built_in">get_name</span>();<br><span class="hljs-number">1196</span>  <span class="hljs-type">const</span> android_dlextinfo* extinfo = task-&gt;<span class="hljs-built_in">get_extinfo</span>();<br><span class="hljs-number">1197</span><span class="hljs-comment">//获取文件信息：通过 fstat 获取库文件的大小、权限等信息，确保文件偏移没有超出文件大小。</span><br><span class="hljs-number">1198</span>  <span class="hljs-keyword">if</span> ((file_offset % PAGE_SIZE) != <span class="hljs-number">0</span>) &#123;<br><span class="hljs-number">1199</span>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;file offset for the library \&quot;%s\&quot; is not page-aligned: %&quot;</span> PRId64, name, file_offset);<br><span class="hljs-number">1200</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1201</span>  &#125;<br><span class="hljs-number">1202</span>  <span class="hljs-keyword">if</span> (file_offset &lt; <span class="hljs-number">0</span>) &#123;<br><span class="hljs-number">1203</span>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;file offset for the library \&quot;%s\&quot; is negative: %&quot;</span> PRId64, name, file_offset);<br><span class="hljs-number">1204</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1205</span>  &#125;<br><span class="hljs-number">1206</span><br><span class="hljs-number">1207</span>  <span class="hljs-keyword">struct</span> <span class="hljs-title class_">stat</span> file_stat;<br><span class="hljs-number">1208</span>  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">TEMP_FAILURE_RETRY</span>(<span class="hljs-built_in">fstat</span>(task-&gt;<span class="hljs-built_in">get_fd</span>(), &amp;file_stat)) != <span class="hljs-number">0</span>) &#123;<br><span class="hljs-number">1209</span>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;unable to stat file for the library \&quot;%s\&quot;: %s&quot;</span>, name, <span class="hljs-built_in">strerror</span>(errno));<br><span class="hljs-number">1210</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1211</span>  &#125;<br><span class="hljs-number">1212</span>  <span class="hljs-keyword">if</span> (file_offset &gt;= file_stat.st_size) &#123;<br><span class="hljs-number">1213</span>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;file offset for the library \&quot;%s\&quot; &gt;= file size: %&quot;</span> PRId64 <span class="hljs-string">&quot; &gt;= %&quot;</span> PRId64,<br><span class="hljs-number">1214</span>        name, file_offset, file_stat.st_size);<br><span class="hljs-number">1215</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1216</span>  &#125;<br><span class="hljs-number">1217</span><br><span class="hljs-comment">//如果扩展信息没有设置 ANDROID_DLEXT_FORCE_LOAD 标志，函数会检查库是否已加载。如果库已经加载，并且与当前路径不同，则直接返回已加载的 soinfo 对象。</span><br><span class="hljs-number">1220</span>  <span class="hljs-keyword">if</span> (extinfo == <span class="hljs-literal">nullptr</span> || (extinfo-&gt;flags &amp; ANDROID_DLEXT_FORCE_LOAD) == <span class="hljs-number">0</span>) &#123;<br><span class="hljs-number">1221</span>    soinfo* si = <span class="hljs-literal">nullptr</span>;<br><span class="hljs-number">1222</span>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">find_loaded_library_by_inode</span>(ns, file_stat, file_offset, search_linked_namespaces, &amp;si)) &#123;<br><span class="hljs-number">1223</span>      <span class="hljs-built_in">TRACE</span>(<span class="hljs-string">&quot;library \&quot;%s\&quot; is already loaded under different name/path \&quot;%s\&quot; - &quot;</span><br><span class="hljs-number">1224</span>            <span class="hljs-string">&quot;will return existing soinfo&quot;</span>, name, si-&gt;<span class="hljs-built_in">get_realpath</span>());<br><span class="hljs-number">1225</span>      task-&gt;<span class="hljs-built_in">set_soinfo</span>(si);<br><span class="hljs-number">1226</span>      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br><span class="hljs-number">1227</span>    &#125;<br><span class="hljs-number">1228</span>  &#125;<br><span class="hljs-number">1229</span><span class="hljs-comment">//RTLD_NOLOAD：如果设置了 RTLD_NOLOAD 标志，表示不加载库，因此会检查是否应该加载。</span><br><span class="hljs-number">1230</span>  <span class="hljs-keyword">if</span> ((rtld_flags &amp; RTLD_NOLOAD) != <span class="hljs-number">0</span>) &#123;<br><span class="hljs-number">1231</span>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;library \&quot;%s\&quot; wasn&#x27;t loaded and RTLD_NOLOAD prevented it&quot;</span>, name);<br><span class="hljs-number">1232</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1233</span>  &#125;<br><span class="hljs-number">1234</span><span class="hljs-comment">//通过 fstatfs 获取文件系统的类型，用于判断文件是否在某些特殊文件系统（如 tmpfs）中。</span><br><span class="hljs-number">1235</span>  <span class="hljs-keyword">struct</span> <span class="hljs-title class_">statfs</span> fs_stat;<br><span class="hljs-number">1236</span>  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">TEMP_FAILURE_RETRY</span>(<span class="hljs-built_in">fstatfs</span>(task-&gt;<span class="hljs-built_in">get_fd</span>(), &amp;fs_stat)) != <span class="hljs-number">0</span>) &#123;<br><span class="hljs-number">1237</span>    <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;unable to fstatfs file for the library \&quot;%s\&quot;: %s&quot;</span>, name, <span class="hljs-built_in">strerror</span>(errno));<br><span class="hljs-number">1238</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1239</span>  &#125;<br><span class="hljs-number">1240</span><br><span class="hljs-comment">//访问性检查：如果文件系统类型不是 tmpfs，则检查库的实际路径是否对指定的命名空间可访问。如果不可访问，会返回错误。</span><br><span class="hljs-number">1243</span>  <span class="hljs-keyword">if</span> ((fs_stat.f_type != TMPFS_MAGIC) &amp;&amp; (!ns-&gt;<span class="hljs-built_in">is_accessible</span>(realpath))) &#123;<br><span class="hljs-number">1248</span>    <span class="hljs-type">const</span> soinfo* needed_by = task-&gt;<span class="hljs-built_in">is_dt_needed</span>() ? task-&gt;<span class="hljs-built_in">get_needed_by</span>() : <span class="hljs-literal">nullptr</span>;<br>    <span class="hljs-comment">//灰名单：如果库在灰名单中，表示该库的访问受限。在某些情况下，会输出警告。</span><br><span class="hljs-number">1249</span>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">is_greylisted</span>(ns, name, needed_by)) &#123;<br><span class="hljs-number">1251</span>      <span class="hljs-keyword">if</span> (needed_by == <span class="hljs-literal">nullptr</span> || !<span class="hljs-built_in">is_system_library</span>(needed_by-&gt;<span class="hljs-built_in">get_realpath</span>())) &#123;<br><span class="hljs-number">1252</span>        <span class="hljs-type">const</span> soinfo* needed_or_dlopened_by = task-&gt;<span class="hljs-built_in">get_needed_by</span>();<br><span class="hljs-number">1253</span>        <span class="hljs-type">const</span> <span class="hljs-type">char</span>* sopath = needed_or_dlopened_by == <span class="hljs-literal">nullptr</span> ? <span class="hljs-string">&quot;(unknown)&quot;</span> :<br><span class="hljs-number">1254</span>                                                      needed_or_dlopened_by-&gt;<span class="hljs-built_in">get_realpath</span>();<br><span class="hljs-number">1255</span>        <span class="hljs-built_in">DL_WARN_documented_change</span>(__ANDROID_API_N__,<br><span class="hljs-number">1256</span>                                  <span class="hljs-string">&quot;private-api-enforced-for-api-level-24&quot;</span>,<br><span class="hljs-number">1257</span>                                  <span class="hljs-string">&quot;library \&quot;%s\&quot; (\&quot;%s\&quot;) needed or dlopened by \&quot;%s\&quot; &quot;</span><br><span class="hljs-number">1258</span>                                  <span class="hljs-string">&quot;is not accessible by namespace \&quot;%s\&quot;&quot;</span>,<br><span class="hljs-number">1259</span>                                  name, realpath.<span class="hljs-built_in">c_str</span>(), sopath, ns-&gt;<span class="hljs-built_in">get_name</span>());<br><span class="hljs-number">1260</span>        <span class="hljs-built_in">add_dlwarning</span>(sopath, <span class="hljs-string">&quot;unauthorized access to&quot;</span>,  name);<br><span class="hljs-number">1261</span>      &#125;<br><span class="hljs-number">1262</span>    &#125; <span class="hljs-keyword">else</span> &#123;<br><span class="hljs-number">1263</span>      <span class="hljs-comment">// do not load libraries if they are not accessible for the specified namespace.</span><br><span class="hljs-number">1264</span>      <span class="hljs-type">const</span> <span class="hljs-type">char</span>* needed_or_dlopened_by = task-&gt;<span class="hljs-built_in">get_needed_by</span>() == <span class="hljs-literal">nullptr</span> ?<br><span class="hljs-number">1265</span>                                          <span class="hljs-string">&quot;(unknown)&quot;</span> :<br><span class="hljs-number">1266</span>                                          task-&gt;<span class="hljs-built_in">get_needed_by</span>()-&gt;<span class="hljs-built_in">get_realpath</span>();<br><span class="hljs-number">1267</span><br><span class="hljs-number">1268</span>      <span class="hljs-built_in">DL_ERR</span>(<span class="hljs-string">&quot;library \&quot;%s\&quot; needed or dlopened by \&quot;%s\&quot; is not accessible for the namespace \&quot;%s\&quot;&quot;</span>,<br><span class="hljs-number">1269</span>             name, needed_or_dlopened_by, ns-&gt;<span class="hljs-built_in">get_name</span>());<br><span class="hljs-number">1270</span><br><span class="hljs-number">1271</span>      <span class="hljs-comment">// do not print this if a library is in the list of shared libraries for linked namespaces</span><br><span class="hljs-number">1272</span>      <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">maybe_accessible_via_namespace_links</span>(ns, name)) &#123;<br><span class="hljs-number">1273</span>        <span class="hljs-built_in">PRINT</span>(<span class="hljs-string">&quot;library \&quot;%s\&quot; (\&quot;%s\&quot;) needed or dlopened by \&quot;%s\&quot; is not accessible for the&quot;</span><br><span class="hljs-number">1274</span>              <span class="hljs-string">&quot; namespace: [name=\&quot;%s\&quot;, ld_library_paths=\&quot;%s\&quot;, default_library_paths=\&quot;%s\&quot;,&quot;</span><br><span class="hljs-number">1275</span>              <span class="hljs-string">&quot; permitted_paths=\&quot;%s\&quot;]&quot;</span>,<br><span class="hljs-number">1276</span>              name, realpath.<span class="hljs-built_in">c_str</span>(),<br><span class="hljs-number">1277</span>              needed_or_dlopened_by,<br><span class="hljs-number">1278</span>              ns-&gt;<span class="hljs-built_in">get_name</span>(),<br><span class="hljs-number">1279</span>              android::base::<span class="hljs-built_in">Join</span>(ns-&gt;<span class="hljs-built_in">get_ld_library_paths</span>(), <span class="hljs-string">&#x27;:&#x27;</span>).<span class="hljs-built_in">c_str</span>(),<br><span class="hljs-number">1280</span>              android::base::<span class="hljs-built_in">Join</span>(ns-&gt;<span class="hljs-built_in">get_default_library_paths</span>(), <span class="hljs-string">&#x27;:&#x27;</span>).<span class="hljs-built_in">c_str</span>(),<br><span class="hljs-number">1281</span>              android::base::<span class="hljs-built_in">Join</span>(ns-&gt;<span class="hljs-built_in">get_permitted_paths</span>(), <span class="hljs-string">&#x27;:&#x27;</span>).<span class="hljs-built_in">c_str</span>());<br><span class="hljs-number">1282</span>      &#125;<br><span class="hljs-number">1283</span>      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1284</span>    &#125;<br><span class="hljs-number">1285</span>  &#125;<br><span class="hljs-number">1286</span><span class="hljs-comment">//库分配和 ELF 解析：调用 soinfo_alloc 分配 soinfo 对象，并读取 ELF 文件头部信息。如果读取失败，释放资源并返回错误。</span><br><span class="hljs-number">1287</span>  soinfo* si = <span class="hljs-built_in">soinfo_alloc</span>(ns, realpath.<span class="hljs-built_in">c_str</span>(), &amp;file_stat, file_offset, rtld_flags);<br><span class="hljs-number">1288</span>  <span class="hljs-keyword">if</span> (si == <span class="hljs-literal">nullptr</span>) &#123;<br><span class="hljs-number">1289</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1290</span>  &#125;<br><span class="hljs-number">1291</span><br><span class="hljs-number">1292</span>  task-&gt;<span class="hljs-built_in">set_soinfo</span>(si);<br><span class="hljs-number">1293</span><br><span class="hljs-number">1294</span>  <span class="hljs-comment">// Read the ELF header and some of the segments.</span><br><span class="hljs-number">1295</span>  <span class="hljs-keyword">if</span> (!task-&gt;<span class="hljs-built_in">read</span>(realpath.<span class="hljs-built_in">c_str</span>(), file_stat.st_size)) &#123;<br><span class="hljs-number">1296</span>    <span class="hljs-built_in">soinfo_free</span>(si);<br><span class="hljs-number">1297</span>    task-&gt;<span class="hljs-built_in">set_soinfo</span>(<span class="hljs-literal">nullptr</span>);<br><span class="hljs-number">1298</span>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-number">1299</span>  &#125;<br><span class="hljs-number">1300</span><br><span class="hljs-comment">//解析 ELF 动态表：从 ELF 文件的动态段中提取 DT_RUNPATH 和 DT_SONAME，并将其设置到 soinfo 对象中。</span><br><span class="hljs-number">1305</span>  <span class="hljs-type">const</span> ElfReader&amp; elf_reader = task-&gt;<span class="hljs-built_in">get_elf_reader</span>();<br><span class="hljs-number">1306</span>  <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-built_in">ElfW</span>(Dyn)* d = elf_reader.<span class="hljs-built_in">dynamic</span>(); d-&gt;d_tag != DT_NULL; ++d) &#123;<br><span class="hljs-number">1307</span>    <span class="hljs-keyword">if</span> (d-&gt;d_tag == DT_RUNPATH) &#123;<br><span class="hljs-number">1308</span>      si-&gt;<span class="hljs-built_in">set_dt_runpath</span>(elf_reader.<span class="hljs-built_in">get_string</span>(d-&gt;d_un.d_val));<br><span class="hljs-number">1309</span>    &#125;<br><span class="hljs-number">1310</span>    <span class="hljs-keyword">if</span> (d-&gt;d_tag == DT_SONAME) &#123;<br><span class="hljs-number">1311</span>      si-&gt;<span class="hljs-built_in">set_soname</span>(elf_reader.<span class="hljs-built_in">get_string</span>(d-&gt;d_un.d_val));<br><span class="hljs-number">1312</span>    &#125;<br><span class="hljs-number">1313</span>  &#125;<br><span class="hljs-comment">//加载所需库：根据 ELF 文件中的 DT_NEEDED 动态段，递归地加载其他依赖的库。</span><br><span class="hljs-number">1315</span>  for_each_dt_needed(task-&gt;<span class="hljs-built_in">get_elf_reader</span>(), [&amp;](<span class="hljs-type">const</span> <span class="hljs-type">char</span>* name) &#123;<br><span class="hljs-number">1316</span>    load_tasks-&gt;<span class="hljs-built_in">push_back</span>(LoadTask::<span class="hljs-built_in">create</span>(name, si, ns, task-&gt;<span class="hljs-built_in">get_readers_map</span>()));<br><span class="hljs-number">1317</span>  &#125;);<br><span class="hljs-number">1318</span><br><span class="hljs-number">1319</span>  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br><span class="hljs-number">1320</span>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>load_library函数的执行过程可以概括如下：</p>
+<ol>
+<li>使用open_library函数打开指定so文件</li>
+<li>创建ElfReader类对象，并通过该对象的read()方法，读取elf文件头，然后通过分析elf文件来加载各个segments</li>
+<li>使用soinfo_alloc函数分配soinfo结构体，并为这个结构体中的各个成员赋值</li>
+</ol>
+<h6 id="read"><a href="#read" class="headerlink" title="read()"></a>read()</h6><p><img src="https://s2.loli.net/2024/12/23/oKMnOLaRYrkSiVz.png" srcset="/img/loading.gif" lazyload alt="image-20241223163156598"></p>
+<p>此函数依次调用ReadRlfHeader，verifyHeader，ReadProgramHeader()，ReserveAddressSpace()等等函数。本质就是读取解析ELF文件。</p>
+<h4 id="Step-4-预加载库–task-load"><a href="#Step-4-预加载库–task-load" class="headerlink" title="Step 4: 预加载库–task-&gt;load()"></a>Step 4: 预加载库–task-&gt;load()</h4><p>加载ELF文件中的可加载segments：</p>
+<p><img src="https://s2.loli.net/2024/12/23/BweX9okmyKROQ2M.png" srcset="/img/loading.gif" lazyload alt="image-20241223162604211"></p>
+<p><img src="https://s2.loli.net/2024/12/23/buw8SDLqKTrYWA9.png" srcset="/img/loading.gif" lazyload alt="image-20241223162707657"></p>
+<h5 id="LoadSegments"><a href="#LoadSegments" class="headerlink" title="LoadSegments"></a>LoadSegments</h5><p>现在就开始加载ELF文件中的可加载segments：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">bool</span> <span class="hljs-title function_">ElfReader::LoadSegments</span><span class="hljs-params">()</span> &#123;<br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; phdr_num_; ++i) &#123;<br>    <span class="hljs-type">const</span> <span class="hljs-title function_">ElfW</span><span class="hljs-params">(Phdr)</span>* phdr = &amp;phdr_table_[i];<br><br>    <span class="hljs-keyword">if</span> (phdr-&gt;p_type != PT_LOAD) &#123;<br>      <span class="hljs-keyword">continue</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// Segment addresses in memory.</span><br>    ElfW(Addr) seg_start = phdr-&gt;p_vaddr + load_bias_;<br>    ElfW(Addr) seg_end   = seg_start + phdr-&gt;p_memsz;<br><br>    ElfW(Addr) seg_page_start = PAGE_START(seg_start);<br>    ElfW(Addr) seg_page_end   = PAGE_END(seg_end);<br><br>    ElfW(Addr) seg_file_end   = seg_start + phdr-&gt;p_filesz;<br>    <span class="hljs-comment">// File offsets.</span><br>    ElfW(Addr) file_start = phdr-&gt;p_offset;<br>    ElfW(Addr) file_end   = file_start + phdr-&gt;p_filesz;<br><br>    ElfW(Addr) file_page_start = PAGE_START(file_start);<br>    ElfW(Addr) file_length = file_end - file_page_start;<br><br>    <span class="hljs-keyword">if</span> (file_length != <span class="hljs-number">0</span>) &#123;<br>      <span class="hljs-type">void</span>* seg_addr = mmap(reinterpret_cast&lt;<span class="hljs-type">void</span>*&gt;(seg_page_start),<br>                            file_length, <span class="hljs-comment">//是以文件大小为参照，而非内存大小</span><br>                            PFLAGS_TO_PROT(phdr-&gt;p_flags),<br>                            MAP_FIXED|MAP_PRIVATE,<br>                            fd_,<br>                            file_page_start);<br>      <span class="hljs-keyword">if</span> (seg_addr == MAP_FAILED) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;couldn&#x27;t map \&quot;%s\&quot; segment %zd: %s&quot;</span>, name_, i, strerror(errno));<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br>    &#125;<br><br>    <span class="hljs-comment">/*如果segments可写，并且该segments的实际结束地址不在某一页的边界的话，就将该segments实际结束地址到此页的边界之间的内存全置为0*/</span><br>    <span class="hljs-keyword">if</span> ((phdr-&gt;p_flags &amp; PF_W) != <span class="hljs-number">0</span> &amp;&amp; PAGE_OFFSET(seg_file_end) &gt; <span class="hljs-number">0</span>) &#123;<br>      <span class="hljs-built_in">memset</span>(reinterpret_cast&lt;<span class="hljs-type">void</span>*&gt;(seg_file_end), <span class="hljs-number">0</span>, PAGE_SIZE - PAGE_OFFSET(seg_file_end));<br>    &#125;<br><br>    seg_file_end = PAGE_END(seg_file_end);<br><br>    <span class="hljs-comment">// seg_file_end is now the first page address after the file</span><br>    <span class="hljs-comment">// content. If seg_end is larger, we need to zero anything</span><br>    <span class="hljs-comment">// between them. This is done by using a private anonymous</span><br>    <span class="hljs-comment">// map for all extra pages.</span><br>    <span class="hljs-keyword">if</span> (seg_page_end &gt; seg_file_end) &#123;<br>      <span class="hljs-type">void</span>* zeromap = mmap(reinterpret_cast&lt;<span class="hljs-type">void</span>*&gt;(seg_file_end),<br>                           seg_page_end - seg_file_end,<br>                           PFLAGS_TO_PROT(phdr-&gt;p_flags),<br>                           MAP_FIXED|MAP_ANONYMOUS|MAP_PRIVATE,<br>                           <span class="hljs-number">-1</span>,<br>                           <span class="hljs-number">0</span>);<br>      <span class="hljs-keyword">if</span> (zeromap == MAP_FAILED) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;couldn&#x27;t zero fill \&quot;%s\&quot; gap: %s&quot;</span>, name_, strerror(errno));<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br>    &#125;<br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+
+<p>此部分功能很简单，就是将ELF中的可加载segments依次映射到内存中，并进行一些辅助扫尾工作</p>
+<h5 id="FindPhdr"><a href="#FindPhdr" class="headerlink" title="FindPhdr"></a>FindPhdr</h5><p>返回程序头部表在内存中的地址，这与phdr_table_是不同的，后者是一个临时的，在so被重定位之前会为释放的变量：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">bool</span> <span class="hljs-title function_">ElfReader::FindPhdr</span><span class="hljs-params">()</span> &#123;<br>  <span class="hljs-type">const</span> <span class="hljs-title function_">ElfW</span><span class="hljs-params">(Phdr)</span>* phdr_limit = phdr_table_ + phdr_num_;<br><br>  <span class="hljs-comment">//如果段类型是 PT_PHDR, 那么我们就直接使用该段的地址.</span><br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> ElfW(Phdr)* phdr = phdr_table_; phdr &lt; phdr_limit; ++phdr) &#123;<br>    <span class="hljs-keyword">if</span> (phdr-&gt;p_type == PT_PHDR) &#123;<br>      <span class="hljs-keyword">return</span> CheckPhdr(load_bias_ + phdr-&gt;p_vaddr);<br>    &#125;<br>  &#125;<br><br>  <span class="hljs-comment">//否则，我们就检查第一个可加载段。如果该段的文件偏移值为0，那么就表示它是以ELF头开始的，我们就可以通过它来找到程序头表加载到内存的地址(虽然过程有点繁琐)。</span><br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> ElfW(Phdr)* phdr = phdr_table_; phdr &lt; phdr_limit; ++phdr) &#123;<br>    <span class="hljs-keyword">if</span> (phdr-&gt;p_type == PT_LOAD) &#123;<br>      <span class="hljs-keyword">if</span> (phdr-&gt;p_offset == <span class="hljs-number">0</span>) &#123;<br>        ElfW(Addr)  elf_addr = load_bias_ + phdr-&gt;p_vaddr;<br>        <span class="hljs-type">const</span> <span class="hljs-title function_">ElfW</span><span class="hljs-params">(Ehdr)</span>* ehdr = reinterpret_cast&lt;<span class="hljs-type">const</span> <span class="hljs-title function_">ElfW</span><span class="hljs-params">(Ehdr)</span>*&gt;<span class="hljs-params">(elf_addr)</span>;<br>        ElfW(Addr)  offset = ehdr-&gt;e_phoff;<br>        <span class="hljs-keyword">return</span> CheckPhdr((ElfW(Addr))ehdr + offset);<br>      &#125;<br>      <span class="hljs-keyword">break</span>;<br>    &#125;<br>  &#125;<br><br>  DL_ERR(<span class="hljs-string">&quot;can&#x27;t find loaded phdr for \&quot;%s\&quot;&quot;</span>, name_);<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>至此so文件的读取，加载工作就分析完毕了，可以发现，Android对so的加载操作只是以段为单位，跟section完全没有关系，另外，通过查看verifyElfheader的代码，我们还可以发现，android系统仅仅对ELF文件头的e_ident，e_type，e_version，e_machine进行验证（当然，e_phnum也是不能错的）所以，这就解释了为什么有些加壳so文件头的section相关字段可以任意修改，系统也不会报错了。</p>
+<h4 id="Step-5-预链接所有-DT-NEEDED-库–si-prelink-image"><a href="#Step-5-预链接所有-DT-NEEDED-库–si-prelink-image" class="headerlink" title="Step 5: 预链接所有 DT_NEEDED 库–si-&gt;prelink_image()"></a>Step 5: 预链接所有 DT_NEEDED 库–si-&gt;prelink_image()</h4><p>如果一个目标文件参与动态链接，它的程序头部表将包含类型的PT_DYNAMIC的元素，此段包含.dynamic节区（这个节区是一个数组）。该节区采用一个特殊符号_DYNAMIC来标记，其中包含如下结构的数组：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span> <br>Elf32_Sword d_tag; <br><span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span> <br>Elf32_Word d_val; <br>Elf32_Addr d_ptr; <br>&#125; d_un; <br>&#125; Elf32_Dyn; <br><span class="hljs-keyword">extern</span> Elf32_Dyn _DYNAMIC[]; <span class="hljs-comment">//注意这里是一个数组</span><br><span class="hljs-comment">/*注意:</span><br><span class="hljs-comment">对每个这种类型的对象，d_tag控制d_un的解释含义： </span><br><span class="hljs-comment">d_val 此 Elf32_Word 对象表示一个整数值，可以有多种解释。</span><br><span class="hljs-comment">d_ptr 此 Elf32_Addr 对象代表程序的虚拟地址。</span><br><span class="hljs-comment">关于d_tag的值、该值的意义，及其与d_un的关系，可查看ELF.PDF*/</span><br><br></code></pre></td></tr></table></figure>
+
+<p>该Elf32_Dyn数组就是soinfo结构体中的dynamic成员，在上面介绍的load_library函数中发现，si-&gt;dynamic被赋值为null，这就说明，在加载阶段是不需要此值的，只有在链接阶段才需要，android的动态库的链接工作是由linker完成，主要代码就是在linker.cpp的prelink_image(find_library_internal方法中调用),此函数的代码相当多，我们来分块分析；</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/8.1.0_r33/xref/bionic/linker/linker.cpp#2864">http://androidxref.com/8.1.0_r33/xref/bionic/linker/linker.cpp#2864</a></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 1. 提取动态节信息</span><br><span class="hljs-comment">// 调用 phdr_table_get_dynamic_section() 提取动态节 (DT_DYNAMIC)，并检查相关标志。</span><br>ElfW(Word) dynamic_flags = <span class="hljs-number">0</span>;<br>phdr_table_get_dynamic_section(phdr, phnum, load_bias, &amp;dynamic, &amp;dynamic_flags);<br><br><span class="hljs-comment">// 2. 打印信息（如果不是链接器的重定位过程）</span><br><span class="hljs-comment">// 如果当前操作不是重定位链接器，打印一些调试信息。</span><br><span class="hljs-type">bool</span> relocating_linker = (flags_ &amp; FLAG_LINKER) != <span class="hljs-number">0</span>;<br><span class="hljs-keyword">if</span> (!relocating_linker) &#123;<br>  INFO(<span class="hljs-string">&quot;[ Linking \&quot;%s\&quot; ]&quot;</span>, get_realpath());<br>  DEBUG(<span class="hljs-string">&quot;si-&gt;base = %p si-&gt;flags = 0x%08x&quot;</span>, reinterpret_cast&lt;<span class="hljs-type">void</span>*&gt;(base), flags_);<br>&#125;<br><br><span class="hljs-comment">// 3. 检查动态节是否存在</span><br><span class="hljs-comment">// 如果动态节为空，输出错误信息（非重定位链接器时），并返回 false。</span><br><span class="hljs-keyword">if</span> (dynamic == nullptr) &#123;<br>  <span class="hljs-keyword">if</span> (!relocating_linker) &#123;<br>    DL_ERR(<span class="hljs-string">&quot;missing PT_DYNAMIC in \&quot;%s\&quot;&quot;</span>, get_realpath());<br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>  <span class="hljs-keyword">if</span> (!relocating_linker) &#123;<br>    DEBUG(<span class="hljs-string">&quot;dynamic = %p&quot;</span>, dynamic);<br>  &#125;<br>&#125;<br><br><span class="hljs-comment">// 4. ARM 特定处理</span><br><span class="hljs-comment">// 如果是 ARM 架构，获取 ARM 异常处理信息。</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(__arm__)</span><br>(<span class="hljs-type">void</span>) phdr_table_get_arm_exidx(phdr, phnum, load_bias,<br>                                &amp;ARM_exidx, &amp;ARM_exidx_count);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br><span class="hljs-comment">// 5. 解析动态节中的信息</span><br><span class="hljs-comment">// 动态节中的条目可以按照任意顺序出现，除了 DT_NEEDED 元素的相对顺序。</span><br><span class="hljs-comment">// 这里处理了动态节中的每个条目，根据不同的 d_tag 类型进行解析。</span><br><span class="hljs-type">uint32_t</span> needed_count = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">for</span> (ElfW(Dyn)* d = dynamic; d-&gt;d_tag != DT_NULL; ++d) &#123;<br>  DEBUG(<span class="hljs-string">&quot;d = %p, d[0](tag) = %p d[1](val) = %p&quot;</span>,<br>        d, reinterpret_cast&lt;<span class="hljs-type">void</span>*&gt;(d-&gt;d_tag), reinterpret_cast&lt;<span class="hljs-type">void</span>*&gt;(d-&gt;d_un.d_val));<br><br>  <span class="hljs-keyword">switch</span> (d-&gt;d_tag) &#123;<br>    <span class="hljs-comment">// 6. 处理 DT_SONAME (共享对象名称)</span><br>    <span class="hljs-keyword">case</span> DT_SONAME:<br>      <span class="hljs-comment">// 解析后将使用 strtab 初始化</span><br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 7. 处理哈希表相关信息</span><br>    <span class="hljs-keyword">case</span> DT_HASH:<br>      nbucket_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr)[<span class="hljs-number">0</span>];<br>      nchain_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr)[<span class="hljs-number">1</span>];<br>      bucket_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr + <span class="hljs-number">8</span>);<br>      chain_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr + <span class="hljs-number">8</span> + nbucket_ * <span class="hljs-number">4</span>);<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 8. 处理 GNU 哈希表信息</span><br>    <span class="hljs-keyword">case</span> DT_GNU_HASH:<br>      gnu_nbucket_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr)[<span class="hljs-number">0</span>];<br>      gnu_maskwords_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr)[<span class="hljs-number">2</span>];<br>      gnu_shift2_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr)[<span class="hljs-number">3</span>];<br>      gnu_bloom_filter_ = reinterpret_cast&lt;ElfW(Addr)*&gt;(load_bias + d-&gt;d_un.d_ptr + <span class="hljs-number">16</span>);<br>      gnu_bucket_ = reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(gnu_bloom_filter_ + gnu_maskwords_);<br>      gnu_chain_ = gnu_bucket_ + gnu_nbucket_ -<br>                   reinterpret_cast&lt;<span class="hljs-type">uint32_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr)[<span class="hljs-number">1</span>];<br><br>      <span class="hljs-comment">// 检查是否为 2 的幂</span><br>      <span class="hljs-keyword">if</span> (!powerof2(gnu_maskwords_)) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;invalid maskwords for gnu_hash = 0x%x, in \&quot;%s\&quot; expecting power to two&quot;</span>,<br>               gnu_maskwords_, get_realpath());<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br>      --gnu_maskwords_;  <span class="hljs-comment">// 修正掩码数目</span><br>      flags_ |= FLAG_GNU_HASH;<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 9. 处理符号表、字符串表等信息</span><br>    <span class="hljs-keyword">case</span> DT_STRTAB:<br>      strtab_ = reinterpret_cast&lt;<span class="hljs-type">const</span> <span class="hljs-type">char</span>*&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_STRSZ:<br>      strtab_size_ = d-&gt;d_un.d_val;<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_SYMTAB:<br>      symtab_ = reinterpret_cast&lt;ElfW(Sym)*&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_SYMENT:<br>      <span class="hljs-keyword">if</span> (d-&gt;d_un.d_val != <span class="hljs-keyword">sizeof</span>(ElfW(Sym))) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;invalid DT_SYMENT: %zd in \&quot;%s\&quot;&quot;</span>, static_cast&lt;<span class="hljs-type">size_t</span>&gt;(d-&gt;d_un.d_val), get_realpath());<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 10. 处理 PLT 相关信息</span><br>    <span class="hljs-keyword">case</span> DT_PLTREL:<br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(USE_RELA)</span><br>      <span class="hljs-keyword">if</span> (d-&gt;d_un.d_val != DT_RELA) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;unsupported DT_PLTREL in \&quot;%s\&quot;; expected DT_RELA&quot;</span>, get_realpath());<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>      <span class="hljs-keyword">if</span> (d-&gt;d_un.d_val != DT_REL) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;unsupported DT_PLTREL in \&quot;%s\&quot;; expected DT_REL&quot;</span>, get_realpath());<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 11. 处理跳转表（PLT）相关信息</span><br>    <span class="hljs-keyword">case</span> DT_JMPREL:<br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(USE_RELA)</span><br>      plt_rela_ = reinterpret_cast&lt;ElfW(Rela)*&gt;(load_bias + d-&gt;d_un.d_ptr);<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>      plt_rel_ = reinterpret_cast&lt;ElfW(Rel)*&gt;(load_bias + d-&gt;d_un.d_ptr);<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 12. 处理 PLT 跳转表大小</span><br>    <span class="hljs-keyword">case</span> DT_PLTRELSZ:<br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(USE_RELA)</span><br>      plt_rela_count_ = d-&gt;d_un.d_val / <span class="hljs-keyword">sizeof</span>(ElfW(Rela));<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>      plt_rel_count_ = d-&gt;d_un.d_val / <span class="hljs-keyword">sizeof</span>(ElfW(Rel));<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 13. 忽略某些动态节条目</span><br>    <span class="hljs-keyword">case</span> DT_ANDROID_REL:<br>    <span class="hljs-keyword">case</span> DT_ANDROID_RELSZ:<br>    <span class="hljs-keyword">case</span> DT_RELCOUNT:<br>    <span class="hljs-keyword">case</span> DT_RELA:<br>    <span class="hljs-keyword">case</span> DT_RELASZ:<br>    <span class="hljs-keyword">case</span> DT_RELAENT:<br>      DL_ERR(<span class="hljs-string">&quot;unsupported DT_ANDROID_REL in \&quot;%s\&quot;&quot;</span>, get_realpath());<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 14. 处理初始化函数、构造函数数组等信息</span><br>    <span class="hljs-keyword">case</span> DT_INIT:<br>      init_func_ = reinterpret_cast&lt;<span class="hljs-type">linker_ctor_function_t</span>&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      DEBUG(<span class="hljs-string">&quot;%s constructors (DT_INIT) found at %p&quot;</span>, get_realpath(), init_func_);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_FINI:<br>      fini_func_ = reinterpret_cast&lt;<span class="hljs-type">linker_dtor_function_t</span>&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      DEBUG(<span class="hljs-string">&quot;%s destructors (DT_FINI) found at %p&quot;</span>, get_realpath(), fini_func_);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_INIT_ARRAY:<br>      init_array_ = reinterpret_cast&lt;<span class="hljs-type">linker_ctor_function_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      DEBUG(<span class="hljs-string">&quot;%s constructors (DT_INIT_ARRAY) found at %p&quot;</span>, get_realpath(), init_array_);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_INIT_ARRAYSZ:<br>      init_array_count_ = static_cast&lt;<span class="hljs-type">uint32_t</span>&gt;(d-&gt;d_un.d_val) / <span class="hljs-keyword">sizeof</span>(ElfW(Addr));<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_FINI_ARRAY:<br>      fini_array_ = reinterpret_cast&lt;<span class="hljs-type">linker_dtor_function_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      DEBUG(<span class="hljs-string">&quot;%s destructors (DT_FINI_ARRAY) found at %p&quot;</span>, get_realpath(), fini_array_);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_FINI_ARRAYSZ:<br>      fini_array_count_ = static_cast&lt;<span class="hljs-type">uint32_t</span>&gt;(d-&gt;d_un.d_val) / <span class="hljs-keyword">sizeof</span>(ElfW(Addr));<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_PREINIT_ARRAY:<br>      preinit_array_ = reinterpret_cast&lt;<span class="hljs-type">linker_ctor_function_t</span>*&gt;(load_bias + d-&gt;d_un.d_ptr);<br>      DEBUG(<span class="hljs-string">&quot;%s constructors (DT_PREINIT_ARRAY) found at %p&quot;</span>, get_realpath(), preinit_array_);<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> DT_PREINIT_ARRAYSZ:<br>      preinit_array_count_ = static_cast&lt;<span class="hljs-type">uint32_t</span>&gt;(d-&gt;d_un.d_val) / <span class="hljs-keyword">sizeof</span>(ElfW(Addr));<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 15. 处理文本重定位（DT_TEXTREL）</span><br>    <span class="hljs-keyword">case</span> DT_TEXTREL:<br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(__LP64__)</span><br>      DL_ERR(<span class="hljs-string">&quot;\&quot;%s\&quot; has text relocations&quot;</span>, get_realpath());<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>      has_text_relocations = <span class="hljs-literal">true</span>;<br>      <span class="hljs-keyword">break</span>;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>    <span class="hljs-comment">// 16. 标记 DT_SYMBOLIC</span><br>    <span class="hljs-keyword">case</span> DT_SYMBOLIC:<br>      has_DT_SYMBOLIC = <span class="hljs-literal">true</span>;<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 17. 处理 DT_NEEDED 条目（共享对象依赖）</span><br>    <span class="hljs-keyword">case</span> DT_NEEDED:<br>      ++needed_count;<br>      <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-comment">// 18. 处理动态标志（DT_FLAGS, DT_FLAGS_1）</span><br>    <span class="hljs-keyword">case</span> DT_FLAGS:<br>      <span class="hljs-keyword">if</span> (d-&gt;d_un.d_val &amp; DF_TEXTREL) &#123;<br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(__</span><br>          .......<br><br></code></pre></td></tr></table></figure>
+
+<p>完成dynamic数组的遍历后，就说明我们已经获取了其中的有用信息了，那么现在就需要根据这些信息进行处理：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/*in function soinfo_link_image */</span> <br><br>    <span class="hljs-comment">//再检测一遍，这种做法总是明智的</span><br>    <span class="hljs-keyword">if</span> (relocating_linker &amp;&amp; needed_count != <span class="hljs-number">0</span>) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;linker cannot have DT_NEEDED dependencies on other libraries&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (si-&gt;nbucket == <span class="hljs-number">0</span>) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;empty/missing DT_HASH in \&quot;%s\&quot; (built with --hash-style=gnu?)&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (si-&gt;strtab == <span class="hljs-number">0</span>) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;empty/missing DT_STRTAB in \&quot;%s\&quot;&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (si-&gt;symtab == <span class="hljs-number">0</span>) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;empty/missing DT_SYMTAB in \&quot;%s\&quot;&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// If this is the main executable, then load all of the libraries from LD_PRELOAD now.</span><br>    <span class="hljs-comment">//如果是main可执行文件，那么就根据LD_PRELOAD信息来加载所有相关的库</span><br>    <span class="hljs-comment">//这里面涉及到的gLdPreloadNames变量，我们知道在前面的整个分析过程中均没有涉及，这是因为，对于可执行文件而言，它的起始函数并不是dlopen，而是系统内核的execv函数，通过层层调用之后才会执行到linker的linker_init_post_ralocation函数，在这个函数中调用parse_LD_PRELOAD函数完成 gLdPreloadNames变量的赋值</span><br>    <span class="hljs-keyword">if</span> (si-&gt;flags &amp; FLAG_EXE) &#123;<br>        <span class="hljs-built_in">memset</span>(gLdPreloads, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(gLdPreloads));<br>        <span class="hljs-type">size_t</span> preload_count = <span class="hljs-number">0</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; gLdPreloadNames[i] != <span class="hljs-literal">NULL</span>; i++) &#123;<br>            soinfo* lsi = find_library(gLdPreloadNames[i]);<br>            <span class="hljs-keyword">if</span> (lsi != <span class="hljs-literal">NULL</span>) &#123;<br>                gLdPreloads[preload_count++] = lsi;<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                ........<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">//分配一个soinfo*[]指针数组，用于存放本so库需要的外部so库的soinfo指针</span><br>    soinfo** needed = reinterpret_cast&lt;soinfo**&gt;(alloca((<span class="hljs-number">1</span> + needed_count) * <span class="hljs-keyword">sizeof</span>(soinfo*)));<br>    soinfo** pneeded = needed;<br>    <span class="hljs-comment">//依次获取dynamic数组中定义的每一个外部so库soinfo</span><br>    <span class="hljs-keyword">for</span> (ElfW(Dyn)* d = si-&gt;dynamic; d-&gt;d_tag != DT_NULL; ++d) &#123;<br>        <span class="hljs-keyword">if</span> (d-&gt;d_tag == DT_NEEDED) &#123;<br>            <span class="hljs-type">const</span> <span class="hljs-type">char</span>* library_name = si-&gt;strtab + d-&gt;d_un.d_val; <span class="hljs-comment">//根据index值获取所需库的名字</span><br>            DEBUG(<span class="hljs-string">&quot;%s needs %s&quot;</span>, si-&gt;name, library_name);<br>            soinfo* lsi = find_library(library_name);  <span class="hljs-comment">//获取该库的soinfo</span><br>            <span class="hljs-keyword">if</span> (lsi == <span class="hljs-literal">NULL</span>) &#123;<br>                ........<br>            &#125;<br>            *pneeded++ = lsi;<br>        &#125;<br>    &#125;<br>    *pneeded = <span class="hljs-literal">NULL</span>; <br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> !defined(__LP64__)</span><br>    <span class="hljs-keyword">if</span> (si-&gt;has_text_relocations) &#123;<br>        <span class="hljs-comment">// Make segments writable to allow text relocations to work properly. We will later call</span><br>        <span class="hljs-comment">// phdr_table_protect_segments() after all of them are applied and all constructors are run.</span><br>        DL_WARN(<span class="hljs-string">&quot;%s has text relocations. This is wasting memory and prevents &quot;</span><br>                <span class="hljs-string">&quot;security hardening. Please fix.&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">if</span> (phdr_table_unprotect_segments(si-&gt;phdr, si-&gt;phnum, si-&gt;load_bias) &lt; <span class="hljs-number">0</span>) &#123;<br>            DL_ERR(<span class="hljs-string">&quot;can&#x27;t unprotect loadable segments for \&quot;%s\&quot;: %s&quot;</span>,<br>                   si-&gt;name, strerror(errno));<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(USE_RELA)</span><br>    <span class="hljs-keyword">if</span> (si-&gt;plt_rela != <span class="hljs-literal">NULL</span>) &#123;<br>        DEBUG(<span class="hljs-string">&quot;[ relocating %s plt ]\n&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">if</span> (soinfo_relocate(si, si-&gt;plt_rela, si-&gt;plt_rela_count, needed)) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (si-&gt;rela != <span class="hljs-literal">NULL</span>) &#123;<br>        DEBUG(<span class="hljs-string">&quot;[ relocating %s ]\n&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">if</span> (soinfo_relocate(si, si-&gt;rela, si-&gt;rela_count, needed)) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">if</span> (si-&gt;plt_rel != <span class="hljs-literal">NULL</span>) &#123;<br>        DEBUG(<span class="hljs-string">&quot;[ relocating %s plt ]&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">if</span> (soinfo_relocate(si, si-&gt;plt_rel, si-&gt;plt_rel_count, needed)) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (si-&gt;rel != <span class="hljs-literal">NULL</span>) &#123;<br>        DEBUG(<span class="hljs-string">&quot;[ relocating %s ]&quot;</span>, si-&gt;name);<br>        <span class="hljs-keyword">if</span> (soinfo_relocate(si, si-&gt;rel, si-&gt;rel_count, needed)) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> defined(__mips__)</span><br>    <span class="hljs-keyword">if</span> (!mips_relocate_got(si, needed)) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>    si-&gt;flags |= FLAG_LINKED;<br>    DEBUG(<span class="hljs-string">&quot;[ finished linking %s ]&quot;</span>, si-&gt;name);<br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> !defined(__LP64__)</span><br>    <span class="hljs-keyword">if</span> (si-&gt;has_text_relocations) &#123;<br>        <span class="hljs-comment">// All relocations are done, we can protect our segments back to read-only.</span><br>        <span class="hljs-keyword">if</span> (phdr_table_protect_segments(si-&gt;phdr, si-&gt;phnum, si-&gt;load_bias) &lt; <span class="hljs-number">0</span>) &#123;<br>            DL_ERR(<span class="hljs-string">&quot;can&#x27;t protect segments for \&quot;%s\&quot;: %s&quot;</span>,<br>                   si-&gt;name, strerror(errno));<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>    <span class="hljs-comment">/* We can also turn on GNU RELRO protection */</span><br>    <span class="hljs-keyword">if</span> (phdr_table_protect_gnu_relro(si-&gt;phdr, si-&gt;phnum, si-&gt;load_bias) &lt; <span class="hljs-number">0</span>) &#123;<br>        DL_ERR(<span class="hljs-string">&quot;can&#x27;t enable GNU RELRO protection for \&quot;%s\&quot;: %s&quot;</span>,<br>               si-&gt;name, strerror(errno));<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    notify_gdb_of_load(si);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h1 id="执行so文件"><a href="#执行so文件" class="headerlink" title="执行so文件"></a>执行so文件</h1><p>上面的find_library_internal函数中prelink_image的函数执行后就返回到上层函数find_library中，然后进一步返回到do_dlopen函数：</p>
+<h2 id="do-dlopen-1"><a href="#do-dlopen-1" class="headerlink" title="do_dlopen"></a>do_dlopen</h2><p>如果获取的si不为空，就说明so的加载和链接操作正确完成，那么就可以执行so的初始化构造函数了：</p>
+<p><img src="https://s2.loli.net/2024/12/27/VnSPedL7pKXB4z5.png" srcset="/img/loading.gif" lazyload alt="image-20241227125905659"></p>
+<h3 id="call-constructors"><a href="#call-constructors" class="headerlink" title="call_constructors"></a>call_constructors</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">soinfo::call_constructors</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 如果构造函数已经被调用过，则直接返回，避免重复调用。</span><br>    <span class="hljs-keyword">if</span> (constructors_called) &#123;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 标记构造函数已经被调用，防止递归调用</span><br>    constructors_called = <span class="hljs-literal">true</span>;<br><br>    <span class="hljs-comment">// 如果当前库不是主执行文件，并且存在 DT_PREINIT_ARRAY，则打印警告</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">is_main_executable</span>() &amp;&amp; preinit_array_ != <span class="hljs-literal">nullptr</span>) &#123;<br>        <span class="hljs-comment">// GNU 动态链接器会忽略这些构造函数，但这里打印警告提醒开发者</span><br>        <span class="hljs-built_in">PRINT</span>(<span class="hljs-string">&quot;\&quot;%s\&quot;: ignoring DT_PREINIT_ARRAY in shared library!&quot;</span>, <span class="hljs-built_in">get_realpath</span>());<br>    &#125;<br><br>    <span class="hljs-comment">// 遍历当前库的所有子库，递归调用它们的构造函数</span><br>    <span class="hljs-built_in">get_children</span>().for_each([] (soinfo* si) &#123;<br>        si-&gt;<span class="hljs-built_in">call_constructors</span>();<br>    &#125;);<br><br>    <span class="hljs-comment">// 如果当前库不是链接器，则开始追踪构造函数调用过程</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">is_linker</span>()) &#123;<br>        <span class="hljs-built_in">bionic_trace_begin</span>((std::<span class="hljs-built_in">string</span>(<span class="hljs-string">&quot;calling constructors: &quot;</span>) + <span class="hljs-built_in">get_realpath</span>()).<span class="hljs-built_in">c_str</span>());<br>    &#125;<br><br>    <span class="hljs-comment">// 调用 DT_INIT 函数，初始化库</span><br>    <span class="hljs-comment">// 注意，DT_INIT 函数应该在 DT_INIT_ARRAY 之前调用</span><br>  	<span class="hljs-comment">// 首先加载 init, 在 so 中的函数名一般为 init_proc, 然后加载 init_array 中的函数</span><br>    <span class="hljs-built_in">call_function</span>(<span class="hljs-string">&quot;DT_INIT&quot;</span>, init_func_, <span class="hljs-built_in">get_realpath</span>());<br><br>    <span class="hljs-comment">// 如果存在 DT_INIT_ARRAY，则调用数组中的所有构造函数</span><br>    <span class="hljs-built_in">call_array</span>(<span class="hljs-string">&quot;DT_INIT_ARRAY&quot;</span>, init_array_, init_array_count_, <span class="hljs-literal">false</span>, <span class="hljs-built_in">get_realpath</span>());<br><br>    <span class="hljs-comment">// 如果当前库不是链接器，则结束追踪构造函数调用过程</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">is_linker</span>()) &#123;<br>        <span class="hljs-built_in">bionic_trace_end</span>();<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>由于我们只分析so库，所以只需要关心CallArray(“DT_INIT_ARRAY”, init_array, init_array_count, false)函数即可：</p>
+<h3 id="CallArray"><a href="#CallArray" class="headerlink" title="CallArray"></a>CallArray</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">call_array</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* array_name __unused,</span><br><span class="hljs-params">                       F* functions,</span><br><span class="hljs-params">                       <span class="hljs-type">size_t</span> count,</span><br><span class="hljs-params">                       <span class="hljs-type">bool</span> reverse,</span><br><span class="hljs-params">                       <span class="hljs-type">const</span> <span class="hljs-type">char</span>* realpath)</span> &#123;<br>    <span class="hljs-comment">// 如果传入的函数数组为空，直接返回</span><br>    <span class="hljs-keyword">if</span> (functions == nullptr) &#123;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 打印调用函数数组的开始信息，显示数组名称、大小、指针地址和真实路径</span><br>    TRACE(<span class="hljs-string">&quot;[ Calling %s (size %zd) @ %p for &#x27;%s&#x27; ]&quot;</span>, array_name, count, functions, realpath);<br><br>    <span class="hljs-comment">// 根据是否反向遍历（reverse），设置开始索引、结束索引和步长</span><br>    <span class="hljs-type">int</span> begin = reverse ? (count - <span class="hljs-number">1</span>) : <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span> end = reverse ? <span class="hljs-number">-1</span> : count;<br>    <span class="hljs-type">int</span> step = reverse ? <span class="hljs-number">-1</span> : <span class="hljs-number">1</span>;<br><br>    <span class="hljs-comment">// 遍历函数数组，并调用每个函数</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = begin; i != end; i += step) &#123;<br>        <span class="hljs-comment">// 打印当前调用的函数信息</span><br>        TRACE(<span class="hljs-string">&quot;[ %s[%d] == %p ]&quot;</span>, array_name, i, functions[i]);<br>        <span class="hljs-comment">// 调用函数</span><br>        call_function(<span class="hljs-string">&quot;function&quot;</span>, functions[i], realpath);<br>    &#125;<br><br>    <span class="hljs-comment">// 打印完成调用数组的结束信息</span><br>    TRACE(<span class="hljs-string">&quot;[ Done calling %s for &#x27;%s&#x27; ]&quot;</span>, array_name, realpath);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>这里需要对init_array节区的结构和作用加以说明<br>首先是init_array节区的数据结构。该节中包含指针，这些指针指向了一些初始化代码。这些初始化代码一般是在main函数之前执行的。在C++程序中，这些代码用来运行静态构造函数。另外一个用途就是有时候用来初始化C库中的一些IO系统。使用IDA查看具有init_array节区的so库文件就可以找到如下数据：</p>
+<p><img src="https://s2.loli.net/2024/12/27/A5Li8pzubdH1OJP.png" srcset="/img/loading.gif" lazyload alt="28a0d3f7bea7f027cc2dc4308500c552"></p>
+<p>这里共三个函数指针，每个指针指向一个函数地址。值得注意的是，上图中每个函数指针的值都加了1，这是因为地址的最后1位置1表明需要使得处理器由ARM转为Thumb状态来处理Thumb指令。将目标地址处的代码解释为Thumb代码来执行。然后再来看CallFunction的具体实现：</p>
+<h4 id="CallFunction"><a href="#CallFunction" class="headerlink" title="CallFunction"></a>CallFunction</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">soinfo::CallFunction</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* function_name UNUSED, <span class="hljs-type">linker_function_t</span> function)</span> &#123;<br>  <span class="hljs-comment">//如果函数地址为空或者为-1就直接退出。</span><br>  <span class="hljs-keyword">if</span> (function == <span class="hljs-literal">NULL</span> || reinterpret_cast&lt;<span class="hljs-type">uintptr_t</span>&gt;(function) == static_cast&lt;<span class="hljs-type">uintptr_t</span>&gt;(<span class="hljs-number">-1</span>)) &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br>  ........<br>  function(); <span class="hljs-comment">//执行该指针所指定的函数</span><br>  <span class="hljs-comment">// The function may have called dlopen(3) or dlclose(3), so we need to ensure our data structures</span><br>  <span class="hljs-comment">// are still writable. This happens with our debug malloc (see http://b/7941716).</span><br>  set_soinfo_pool_protection(PROT_READ | PROT_WRITE);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>至此，整个Android so的linker机制就分析完毕了！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>So加载和链接(linker)</div>
+      <div>https://hermes37.vercel.app/2025/05/09/计算机科学与技术/内核原理/Andorid内核原理/装载链接运行/So加载和链接(linker)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/" title="类加载流程">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">类加载流程</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/ELF%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/" title="ELF文件格式解析">
+                        <span class="hidden-mobile">ELF文件格式解析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
