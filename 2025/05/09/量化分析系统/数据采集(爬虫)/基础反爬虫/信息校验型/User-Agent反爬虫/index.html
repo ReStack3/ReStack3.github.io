@@ -1,0 +1,877 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="先来看无需进行User-Agent验证的正常网页请求的逻辑：  案例网址：Steamboat-反爬虫练习  代码如下：  结果如下：  可以看到即使没有User-Agent，也能正常请求到数据  接下来看一看对User-Agent进行校验的网址：Scrape | Movie  可以看到正常请求失败，接下来看看浏览器能否正常请求，如果浏览器能请求到数据，说明我们的请求报文缺少东西并针对的添加即可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="User-Agent反爬虫">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E4%BF%A1%E6%81%AF%E6%A0%A1%E9%AA%8C%E5%9E%8B/User-Agent%E5%8F%8D%E7%88%AC%E8%99%AB/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="先来看无需进行User-Agent验证的正常网页请求的逻辑：  案例网址：Steamboat-反爬虫练习  代码如下：  结果如下：  可以看到即使没有User-Agent，也能正常请求到数据  接下来看一看对User-Agent进行校验的网址：Scrape | Movie  可以看到正常请求失败，接下来看看浏览器能否正常请求，如果浏览器能请求到数据，说明我们的请求报文缺少东西并针对的添加即可">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/KbsjYp5Nvd3rwQc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/EjomXYd127xpMDv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kD8K6ZwdNazRH5c.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kVlBXMpSqzuA1io.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kzCw4tdFfNIJHyu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/OLTJ1VZQ9ERSB5v.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/R96l3r5SOmuLCvk.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/x3UTuKHliFDqaIX.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/Km15xBuVMPZcyQe.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/XgAOTcDfjY5uCBL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/HmkE6wRb95uSOqM.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.174Z">
+<meta property="article:modified_time" content="2026-04-25T07:57:44.421Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据采集处理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/01/28/KbsjYp5Nvd3rwQc.png">
+  
+  
+  
+  <title>User-Agent反爬虫 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="User-Agent反爬虫"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">User-Agent反爬虫</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>先来看无需进行User-Agent验证的正常网页请求的逻辑：</p>
+<blockquote>
+<p>案例网址：<a target="_blank" rel="noopener" href="http://124.222.20.106//verify/uas/index.html#">Steamboat-反爬虫练习</a></p>
+</blockquote>
+<p>代码如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/KbsjYp5Nvd3rwQc.png" srcset="/img/loading.gif" lazyload alt="image-20250128085730156"></p>
+<p>结果如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/EjomXYd127xpMDv.png" srcset="/img/loading.gif" lazyload alt="image-20250128085826624"></p>
+<p>可以看到即使没有User-Agent，也能正常请求到数据</p>
+<hr>
+<p>接下来看一看对User-Agent进行校验的网址：<a target="_blank" rel="noopener" href="https://antispider2.scrape.center/">Scrape | Movie</a></p>
+<p><img src="https://s2.loli.net/2025/01/28/kD8K6ZwdNazRH5c.png" srcset="/img/loading.gif" lazyload alt="image-20250128092612624"></p>
+<p>可以看到正常请求失败，接下来看看浏览器能否正常请求，如果浏览器能请求到数据，说明我们的请求报文缺少东西并针对的添加即可</p>
+<p><img src="https://s2.loli.net/2025/01/28/kVlBXMpSqzuA1io.png" srcset="/img/loading.gif" lazyload alt="image-20250128091746883"></p>
+<p>可以看到浏览器请求成功，并且注意到请求标头中我们缺少的User-Agent。修改python代码再次请求：</p>
+<p><img src="https://s2.loli.net/2025/01/28/kzCw4tdFfNIJHyu.png" srcset="/img/loading.gif" lazyload alt="image-20250128092109629"></p>
+<p>可以看到请求成功。</p>
+<hr>
+<p>在上面你可能会感到奇怪，为什么请求报文中有那么多字段为什么偏偏选择User-Agent？及其反向思考：服务器怎么识别到底是真人操作还是爬虫程序请求？而服务器手中首先有的是请求报文。</p>
+<p>常见request爬虫报文如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/OLTJ1VZQ9ERSB5v.png" srcset="/img/loading.gif" lazyload alt="image-20250128100730995"></p>
+<p>服务器能做到的是针对爬虫程序没有的字段或者建立黑名单利用正则匹配对已有的字段进行检测。以下是 HTTP 请求报文常见字段的解析：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>描述</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Host</strong></td>
+<td>表示目标服务器的域名和端口号，必需字段。</td>
+<td><code>Host: www.example.com</code></td>
+</tr>
+<tr>
+<td><strong>User-Agent</strong></td>
+<td>标识发起请求的客户端应用程序及其版本。通常用于标识浏览器、操作系统等信息。</td>
+<td><code>User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91</code></td>
+</tr>
+<tr>
+<td><strong>Accept</strong></td>
+<td>告诉服务器客户端能够处理的内容类型。</td>
+<td><code>Accept: text/html,application/xhtml+xml,application/xml;q=0.9</code></td>
+</tr>
+<tr>
+<td><strong>Accept-Encoding</strong></td>
+<td>指定客户端支持的内容编码方式，如压缩格式。</td>
+<td><code>Accept-Encoding: gzip, deflate</code></td>
+</tr>
+<tr>
+<td><strong>Accept-Language</strong></td>
+<td>指定客户端支持的语言种类。</td>
+<td><code>Accept-Language: en-US,en;q=0.9</code></td>
+</tr>
+<tr>
+<td><strong>Cookie</strong></td>
+<td>客户端发送给服务器的 cookie 数据，通常用于保存会话信息等。</td>
+<td><code>Cookie: sessionid=abc123xyz; userid=7890</code></td>
+</tr>
+<tr>
+<td><strong>Referer</strong></td>
+<td>表示当前请求页面的来源，通常是发起该请求的页面 URL。</td>
+<td><code>Referer: https://www.example.com/home</code></td>
+</tr>
+<tr>
+<td><strong>Connection</strong></td>
+<td>控制当前连接的选项，常见值为 <code>keep-alive</code> 或 <code>close</code>。</td>
+<td><code>Connection: keep-alive</code></td>
+</tr>
+<tr>
+<td><strong>Authorization</strong></td>
+<td>用于身份验证的凭证，通常是用户名和密码。</td>
+<td><code>Authorization: Basic YWRtaW46cGFzc3dvcmQ=</code></td>
+</tr>
+<tr>
+<td><strong>Upgrade-Insecure-Requests</strong></td>
+<td>表示客户端是否支持自动将 HTTP 请求升级到 HTTPS。</td>
+<td><code>Upgrade-Insecure-Requests: 1</code></td>
+</tr>
+<tr>
+<td><strong>If-Modified-Since</strong></td>
+<td>用于缓存机制，指示服务器只有在指定时间后内容有所更改时才返回资源。</td>
+<td><code>If-Modified-Since: Tue, 15 Nov 2022 12:45:26 GMT</code></td>
+</tr>
+<tr>
+<td><strong>If-None-Match</strong></td>
+<td>用于缓存机制，基于给定的 ETag 判断服务器是否需要返回新的资源。</td>
+<td><code>If-None-Match: &quot;abc123&quot;</code></td>
+</tr>
+<tr>
+<td><strong>Range</strong></td>
+<td>请求指定的资源的一部分，通常用于下载文件的分块请求。</td>
+<td><code>Range: bytes=0-1023</code></td>
+</tr>
+<tr>
+<td><strong>Content-Type</strong></td>
+<td>指定请求体的媒体类型。通常用于 POST 或 PUT 请求中。</td>
+<td><code>Content-Type: application/x-www-form-urlencoded</code></td>
+</tr>
+<tr>
+<td><strong>Content-Length</strong></td>
+<td>请求体的长度（字节数），在有请求体的情况下必填。</td>
+<td><code>Content-Length: 348</code></td>
+</tr>
+<tr>
+<td><strong>DNT (Do Not Track)</strong></td>
+<td>启用或禁用跟踪请求的指令。</td>
+<td><code>DNT: 1</code></td>
+</tr>
+<tr>
+<td><strong>X-Requested-With</strong></td>
+<td>通常用于 AJAX 请求，表示请求是由 JavaScript 发起的。</td>
+<td><code>X-Requested-With: XMLHttpRequest</code></td>
+</tr>
+<tr>
+<td><strong>TE</strong></td>
+<td>指定接受的传输编码方式。</td>
+<td><code>TE: deflate</code></td>
+</tr>
+<tr>
+<td><strong>X-Forwarded-For</strong></td>
+<td>通常由代理服务器使用，表示客户端的原始 IP 地址。</td>
+<td><code>X-Forwarded-For: 192.168.1.1</code></td>
+</tr>
+<tr>
+<td><strong>X-Frame-Options</strong></td>
+<td>控制页面是否可以嵌入到 <code>&lt;iframe&gt;</code> 或 <code>&lt;frame&gt;</code> 中。</td>
+<td><code>X-Frame-Options: DENY</code></td>
+</tr>
+</tbody></table>
+<p>说明：</p>
+<ul>
+<li><strong>必填字段</strong>：<code>Host</code> 是请求报文中唯一必须存在的字段，因为它标识了请求的目标服务器。</li>
+<li><strong>可选字段</strong>：其余字段都是可选的，具体会根据请求的类型（如 <code>GET</code>、<code>POST</code>）和实际需求而有所不同。</li>
+<li><strong>常见字段</strong>：<code>User-Agent</code>、<code>Accept</code>、<code>Cookie</code>、<code>Referer</code> 等经常出现在 HTTP 请求中。</li>
+</ul>
+<p>之所以重点关注<code>User-Agent</code>、<code>Cookie</code>、<code>Referer</code>是因为因为这三个字段能够有效地帮助服务器识别并区分正常用户与自动化爬虫的行为。</p>
+<blockquote>
+<p>首先，<code>User-Agent</code> 字段提供了客户端软件的详细信息，包括浏览器类型、操作系统以及版本号等。通过分析 <code>User-Agent</code>，反爬虫系统可以识别请求是否来自常见的浏览器，若该字段为空或不符合正常浏览器的格式，服务器就能怀疑该请求可能来自自动化工具。虽然爬虫可以伪造 <code>User-Agent</code>，但是一些反爬虫机制通过检测不常见或异常的 <code>User-Agent</code> 字段，能够识别出非正常的访问行为。比如，爬虫往往没有像浏览器一样频繁更改 <code>User-Agent</code> 或者会使用一些不常见的 <code>User-Agent</code>。</p>
+<p>其次，<code>Cookie</code> 字段是反爬虫系统另一个重要的监测对象。正常用户的浏览器会自动存储和发送会话数据、身份验证信息等，而爬虫往往不会正确处理 cookie，因此 <code>Cookie</code> 字段的缺失或异常往往是爬虫的表现。反爬虫系统会检查请求中 <code>Cookie</code> 的一致性，若发现请求没有有效的 <code>Cookie</code>，或者 <code>Cookie</code> 中包含异常的会话 ID，这通常意味着该请求是自动化程序所发出。另外，通过分析请求中的 cookie 行为，反爬虫系统还可以检测是否存在多个请求使用相同会话 ID，或者同一个 <code>Cookie</code> 被多个不同的 IP 地址访问，这也是爬虫的一种常见特征。</p>
+<p>最后，<code>Referer</code> 字段标识了请求的来源页面，是服务器判断请求是否来自正常浏览行为的关键。一般来说，当用户在浏览网页时，浏览器会自动附带上一层 <code>Referer</code>，表明当前页面是从哪个页面跳转过来的。然而，爬虫通常不会像真实用户那样正确设置 <code>Referer</code>，或者其 <code>Referer</code> 字段可能为空，或者是一个不符合常理的 URL。反爬虫系统会检查 <code>Referer</code> 字段的有效性，如果发现其不符合常规的页面跳转路径，便会怀疑该请求是来自自动化工具。</p>
+</blockquote>
+<hr>
+<p>同理接下来看一个对<strong>referer</strong>进行校验的网址：<a target="_blank" rel="noopener" href="https://spiderbuf.cn/playground/n01">User-Agent与Referer校验反爬_N01_Spiderbuf</a></p>
+<p><img src="https://s2.loli.net/2025/01/28/R96l3r5SOmuLCvk.png" srcset="/img/loading.gif" lazyload alt="image-20250128090721480"></p>
+<p>结果如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/x3UTuKHliFDqaIX.png" srcset="/img/loading.gif" lazyload alt="image-20250128090612367"></p>
+<p>可以看到即使添加上User-agent也请求失败。同理观察浏览器是否请求成功并观察请求报文</p>
+<p><img src="https://s2.loli.net/2025/01/28/Km15xBuVMPZcyQe.png" srcset="/img/loading.gif" lazyload alt="image-20250128092923237"></p>
+<p>浏览器能请求成功，观察请求报文</p>
+<p><img src="https://s2.loli.net/2025/01/28/XgAOTcDfjY5uCBL.png" srcset="/img/loading.gif" lazyload alt="image-20250128093030260"></p>
+<p>可以进行一一尝试，在原来请求头代码上再添加一个Referer试试</p>
+<p><img src="https://s2.loli.net/2025/01/28/HmkE6wRb95uSOqM.png" srcset="/img/loading.gif" lazyload alt="image-20250128093325408"></p>
+<p>可以看到成功请求到，证实了我们的想法</p>
+<hr>
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38230663/article/details/116830990">Python之反爬虫手段（User-Agent，Cookie，Referer，time.sleep()，IP代理池）_反爬虫 ip地址池-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/python_neophyte/article/details/82562330">关于网页referer以及破解referer反爬虫的办法_爬取时如何屏蔽no-referrer-when-downgrade-CSDN博客</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/" class="category-chain-item">数据采集(爬虫)</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/" class="category-chain-item">基础反爬虫</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E4%BF%A1%E6%81%AF%E6%A0%A1%E9%AA%8C%E5%9E%8B/" class="category-chain-item">信息校验型</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%A4%84%E7%90%86/" class="print-no-link">#数据采集处理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>User-Agent反爬虫</div>
+      <div>https://hermes37.vercel.app/2025/05/09/量化分析系统/数据采集(爬虫)/基础反爬虫/信息校验型/User-Agent反爬虫/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E4%BF%A1%E6%81%AF%E6%A0%A1%E9%AA%8C%E5%9E%8B/WebSocket%E5%8F%8D%E7%88%AC%E8%99%AB/" title="WebSocket反爬虫">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">WebSocket反爬虫</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E4%BF%A1%E6%81%AF%E6%A0%A1%E9%AA%8C%E5%9E%8B/Cookie%E5%8F%8D%E7%88%AC%E8%99%AB/" title="Cookie反爬虫">
+                        <span class="hidden-mobile">Cookie反爬虫</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

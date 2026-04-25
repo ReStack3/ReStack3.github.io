@@ -1,0 +1,922 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Scrapy 概览 — Scrapy 2.12.0 文档 - Scrapy 爬虫框架 Spider 中间件 · Scrapy 1.6 中文文档 · 看云  Scrapy 的架构 数据流 Scrapy 中的数据流由执行引擎控制，流程如下： 引擎（Engine） 从 爬虫（Spider） 获取初始请求进行爬取  引擎 是 Scrapy 的核心组件，负责协调各个部分的工作。 初始请求是由 爬虫 提供的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scrapy使用">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/Scrapy%E4%BD%BF%E7%94%A8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="Scrapy 概览 — Scrapy 2.12.0 文档 - Scrapy 爬虫框架 Spider 中间件 · Scrapy 1.6 中文文档 · 看云  Scrapy 的架构 数据流 Scrapy 中的数据流由执行引擎控制，流程如下： 引擎（Engine） 从 爬虫（Spider） 获取初始请求进行爬取  引擎 是 Scrapy 的核心组件，负责协调各个部分的工作。 初始请求是由 爬虫 提供的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/PkCru9G47tUENB6.jpg">
+<meta property="og:image" content="https://s2.loli.net/2024/12/31/JN6LGeK4WftOyl1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/19/FXLPBNQTbfRkd3A.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/19/HjMVf2GvlDCKRJU.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/19/XoeIgMmcRwFQzhS.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/19/rIpJ5HNT7AjyFMY.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.213Z">
+<meta property="article:modified_time" content="2026-04-25T07:57:44.414Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据采集处理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/31/PkCru9G47tUENB6.jpg">
+  
+  
+  
+  <title>Scrapy使用 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Scrapy使用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Scrapy使用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><a target="_blank" rel="noopener" href="https://docs.scrapy.net.cn/en/latest/intro/overview.html">Scrapy 概览 — Scrapy 2.12.0 文档 - Scrapy 爬虫框架</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.kancloud.cn/apachecn/scrapy-doc-zh/1946361">Spider 中间件 · Scrapy 1.6 中文文档 · 看云</a></p>
+</blockquote>
+<h1 id="Scrapy-的架构"><a href="#Scrapy-的架构" class="headerlink" title="Scrapy 的架构"></a>Scrapy 的架构</h1><p><img src="https://s2.loli.net/2024/12/31/PkCru9G47tUENB6.jpg" srcset="/img/loading.gif" lazyload alt="scrapy"></p>
+<h2 id="数据流"><a href="#数据流" class="headerlink" title="数据流"></a>数据流</h2><p><img src="https://s2.loli.net/2024/12/31/JN6LGeK4WftOyl1.png" srcset="/img/loading.gif" lazyload alt="scrapy_architecture_02"></p>
+<p>Scrapy 中的数据流由执行引擎控制，流程如下：</p>
+<p><strong>引擎（Engine）</strong> 从 <strong>爬虫（Spider）</strong> 获取初始请求进行爬取</p>
+<ul>
+<li><strong>引擎</strong> 是 Scrapy 的核心组件，负责协调各个部分的工作。</li>
+<li>初始请求是由 <strong>爬虫</strong> 提供的，它通常是爬虫的 <code>start_requests()</code> 方法中生成的，或者通过爬虫的起始 URL 列表。</li>
+<li>引擎会从爬虫获取这些请求，并开始处理它们。</li>
+</ul>
+<p><strong>引擎</strong> 将请求调度到 <strong>调度器（Scheduler）</strong> 中，并请求下一个要爬取的请求</p>
+<ul>
+<li><strong>调度器</strong> 是 Scrapy 中负责管理请求的队列组件。它的作用是接收引擎发送的请求并保存它们，直到需要被处理。</li>
+<li>当引擎收到请求时，它会将该请求交给调度器，调度器将请求排入队列。</li>
+<li>然后，引擎会请求调度器返回下一个待爬取的请求。</li>
+</ul>
+<p><strong>调度器（Scheduler）</strong> 将下一个请求返回给 <strong>引擎（Engine）</strong></p>
+<ul>
+<li>调度器从队列中取出下一个请求，并将其返回给引擎，供引擎处理。</li>
+<li>调度器是一个异步组件，可以高效地管理请求队列，确保爬虫不会因为请求过多而崩溃。</li>
+</ul>
+<p><strong>引擎（Engine）</strong> 将请求发送到 <strong>下载器（Downloader）</strong>，并经过 <strong>下载器中间件（Downloader Middleware）</strong>（<code>process_request()</code>）</p>
+<ul>
+<li><p><strong>下载器</strong> 的作用是实际发起 HTTP 请求并下载页面内容。当引擎从调度器获取到一个请求时，它会将该请求交给下载器。</p>
+</li>
+<li><p>下载器中间件</p>
+<p> 在下载请求之前会执行一些操作，如请求的预处理、代理、用户代理等的设置。</p>
+<ul>
+<li><code>process_request(request, spider)</code> 方法是一个钩子，允许中间件对请求进行修改或拒绝。它可以在请求发出前对请求进行处理。</li>
+</ul>
+</li>
+</ul>
+<ol start="5">
+<li>页面下载完成后，<strong>下载器（Downloader）</strong> 生成一个 <strong>响应（Response）</strong>（包含该页面），并将其发送到 <strong>引擎（Engine）</strong>，并经过 <strong>下载器中间件（Downloader Middleware）</strong>（<code>process_response()</code>）</li>
+</ol>
+<ul>
+<li><p>下载器完成页面下载后，会将 HTML 页面封装成一个 <code>Response</code> 对象，并返回给引擎。</p>
+</li>
+<li><p>下载器中间件</p>
+<p> 会对响应进行处理，例如处理 cookies、处理重定向等。</p>
+<ul>
+<li><code>process_response(response, request, spider)</code> 方法允许中间件在返回响应前修改响应的内容或进行其他操作。</li>
+</ul>
+</li>
+</ul>
+<p><strong>引擎（Engine）</strong> 从 <strong>下载器（Downloader）</strong> 接收响应，并将其发送到 <strong>爬虫（Spider）</strong> 进行处理，并经过 <strong>爬虫中间件（Spider Middleware）</strong>（<code>process_spider_input()</code>）</p>
+<ul>
+<li><p>引擎收到下载的响应后，会将其发送给相应的爬虫。</p>
+</li>
+<li><p>爬虫中间件</p>
+<p> 会对响应进行处理，例如将响应转化为可用的数据格式。</p>
+<ul>
+<li><code>process_spider_input(response, spider)</code> 方法允许中间件对响应进行处理，比如去除不需要的数据或格式化响应。</li>
+</ul>
+</li>
+</ul>
+<p><strong>爬虫（Spider）</strong> 处理响应，并将提取的项目和新的请求（待跟踪）返回给 <strong>引擎（Engine）</strong>，并经过 <strong>爬虫中间件（Spider Middleware）</strong>（<code>process_spider_output()</code>）</p>
+<ul>
+<li><p>爬虫从响应中提取数据，通常通过选择器（如 XPath 或 CSS 选择器）来提取网页中的信息。</p>
+</li>
+<li><p>爬虫还会根据页面内容生成新的请求（即爬取的链接）供后续继续抓取。爬虫将这些提取的数据（Item）和请求（Request）返回给引擎。</p>
+</li>
+<li><p>爬虫中间件</p>
+</li>
+<li><p>可以对爬虫返回的项目信息和请求进行额外处理，甚至改变返回的内容。</p>
+</li>
+</ul>
+<p>  <code>process_spider_output(response, result, spider)</code> 方法允许中间件修改爬虫返回的项目或请求，通常用来清理数据或添加额外的处理。</p>
+<p><strong>引擎（Engine）</strong> 将处理后的项目发送到 <strong>项目管道（Item Pipeline）</strong>，然后将处理后的请求发送到 <strong>调度器（Scheduler）</strong>，并请求可能的下一个要爬取的请求</p>
+<ul>
+<li><strong>项目管道</strong> 接收爬虫返回的项目并对其进行处理，例如存储到数据库、文件或进行数据清洗等。</li>
+<li>处理后的请求再次被发送到 <strong>调度器</strong>，以便再次执行爬取。</li>
+<li>如果存在更多的请求，流程会再次回到步骤 3，直到调度器没有更多请求为止。</li>
+</ul>
+<p><strong>过程重复</strong>（从步骤 3 开始），直到 <strong>调度器</strong> 中没有更多请求为止</p>
+<ul>
+<li>整个流程会循环执行，每当引擎从调度器获取一个请求并处理时，都会经过上述步骤，直到没有更多请求为止。</li>
+<li>爬虫的工作主要是响应页面请求、提取数据、生成新请求、并将数据通过管道存储等操作。</li>
+</ul>
+<h2 id="易混淆三项对比："><a href="#易混淆三项对比：" class="headerlink" title="易混淆三项对比："></a><strong>易混淆三项对比：</strong></h2><ol>
+<li><strong>下载中间件</strong>：偏重于网络传输层的操作，适用于修改请求和响应的网络属性，如代理设置、状态码处理、解压数据等。</li>
+<li><strong>爬虫中间件</strong>：侧重于爬虫逻辑层的调整，适用于对响应进行预处理、生成新的请求或过滤无效数据等操作。</li>
+<li><strong>项目管道</strong>：专注于数据项的最终处理和存储，适用于深度清洗、数据验证、去重以及持久化到数据库或文件。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th><strong>维度&#x2F;特性</strong></th>
+<th><strong>下载中间件（Downloader Middleware）</strong></th>
+<th><strong>爬虫中间件（Spider Middleware）</strong></th>
+<th><strong>项目管道（Item Pipeline）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据处理阶段</strong></td>
+<td>网络传输阶段（请求发送到服务器、响应从服务器返回）。</td>
+<td>爬虫逻辑阶段（爬虫接收响应、返回数据和请求）。</td>
+<td>爬取流程的后期（引擎将数据项发送到管道时处理）。</td>
+</tr>
+<tr>
+<td><strong>操作对象</strong></td>
+<td>原始的请求（Request）和响应（Response）。</td>
+<td>爬虫处理后的响应（Response）、数据项（Item）和新请求（Request）。</td>
+<td>爬虫提取并返回的最终数据项（Item）。</td>
+</tr>
+<tr>
+<td><strong>核心功能</strong></td>
+<td>- 修改请求头、设置代理、处理响应状态码、解压缩数据等。</td>
+<td>- 数据预处理、过滤无效数据。- 动态生成请求或过滤请求。</td>
+<td>- 数据清洗与格式化。- 数据验证与去重。- 数据存储（持久化）。</td>
+</tr>
+<tr>
+<td><strong>触发方法</strong></td>
+<td><code>process_request</code>、<code>process_response</code>、<code>process_exception</code>。</td>
+<td><code>process_spider_input</code>、<code>process_spider_output</code>、<code>process_spider_exception</code>。</td>
+<td><code>process_item</code> 方法。</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>- 修改网络层的请求，如设置代理 IP、修改 User-Agent。- 处理下载器返回的原始响应数据。</td>
+<td>- 对爬虫的输入响应（如过滤无效页面）。- 对爬虫的输出数据项进行预处理或生成新请求。</td>
+<td>- 清洗数据项的字段（格式化、去重）。- 验证数据的完整性和有效性。- 数据存储到数据库、文件等介质。</td>
+</tr>
+<tr>
+<td><strong>作用阶段</strong></td>
+<td>请求发送到下载器前或响应从下载器返回引擎后。</td>
+<td>数据流进入爬虫或从爬虫返回引擎时。</td>
+<td>引擎将数据项传递到管道时（最终数据处理环节）。</td>
+</tr>
+<tr>
+<td><strong>适合的任务</strong></td>
+<td>- 网络传输优化：如处理 HTTP 状态码、重试机制、gzip 解压缩。</td>
+<td>- 爬虫逻辑调整：如动态生成新的请求，过滤爬虫输入或输出。</td>
+<td>- 数据持久化：如保存到数据库、JSON 文件等。- 数据验证和深度清洗。</td>
+</tr>
+<tr>
+<td><strong>示例场景</strong></td>
+<td>- 使用代理池设置不同的代理 IP。- 过滤非 200 状态码的响应。</td>
+<td>- 对无效的页面响应进行忽略（如过滤 404 页面）。- 根据页面生成新的爬取请求。</td>
+<td>- 将清洗后的商品数据存储到 MySQL 或 MongoDB。</td>
+</tr>
+</tbody></table>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><h2 id="scrapy是基于什么框架，进行网络异步请求处理的？"><a href="#scrapy是基于什么框架，进行网络异步请求处理的？" class="headerlink" title="scrapy是基于什么框架，进行网络异步请求处理的？"></a>scrapy是基于什么框架，进行网络异步请求处理的？</h2><p>Scrapy 是基于 <strong>Twisted</strong> 框架进行网络异步请求的。Twisted 是一个用于 Python 的异步网络库，它提供了高效的事件驱动框架，支持多种协议，包括 HTTP、FTP、SMTP、IMAP 等。</p>
+<p>Scrapy 的核心架构是事件驱动的，它使用 Twisted 来进行以下几个重要的任务：</p>
+<ol>
+<li><strong>非阻塞 I&#x2F;O</strong>：Twisted 允许 Scrapy 异步地发送 HTTP 请求，而不需要等待响应的返回。在等待响应时，Scrapy 仍然可以继续处理其他请求，提高效率。</li>
+<li><strong>调度和下载请求</strong>：Scrapy 使用 Twisted 的 <code>Deferred</code> 对象来管理和调度请求。当 Scrapy 发送请求时，它并不会阻塞等待结果，而是会返回一个 <code>Deferred</code> 对象，该对象代表一个可能尚未完成的操作。等请求完成时，Scrapy 会通知相关的回调函数来处理响应。</li>
+<li><strong>并发控制</strong>：Scrapy 使用 Twisted 的事件循环来控制异步任务的执行，利用其支持并发的特性，可以高效地处理大量的 I&#x2F;O 操作（如网络请求）。</li>
+<li><strong>异步请求处理</strong>：Scrapy 的爬虫执行流程（如发送请求、处理响应等）都是通过 Twisted 的异步事件机制进行调度的。当请求完成时，Scrapy 会调用相应的回调函数来处理返回的数据。</li>
+</ol>
+<h2 id="scrapy的去重原理"><a href="#scrapy的去重原理" class="headerlink" title="scrapy的去重原理"></a>scrapy的去重原理</h2><p>Scrapy 中的去重机制（指纹去重）主要是为了确保同一个 URL 只会被爬取一次，避免重复请求。Scrapy 通过 <strong>请求的唯一标识符</strong> 来判断请求是否已经被访问过。</p>
+<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><h4 id="去重过滤器"><a href="#去重过滤器" class="headerlink" title="去重过滤器"></a><strong>去重过滤器</strong></h4><p>Scrapy 使用去重过滤器来处理请求指纹的存储和检查。去重过滤器的核心功能是根据请求的指纹来判断该请求是否已经被处理过。</p>
+<h5 id="主要类和方法："><a href="#主要类和方法：" class="headerlink" title="主要类和方法："></a>主要类和方法：</h5><ul>
+<li><code>scrapy.dupefilters.BaseDupeFilter</code>：这是一个抽象基类，所有具体的去重实现都继承自它。</li>
+<li><code>scrapy.dupefilters.RFPDupeFilter</code>：默认的去重过滤器实现，用于存储请求指纹到内存中的 <code>set</code> 数据结构。</li>
+<li><code>scrapy.dupefilters.RedisDupeFilter</code>：用于存储请求指纹到 Redis 中的去重过滤器，适用于分布式爬虫。</li>
+</ul>
+<h5 id="BaseDupeFilter"><a href="#BaseDupeFilter" class="headerlink" title="BaseDupeFilter"></a>BaseDupeFilter</h5><p><img src="https://s2.loli.net/2025/01/19/FXLPBNQTbfRkd3A.png" srcset="/img/loading.gif" lazyload alt="image-20250119145852503"></p>
+<p>这是 <code>RFPDupeFilter</code> 的基类，定义了一些基础的接口和方法，像 <code>open</code> 和 <code>close</code>，可以在子类中实现具体的逻辑。</p>
+<h5 id="RFPDupeFilter"><a href="#RFPDupeFilter" class="headerlink" title="RFPDupeFilter"></a>RFPDupeFilter</h5><p><img src="https://s2.loli.net/2025/01/19/HjMVf2GvlDCKRJU.png" srcset="/img/loading.gif" lazyload alt="image-20250119150228343"></p>
+<p>构造函数 <code>__init__(self, path=None, debug=False)</code>:</p>
+<ul>
+<li><strong><code>path</code></strong>: 用于指定存储已访问请求指纹的文件路径。</li>
+<li><strong><code>debug</code></strong>: 如果启用 debug 模式，它会在日志中详细记录被过滤的请求。</li>
+<li><strong><code>self.fingerprints</code></strong>: 使用一个集合 <code>set</code> 来存储所有已经见过的请求指纹（fingerprint）。</li>
+<li><strong><code>self.file</code></strong>: 如果传入了文件路径，它会将请求指纹存储到文件中。</li>
+</ul>
+<p>主要方法：</p>
+<p><strong><code>from_settings(cls, settings)</code></strong>:</p>
+<ul>
+<li>从 Scrapy 配置文件（<code>settings.py</code>）中读取去重配置，并返回 <code>RFPDupeFilter</code> 实例。</li>
+<li>它从 Scrapy 设置中获取 <code>DUPEFILTER_DEBUG</code> 配置来确定是否开启 debug 模式。</li>
+</ul>
+<p><strong><code>request_seen(self, request)</code></strong>:</p>
+<ul>
+<li>该方法检查当前请求的指纹是否已经存在于 <code>self.fingerprints</code> 集合中。</li>
+<li>如果请求指纹已经存在，返回 <code>True</code>，表示这是一个重复请求，不会再继续处理。</li>
+<li>如果请求指纹不存在，则将其添加到 <code>fingerprints</code> 集合中，并将其写入文件中（如果有文件路径）。</li>
+</ul>
+<p><strong><code>request_fingerprint(self, request)</code></strong>:</p>
+<ul>
+<li>该方法通过 <code>request_fingerprint</code> 函数来生成请求的唯一指纹（默认情况下是基于请求的 URL 生成的指纹）。</li>
+<li>这个函数是 Scrapy 内部用于生成请求指纹的关键函数，它会基于请求的 URL 和其他相关信息生成唯一的哈希值。</li>
+</ul>
+<h6 id="request-fingerprint-request"><a href="#request-fingerprint-request" class="headerlink" title="request_fingerprint(request)"></a>request_fingerprint(request)</h6><p><img src="https://s2.loli.net/2025/01/19/XoeIgMmcRwFQzhS.png" srcset="/img/loading.gif" lazyload alt="image-20250119150530871"></p>
+<p><code>request_fingerprint</code> 的作用是基于 <code>Request</code> 对象的特征（如 URL、请求头、查询参数等）生成一个唯一的哈希值，作为请求的指纹。</p>
+<p><img src="https://s2.loli.net/2025/01/19/rIpJ5HNT7AjyFMY.png" srcset="/img/loading.gif" lazyload alt="image-20250119150658463"></p>
+<p>Scrapy 在计算指纹时使用缓存。<code>_deprecated_fingerprint_cache</code> 是一个缓存字典，存储了每个请求的计算结果。<code>cache_key</code> 由 <code>processed_include_headers</code> 和 <code>keep_fragments</code> 组成，用来标识缓存的唯一性。如果相同的请求特征已经被计算过，直接返回缓存结果。</p>
+<p>**<code>hashlib.sha1()</code>**：这里使用了 <code>SHA-1</code> 哈希算法创建指纹计算器。</p>
+<p>**<code>fp.update()</code>**：逐步更新 <code>SHA-1</code> 哈希对象 <code>fp</code>，合并请求的各个特征</p>
+<p>**<code>cache[cache_key] = fp.hexdigest()</code>**：生成指纹后，将它以十六进制字符串的形式存入缓存。</p>
+<h2 id="scrapy是以广度优先还是深度优先进行爬取的呢？"><a href="#scrapy是以广度优先还是深度优先进行爬取的呢？" class="headerlink" title="scrapy是以广度优先还是深度优先进行爬取的呢？"></a>scrapy是以广度优先还是深度优先进行爬取的呢？</h2><p>Scrapy 使用了 <strong>优先队列（PriorityQueue）</strong> 来调度请求，并且默认使用了 <strong>LIFO（后进先出）队列</strong> 来管理请求，这反映了 <strong>深度优先（DFS）</strong> 的爬取顺序。</p>
+<h3 id="1-优先队列的使用"><a href="#1-优先队列的使用" class="headerlink" title="1. 优先队列的使用"></a>1. <strong>优先队列的使用</strong></h3><p>在 <code>Scheduler</code> 类的构造函数中，使用了 <code>PriorityQueue</code> 进行请求的队列管理：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Scheduler</span>(<span class="hljs-title class_ inherited__">object</span>):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, dupefilter, jobdir=<span class="hljs-literal">None</span>, dqclass=<span class="hljs-literal">None</span>, mqclass=<span class="hljs-literal">None</span>,</span><br><span class="hljs-params">                 logunser=<span class="hljs-literal">False</span>, stats=<span class="hljs-literal">None</span>, pqclass=<span class="hljs-literal">None</span>, crawler=<span class="hljs-literal">None</span></span>):<br>        self.df = dupefilter<br>        self.dqdir = self._dqdir(jobdir)<br>        self.pqclass = pqclass  <span class="hljs-comment"># 这里就是指定的优先队列类</span><br>        self.dqclass = dqclass<br>        self.mqclass = mqclass<br>        self.logunser = logunser<br>        self.stats = stats<br>        self.crawler = crawler<br></code></pre></td></tr></table></figure>
+
+<p>这个优先队列会根据请求的 <code>priority</code> 字段来决定请求的处理顺序。</p>
+<h3 id="2-队列的实现"><a href="#2-队列的实现" class="headerlink" title="2. 队列的实现"></a>2. <strong>队列的实现</strong></h3><p><code>PriorityQueue</code> 的默认实现是基于优先级的。Scrapy 支持同时使用内存队列和磁盘队列。内存队列（<code>mqs</code>）使用内存存储，而磁盘队列（<code>dqs</code>）则会将请求持久化到磁盘。</p>
+<ul>
+<li><code>mqs</code>（内存队列）：使用 <code>PriorityQueue</code>（默认是 <code>LifoQueue</code> 类型，即后进先出）</li>
+<li><code>dqs</code>（磁盘队列）：如果配置了磁盘队列（<code>SCHEDULER_DISK_QUEUE</code>），Scrapy 会使用磁盘队列来存储请求，并且优先从磁盘队列中获取请求。</li>
+</ul>
+<h3 id="3-调度请求的顺序"><a href="#3-调度请求的顺序" class="headerlink" title="3. 调度请求的顺序"></a>3. <strong>调度请求的顺序</strong></h3><ul>
+<li><strong>深度优先（DFS）</strong>：在 <code>Scheduler</code> 类中，<code>next_request</code> 方法从内存队列 <code>mqs</code> 中获取下一个请求（如果内存队列不为空），否则从磁盘队列 <code>dqs</code> 中获取。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">next_request</span>(<span class="hljs-params">self</span>):<br>    request = self.mqs.pop()  <span class="hljs-comment"># 从内存队列中获取请求</span><br>    <span class="hljs-keyword">if</span> request:<br>        self.stats.inc_value(<span class="hljs-string">&#x27;scheduler/dequeued/memory&#x27;</span>, spider=self.spider)<br>    <span class="hljs-keyword">else</span>:<br>        request = self._dqpop()  <span class="hljs-comment"># 如果内存队列为空，从磁盘队列获取</span><br>        <span class="hljs-keyword">if</span> request:<br>            self.stats.inc_value(<span class="hljs-string">&#x27;scheduler/dequeued/disk&#x27;</span>, spider=self.spider)<br>    <span class="hljs-keyword">if</span> request:<br>        self.stats.inc_value(<span class="hljs-string">&#x27;scheduler/dequeued&#x27;</span>, spider=self.spider)<br>    <span class="hljs-keyword">return</span> request<br></code></pre></td></tr></table></figure>
+
+<p><code>mqs.pop()</code> 和 <code>dqs.pop()</code> 表明请求是通过 <code>LifoQueue</code>（后进先出）来调度的，从而实现了 <strong>深度优先（DFS）</strong> 的爬取策略。</p>
+<h3 id="4-如何实现广度优先（BFS）"><a href="#4-如何实现广度优先（BFS）" class="headerlink" title="4. 如何实现广度优先（BFS）"></a>4. <strong>如何实现广度优先（BFS）</strong></h3><p>如果想使用广度优先（BFS）来调度请求，可以通过调整 Scrapy 配置来修改队列类型。具体来说，使用 <code>Queue</code> 类型的队列来替代 <code>LifoQueue</code>。你可以在 <code>settings.py</code> 中配置：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># settings.py</span><br>SCHEDULER_PRIORITY_QUEUE = <span class="hljs-string">&#x27;scrapy.queue.PriorityQueue&#x27;</span>  <span class="hljs-comment"># 使用FIFO队列实现广度优先</span><br></code></pre></td></tr></table></figure>
+
+<p>这会将请求以先进先出的顺序调度，从而实现广度优先爬取。</p>
+<h1 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h1><blockquote>
+<p>更多的具体参考：<a target="_blank" rel="noopener" href="https://docs.scrapy.net.cn/en/latest/faq.html">常见问题 — Scrapy 2.12.0 文档 - Scrapy 爬虫框架</a></p>
+</blockquote>
+<h2 id="内存泄露-内存爆了-栈溢出了，怎么办"><a href="#内存泄露-内存爆了-栈溢出了，怎么办" class="headerlink" title="内存泄露&#x2F;内存爆了&#x2F;栈溢出了，怎么办?"></a>内存泄露&#x2F;内存爆了&#x2F;栈溢出了，怎么办?</h2><p><a target="_blank" rel="noopener" href="https://scrapy-chs.readthedocs.io/zh-cn/1.0/topics/leaks.html#topics-leaks">调试内存溢出 — Scrapy 1.0.5 文档</a></p>
+<h2 id="Scrapy如何爬取属性在不同页面的item呢？"><a href="#Scrapy如何爬取属性在不同页面的item呢？" class="headerlink" title="Scrapy如何爬取属性在不同页面的item呢？"></a>Scrapy如何爬取属性在不同页面的item呢？</h2><p><a target="_blank" rel="noopener" href="https://docs.scrapy.net.cn/en/latest/faq.html">常见问题 — Scrapy 2.12.0 文档 - Scrapy 爬虫框架</a></p>
+<h2 id="Scrapy支持HTTP代理么？"><a href="#Scrapy支持HTTP代理么？" class="headerlink" title="Scrapy支持HTTP代理么？"></a>Scrapy支持HTTP代理么？</h2><blockquote>
+<p>通过 HttpProxyMiddleware 中间件可以实现。当然也可以通过自定义中间件来实现！</p>
+</blockquote>
+<h2 id="要如何在Spider里模拟用户登录呢"><a href="#要如何在Spider里模拟用户登录呢" class="headerlink" title="要如何在Spider里模拟用户登录呢?"></a>要如何在Spider里模拟用户登录呢?</h2><p><a target="_blank" rel="noopener" href="https://docs.scrapy.net.cn/en/latest/topics/request-response.html#request-subclasses">请求和响应 — Scrapy 2.12.0 文档 - Scrapy 爬虫框架</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/" class="category-chain-item">数据采集(爬虫)</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%A4%84%E7%90%86/" class="print-no-link">#数据采集处理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Scrapy使用</div>
+      <div>https://hermes37.vercel.app/2025/05/09/量化分析系统/数据采集(爬虫)/Scrapy使用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/Selenium%E4%BD%BF%E7%94%A8/" title="Selenium使用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Selenium使用</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E7%88%AC%E8%99%AB%E5%9F%BA%E7%A1%80/" title="爬虫基础">
+                        <span class="hidden-mobile">爬虫基础</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,871 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="案例练习网站： Scrape | Book Scrape | Movie Scrape | Movie  访问频率指的是单位时间内客户端向服务器端发出网络请求的次数，它是描述网络请求频繁程度的量。正常用户浏览网页的频率不会像爬虫程序那么高，开发者可以将访问频率过高的客户端视为爬虫程序。 降速爬取由于爬虫请求次数过高从而触发了反爬虫，很自然的想到利用time.sleep()方法模拟请求间隔。在降速">
+<meta property="og:type" content="article">
+<meta property="og:title" content="访问频率反爬虫">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E8%AE%BF%E9%97%AE%E9%A2%91%E7%8E%87%E5%8F%8D%E7%88%AC%E8%99%AB/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="案例练习网站： Scrape | Book Scrape | Movie Scrape | Movie  访问频率指的是单位时间内客户端向服务器端发出网络请求的次数，它是描述网络请求频繁程度的量。正常用户浏览网页的频率不会像爬虫程序那么高，开发者可以将访问频率过高的客户端视为爬虫程序。 降速爬取由于爬虫请求次数过高从而触发了反爬虫，很自然的想到利用time.sleep()方法模拟请求间隔。在降速">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/qBnNxQrsmGj4Ecy.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/30/XlyKAhzivtxUSOC.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/30/Nf6vh2BpIqXTcZ1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/30/YRb9qoPngvflQIX.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/30/QRGuB3WJ49fsNxI.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.198Z">
+<meta property="article:modified_time" content="2026-04-25T07:57:44.419Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据采集处理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/01/28/qBnNxQrsmGj4Ecy.png">
+  
+  
+  
+  <title>访问频率反爬虫 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="访问频率反爬虫"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          29 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">访问频率反爬虫</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>案例练习网站：</p>
+<p><a target="_blank" rel="noopener" href="https://antispider7.scrape.center/login">Scrape | Book</a></p>
+<p><a target="_blank" rel="noopener" href="https://antispider6.scrape.center/login?next=/">Scrape | Movie</a></p>
+<p><a target="_blank" rel="noopener" href="https://antispider5.scrape.center/">Scrape | Movie</a></p>
+</blockquote>
+<p>访问频率指的是单位时间内客户端向服务器端发出网络请求的次数，它是描述网络请求频繁程度的量。正常用户浏览网页的频率不会像爬虫程序那么高，开发者可以将访问频率过高的客户端视为爬虫程序。</p>
+<h1 id="降速爬取"><a href="#降速爬取" class="headerlink" title="降速爬取"></a>降速爬取</h1><p>由于爬虫请求次数过高从而触发了反爬虫，很自然的想到利用time.sleep()方法模拟请求间隔。在降速的前提下某种程度上【利用自动化测试框架天生访问速度慢的缺陷】来说使用selenium等自动化测试框架也是一种天然的方法。</p>
+<h1 id="分布式爬虫"><a href="#分布式爬虫" class="headerlink" title="分布式爬虫"></a>分布式爬虫</h1><blockquote>
+<p>实际上，爬虫总是希望请求频率越高越好，这样才能够在最短的时间内完成爬取任务。刚才使用的time.sleep(1)这种降低请求频率的方法并不是爬虫工程师最好的选择。面对根据IP地址实现的访问频率限制反爬虫，我们可以使用多台机器共同爬取。假如数据总量为5万条，目标网站限速为1 r&#x2F;s，使用time.sleep(1)这种方式完成爬取任务需要耗费的时间约为13.9小时。此时将爬取机器从1台增加到10台（10个IP），那么爬取时间就会降低到1.39小时。这种使用多台机器共同爬取的方法称为多机爬取，如果这些机器分布在不同的地域，并且它们使用的是相同的URL队列，那么这种爬虫组合就是分布式爬虫。分布式爬虫分为对等分布式和主从分布式</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/01/28/qBnNxQrsmGj4Ecy.png" srcset="/img/loading.gif" lazyload alt="image-20250128222933895"></p>
+<p>谈到分布式式爬虫就不得不提到scrapy-redis了。</p>
+<h2 id="scrapy-redis"><a href="#scrapy-redis" class="headerlink" title="scrapy-redis"></a>scrapy-redis</h2><p>【<a target="_blank" rel="noopener" href="https://github.com/rmax/scrapy-redis">GitHub - rmax&#x2F;scrapy-redis: Redis-based components for Scrapy.</a>】</p>
+<p>在前面的文章<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2022/09/26/Scrapy%E4%BD%BF%E7%94%A8/">Scrapy初步使用 - The Peak Tower</a>中简单谈到了scrapy的简单使用和原理，Redis在前面的专栏<strong>数据库</strong>中也分析过。而Scrapy-Redis是一个将 <strong>Scrapy</strong> 和 <strong>Redis</strong> 集成的库，旨在帮助开发者使用 Scrapy 在分布式爬虫架构下运行爬虫。它通过将 Scrapy 的数据存储、请求队列和去重功能与 Redis 集成，使得多个爬虫实例可以共享队列并协同工作，进而构建一个分布式爬虫系统。注意：scrapy-redis只是替换了redis的几个组件，不是一个新的框架。</p>
+<p>这里主要围绕着两者如何结合的原理和基本使用。</p>
+<p> <code>scrapy-redis</code> 的主要功能：</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>分布式请求队列</strong></td>
+<td>使用 Redis 存储请求队列，多个爬虫实例从 Redis 中获取请求进行爬取，实现并行处理，提高爬取效率。</td>
+</tr>
+<tr>
+<td><strong>分布式去重</strong></td>
+<td>基于 Redis 存储已抓取的 URL，避免重复抓取同一 URL，克服传统 Scrapy 去重的局限性。</td>
+</tr>
+<tr>
+<td><strong>分布式存储</strong></td>
+<td>爬虫抓取的结果存储到 Redis 中，支持数据流式传输，便于其他应用程序使用。</td>
+</tr>
+<tr>
+<td><strong>自动化任务分配</strong></td>
+<td>通过 Redis 实现爬虫任务的自动化分配，使得多台机器上的爬虫实例能够协同工作，分担任务。</td>
+</tr>
+</tbody></table>
+<h3 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h3><p>首先先回顾一个scrapy的架构：</p>
+<p>scrapy会将生成的request放在队列中，这个队列是有deque实现的本地爬取队列queue。放入队列后，调度器scheduler才会调度里面的request，将request交给downloader执行。简单的调度架构如下图：</p>
+<img src="https://s2.loli.net/2025/01/30/XlyKAhzivtxUSOC.png" srcset="/img/loading.gif" lazyload alt="image-20250130214735107" style="zoom:50%;" />
+
+<p>而<strong>分布式爬虫的简单架构如图：</strong></p>
+<img src="https://s2.loli.net/2025/01/30/Nf6vh2BpIqXTcZ1.png" srcset="/img/loading.gif" lazyload alt="image-20250130214757652" style="zoom:50%;" />
+
+<p>从图中可以看出调度器scheduler可以扩展多个，因此download也可以扩展多个，而爬取队列queue始终为一个。这就是共享爬取队列。这就可以做到一个scheduler从队列中调度某个request时，其他的scheduler不会重复调度这个request，就可以做到多个scheduler同时爬取，这就是分布式爬虫的基本架构。</p>
+<p>理解了这个大概原理就可以进行下一步scrapy_redis和分布式的结合：<br><strong>scrapy_redis是scrapy框架的一个组件</strong>，因为scrapy并不具备分布式的实现，因此scrapy_redis重写了一些scrapy框架里的类，让他能够支持分布式爬虫的创建。</p>
+<p>scrapy_redis和scrapy示意图：</p>
+<p><img src="https://s2.loli.net/2025/01/30/YRb9qoPngvflQIX.png" srcset="/img/loading.gif" lazyload alt="image-20250130214943503"></p>
+<p>scrapy_redis的核心就是redis数据库，因为scrapy_redis改写了scrapy中的queue队列，用redis数据库代替了queue，让本不能共享的queue变成了可以共享的数据库redis。因此，scrapy_redis将每一个request存入redis数据库中，这样就可以多个spider同时访问一个redis，进行分布式爬取。</p>
+<h4 id="scrapy-redis的流程"><a href="#scrapy-redis的流程" class="headerlink" title="scrapy_redis的流程"></a><strong>scrapy_redis的流程</strong></h4><ul>
+<li><strong>在scrapy_redis中，所有的带抓取的对象和去重的指纹都存在所有的服务器公用的redis中</strong></li>
+<li><strong>所有的服务器共用一个redis中的request对象</strong></li>
+<li><strong>所有的request对象存入redis前，都会在同一个redis中进行判断，之前是否已经存入过</strong></li>
+<li><strong>在默认情况下所有的数据会保存在redis中</strong></li>
+</ul>
+<p><img src="https://s2.loli.net/2025/01/30/QRGuB3WJ49fsNxI.png" srcset="/img/loading.gif" lazyload alt="image-20250130215539989"></p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7401824176229007394">一文读懂分布式爬虫利器Scrapy-Redis：源码解析、队列管理与去重策略本文深入解析了Scrapy-Redis的分布 - 掘金</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zxtceq/p/8985622.html">Scrapy-redis实现分布式爬取的过程与原理 - 从未被超越 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1707840">Python爬虫之scrapy_redis原理分析并实现断点续爬以及分布式爬虫-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000014333162">python - scrapy-redis分布式爬虫框架详解 - 爬虫技术 - SegmentFault 思否</a></p>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><p>这里scrapy-redis的初步使用参考的这俩篇文章谈到比较仔细,就不画蛇添足了。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_52392194/article/details/141000827">千万级分布式爬虫：Scrapy-Redis 深入解析与实战_scrapy-redis 多层级爬取-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/gltou/p/16424854.html">爬虫（14） - Scrapy-Redis分布式爬虫(1) | 详解 - 葛老头 - 博客园</a></p>
+<h1 id="IP代理池"><a href="#IP代理池" class="headerlink" title="IP代理池"></a>IP代理池</h1><blockquote>
+<p>使用分布式爬虫后，就可以在单位时间内发起更多的请求。这种方式能够有效地应对访问频率限制，但经济成本很高。除了增加机器外，还可以使用IP切换的方式提高访问频率。假如用一台机器作为代理，轮流使用本机IP和代理IP发起请求，就能够将请访问频率提高1倍，9个代理能够将访问频率提升9倍。想要在1台机器上提高访问频率，可以使用多个IP代理。IP代理其实是维护一个IP池，爬虫程序每次发出请求时都从IP池中取出1个IP作为代理。</p>
+<p>要注意的是，IP池中的IP地址需要由真实的机器（通常是服务器）提供代理服务，我们将这些提供代理服务的机器的IP地址收集起来，汇聚成一个“池”，所以叫作IP池。可以自己搭建用于IP代理的服务器，也可以直接从提供代理服务的商家购买IP。</p>
+</blockquote>
+<p>自建IP代理池的化，详细参考：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_56760882/article/details/136778767">【从零开始】自建高质量免费ip代理池（截止2024.4.1最新版）-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/newxiaoou/article/details/135424126">免费搭建ip代理池的保姆级方法（最详细最有效）-CSDN博客</a></p>
+<p><strong>开源项目：</strong></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Python3WebSpider/ProxyPool">GitHub - Python3WebSpider&#x2F;ProxyPool: An Efficient ProxyPool with Getter, Tester and Server</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/jhao104/proxy_pool">GitHub - jhao104&#x2F;proxy_pool: Python ProxyPool for web spider</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Fizzyi/ProxyPool">GitHub - Fizzyi&#x2F;ProxyPool: 高质量, 高灵活的IP代理池服务</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/xiaoou2/proxy_pool">GitHub - xiaoou2&#x2F;proxy_pool</a></p>
+<p><strong>收费的IP代理：</strong></p>
+<p><a target="_blank" rel="noopener" href="https://www.ipidea.net/?ref=VLLYbk0KpY2YLdj&snid=1738243210034321757_zvhvHwYd&custom_id=&x_auth_code=">【官网】IPIDEA-海外代理IP_在线国外http代理_全球动静态代理IP服务商_住宅代理IP免费试用</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.kuaidaili.com/">快代理 - 企业级HTTP代理IP云服务_专注IP代理11年</a></p>
+<h1 id="浏览器指纹"><a href="#浏览器指纹" class="headerlink" title="浏览器指纹"></a>浏览器指纹</h1><p>浏览器指纹技术，作为一种用于确定客户端身份的手段，不仅依赖于IP地址，还能通过多种客户端特征信息生成“唯一”标识符。常见的客户端特征包括硬件信息、浏览器信息以及一些不可重复的信息（如Cookie、Token、用户凭证等）。这些信息在综合分析后可以构成一个浏览器指纹，用来唯一标识用户，尤其在用户未登录或未设置Cookie的情况下，依然能在一定程度上追踪和识别用户。</p>
+<h3 id="浏览器指纹的组成："><a href="#浏览器指纹的组成：" class="headerlink" title="浏览器指纹的组成："></a>浏览器指纹的组成：</h3><p>浏览器指纹通常是由多个特征信息组成的，这些特征信息包括但不限于以下几种：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>组成信息</th>
+<th>详细描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>硬件信息</strong></td>
+<td>屏幕分辨率、色深、显示器的尺寸和DPI</td>
+<td>描述显示设备的分辨率、色彩深度、显示器大小及DPI设置。</td>
+</tr>
+<tr>
+<td></td>
+<td>CPU核心数、处理器型号和类型</td>
+<td>包括处理器的核心数量、型号、架构（如Intel、AMD）等信息。</td>
+</tr>
+<tr>
+<td></td>
+<td>系统的语言、操作系统的类型和版本号</td>
+<td>包括操作系统（如Windows、macOS、Linux等）的语言、版本号等。</td>
+</tr>
+<tr>
+<td></td>
+<td>时区信息（用户当前时间与UTC的偏差）</td>
+<td>用户所在时区与UTC的差异，反映用户的地理位置线索。</td>
+</tr>
+<tr>
+<td></td>
+<td>硬件设备的详细信息（如显卡、硬盘型号等）</td>
+<td>硬件组件的特定信息，如显卡型号、硬盘型号、内存配置等。</td>
+</tr>
+<tr>
+<td><strong>浏览器信息</strong></td>
+<td>浏览器的 <code>User-Agent</code> 字符串</td>
+<td>包含浏览器类型、操作系统、浏览器版本等信息。</td>
+</tr>
+<tr>
+<td></td>
+<td>浏览器支持的插件列表、字体、字体大小等</td>
+<td>包括浏览器支持的插件、已安装的字体及其大小等。</td>
+</tr>
+<tr>
+<td></td>
+<td>浏览器的 <code>navigator</code> 对象中提供的信息（平台、语言、浏览器版本等）</td>
+<td><code>navigator</code> 对象的各类信息，如浏览器平台、语言、浏览器类型与版本等。</td>
+</tr>
+<tr>
+<td><strong>不可重复信息</strong></td>
+<td><strong>Cookie 和 Token</strong></td>
+<td>登录时由网站生成，用于用户身份验证。即使删除Cookie，仍有可能被追踪。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>IP 地址</strong></td>
+<td>虽然可以通过代理或VPN更改，但仍是常见的标识信息，提供用户地理位置。</td>
+</tr>
+</tbody></table>
+<h3 id="问题与挑战："><a href="#问题与挑战：" class="headerlink" title="问题与挑战："></a>问题与挑战：</h3><p>虽然浏览器指纹技术能提供一个相对唯一的标识符，但仍然存在一些问题，尤其是在某些环境中，设备特征可能高度相似。例如：</p>
+<ul>
+<li><strong>同一硬件环境</strong>：如在某个网咖、学校或公司内，不同设备可能使用相同的硬件配置（CPU型号、显示器分辨率等），因此浏览器指纹的重复概率可能较高。</li>
+<li><strong>同一网络环境</strong>：如果多台设备位于同一个网段或使用相同的公共Wi-Fi网络，它们的IP地址相同，因此产生的指纹也有可能相似或重复。</li>
+</ul>
+<p>为了提高浏览器指纹的唯一性和难以伪造性，技术发展者开始采用一些新的技术和方法。</p>
+<h3 id="新技术：UUID、Canvas-和-WebGL"><a href="#新技术：UUID、Canvas-和-WebGL" class="headerlink" title="新技术：UUID、Canvas 和 WebGL"></a>新技术：UUID、Canvas 和 WebGL</h3><h4 id="UUID"><a href="#UUID" class="headerlink" title="UUID"></a><strong>UUID</strong></h4><ul>
+<li><strong>UUID（通用唯一识别码）</strong> 是一种标准化的标识符，它通过一系列算法生成独特的ID，理论上每个UUID都是唯一的。UUID有不同的版本，如基于时间、基于名称、基于随机数等方式生成。UUID的生成机制相当复杂，能确保在极高的概率下避免重复。</li>
+<li>在浏览器指纹中，UUID通常用于生成一个基于设备或用户会话的唯一标识符，它与其他客户端信息（如硬件配置、浏览器信息等）一起使用，可以进一步提高指纹的唯一性。</li>
+</ul>
+<h4 id="Canvas"><a href="#Canvas" class="headerlink" title="Canvas"></a><strong>Canvas</strong></h4><ul>
+<li><strong>Canvas指纹</strong> 是利用HTML5中的Canvas元素生成的，它通过绘制图形并将图形编码为Base64字符串，生成一个相对独特的字符串。Canvas指纹可以基于浏览器对图形的渲染方式、颜色深度、抗锯齿能力等特性生成，这些特性在不同的浏览器和操作系统中有所不同。</li>
+<li>由于Canvas指纹的生成不依赖于Cookie，它能够绕过浏览器禁用Cookie的限制，即使用户清除了Cookie，也不会影响指纹的生成。Canvas指纹是非常难以伪造的，除非两台设备完全相同，并且使用相同的浏览器和操作系统。</li>
+</ul>
+<h4 id="WebGL"><a href="#WebGL" class="headerlink" title="WebGL"></a><strong>WebGL</strong></h4><ul>
+<li><strong>WebGL指纹</strong> 通过浏览器中的WebGL（Web Graphics Library）渲染技术生成。WebGL允许网页直接使用GPU进行图形渲染，因此每个浏览器在渲染相同的图形时，可能会因硬件和驱动程序的不同而产生细微的差异。这些差异可以用来生成一个独特的指纹。</li>
+<li>WebGL指纹比Canvas指纹更加依赖于设备的GPU和浏览器的渲染实现，因此在不同设备之间差异较大。在硬件配置、操作系统以及显卡驱动不同的情况下，WebGL指纹往往能够提供非常独特的标识符。</li>
+</ul>
+<h3 id="浏览器指纹的应用与反应："><a href="#浏览器指纹的应用与反应：" class="headerlink" title="浏览器指纹的应用与反应："></a>浏览器指纹的应用与反应：</h3><ul>
+<li><strong>反爬虫技术</strong>：浏览器指纹广泛应用于反爬虫技术中，用于区分正常用户与自动化脚本或爬虫。通过收集浏览器指纹信息，网站能够检测并阻止大量的自动化请求，尤其是通过频繁修改IP地址的爬虫。</li>
+<li><strong>广告追踪与个性化推荐</strong>：广告商和数据分析公司常常利用浏览器指纹来跟踪用户行为，进行精准广告投放，或提供个性化推荐。即使用户删除了Cookie或更换了设备，只要用户的浏览器指纹未发生变化，依然能够被跟踪。</li>
+<li><strong>身份验证与安全防护</strong>：在安全领域，浏览器指纹可以用于增强身份验证，防止账号被盗用或进行恶意登录。通过验证浏览器指纹，服务商能够确认用户是否是之前登录的设备，从而提供额外的保护层。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/" class="category-chain-item">数据采集(爬虫)</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/" class="category-chain-item">基础反爬虫</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%A4%84%E7%90%86/" class="print-no-link">#数据采集处理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>访问频率反爬虫</div>
+      <div>https://hermes37.vercel.app/2025/05/09/量化分析系统/数据采集(爬虫)/基础反爬虫/访问频率反爬虫/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E9%AA%8C%E8%AF%81%E7%A0%81/%E6%BB%91%E5%9D%97%E7%BC%BA%E5%8F%A3%E8%B7%9D%E7%A6%BB%E8%AF%86%E5%88%AB/" title="滑块缺口距离识别">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">滑块缺口距离识别</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/WebDriver%E8%AF%86%E5%88%AB%E5%8F%8D%E7%88%AC%E8%99%AB/" title="WebDriver识别反爬虫">
+                        <span class="hidden-mobile">WebDriver识别反爬虫</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
