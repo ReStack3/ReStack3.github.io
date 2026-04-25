@@ -1,0 +1,850 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="链路追踪为什么需要链路追踪微服务之间往往有复杂的依赖关系，例如，一个服务调用另一个服务，那个服务又调用另一个服务，这样的链式依赖关系在系统中普遍存在。故障往往发生在服务间的某个环节，但单纯依靠日志无法轻松看出依赖关系和具体瓶颈所在。在微服务架构中，请求通常会跨多个服务进行处理。一个用户请求可能会经过多个服务实例，甚至多个微服务。当请求失败或延迟时，开发者需要了解整个调用链路，而传统的日志记录无法提">
+<meta property="og:type" content="article">
+<meta property="og:title" content="链路追踪、限流、熔断、降级">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA%E3%80%81%E9%99%90%E6%B5%81%E3%80%81%E7%86%94%E6%96%AD%E3%80%81%E9%99%8D%E7%BA%A7/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="链路追踪为什么需要链路追踪微服务之间往往有复杂的依赖关系，例如，一个服务调用另一个服务，那个服务又调用另一个服务，这样的链式依赖关系在系统中普遍存在。故障往往发生在服务间的某个环节，但单纯依靠日志无法轻松看出依赖关系和具体瓶颈所在。在微服务架构中，请求通常会跨多个服务进行处理。一个用户请求可能会经过多个服务实例，甚至多个微服务。当请求失败或延迟时，开发者需要了解整个调用链路，而传统的日志记录无法提">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/MP2BfWgcNQd8JvU.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/meb84d2vZtnBVHx.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/481HAmjDlLP2swM.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/9AbSsc3Rj6VCXzG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/tJgUGp3h4sefdnu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/x4t2hPv3N8zrRqE.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/rgMUVWtS4ByXIsO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/MdhfJgTKXjHR59v.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/DromZhUyBNaPSve.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/fDZgTpetK6hlMmH.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/iAOQPLrGKou2RHZ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/Q8IhwNxu54PGcAg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/XWbQB58LUcixvFE.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.145Z">
+<meta property="article:modified_time" content="2026-04-25T07:53:18.072Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="软件工程">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/03/MP2BfWgcNQd8JvU.png">
+  
+  
+  
+  <title>链路追踪、限流、熔断、降级 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="链路追踪、限流、熔断、降级"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          30 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">链路追踪、限流、熔断、降级</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="链路追踪"><a href="#链路追踪" class="headerlink" title="链路追踪"></a>链路追踪</h1><h2 id="为什么需要链路追踪"><a href="#为什么需要链路追踪" class="headerlink" title="为什么需要链路追踪"></a>为什么需要链路追踪</h2><p>微服务之间往往有复杂的依赖关系，例如，一个服务调用另一个服务，那个服务又调用另一个服务，这样的链式依赖关系在系统中普遍存在。故障往往发生在服务间的某个环节，但单纯依靠日志无法轻松看出依赖关系和具体瓶颈所在。在微服务架构中，请求通常会跨多个服务进行处理。一个用户请求可能会经过多个服务实例，甚至多个微服务。当请求失败或延迟时，开发者需要了解整个调用链路，而传统的日志记录无法提供完整的上下游服务关系。</p>
+<h3 id="场景一："><a href="#场景一：" class="headerlink" title="场景一："></a>场景一：</h3><p><img src="https://s2.loli.net/2025/02/03/MP2BfWgcNQd8JvU.png" srcset="/img/loading.gif" lazyload alt="image-20250203195615602"></p>
+<p>在分布式系统中，故障可能是由于网络延迟、服务崩溃、超时、配置问题等多种原因引起的。传统的日志无法提供足够的上下文信息，导致排查问题时需要花费大量时间。</p>
+<h3 id="场景二："><a href="#场景二：" class="headerlink" title="场景二："></a>场景二：</h3><p><img src="https://s2.loli.net/2025/02/03/meb84d2vZtnBVHx.png" srcset="/img/loading.gif" lazyload alt="image-20250203195731181"></p>
+<p>分布式事务在多个服务间的协作中非常常见，但它们很容易变得复杂且难以调试。多个微服务之间的事务可能涉及多个服务的交互，传统的方式难以准确跟踪每个事务的状态。在微服务架构中，性能瓶颈可能出现在任何一个环节。当系统响应缓慢时，单独查看某个服务的日志往往不能提供足够的信息来定位瓶颈。</p>
+<h2 id="链路追踪技术选型"><a href="#链路追踪技术选型" class="headerlink" title="链路追踪技术选型"></a>链路追踪技术选型</h2><p>链路追踪的核心是为每个请求生成一个唯一的标识符（如 Trace ID），并将该标识符传播到各个服务之间。每个服务在接收到请求时，会记录下自己的执行信息（如开始时间、结束时间、调用的其他服务等），并将这些信息作为“跨度”（Span）记录下来。最终，链路追踪系统将这些“跨度”数据汇聚起来，形成完整的请求调用链。</p>
+<p><img src="https://s2.loli.net/2025/02/03/481HAmjDlLP2swM.png" srcset="/img/loading.gif" lazyload alt="image-20250203200326969"></p>
+<h2 id="jaeger简单使用"><a href="#jaeger简单使用" class="headerlink" title="jaeger简单使用"></a>jaeger简单使用</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://jaeger-cn.readthedocs.io/zh-cn/latest/">Jaeger Documentation</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/">Jaeger: open source, distributed tracing platform</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/docs/1.18/getting-started/">Getting Started — Jaeger documentation</a></p>
+</blockquote>
+<h1 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h1><h2 id="为什么要限流"><a href="#为什么要限流" class="headerlink" title="为什么要限流"></a>为什么要限流</h2><p>预期外的突发流量总会出现，对系统可承载的容量造成巨大冲击，极端情况下甚至会导致系统雪崩 。</p>
+<blockquote>
+<p>在分布式系统中，如果某个服务节点发生故障或者网络发生异常，都有可能导致调用方被阻塞等待，如果超时时间设置很长，调用方资源很可能被耗尽。这又导致了调用方的上游系统发生资源耗尽的情况，最终导致系统雪崩。</p>
+</blockquote>
+<p>当系统的处理能力有限时，如何阻止计划外的请求继续对系统施压，这便是限流的作用之处 。限流可以帮助我们应对突发流量，通过限制服务的请求率来保护服务不被过载 。除了控制流量，限流还有一个应用目的是用于控制用户行为，避免无用请求，比如频繁地下载系统中的数据表格。</p>
+<blockquote>
+<p>限流一般来说分为客户端限流和服务端限流两类。</p>
+</blockquote>
+<h2 id="客户端限流"><a href="#客户端限流" class="headerlink" title="客户端限流"></a>客户端限流</h2><p>在客户端限流中，由于请求方和被请求方的关系明确，通常采用较为简单的限流策略，如结合分布式限流和固定的限流阈值。</p>
+<p>客户端的限流阈值可被视作被调用方对主调方的配额。</p>
+<p>合理设定限流阈值的方法包括：</p>
+<ol>
+<li><strong>容量评估</strong>：通过单机压测确定服务的单机容量模型，并与下游服务协商以了解他们的限流阈值</li>
+<li><strong>容量规划</strong>：根据日常运行、运营活动和节假日等不同场景，提前进行容量评估和规划</li>
+<li><strong>全链路压测</strong>：通过模拟真实场景的压测，评估现有限流值的合理性</li>
+</ol>
+<p>在限流算法方面，比如:像<strong>滑动窗口、漏桶</strong>和<strong>令牌桶</strong>均是常用的限流算法。</p>
+<blockquote>
+<p>关于这些限流算法的详细信息：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1815254">10张图带你彻底搞懂限流、熔断、服务降级-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p>这些算法各有特点，能有效管理客户端的请求流量，保障系统的稳定运行。</p>
+<p><img src="https://s2.loli.net/2025/02/04/9AbSsc3Rj6VCXzG.png" srcset="/img/loading.gif" lazyload alt="image-20250204161843575"></p>
+<h2 id="服务端限流"><a href="#服务端限流" class="headerlink" title="服务端限流"></a>服务端限流</h2><p>服务端限流旨在通过主动丢弃或延迟处理部分请求，以应对系统过载的情况。</p>
+<p>服务端限流实现的两个关键点：</p>
+<p><strong>1、如何判断系统是否过载</strong></p>
+<p>常用的判断依据包括：</p>
+<ul>
+<li>资源使用率；</li>
+<li>请求成功率；</li>
+<li>响应时间；</li>
+<li>请求排队时间</li>
+</ul>
+<p><strong>2、过载时如何选择要丢弃的请求</strong></p>
+<p>常用的判断依据包括：</p>
+<ul>
+<li>按照主调方（客户端）的重要性来划分优先级；</li>
+<li>根据用户的重要性进行区分。</li>
+</ul>
+<p>关于服务端限流在业界内的实践应用：</p>
+<ul>
+<li>开源的 Sentinel 采用类似 TCP BBR 的限流方法。它基于利特尔法则，计算时间窗口内的最大成功请求数 （MaxPass） 和最小响应时间（MinRt）。当 CPU 使用率超过 80% 时，根据 MaxPass 和 MinRt 计算窗口内理论上可以通过的最大请求量，进而确定每秒的最大请求数。如果当前处理中的请求数超过此计算值，则进行请求丢弃。</li>
+<li>微信后台则使用请求的平均排队时间作为系统过载的判断标准。当平均等待时间超过 20 毫秒时，它会以一定的降速因子来过滤部分请求。相反，如果判断平均等待时间低于 20 毫秒，则会逐渐提高请求的通过率。这种“快速降低，缓慢提升”的策略有助于防止服务的大幅波动。</li>
+</ul>
+<h2 id="限流技术选型"><a href="#限流技术选型" class="headerlink" title="限流技术选型"></a>限流技术选型</h2><p><img src="https://s2.loli.net/2025/02/03/tJgUGp3h4sefdnu.png" srcset="/img/loading.gif" lazyload alt="image-20250203201902616"></p>
+<h3 id="Sentinel简单使用"><a href="#Sentinel简单使用" class="headerlink" title="Sentinel简单使用"></a>Sentinel简单使用</h3><blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D">介绍 · alibaba&#x2F;Sentinel Wiki</a></p>
+<p><a target="_blank" rel="noopener" href="https://sentinelguard.io/zh-cn/index.html">home | Sentinel</a></p>
+</blockquote>
+<h1 id="降级"><a href="#降级" class="headerlink" title="降级"></a>降级</h1><p>降级是从系统功能角度出发，人为或自动地将某些不重要的功能停掉或者简化，以降低系统负载，这部分释放的资源可以去支撑更核心的功能</p>
+<ul>
+<li>目的是为了提升系统的可用性，同时要寻找到用户体验与降级成本的平衡点；</li>
+<li>降级属于有损操作。简而言之，弃卒保帅。</li>
+</ul>
+<h2 id="降级策略"><a href="#降级策略" class="headerlink" title="降级策略"></a>降级策略</h2><p><img src="https://s2.loli.net/2025/02/04/x4t2hPv3N8zrRqE.png" srcset="/img/loading.gif" lazyload alt="image-20250204150521279"></p>
+<p><strong>虽说故障是不可避免的，要达到绝对高可用一般都是使用冗余+自动故障转移，这个时候其实也不需要降级措施了。</strong></p>
+<p>但是这样带来的成本较高，而且可用性、成本、用户体验3者本身之间是需要权衡的，一般来说他们之前会是这样的关系：</p>
+<p><img src="https://s2.loli.net/2025/02/04/rgMUVWtS4ByXIsO.png" srcset="/img/loading.gif" lazyload alt="image-20250204150606583"></p>
+<h2 id="自动降级"><a href="#自动降级" class="headerlink" title="自动降级"></a>自动降级</h2><ul>
+<li>适合触发条件明确可控的场景，比如请求调用失败次数大于一定的阈值，服务接口超时等情况；</li>
+<li>对于一些旁路服务，服务负载过高也可以直接触发自动降级。</li>
+</ul>
+<h3 id="页面降级"><a href="#页面降级" class="headerlink" title="页面降级"></a><strong>页面降级</strong></h3><p>从用户操作页面进行操作，直接限制和截断某功能的入口：</p>
+<p><img src="https://s2.loli.net/2025/02/04/MdhfJgTKXjHR59v.png" srcset="/img/loading.gif" lazyload alt="image-20250204151020172"></p>
+<p>从页面入口对积分链路降级,如上图所示，该业务场景下，是否使用积分，是在页面渲染阶段决定并返回给前段进行页面拼接的。当我们需要对其进行降级时，会通过控制平台进行降级开关切换，系统读到降级开启后，会返回前段积分降级的标识，前端将不再显示积分抵扣入口。即从入口处截断积分链路的执行，达到降级的目的。</p>
+<h3 id="存储降级"><a href="#存储降级" class="headerlink" title="存储降级"></a><strong>存储降级</strong></h3><p>使用缓存方式来降级频繁操作的存储</p>
+<p><img src="https://s2.loli.net/2025/02/04/DromZhUyBNaPSve.png" srcset="/img/loading.gif" lazyload alt="27422-20230615134038437-936904874"></p>
+<p>对于秒杀业务这种写多读少的场景，对DB的压力是非常大的，一般的，我们会采用上图所示的缓存架构，用缓存操作代替DB操作，用异步MQ代替同步接口，也属于一种存储的降级行为。</p>
+<h3 id="读降级"><a href="#读降级" class="headerlink" title="读降级"></a><strong>读降级</strong></h3><p>对于非核心信息的读请求禁用</p>
+<p> 微信的抢红包场景，红包列表的展示属于抢红包的非核心链路，因此，对于列表展示，在业务压力较大的情况下，对头像等信息的读，可以直接禁用。</p>
+<h3 id="写降级"><a href="#写降级" class="headerlink" title="写降级"></a><strong>写降级</strong></h3><p> 直接禁止相关写操作的服务请求</p>
+<p> 总结，一句话概括降级的核心–丢车保帅。以损失部分体验的代价，来换取整个业务链路的稳定性和持续可用。</p>
+<h2 id="手动降级"><a href="#手动降级" class="headerlink" title="手动降级"></a>手动降级</h2><ul>
+<li>降级操作都是有损的，部分情况下需要根据对业务的影响程度进行手动降级；</li>
+<li>通常需要先制定降级的分级策略，影响面由浅至深。</li>
+</ul>
+<hr>
+<p><img src="https://s2.loli.net/2025/02/04/fDZgTpetK6hlMmH.png" srcset="/img/loading.gif" lazyload alt="image-20250204150722082"></p>
+<p>降级的策略还是比较丰富的，因此需要从多个角度去化简</p>
+<ul>
+<li>首先，将一部分判断条件简单的降级通过自动化手段去实现；</li>
+<li>其次，根据对业务的影响程度，对降级进行分级，达到有层次的降级效果；</li>
+<li>最后，通过高频演练，确保降级的有效性。</li>
+</ul>
+<h2 id="与限流的区别"><a href="#与限流的区别" class="headerlink" title="与限流的区别"></a>与限流的区别</h2><ul>
+<li><strong>降级依靠牺牲一部分功能或体验保住容量，而限流则是依靠牺牲一部分流量来保住容量。</strong></li>
+<li>一般来说，限流的通用性会更强一些，因为每个服务理论上都可以设置限流，<strong>但并不是每个服务都能降级</strong>，比如系统中的登录服务和用户服务，就不可能被降级（没有这两个服务，用户都没法使用系统了）。</li>
+</ul>
+<h1 id="熔断"><a href="#熔断" class="headerlink" title="熔断"></a>熔断</h1><h2 id="服务雪崩效应"><a href="#服务雪崩效应" class="headerlink" title="服务雪崩效应"></a>服务雪崩效应</h2><ul>
+<li>原因：由于延时或负载过高等导致请求积压，占用大量系统资源，服务器达到性能瓶颈，服务提供者不可用</li>
+<li>现象：上游服务故障导致下游服务瘫痪，出现连锁故障</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/04/iAOQPLrGKou2RHZ.png" srcset="/img/loading.gif" lazyload alt="image-20250204151701452"></p>
+<p>熔断器像是一个保险丝。当我们依赖的服务出现问题时，可以及时容错。<br>一方面可以减少依赖服务对自身访问的依赖，防止出现雪崩效应；<br>另一方面降低请求频率以方便上游尽快恢复服务。</p>
+<blockquote>
+<p>熔断机制之所以被我赋予大局观的美称，是因为其所要解决的问题是级联故障和服务雪崩！</p>
+</blockquote>
+<p>在分布式的环境下，异常是常态。如上图所示，当服务C出现调用异常时，会在服务B中出现大量的请求超时和调用延迟。这些调用也是需要占用系统资源的，当大量请求积压，服务B的线程池等资源也会随之耗尽，最终导致整个服务链路的雪崩都是有可能的。因此，当服务C出现异常时，对服务C的调用适当暂停，同时不断监测其接口是否恢复，对于整个链路的健康非常有必要的，上述针对C的处理过程就是熔断。</p>
+<h2 id="传统熔断器"><a href="#传统熔断器" class="headerlink" title="传统熔断器"></a><strong>传统熔断器</strong></h2><p>当请求失败比率达到一定阈值之后，熔断器开启，并休眠一段时间（由配置决定）。这段休眠期过后，熔断器将处于半开状态，在此状态下将试探性地放过一部分流量，如果这部分流量调用成功后，再次将熔断器关闭，否则熔断器继续保持开启并进入下一轮休眠周期。</p>
+<p>引入传统熔断器的请求时序图：</p>
+<p><img src="https://s2.loli.net/2025/02/04/Q8IhwNxu54PGcAg.png" srcset="/img/loading.gif" lazyload alt="29484b12e0192f9ba21f06bc4d9aeb35"></p>
+<p>传统熔断器实现 关闭、打开、半开 三个状态；</p>
+<ul>
+<li><p>关闭（Closed）：默认状态。允许请求到达目标服务，同时统计在窗口时间内的成功和失败次数，如果达到错误率阈值将会切换为“打开”状态；</p>
+</li>
+<li><p>打开（Open）：对应用的请求会立即返回错误响应或执行预设的失败降级逻辑，而不调用目标服务；</p>
+</li>
+<li><p>半开（Half-Open）：进入“打开”状态会维护一个超时时间，到达超时时间后开始进入该状态，允许应用程序一定数量的请求去调用目标服务。</p>
+<ul>
+<li>熔断器会对成功执行的调用进行计数，达到配置的阈值后会认为目标服务恢复正常，此时熔断器回到“关闭”状态；</li>
+<li>如果有请求出现失败的情况，则回到“打开”状态，并重新启动超时计时器，再给系统一段时间来从故障中恢复。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/04/XWbQB58LUcixvFE.png" srcset="/img/loading.gif" lazyload alt="image-20250204152256299"></p>
+</li>
+<li><p>当进入 Open 状态时会拒绝所有请求；进入 Closed 状态时瞬间会有大量请求，这时服务端可能还没有完全恢复，会导致熔断器又切换到 Open 状态；而 Half-Open 状态存在的目的在于实现了服务的自我修复，同时防止正在恢复的服务再次被大量打垮；</p>
+</li>
+<li><p>所以传统熔断器在实现上过于一刀切，是一种比较刚性的熔断策略。</p>
+</li>
+</ul>
+<h2 id="熔断与限流的区别"><a href="#熔断与限流的区别" class="headerlink" title="熔断与限流的区别"></a>熔断与限流的区别</h2><p>限速器(limiter)可以限制接口自身被调的频率熔断器可监控所调用的服务的失败、超时情况，当依赖的上游服务失败过高时，熔断器开启，不再调用上游服务，转向降级策略，从而避免雪崩。它们最大的区别在于限流主要在server实现，而熔断主要在client实现</p>
+<blockquote>
+<p>熔断本质上是一种快速失败策略。旨在通过及时中断失败或超时的操作，防止资源过度消耗和请求堆积，从而<strong>避免服务因小问题而引发的雪崩效应。</strong></p>
+</blockquote>
+<h1 id="限流-降级-熔断技术选型"><a href="#限流-降级-熔断技术选型" class="headerlink" title="限流&#x2F;降级&#x2F;熔断技术选型"></a>限流&#x2F;降级&#x2F;熔断技术选型</h1><h1 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h1><p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2374938">熔断、隔离、重试、降级、超时、限流，高可用架构流量治理核心策略全掌握-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/88223100/p/Detailed-explanation-of-degradation-current-limiting-and-fusing.html">高并发整体可用性：一文详解降级、限流和熔断 - 古道轻风 - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">互联网全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/" class="category-chain-item">后端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="category-chain-item">微服务</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="print-no-link">#软件工程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>链路追踪、限流、熔断、降级</div>
+      <div>https://hermes37.vercel.app/2025/05/09/互联网全栈开发/后端/微服务/链路追踪、限流、熔断、降级/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/api%E7%BD%91%E5%85%B3%E5%92%8C%E9%83%A8%E7%BD%B2/" title="api网关和部署">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">api网关和部署</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E5%B9%82%E7%AD%89%E4%B8%8E%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF/" title="幂等与延迟消息">
+                        <span class="hidden-mobile">幂等与延迟消息</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

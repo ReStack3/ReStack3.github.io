@@ -1,0 +1,860 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="引入相信在个人开发过程中，很多独立开发者最头疼的往往不是敲代码的过程，而是事无巨细配置环境的过程，尤其是看一眼阿里云那繁杂的页面。到底有什么方法可以较为轻松的自动配置需要的机器？并且还能自动化安装配置我们需要的代码运行环境？带着这样的需求，Ansible 和 Terraform应运而生。  Ansible 是一个自动化运维工具，通过 SSH 连接服务器，用声明式的 YAML 脚本（Playbook">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基础设施即代码">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/03/21/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/DevOps/%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%8D%B3%E4%BB%A3%E7%A0%81/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="引入相信在个人开发过程中，很多独立开发者最头疼的往往不是敲代码的过程，而是事无巨细配置环境的过程，尤其是看一眼阿里云那繁杂的页面。到底有什么方法可以较为轻松的自动配置需要的机器？并且还能自动化安装配置我们需要的代码运行环境？带着这样的需求，Ansible 和 Terraform应运而生。  Ansible 是一个自动化运维工具，通过 SSH 连接服务器，用声明式的 YAML 脚本（Playbook">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-21T03:17:53.956Z">
+<meta property="article:modified_time" content="2026-04-25T07:53:18.170Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>基础设施即代码 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="基础设施即代码"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">基础设施即代码</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h1><p>相信在个人开发过程中，很多独立开发者最头疼的往往不是敲代码的过程，而是事无巨细配置环境的过程，尤其是看一眼阿里云那繁杂的页面。到底有什么方法可以较为轻松的自动配置需要的机器？并且还能自动化安装配置我们需要的代码运行环境？带着这样的需求，Ansible 和 Terraform应运而生。</p>
+<ol>
+<li><strong>Ansible 是一个自动化运维工具，通过 SSH 连接服务器，用声明式的 YAML 脚本（Playbook）批量完成软件安装、配置管理、应用部署等“配置类”任务，强调“无代理”架构和操作的幂等性；</strong></li>
+<li><strong>Terraform 是一个基础设施即代码工具，通过声明式的 HCL 配置定义云资源（如服务器、网络、数据库），并调用云厂商 API 完成资源的“创建与编排”，强调资源生命周期管理和状态追踪。</strong></li>
+</ol>
+<p><strong>简单来说，Ansible 负责“在已有服务器上配置环境”，Terraform 负责“创建和管理服务器本身”。</strong></p>
+<p>比如上云：</p>
+<ul>
+<li>创建 VPC —— Terraform</li>
+<li>创建子网、路由表 —— Terraform</li>
+<li>创建 ECS 虚机 —— Terraform</li>
+<li>给虚机装 Nginx、改配置、发版本 —— Ansible</li>
+<li>做系统巡检、批量改参数 —— Ansible</li>
+</ul>
+<p>这俩不是互相替代，是互相补位。</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>类型</th>
+<th>主要功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Terraform</strong></td>
+<td><strong>编排&#x2F; provisioning</strong></td>
+<td>创建和管理基础设施（服务器、数据库、网络等）</td>
+</tr>
+<tr>
+<td><strong>Ansible</strong></td>
+<td><strong>配置管理&#x2F; configuration</strong></td>
+<td>在已有服务器上安装软件、配置文件、部署应用</td>
+</tr>
+</tbody></table>
+<p>其他常见 IaC 工具对比：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>类型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Terraform</strong></td>
+<td>基础设施编排</td>
+<td>多云支持，状态管理，生态丰富</td>
+</tr>
+<tr>
+<td><strong>Ansible</strong></td>
+<td>配置管理</td>
+<td>无代理，基于 SSH，简单易学</td>
+</tr>
+<tr>
+<td><strong>Pulumi</strong></td>
+<td>基础设施编排</td>
+<td>用编程语言（Python&#x2F;TS&#x2F;Go）写 IaC</td>
+</tr>
+<tr>
+<td><strong>CloudFormation</strong></td>
+<td>基础设施编排</td>
+<td>AWS 原生，仅支持 AWS</td>
+</tr>
+<tr>
+<td><strong>Chef&#x2F;Puppet</strong></td>
+<td>配置管理</td>
+<td>更复杂的配置管理，需要代理</td>
+</tr>
+<tr>
+<td><strong>Kubernetes</strong></td>
+<td>容器编排</td>
+<td>管理容器化应用，也可做 IaC</td>
+</tr>
+</tbody></table>
+<p>这也是基础设施即代码（Infrastructure as Code，IaC）概念的由来：用代码（配置文件）来管理服务器、网络、数据库等基础设施<strong>优势</strong>：版本控制、可重复、自动化、减少人为错误。</p>
+<p>接下来进行以此讲解：</p>
+<h1 id="Terraform"><a href="#Terraform" class="headerlink" title="Terraform"></a>Terraform</h1><blockquote>
+<p><strong>基础设施编排工具</strong>，用于在云平台（AWS、阿里云、Azure）上创建资源。</p>
+<p><a target="_blank" rel="noopener" href="https://developer.hashicorp.com/terraform">Terraform | HashiCorp Developer</a></p>
+</blockquote>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">写配置文件（<span class="hljs-string">.tf</span>）→ Terraform 执行 → 云平台创建资源<br></code></pre></td></tr></table></figure>
+
+<p>示例：在阿里云创建一台 ECS</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs hcl"># main.tf<br>terraform &#123;<br>  required_providers &#123;<br>    alicloud = &#123;<br>      source = &quot;aliyun/alicloud&quot;<br>    &#125;<br>  &#125;<br>&#125;<br><br># 配置阿里云 Provider<br>provider &quot;alicloud&quot; &#123;<br>  access_key = var.access_key<br>  secret_key = var.secret_key<br>  region     = &quot;cn-hangzhou&quot;<br>&#125;<br><br># 创建 VPC<br>resource &quot;alicloud_vpc&quot; &quot;main&quot; &#123;<br>  vpc_name   = &quot;my-vpc&quot;<br>  cidr_block = &quot;10.0.0.0/16&quot;<br>&#125;<br><br># 创建交换机<br>resource &quot;alicloud_vswitch&quot; &quot;main&quot; &#123;<br>  vpc_id       = alicloud_vpc.main.id<br>  cidr_block   = &quot;10.0.1.0/24&quot;<br>  zone_id      = &quot;cn-hangzhou-g&quot;<br>&#125;<br><br># 创建安全组<br>resource &quot;alicloud_security_group&quot; &quot;main&quot; &#123;<br>  vpc_id = alicloud_vpc.main.id<br>&#125;<br><br># 创建 ECS 实例<br>resource &quot;alicloud_instance&quot; &quot;web&quot; &#123;<br>  instance_name        = &quot;web-server&quot;<br>  image_id             = &quot;ubuntu_20_04_x64_20G_alibase_20230727.vhd&quot;<br>  instance_type        = &quot;ecs.n4.small&quot;<br>  vswitch_id           = alicloud_vswitch.main.id<br>  security_groups      = [alicloud_security_group.main.id]<br>  internet_charge_type = &quot;PayByTraffic&quot;<br>  <br>  tags = &#123;<br>    Environment = &quot;production&quot;<br>    Project     = &quot;my-app&quot;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>常用命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">terraform init      <span class="hljs-comment"># 初始化</span><br>terraform plan      <span class="hljs-comment"># 预览将要创建的资源</span><br>terraform apply     <span class="hljs-comment"># 创建/更新资源</span><br>terraform destroy   <span class="hljs-comment"># 删除所有资源</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="Ansible"><a href="#Ansible" class="headerlink" title="Ansible"></a>Ansible</h1><blockquote>
+<p><strong>配置管理工具</strong>，在已创建的服务器上自动化安装软件、配置服务、部署应用。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.ansible.org.cn/ansible/latest/getting_started/index.html">Ansible 快速入门 — Ansible 社区文档</a></p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">写 Playbook（YAML）→ Ansible 执行 → SSH 连接服务器 → 执行配置<br></code></pre></td></tr></table></figure>
+
+<p>示例：配置 Web 服务器：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># playbook.yml</span><br><span class="hljs-meta">---</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">配置</span> <span class="hljs-string">Web</span> <span class="hljs-string">服务器</span><br>  <span class="hljs-attr">hosts:</span> <span class="hljs-string">webservers</span>  <span class="hljs-comment"># 目标服务器组</span><br>  <span class="hljs-attr">become:</span> <span class="hljs-literal">yes</span>        <span class="hljs-comment"># 使用 sudo</span><br>  <span class="hljs-attr">tasks:</span><br>    <span class="hljs-comment"># 1. 更新 apt 缓存</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">更新</span> <span class="hljs-string">apt</span> <span class="hljs-string">缓存</span><br>      <span class="hljs-attr">apt:</span><br>        <span class="hljs-attr">update_cache:</span> <span class="hljs-literal">yes</span><br>        <br>    <span class="hljs-comment"># 2. 安装 Nginx</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">安装</span> <span class="hljs-string">Nginx</span><br>      <span class="hljs-attr">apt:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>        <span class="hljs-attr">state:</span> <span class="hljs-string">present</span><br>        <br>    <span class="hljs-comment"># 3. 启动 Nginx 服务</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">启动</span> <span class="hljs-string">Nginx</span><br>      <span class="hljs-attr">service:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>        <span class="hljs-attr">state:</span> <span class="hljs-string">started</span><br>        <span class="hljs-attr">enabled:</span> <span class="hljs-literal">yes</span><br>        <br>    <span class="hljs-comment"># 4. 部署配置文件</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">复制</span> <span class="hljs-string">Nginx</span> <span class="hljs-string">配置</span><br>      <span class="hljs-attr">copy:</span><br>        <span class="hljs-attr">src:</span> <span class="hljs-string">./nginx.conf</span><br>        <span class="hljs-attr">dest:</span> <span class="hljs-string">/etc/nginx/nginx.conf</span><br>      <span class="hljs-attr">notify:</span> <span class="hljs-string">重启</span> <span class="hljs-string">Nginx</span><br>        <br>    <span class="hljs-comment"># 5. 部署应用代码</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">拉取最新代码</span><br>      <span class="hljs-attr">git:</span><br>        <span class="hljs-attr">repo:</span> <span class="hljs-string">https://github.com/myapp.git</span><br>        <span class="hljs-attr">dest:</span> <span class="hljs-string">/var/www/myapp</span><br>        <span class="hljs-attr">version:</span> <span class="hljs-string">main</span><br>        <br>  <span class="hljs-attr">handlers:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">重启</span> <span class="hljs-string">Nginx</span><br>      <span class="hljs-attr">service:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>        <span class="hljs-attr">state:</span> <span class="hljs-string">restarted</span><br></code></pre></td></tr></table></figure>
+
+<p>主机清单文件：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-comment"># inventory.ini</span><br><span class="hljs-section">[webservers]</span><br>web1.example.com <span class="hljs-attr">ansible_user</span>=root<br>web2.example.com <span class="hljs-attr">ansible_user</span>=root<br><br><span class="hljs-section">[dbservers]</span><br>db1.example.com <span class="hljs-attr">ansible_user</span>=ubuntu<br></code></pre></td></tr></table></figure>
+
+<p>常用命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">ansible all -i inventory.ini -m ping  <span class="hljs-comment"># 测试连接</span><br>ansible-playbook -i inventory.ini playbook.yml  <span class="hljs-comment"># 执行 playbook</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>Terraform</th>
+<th>Ansible</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主要用途</strong></td>
+<td>创建基础设施（服务器、网络、数据库）</td>
+<td>配置已存在的服务器（安装软件、部署应用）</td>
+</tr>
+<tr>
+<td><strong>工作方式</strong></td>
+<td>声明式（描述期望状态）</td>
+<td>过程式&#x2F;声明式结合</td>
+</tr>
+<tr>
+<td><strong>状态管理</strong></td>
+<td>有状态文件（terraform.tfstate）</td>
+<td>无状态（每次运行独立）</td>
+</tr>
+<tr>
+<td><strong>执行方式</strong></td>
+<td>创建&#x2F;更新&#x2F;删除资源</td>
+<td>SSH 连接执行任务</td>
+</tr>
+<tr>
+<td><strong>语言</strong></td>
+<td>HCL（HashiCorp Configuration Language）</td>
+<td>YAML</td>
+</tr>
+<tr>
+<td><strong>学习曲线</strong></td>
+<td>中等</td>
+<td>较低</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>云资源管理</td>
+<td>服务器配置、应用部署</td>
+</tr>
+</tbody></table>
+<p>如果我们要部署一个完整的 Web 应用：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> Terraform 创建基础设施<br>   ├── 创建 VPC、子网<br>   ├── 创建 ECS 服务器<br>   ├── 创建 RDS 数据库<br>   └── 创建负载均衡器<br><br><span class="hljs-bullet">2.</span> Ansible 配置服务器<br>   ├── 安装 Docker/Nginx<br>   ├── 部署应用代码<br>   ├── 配置环境变量<br>   └── 启动服务<br></code></pre></td></tr></table></figure>
+
+<p>可以看出：</p>
+<ul>
+<li><strong>Terraform</strong> &#x3D; 云资源的”建设工头”（买服务器、拉网线、通电）</li>
+<li><strong>Ansible</strong> &#x3D; 服务器的”装修师傅”（装系统、安软件、配服务）</li>
+</ul>
+<p>两者配合使用，实现完整的<strong>基础设施自动化</strong>。</p>
+<p>实际代码：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 1. 用 Terraform 创建服务器</span><br>terraform apply -auto-approve<br><span class="hljs-comment"># 输出：服务器 IP 地址</span><br><br><span class="hljs-comment"># 2. 将 IP 地址传递给 Ansible</span><br>terraform output -json | jq <span class="hljs-string">&#x27;.[]&#x27;</span> &gt; inventory.json<br><br><span class="hljs-comment"># 3. 用 Ansible 配置服务器</span><br>ansible-playbook -i inventory.json playbook.yml<br></code></pre></td></tr></table></figure>
+
+<p>同时我们可以将这个配置设置过程集合在前面讲解过的CI&#x2F;CD自动化流水线中，集成示例（单个工作流）</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># .github/workflows/deploy.yml</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">Deploy</span> <span class="hljs-string">Infrastructure</span><br><br><span class="hljs-attr">on:</span><br>  <span class="hljs-attr">push:</span><br>    <span class="hljs-attr">branches:</span> [<span class="hljs-string">main</span>]<br><br><span class="hljs-attr">jobs:</span><br>  <span class="hljs-attr">deploy:</span><br>    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-latest</span><br>    <span class="hljs-attr">steps:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v4</span><br>      <br>      <span class="hljs-comment"># Terraform 创建资源</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Terraform</span> <span class="hljs-string">Apply</span><br>        <span class="hljs-attr">uses:</span> <span class="hljs-string">hashicorp/terraform@v1</span><br>        <span class="hljs-attr">with:</span><br>          <span class="hljs-attr">args:</span> <span class="hljs-string">apply</span> <span class="hljs-string">-auto-approve</span><br>        <span class="hljs-attr">env:</span><br>          <span class="hljs-attr">ALICLOUD_ACCESS_KEY:</span> <span class="hljs-string">$&#123;&#123;</span> <span class="hljs-string">secrets.ALICLOUD_ACCESS_KEY</span> <span class="hljs-string">&#125;&#125;</span><br>          <span class="hljs-attr">ALICLOUD_SECRET_KEY:</span> <span class="hljs-string">$&#123;&#123;</span> <span class="hljs-string">secrets.ALICLOUD_SECRET_KEY</span> <span class="hljs-string">&#125;&#125;</span><br>      <br>      <span class="hljs-comment"># 提取服务器 IP</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Get</span> <span class="hljs-string">Server</span> <span class="hljs-string">IP</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          terraform output -json &gt; inventory.json</span><br><span class="hljs-string"></span>      <br>      <span class="hljs-comment"># Ansible 配置服务器</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Ansible</span> <span class="hljs-string">Playbook</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br>          <span class="hljs-string">ansible-playbook</span> <span class="hljs-string">-i</span> <span class="hljs-string">inventory.json</span> <span class="hljs-string">playbook.yml</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="实际应用场景"><a href="#实际应用场景" class="headerlink" title="实际应用场景"></a>实际应用场景</h2><h3 id="场景-1：初创公司快速搭建环境"><a href="#场景-1：初创公司快速搭建环境" class="headerlink" title="场景 1：初创公司快速搭建环境"></a>场景 1：初创公司快速搭建环境</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs hcl"># Terraform 创建资源<br>resource &quot;alicloud_instance&quot; &quot;app&quot; &#123;<br>  count = 3<br>  # 创建 3 台应用服务器<br>&#125;<br><br>resource &quot;alicloud_db_instance&quot; &quot;db&quot; &#123;<br>  # 创建 RDS 数据库<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="场景-2：生产环境配置管理"><a href="#场景-2：生产环境配置管理" class="headerlink" title="场景 2：生产环境配置管理"></a>场景 2：生产环境配置管理</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># Ansible 确保所有服务器配置一致</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">统一服务器配置</span><br>  <span class="hljs-attr">hosts:</span> <span class="hljs-string">all</span><br>  <span class="hljs-attr">tasks:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">设置时区为</span> <span class="hljs-string">Asia/Shanghai</span><br>      <span class="hljs-attr">timezone:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">Asia/Shanghai</span><br>    <br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">安装监控</span> <span class="hljs-string">Agent</span><br>      <span class="hljs-attr">yum:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">datadog-agent</span><br>        <span class="hljs-attr">state:</span> <span class="hljs-string">present</span><br>    <br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">配置防火墙规则</span><br>      <span class="hljs-attr">iptables:</span><br>        <span class="hljs-attr">chain:</span> <span class="hljs-string">INPUT</span><br>        <span class="hljs-attr">protocol:</span> <span class="hljs-string">tcp</span><br>        <span class="hljs-attr">destination_port:</span> <span class="hljs-number">22</span><br>        <span class="hljs-attr">jump:</span> <span class="hljs-string">ACCEPT</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="场景-3：多云部署"><a href="#场景-3：多云部署" class="headerlink" title="场景 3：多云部署"></a>场景 3：多云部署</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs hcl"># 同时部署到阿里云和 AWS<br>provider &quot;alicloud&quot; &#123;<br>  region = &quot;cn-hangzhou&quot;<br>&#125;<br><br>provider &quot;aws&quot; &#123;<br>  region = &quot;us-east-1&quot;<br>&#125;<br><br>resource &quot;alicloud_instance&quot; &quot;china&quot; &#123;<br>  # 阿里云服务器<br>&#125;<br><br>resource &quot;aws_instance&quot; &quot;global&quot; &#123;<br>  # AWS 服务器<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">互联网全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/DevOps/" class="category-chain-item">DevOps</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>基础设施即代码</div>
+      <div>https://hermes37.vercel.app/2026/03/21/互联网全栈开发/运维/DevOps/基础设施即代码/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/03/21/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/DevOps/CICD%E6%B5%81%E6%B0%B4%E7%BA%BF/" title="CICD流水线">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CICD流水线</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/03/21/%E9%87%8F%E5%8C%96%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/playwright%E4%BD%BF%E7%94%A8/" title="playwright使用">
+                        <span class="hidden-mobile">playwright使用</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
