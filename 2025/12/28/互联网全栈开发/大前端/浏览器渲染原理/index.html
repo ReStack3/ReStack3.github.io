@@ -1,0 +1,997 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="浏览器的渲染原理是指浏览器将 HTML、CSS 和 JavaScript 转换成用户可视界面的过程，这一过程涉及多个关键步骤，通常称为 “关键渲染路径”。渲染进程的主要任务就是将静态资源转化为可视化界面  渲染引擎主要模块一个渲染引擎主要包括：HTML 解析器，CSS 解析器，javascript 引擎，布局 layout 模块，绘图模块；  HTML 解析器：解释 HTML 文档的解析器，主">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器渲染原理">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/12/28/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E5%8E%9F%E7%90%86/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="浏览器的渲染原理是指浏览器将 HTML、CSS 和 JavaScript 转换成用户可视界面的过程，这一过程涉及多个关键步骤，通常称为 “关键渲染路径”。渲染进程的主要任务就是将静态资源转化为可视化界面  渲染引擎主要模块一个渲染引擎主要包括：HTML 解析器，CSS 解析器，javascript 引擎，布局 layout 模块，绘图模块；  HTML 解析器：解释 HTML 文档的解析器，主">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/85ec1626711c45b7be4b51cc0191eab6.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/f9efcb85b231ced13926c1d13ecf340c.png">
+<meta property="og:image" content="https://segmentfault.com/img/remote/1460000042909361">
+<meta property="og:image" content="https://segmentfault.com/img/remote/1460000042909362">
+<meta property="og:image" content="https://segmentfault.com/img/remote/1460000042909363">
+<meta property="article:published_time" content="2025-12-28T05:43:00.436Z">
+<meta property="article:modified_time" content="2026-05-15T10:25:54.723Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/85ec1626711c45b7be4b51cc0191eab6.png">
+  
+  
+  
+  <title>浏览器渲染原理 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="浏览器渲染原理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          37 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">浏览器渲染原理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://img-blog.csdnimg.cn/85ec1626711c45b7be4b51cc0191eab6.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>浏览器的渲染原理是指浏览器将 <strong>HTML、CSS 和 JavaScript</strong> 转换成用户可视界面的过程，这一过程涉及多个关键步骤，通常称为 “关键渲染路径”。渲染进程的主要任务就是<strong>将静态资源转化为可视化界面</strong></p>
+</blockquote>
+<h1 id="渲染引擎主要模块"><a href="#渲染引擎主要模块" class="headerlink" title="渲染引擎主要模块"></a>渲染引擎主要模块</h1><p>一个渲染引擎主要包括：<code>HTML</code> 解析器，<code>CSS</code> 解析器，<code>javascript</code> 引擎，布局 <code>layout</code> 模块，绘图模块；</p>
+<ul>
+<li><code>HTML</code> 解析器：解释 HTML 文档的解析器，主要作用是将 HTML 文本解释成 DOM 树；</li>
+<li><code>CSS</code> 解析器：它的作用是为 DOM 中的各个元素对象计算出样式信息，为布局提供基础设施；</li>
+<li><code>Javascript</code> 引擎：使用 Javascript 代码可以修改网页的内容，也能修改 css 的信息，javascript 引擎能够解释 javascript 代码，并通过 DOM 接口和 CSS 树接口来修改网页内容和样式信息，从而改变渲染的结果</li>
+<li>布局 (<code>layout</code>)：在 DOM 创建之后，Webkit 需要将其中的元素对象同样式信息结合起来，计算他们的大小位置等布局信息，形成一个能表达这所有信息的内部表示模型</li>
+<li>绘图模块 (<code>paint</code>)：使用图形库将布局计算后的各个网页的节点绘制成图像结果</li>
+</ul>
+<h1 id="DOM树构建"><a href="#DOM树构建" class="headerlink" title="DOM树构建"></a><strong>DOM树构建</strong></h1><p>HTML文档本质上是<strong>线性文本流</strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>页面<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>内容<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>浏览器需要将其转换为<strong>有层级的树形结构</strong>才能：</p>
+<ul>
+<li>理解标签之间的父子、兄弟关系</li>
+<li>正确应用CSS的层叠和继承规则</li>
+<li>计算元素的布局位置</li>
+<li>从页面的视角来看，DOM 是生成页面的基础数据结构；</li>
+<li>从 JavaScript 脚本视角来看，DOM 提供给 JavaScript 脚本操作的接口，通过这套接口，JavaScript 可以对 DOM 结构进行访问，从而改变文档的结构、样式和内容；</li>
+<li>从安全视角来看，DOM 是一道安全防护线，一些不安全的内容在 DOM 解析阶段会被拒之门外。</li>
+</ul>
+<p>所以需要将HTML转化为浏览器能够理解的结构——DOM树。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/f9efcb85b231ced13926c1d13ecf340c.png" srcset="/img/loading.gif" lazyload></p>
+<table>
+<thead>
+<tr>
+<th align="left">对比维度</th>
+<th align="left"><strong>没有DOM树</strong></th>
+<th align="left"><strong>有DOM树</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>结构理解</strong></td>
+<td align="left">只能看到字符序列</td>
+<td align="left">理解嵌套层级关系</td>
+</tr>
+<tr>
+<td align="left"><strong>元素定位</strong></td>
+<td align="left">基于字符串搜索（易错）</td>
+<td align="left">基于层级关系精确定位</td>
+</tr>
+<tr>
+<td align="left"><strong>样式应用</strong></td>
+<td align="left">无法计算继承和层叠</td>
+<td align="left">支持完整的CSS规则</td>
+</tr>
+<tr>
+<td align="left"><strong>动态更新</strong></td>
+<td align="left">重新解析整个文档</td>
+<td align="left">局部更新，高效增量渲染</td>
+</tr>
+<tr>
+<td align="left"><strong>事件系统</strong></td>
+<td align="left">只能页面级事件</td>
+<td align="left">支持精确的事件委托和传播</td>
+</tr>
+</tbody></table>
+<p>在页面中，每个HTML标签都会被浏览器解析成文档对象。HTML本质上就是一个嵌套结构，在解析时会把每个文档对象用一个树形结构组织起来，所有的文档对象都会挂在document上，这种组织方式就是HTML最基础的结构——<strong>文档对象模型（DOM）</strong>，这棵树的每个文档对象就叫做DOM节点。</p>
+<p>所以输入HTML 文档（字节流）。<strong>过程</strong>：</p>
+<ul>
+<li><strong>字节 → 字符</strong>：浏览器将原始字节解码为可读字符。</li>
+<li><strong>词法分析（Tokenizing）</strong>：将字符转换为标记（Tokens，如 <code>&lt;html&gt;</code>、<code>&lt;div&gt;</code>）。</li>
+<li><strong>语法分析（DOM Tree Construction）</strong>：根据标记的嵌套关系构建 <strong>DOM 树</strong>（Document Object Model）。</li>
+</ul>
+<blockquote>
+<p><strong>注意</strong>：遇到 <code>&lt;script&gt;</code> 会阻塞 DOM 解析（除非标记 <code>async</code> 或 <code>defer</code>）。遇到 <code>&lt;link rel=&quot;stylesheet&quot;&gt;</code> 会并行下载 CSS，但会阻塞渲染（避免 FOUC）。</p>
+</blockquote>
+<p><img src="https://segmentfault.com/img/remote/1460000042909361" srcset="/img/loading.gif" lazyload></p>
+<p>上面已经基本了解了DOM的构建过程，但是这个DOM结构只包含节点，并不包含任何的样式信息。下面就来看看，浏览器是如何把CSS样式应用到DOM节点上的。</p>
+<h2 id="JavaScript对DOM的影响"><a href="#JavaScript对DOM的影响" class="headerlink" title="JavaScript对DOM的影响"></a><strong>JavaScript对DOM的影响</strong></h2><p>JavaScript对DOM的影响主要体现在<strong>解析和渲染过程中的阻塞行为上</strong>。当HTML解析器遇到script标签时，无论是内联脚本还是外部脚本，都会暂停DOM的解析。这是因为JavaScript代码可能会修改已经生成的DOM结构，所以解析器需要等待脚本执行完成后再继续解析后续内容，以确保DOM的正确性。</p>
+<ul>
+<li>对于内联脚本，解析器会直接执行脚本内容；</li>
+<li>对于外部脚本，则需要先下载文件。脚本的下载过程同样会阻塞DOM解析，这可能会显著延长页面加载时间，尤其是当网络环境较差或脚本文件较大时。为了优化性能，可以通过CDN加速、压缩脚本文件等方式来减少下载时间。</li>
+</ul>
+<p>如果脚本中没有操作DOM的代码，可以通过为script标签<strong>添加async或defer属性来实现异步加载</strong>，从而避免阻塞。</p>
+<ul>
+<li>async属性允许脚本在下载完成后立即执行，但多个async脚本无法保证执行顺序；</li>
+<li>defer属性则确保脚本在文档解析完成后按顺序执行，同时脚本的下载过程与文档解析并行进行，这样不会阻塞DOM的构建。</li>
+</ul>
+<p>除了对DOM的直接影响，JavaScript的执行还可能受到CSS样式文件的阻塞。如果页面中存在外部CSS文件，渲染引擎在执行JavaScript之前需要等待CSS文件下载并解析完成，生成CSSOM对象。这是因为JavaScript代码可能会操作CSSOM，而引擎无法预先判断，因此会保守地等待所有样式就绪。这种依赖关系可能导致更长的延迟，特别是在样式文件较大或网络较慢的情况下。</p>
+<p>总的来说，JavaScript会阻塞DOM的解析，而CSS样式文件又会阻塞JavaScript的执行，这种连锁反应可能显著影响页面的加载速度。在开发中，合理使用异步加载、可以优化资源顺序和减少不必要的阻塞</p>
+<h1 id="CSSOM树构建"><a href="#CSSOM树构建" class="headerlink" title="CSSOM树构建"></a><strong>CSSOM树构建</strong></h1><p>同样，浏览器也是无法直接理解CSS代码的，需要将其浏览器可以理解的CSSOM树。实际上。浏览器在构建 DOM 树的同时，如果样式也加载完成了，那么 CSSOM 树也会同步构建。CSSOM 树和 DOM 树类似，它主要有两个作用：</p>
+<ul>
+<li>提供给 JavaScript 操作样式的能力；</li>
+<li>为渲染树的合成提供基础的样式信息。</li>
+</ul>
+<p>**CSSOM树是样式系统的”大脑”**，它：</p>
+<ol>
+<li><strong>将声明式CSS转换为可计算模型</strong> → 支持复杂的样式计算</li>
+<li><strong>建立样式层叠和继承规则</strong> → 实现CSS的核心特性</li>
+<li><strong>提供样式查询和操作接口</strong> → 支持动态样式和主题切换</li>
+<li><strong>与DOM树协同构建渲染树</strong> → 决定最终视觉效果</li>
+<li><strong>实现响应式和条件样式</strong> → 支持现代网页设计需求</li>
+</ol>
+<p>不过，CSSOM 树和 DOM 树是独立的两个数据结构，它们并没有一一对应关系。DOM 树描述的是 HTML 标签的层级关系，CSSOM 树描述的是<strong>选择器之间</strong>的层级关系。可以在浏览器的控制台，通过<code>document.styleSheets</code>命令来查看CSSOM树。</p>
+<p><strong>输入</strong>的是CSS 文件或 <code>&lt;style&gt;</code> 内容。<strong>过程</strong>：</p>
+<ul>
+<li>类似 HTML 解析，生成 <strong>CSSOM 树</strong>（CSS Object Model）。</li>
+<li>CSS 规则是<strong>层叠的</strong>，浏览器需计算最终的样式（如 <code>font-size</code> 的继承与覆盖）。</li>
+</ul>
+<p><img src="https://segmentfault.com/img/remote/1460000042909362" srcset="/img/loading.gif" lazyload></p>
+<p>*特点<strong>：CSSOM 的构建是</strong>渲染阻塞**的（浏览器会等待所有 CSS 解析完成才渲染页面）。</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>特性</strong></th>
+<th align="left"><strong>DOM树</strong></th>
+<th align="left"><strong>CSSOM树</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>数据源</strong></td>
+<td align="left">HTML文档</td>
+<td align="left">CSS样式表</td>
+</tr>
+<tr>
+<td align="left"><strong>结构</strong></td>
+<td align="left">元素节点树</td>
+<td align="left">规则集合树</td>
+</tr>
+<tr>
+<td align="left"><strong>更新频率</strong></td>
+<td align="left">相对较低</td>
+<td align="left">可能频繁（hover、动画）</td>
+</tr>
+<tr>
+<td align="left"><strong>继承机制</strong></td>
+<td align="left">元素嵌套继承</td>
+<td align="left">属性值继承</td>
+</tr>
+</tbody></table>
+<p>在 DOM 树和 CSSOM 树都渲染完成之后，就会进入渲染树的构建阶段。渲染树就是 DOM 树和 CSSOM 树的结合，会得到一个可以知道每个节点会应用什么样式的数据结构。这个结合的过程就是遍历整个 DOM 树，然后在 CSSOM 树里查询到匹配的样式。<strong>DOM树 + CSSOM树 &#x3D; 渲染树</strong></p>
+<blockquote>
+<p>DOM树：知道”有什么元素”，CSSOM树：知道”元素长什么样”，两者结合才能知道”如何在屏幕上绘制”</p>
+</blockquote>
+<h1 id="生成渲染树"><a href="#生成渲染树" class="headerlink" title="生成渲染树"></a><strong>生成渲染树</strong></h1><p><strong>渲染树</strong>是DOM树和CSSOM树的<strong>结合体</strong>，是浏览器实际用于<strong>布局和绘制</strong>的中间数据结构。它包含了页面上所有<strong>可见元素</strong>及其<strong>计算后的样式</strong>。</p>
+<p><strong>为什么要构建渲染树呢？</strong>DOM树可能包含一些不可见的元素，比如head标签，使用display:none;属性的元素等。所以在显示页面之前，还要额外地构建一棵<strong>只包含可见元素的渲染树</strong>。</p>
+<blockquote>
+<p><strong>渲染树</strong>：仅包含<strong>可见节点</strong>（排除 <code>display: none</code>、<code>&lt;head&gt;</code> 等）。</p>
+</blockquote>
+<p><strong>计算布局（Layout&#x2F;Reflow）</strong>：</p>
+<ul>
+<li>计算每个节点的<strong>几何属性</strong>（位置、尺寸），即“盒模型”。</li>
+<li>首次布局称为 <strong>“回流”（Reflow）</strong>，后续布局可能由 JavaScript 或 CSS 动画触发。</li>
+</ul>
+<h2 id="回流vs-重绘"><a href="#回流vs-重绘" class="headerlink" title="回流vs. 重绘"></a><strong>回流vs. 重绘</strong></h2><table>
+<thead>
+<tr>
+<th><strong>操作</strong></th>
+<th><strong>触发条件</strong></th>
+<th><strong>性能成本</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>回流</strong></td>
+<td>修改布局属性（如宽度、位置、字体大小）</td>
+<td>高（需重新计算整个渲染树）</td>
+</tr>
+<tr>
+<td><strong>重绘</strong></td>
+<td>修改外观属性（如颜色、背景色）</td>
+<td>中（不需重新布局）</td>
+</tr>
+<tr>
+<td><strong>合成</strong></td>
+<td>修改 <code>transform</code>、<code>opacity</code></td>
+<td>低（仅 GPU 合成）</td>
+</tr>
+</tbody></table>
+<h3 id="回流"><a href="#回流" class="headerlink" title="回流"></a>回流</h3><p>当操作引发了 DOM 树中几何尺寸的变化（改变元素的大小、位置、布局方式等），这时渲染树里有改动的节点和它影响的节点都要重新计算。这个过程就叫做重排，也称为回流。在改动发生时，要重新经历页面渲染的整个流程，所以开销是很大的。 以下操作都会导致页面重排：</p>
+<ul>
+<li>页面首次渲染；</li>
+<li>浏览器窗口大小发生变化；</li>
+<li>元素的内容发生变化；</li>
+<li>元素的尺寸或者位置发生变化；</li>
+<li>元素的字体大小发生变化；</li>
+<li>激活CSS伪类；</li>
+<li>查询某些属性或者调用某些方法；</li>
+<li>添加或者删除可见的DOM元素。</li>
+</ul>
+<p>在触发重排时，由于浏览器渲染页面是基于流式布局的，所以当触发回流时，会导致周围的DOM元素重新排列，它的影响范围有两种：</p>
+<ul>
+<li>全局范围：从根节点开始，对整个渲染树进行重新布局；</li>
+<li>局部范围：对渲染树的某部分或者一个渲染对象进行重新布局。</li>
+</ul>
+<h3 id="重绘"><a href="#重绘" class="headerlink" title="重绘"></a>重绘</h3><p>当对 DOM 的修改导致了样式的变化、但未影响其几何属性（比如修改颜色、背景色）时，浏览器不需重新计算元素的几何属性、直接为该元素绘制新的样式（会跳过重排环节），这个过程叫做重绘。简单来说，重绘是由对元素绘制属性的修改引发的。 当我们修改元素绘制属性时，页面布局阶段不会执行，因为并没有引起几何位置的变换，所以就直接进入了绘制阶段，然后执行之后的一系列子阶段。相较于重排操作，重绘省去了布局和分层阶段，所以执行效率会比重排操作要高一些。</p>
+<p>下面这些属性会导致回流：</p>
+<ul>
+<li>color、background 相关属性：background-color、background-image 等；</li>
+<li>outline 相关属性：outline-color、outline-width 、text-decoration；</li>
+<li>border-radius、visibility、box-shadow。</li>
+</ul>
+<p>注意： <strong>当触发重排时，一定会触发重绘，但是重绘不一定会引发重排。</strong></p>
+<h3 id="优化原则"><a href="#优化原则" class="headerlink" title="优化原则"></a><strong>优化原则</strong></h3><p> 避免频繁触发回流（如批量修改 DOM，使用 <code>documentFragment</code>）。使用 CSS <code>transform</code> 和 <code>opacity</code> 实现动画（跳过布局和绘制，直接合成）。</p>
+<ul>
+<li>在条件允许的情况下尽量使用 CSS3 动画，它可以调用 GPU 执行渲染。</li>
+<li>操作DOM时，尽量在低层级的DOM节点进行操作</li>
+<li>不要使用<code>table</code>布局， 一个小的改动可能会使整个<code>table</code>进行重新布局</li>
+<li>使用CSS的表达式</li>
+<li>不要频繁操作元素的样式，对于静态页面，可以修改类名，而不是样式。</li>
+<li>使用absolute或者fixed，使元素脱离文档流，这样他们发生变化就不会影响其他元素</li>
+<li>避免频繁操作DOM，可以创建一个文档片段<code>documentFragment</code>，在它上面应用所有DOM操作，最后再把它添加到文档中</li>
+<li>将元素先设置<code>display: none</code>，操作结束后再把它显示出来。因为在display属性为none的元素上进行的DOM操作不会引发回流和重绘。</li>
+<li>将DOM的多个读操作（或者写操作）放在一起，而不是读写操作穿插着写。这得益于<strong>浏览器的渲染队列机制</strong>。</li>
+</ul>
+<p><strong>阻塞渲染的资源</strong>：</p>
+<ul>
+<li><strong>JavaScript</strong>：  默认会阻塞 DOM 构建（除非用 <code>async</code>&#x2F;<code>defer</code>）。  若脚本依赖 CSSOM（如访问 <code>element.style</code>），浏览器会等待 CSSOM 就绪。  </li>
+<li><strong>CSS</strong>：  阻塞渲染树构建（浏览器会避免“无样式内容闪烁”）。  可通过媒体查询（<code>media=&quot;print&quot;</code>）减少阻塞。</li>
+</ul>
+<p><img src="https://segmentfault.com/img/remote/1460000042909363" srcset="/img/loading.gif" lazyload></p>
+<p>可以看到，DOM树中不可见的节点都没有包含到渲染树中。为了构建渲染树，浏览器上大致做了如下工作：</p>
+<ol>
+<li>遍历DOM树中所有可见节点，并把这些节点加到布局中，而不可见的节点会被布局树忽略掉，如 head 标签下面的全部内容，再比如 p.p 这个元素，因为它的属性包含 <code>dispaly:none</code>，所以这个元素也没有被包含进渲染树中。</li>
+<li>如果给元素设置了<code>visibility: hidden</code>属性，那这个元素会出现在渲染树中，因为具有这个样式的元素是需要占位的，只不过不需要显示出来。 </li>
+<li>这里在查找的过程中，出于效率的考虑，会从 CSSOM 树的叶子节点开始查找，对应在 CSS 选择器上也就是从选择器的最右侧向左查找。所以，不建议使用标签选择器和通配符选择器来定义元素样式。</li>
+</ol>
+<p>除此之外，同一个 DOM 节点可能会匹配到多个 CSSOM 节点，而最终的效果由哪个 CSS 规则来确定，就是样式优先级的问题了。当一个 DOM 元素受到多条样式控制时，样式的优先级顺序如下：<strong>内联样式 &gt; ID选择器 &gt; 类选择器 &gt; 标签选择器 &gt; 通用选择器 &gt; 继承样式 &gt; 浏览器默认样式</strong> </p>
+<p>CSS常见选择器的优先级如下：</p>
+<table>
+<thead>
+<tr>
+<th align="left">选择器</th>
+<th align="left">格式</th>
+<th align="left">优先级权重</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">id选择器</td>
+<td align="left">#id</td>
+<td align="left">100</td>
+</tr>
+<tr>
+<td align="left">类选择器</td>
+<td align="left">.classname</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">属性选择器</td>
+<td align="left">a[ref&#x3D;“eee”]</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">伪类选择器</td>
+<td align="left">li:last-child</td>
+<td align="left">10</td>
+</tr>
+<tr>
+<td align="left">标签选择器</td>
+<td align="left">div</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">伪元素选择器</td>
+<td align="left">li:after</td>
+<td align="left">1</td>
+</tr>
+<tr>
+<td align="left">相邻兄弟选择器</td>
+<td align="left">h1+p</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">子选择器</td>
+<td align="left">ul&gt;li</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">后代选择器</td>
+<td align="left">li a</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">通配符选择器</td>
+<td align="left">*</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<h1 id="绘制→-合成"><a href="#绘制→-合成" class="headerlink" title="绘制→ 合成"></a><strong>绘制→ 合成</strong></h1><p>经过上面的步骤，就生成了一棵渲染树，这棵树就是展示页面的关键。到现在为止，已经有了需要渲染的所有节点之间的结构关系及其样式信息。下面就需要进行页面的布局。</p>
+<p>通过计算渲染树上每个节点的样式，就能得出来每个元素所占空间的大小和位置。当有了所有元素的大小和位置后，就可以在浏览器的页面区域里去绘制元素的边框了。这个过程就是<strong>布局</strong>。这个过程中，浏览器对渲染树进行遍历，将元素间嵌套关系以盒模型的形式写入文档流：</p>
+<ol>
+<li><strong>绘制</strong>：将渲染树转换为屏幕上的像素（光栅化）。</li>
+</ol>
+<blockquote>
+<p>在完成图层树的构建之后，渲染引擎会对图层树中的每个图层进行绘制，下面就来看看渲染引擎是怎么实现图层绘制的。<strong>渲染引擎在绘制图层时，会把一个图层的绘制分成很多绘制指令，然后把这些指令按照顺序组成一个待绘制的列表</strong>，绘制列表只是用来记录绘制顺序和绘制指令的列表，而<strong>绘制操作是由渲染引擎中的合成线程来完成的</strong>。当图层绘制列表准备好之后，主线程会把该绘制列表提交给合成线程。</p>
+</blockquote>
+<ol>
+<li><strong>分层与合成</strong>：浏览器将页面分为多个<strong>图层</strong>（如 <code>will-change</code>、<code>opacity</code> 会触发新图层）。<strong>合成线程</strong>将各图层合并后显示到屏幕（通过 GPU 加速）。</li>
+</ol>
+<blockquote>
+<p>渲染引擎给页面分了很多图层，这些图层会按照一定顺序叠加在一起，就形成了最终的页面。这里，将页面分解成多个图层的操作就成为<strong>分层，</strong> 最后将这些图层合并到一层的操作就成为<strong>合成，</strong> 分层和合成通常是一起使用的。Chrome 引入了分层和合成的机制就是为了提升每帧的渲染效率。</p>
+</blockquote>
+<p><strong>至此，整个渲染流程就完成了，其过程总结如下：</strong></p>
+<ol>
+<li>将HTML内容构建成DOM树；</li>
+<li>将CSS内容构建成CSSOM树；</li>
+<li>将DOM 树和 CSSOM 树合成渲染树；</li>
+<li>根据渲染树进行页面元素的布局；</li>
+<li>对渲染树进行分层操作，并生成分层树；</li>
+<li>为每个图层生成绘制列表，并提交到合成线程；</li>
+<li>合成线程将图层分成不同的图块，并通过栅格化将图块转化为位图；</li>
+<li>合成线程给浏览器进程发送绘制图块指令；</li>
+<li>浏览器进程会生成页面，并显示在屏幕上。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">互联网全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/" class="category-chain-item">大前端</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>浏览器渲染原理</div>
+      <div>https://hermes37.vercel.app/2025/12/28/互联网全栈开发/大前端/浏览器渲染原理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/01/11/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B3%BB%E7%BB%9F%E5%BC%80%E5%8F%91/%E7%BC%93%E5%AD%98%E5%8F%8B%E5%A5%BD/" title="缓存友好">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">缓存友好</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/22/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/ELF%E4%BF%AE%E6%94%B9%E5%AF%B9%E6%8A%97/" title="ELF修改对抗">
+                        <span class="hidden-mobile">ELF修改对抗</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

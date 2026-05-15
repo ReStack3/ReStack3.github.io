@@ -1,0 +1,847 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="引言当我们进入嵌入式这个领域时，首先接触的往往是单片机编程， 单片机编程又首选51单片机来入门。这里面说的单片机编程通常都是 指裸机编程，即不加入任何RTOS的编程。在裸机系统中，所有的程序基本都是自己写的，所有的操作都是 在一个无限的大循环中实现。 现实生活中的很多中小型电子产品中用 的都是裸机系统，而且能够满足需求。但随着产品要实现的 功能越来越多，单纯的裸机系统已经不能完美地解决问题，反而会">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FreeRTOS内核实现与应用开发">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/04/17/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/FreeRTOS%E5%86%85%E6%A0%B8%E5%AE%9E%E7%8E%B0%E4%B8%8E%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="引言当我们进入嵌入式这个领域时，首先接触的往往是单片机编程， 单片机编程又首选51单片机来入门。这里面说的单片机编程通常都是 指裸机编程，即不加入任何RTOS的编程。在裸机系统中，所有的程序基本都是自己写的，所有的操作都是 在一个无限的大循环中实现。 现实生活中的很多中小型电子产品中用 的都是裸机系统，而且能够满足需求。但随着产品要实现的 功能越来越多，单纯的裸机系统已经不能完美地解决问题，反而会">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-04-17T09:16:32.993Z">
+<meta property="article:modified_time" content="2026-05-15T10:25:54.783Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>FreeRTOS内核实现与应用开发 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="FreeRTOS内核实现与应用开发"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">FreeRTOS内核实现与应用开发</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>当我们进入嵌入式这个领域时，首先接触的往往是单片机编程， 单片机编程又首选51单片机来入门。这里面说的单片机编程通常都是 指裸机编程，即不加入任何RTOS的编程。在裸机系统中，所有的程序基本都是自己写的，所有的操作都是 在一个无限的大循环中实现。</p>
+<p>现实生活中的很多中小型电子产品中用 的都是裸机系统，而且能够满足需求。但随着产品要实现的 功能越来越多，单纯的裸机系统已经不能完美地解决问题，反而会使编程变得更加复杂，如果想降低编程的难度，可以考虑引入RTOS实现多任务管理，这是使用RTOS的最大优势</p>
+<blockquote>
+<p>FreeRTOS是一个<strong>单地址空间、多任务、抢占式的实时操作系统</strong>，其任务在概念上等同于<strong>轻量级线程</strong>，整个系统运行在一个<strong>大进程</strong>中。</p>
+</blockquote>
+<p><strong>裸机系统与多任务系统？</strong></p>
+<h1 id="内核"><a href="#内核" class="headerlink" title="内核"></a>内核</h1><p><strong>FreeRTOS 是一个基于优先级的抢占式调度内核，使用多个以 TCB 为节点的链表结构管理任务状态，并依赖 SysTick 提供时间基准；调度决策（如选择最高优先级就绪任务）在中断或内核调用路径中完成，而实际的上下文切换在 Cortex-M 架构上由 PendSV 异常统一执行；中断服务函数通过 FromISR 接口触发调度请求（置位 PendSV），但中断本身不直接执行任务切换。</strong></p>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><h3 id="任务"><a href="#任务" class="headerlink" title="任务"></a>任务</h3><h2 id="调度算法"><a href="#调度算法" class="headerlink" title="调度算法"></a>调度算法</h2><h2 id="硬件机制"><a href="#硬件机制" class="headerlink" title="硬件机制"></a>硬件机制</h2><h1 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h1><h2 id="中断管理"><a href="#中断管理" class="headerlink" title="中断管理"></a><strong>中断管理</strong></h2><p><strong>异常是系统运行中的”突发事件”，分两类：同步异常（内部指令错误必须立即处理）和异步异常（外部事件可以稍后处理）。</strong></p>
+<p>中断属于异步异常。所谓中断，是指中央处理器（CPU）正在处理 某件事时，外部发生了某一事件，请求CPU迅速处理，CPU暂时中断当 前的工作，转入处理所发生的事件，处理完后，再回到原来被中断的 地方，继续原来的工作。</p>
+<p>无论该任务具有什么样的优先级，中断都能打断线程的运行，因 此中断一般用于处理比较紧急的事件，而且只做简单处理，例如标记该事件。在使用FreeRTOS系统时，一般建议使用信号量、消息或事件 标志组等标志中断的发生，将这些内核对象发布给处理任务，处理任务再做具体处理。 </p>
+<p>通过中断机制，在外设不需要CPU介入时，CPU可以执行其他任 务，而当外设需要CPU时，通过产生中断信号使CPU立即停止当前任务 转而响应中断请求。这样可以避免CPU把大量时间耗费在等待、查询外设状态的操作上，因此将大大提高系统实时性以及执行效率。</p>
+<h3 id="运作机制"><a href="#运作机制" class="headerlink" title="运作机制"></a>运作机制</h3><p>当中断产生时，处理器将按如下的顺序执行： </p>
+<ol>
+<li>保存当前处理器状态信息。 </li>
+<li>载入异常或中断处理函数到PC寄存器。 </li>
+<li>把控制权转交给处理函数并开始执行。 </li>
+<li>当处理函数执行完成时，恢复处理器状态信息。</li>
+<li>从异常或中断中返回到前一个程序执行点</li>
+</ol>
+<p>中断使得CPU可以在事件发生时才进行处理，而不必让CPU连续不 断地查询是否有相应的事件发生。通过关中断和开中断这两条特殊指 令可以让处理器不响应或响应中断。在关闭中断期间，通常处理器会 把新产生的中断挂起，当中断打开时立刻进行响应，所以会有适当的 延时响应中断，故用户在进入临界区时应快进快出。 </p>
+<p>中断发生的环境有两种：在任务的上下文中和在中断服务函数处理上下文中。 </p>
+<ul>
+<li><p>如果在运行任务时发生了一个中断，无论中断的优先级是多 大，都会打断当前任务的执行，转到对应的中断服务函数中执行</p>
+</li>
+<li><p>在执行中断服务例程的过程中，如果有更高优先级的中断源触发中断，由于当前处于中断处理上下文中，那么根据不同的处理器构架可能有不同的处理方式，比如新的中断等待挂起，直到当前中断处 理离开后再行响应。或新的高优先级中断打断当前中断处理过程，而去直接响应这个更高优先级的新中断源。后面这种情况称为中断嵌 套。</p>
+<p>在硬实时环境中，前一种情况是不允许发生的，不能使响应中断 的时间尽量短。而在软件处理（软实时环境）中，FreeRTOS允许中断 嵌套，即在一个中断服务例程期间，处理器可以响应另外一个优先级 更高的中断</p>
+</li>
+</ul>
+<h3 id="中断延迟"><a href="#中断延迟" class="headerlink" title="中断延迟"></a>中断延迟</h3><p>即使操作系统的响应很快了，对于中断的处理也存在中断延迟响 应的问题，我们称之为中断延迟。 中断延迟是指从硬件中断发生到开始执行中断处理程序第一条指令的这段时间。也就是系统接收到中断信号到操作系统做出响应，并 完成转入中断服务程序的时间。也可以简单地理解为（外部）硬件 （设备）发生中断，到系统执行中断服务子程序（ISR）的第一条指令 的时间。</p>
+<p>中断的处理过程是：<strong>外界硬件发生中断后，CPU到中断处理器读取中断向量，并且查找中断向量表，找到对应的中断服务子程序（ISR） 的首地址，然后跳转到对应的ISR去做相应处理。这部分时间可称为识别中断时间。</strong></p>
+<ul>
+<li>在操作系统中，很多时候我们会主动进入临界段，系统不允许当 前状态被中断打断，所以在临界区发生的中断会被挂起，直到退出临 界段时才打开中断。此部分时间，可称为关闭中断时间。</li>
+</ul>
+<p><strong>在允许中断嵌套的实时操作系统中，中断也是基于优先级的</strong>，允许高优先级中断抢断正在处理的低优先级中断，所以，如果当前正在 处理更高优先级的中断。即使此时有低优先级的中断，系统也不会立刻响应，而是等到高优先级的中断处理完之后才会响应。</p>
+<blockquote>
+<p>在不支持中断嵌套的情况下，即中断是没有优先级的，不允许打断，如果当前系 统正在处理一个中断，而此时另一个中断到来了，系统是不会立即响 应的，而是等处理完当前的中断之后，才会处理后来的中断。此部分 时间可称为等待中断打开时间。</p>
+</blockquote>
+<h2 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a><strong>内存管理</strong></h2><blockquote>
+<p>在嵌入式程序设计中，内存分配应该根据所设计系统的特点来决 定是选择使用动态内存分配算法还是静态内存分配算法，一些可靠性 要求非常高的系统应选择使用静态分配，而普通的业务系统可以使用 动态分配来提高内存使用效率。静态分配可以保证设备的可靠性，但 是需要考虑内存上限，内存使用效率低，而动态分配则相反。</p>
+</blockquote>
+<p>在一般的实时嵌入式系统中，由于实时性的要求，很少使用虚拟内存机制。所有的内存都需要用户参与分配，直接操作物理内存。所分配的内存不能超过系统的物理内存，所有的系统栈都由用户自己管理。</p>
+<p>同时，在嵌入式实时操作系统中，对内存的分配时间要求更为苛刻，<strong>分配内存的时间必须是确定的</strong>。一般内存管理算法是根据需要存储的数据的长度在内存中寻找一个与这段数据相适应的空闲内存块， 然后将数据存储在里面。而寻找这样一个空闲内存块所耗费的时间是不确定的，因此对于实时系统来说，这就是不可接受的，<strong>实时系统必 须保证内存块的分配过程在可预测的确定时间内完成，否则实时任务对外部事件的响应也将变得不可确定。</strong></p>
+<blockquote>
+<p>不同的嵌入式系统具有不同的内存配置和时间要求，所以单一内 存分配算法只可能适合部分应用程序。因此，FreeRTOS将内存分配作 为可移植层面（相对于基本的内核代码部分而言），FreeRTOS有针对性地提供了不同的内存分配管理算法，这使得应用于不同场景的设备 可以选择适合自身的内存算法。</p>
+</blockquote>
+<h2 id="任务管理"><a href="#任务管理" class="headerlink" title="任务管理"></a>任务管理</h2><h2 id="任务间同步"><a href="#任务间同步" class="headerlink" title="任务间同步"></a>任务间同步</h2><h3 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a><strong>信号量</strong></h3><h3 id="互斥量"><a href="#互斥量" class="headerlink" title="互斥量"></a><strong>互斥量</strong></h3><h3 id="任务通知"><a href="#任务通知" class="headerlink" title="任务通知"></a><strong>任务通知</strong></h3><h2 id="任务间通信"><a href="#任务间通信" class="headerlink" title="任务间通信"></a>任务间通信</h2><h4 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h4><h4 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h4><h2 id="时间管理-定时功能"><a href="#时间管理-定时功能" class="headerlink" title="时间管理(定时功能)"></a>时间管理(定时功能)</h2><blockquote>
+<p>硬件定时器受硬 件的限制，数量上不足以满足用户的实际需求，无法提供更多的定时 器，那么可以采用软件定时器来完成，由软件定时器任务代替硬件定 时器任务。但需要注意的是，软件定时器的精度是无法和硬件定时器 相比的，因为在软件定时器的定时过程中极有可能被其他中断所打 断，这是由于软件定时器的执行上下文环境是任务。所以，软件定时 器更适用于对时间精度要求不高的任务，或一些辅助型的任务</p>
+</blockquote>
+<p>定时器，是指从指定的时刻开始，经过一段指定的时间后触发一个超时事件，用户可以自定义定时器的周期与频率，定时器有硬件定时器和软件定时器之分： </p>
+<ul>
+<li>硬件定时器是芯片本身提供定时功能，一般是由外部晶振为芯片 提供输入时钟，芯片向软件模块提供一组配置寄存器，接受控制输 入，到达设定时间值后，芯片中断控制器产生时钟中断。硬件定时器 的精度一般很高，可以达到纳秒级别，并且是中断触发方式。 </li>
+<li>软件定时器是由操作系统提供的一类系统接口，<strong>它构建在硬件定时器的基础之上</strong>，使系统能够提供不受硬件定时器资源限制的定时器 服务。软件定时器实现的功能与硬件定时器是类似的。</li>
+</ul>
+<p>使用硬件定时器时，每次在定时时间到达之后就会自动触发一个中断，用户在中断中处理信息；而使用软件定时器时，需要用户在创建软件定时器时指定时间到达后要调用的函数，在回调函数中处理信息</p>
+<p><strong>定时精度与系统时钟的周期有关</strong>。一般系统利用 <code>SysTick</code>作为软件定时器的基础时钟，软件定时器的回调函数类似硬件的中断服务函数，所以<strong>回调函数也要快进快出，而且回调函数中不能有任何阻塞任务运行的情况</strong>（软件定时器回调函数的上下文环境是任务），比如<code>vTaskDelay()</code>以及其他能阻塞任务运行的函数。两次触发回调函数的时间间隔<code>xTimerPeriodInTicks</code>叫作定时器的定时周期。</p>
+<p>FreeRTOS提供的软件定时器支持单次模式和周期模式，单次模式和周期模式的定时时间到之后都会调用软件定时器的回调函数，用户可以在回调函数中加入要执行的工程代码。 </p>
+<ul>
+<li>单次模式：当用户创建并启动了定时器后，定时时间到了，只 执行一次回调函数之后就将该定时器删除，不再重新执行。 </li>
+<li>周期模式：该模式下，定时器会按照设置的定时时间循环执行 回调函数，直到用户将定时器删除</li>
+</ul>
+<blockquote>
+<p>FreeRTOS通过一个<code>prvTimerTask</code>任务（也叫作守护任务 ）管理软件定时器，它是在启动调度器时自动创建的，以 满足用户定时需求。<code>prvTimerTask</code>任务会在其执行期间检查用户启动 的时间周期溢出的定时器，并调用其回调函数。只</p>
+</blockquote>
+<p><strong>软件定时器的精度受系统节拍周期限制，定时值必须是节拍周期的整数倍，节拍周期越小精度越高但CPU开销越大。</strong></p>
+<h3 id="运作机制-1"><a href="#运作机制-1" class="headerlink" title="运作机制"></a>运作机制</h3><p>软件定时器是可选的系统资源，在创建定时器时会分配一块内存空间。当用户创建并启动一个软件定时器时，FreeRTOS会根据当前系统时间及用户设置的定时确定该定时器唤醒时间，<strong>并将该定时器控制块挂入软件定时器列表</strong></p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs less"><span class="hljs-comment">// 当前定时器列表</span><br><span class="hljs-selector-tag">pxCurrentTimerList</span>  → <span class="hljs-selector-tag">xActiveTimerList1</span>  <span class="hljs-comment">// 存放未溢出的定时器</span><br><span class="hljs-comment">// 溢出定时器列表  </span><br><span class="hljs-selector-tag">pxOverflowTimerList</span> → <span class="hljs-selector-tag">xActiveTimerList2</span>  <span class="hljs-comment">// 存放会溢出的定时器</span><br><br><span class="hljs-comment">// 列表内容按触发时间排序（升序）</span><br>定时器列表项： <span class="hljs-selector-attr">[Time=100]</span> → <span class="hljs-selector-attr">[Time=200]</span> → <span class="hljs-selector-attr">[Time=300]</span> → ...<br></code></pre></td></tr></table></figure>
+
+<p>使用软件定时器时要注意以下几点：</p>
+<table>
+<thead>
+<tr>
+<th align="left">错误行为</th>
+<th align="left">后果</th>
+<th align="left">正确做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">回调中调用vTaskDelay</td>
+<td align="left">所有定时器停止</td>
+<td align="left">使用xTaskNotify通知任务</td>
+</tr>
+<tr>
+<td align="left">回调中进行大运算</td>
+<td align="left">阻塞其他定时器</td>
+<td align="left">在回调中发送到队列</td>
+</tr>
+<tr>
+<td align="left">忘记设置优先级</td>
+<td align="left">响应不及时</td>
+<td align="left">根据系统需求配置</td>
+</tr>
+<tr>
+<td align="left">频繁创建&#x2F;销毁定时器</td>
+<td align="left">内存碎片</td>
+<td align="left">复用定时器或静态创建</td>
+</tr>
+<tr>
+<td align="left">栈配置太小</td>
+<td align="left">栈溢出崩溃</td>
+<td align="left">使用<code>uxTaskGetStackHighWaterMark</code>检查</td>
+</tr>
+</tbody></table>
+<h3 id="控制块"><a href="#控制块" class="headerlink" title="控制块"></a>控制块</h3><p>软件定时器虽然不属于内核资源，但也是FreeRTOS的核心组成部 分，是一个可以裁剪的功能模块，同样在系统中由一个控制块管理其 相关信息。软件定时器的控制块包含已经创建的软件定时器基本信 息，在使用定时器前，我们需要通过 <code>xTimerCreate()/xTimerCreateStatic()</code>函数创建一个软件定时器，在 函数中，FreeRTOS将向系统管理的内存申请一块软件定时器控制块大 小的内存用于保存定时器的信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tmrTimerControl</span> &#123;</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *pcTimerName;           <span class="hljs-comment">// 定时器名称（调试用）</span><br>    ListItem_t xTimerListItem;          <span class="hljs-comment">// 列表项（用于插入定时器列表）</span><br>    TickType_t xTimerPeriodInTicks;     <span class="hljs-comment">// 定时器周期（系统节拍数）</span><br>    <span class="hljs-type">void</span> *pvTimerID;                    <span class="hljs-comment">// 定时器ID（用户自定义）</span><br>    TimerCallbackFunction_t pxCallbackFunction; <span class="hljs-comment">// 回调函数指针</span><br>    UBaseType_t uxTimerNumber;          <span class="hljs-comment">// 定时器编号</span><br>    <span class="hljs-type">uint8_t</span> ucStatus;                   <span class="hljs-comment">// 定时器状态（静态/动态创建）</span><br>&#125; xTIMER;<br><span class="hljs-keyword">typedef</span> xTIMER Timer_t;  <span class="hljs-comment">// 重定义、</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="回调函数"><a href="#回调函数" class="headerlink" title="回调函数"></a>回调函数</h3><table>
+<thead>
+<tr>
+<th align="left">函数类别</th>
+<th align="left">函数名</th>
+<th align="left">用途</th>
+<th align="left">可在ISR使用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">创建</td>
+<td align="left">xTimerCreate</td>
+<td align="left">动态创建定时器</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">启动</td>
+<td align="left">xTimerStart</td>
+<td align="left">启动定时器</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">启动(ISR)</td>
+<td align="left">xTimerStartFromISR</td>
+<td align="left">中断中启动</td>
+<td align="left">是</td>
+</tr>
+<tr>
+<td align="left">停止</td>
+<td align="left">xTimerStop</td>
+<td align="left">停止定时器</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">重置</td>
+<td align="left">xTimerReset</td>
+<td align="left">重置定时器</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">改周期</td>
+<td align="left">xTimerChangePeriod</td>
+<td align="left">改变周期</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">删除</td>
+<td align="left">xTimerDelete</td>
+<td align="left">删除定时器</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">查询</td>
+<td align="left">xTimerIsTimerActive</td>
+<td align="left">查询状态</td>
+<td align="left">是</td>
+</tr>
+</tbody></table>
+<h1 id="移植"><a href="#移植" class="headerlink" title="移植"></a>移植</h1>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">嵌入式全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" class="category-chain-item">基础知识</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>FreeRTOS内核实现与应用开发</div>
+      <div>https://hermes37.vercel.app/2026/04/17/嵌入式全栈开发/基础知识/FreeRTOS内核实现与应用开发/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月17日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/17/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E7%94%B5%E5%AD%90%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/" title="电子技术基础">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">电子技术基础</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/15/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/%E5%8D%95%E7%89%87%E6%9C%BA%E5%8E%9F%E7%90%86(STM32%E4%B8%BA%E4%BE%8B)/" title="单片机原理(STM32为例)">
+                        <span class="hidden-mobile">单片机原理(STM32为例)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

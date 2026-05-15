@@ -1,0 +1,922 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="窗口的本质在Win32体系下，窗口的本质是一个由操作系统内核管理的具有层次关系的消息处理单元，其核心是通过句柄（HWND）标识的GUI对象，具体表现为：  内核对象实体：每个窗口对应一个由Windows内核维护的数据结构（WND结构），存储位置、样式、状态等属性，并通过消息队列（Message Queue）接收系统或应用程序产生的输入&#x2F;命令消息； 消息驱动机制：窗口的生命周期完全由消息">
+<meta property="og:type" content="article">
+<meta property="og:title" content="窗口机制探讨">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/18/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/%E6%A1%8C%E9%9D%A2%E7%AB%AF/Win32%E7%BC%96%E7%A8%8B/%E7%AA%97%E5%8F%A3%E6%9C%BA%E5%88%B6%E6%8E%A2%E8%AE%A8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="窗口的本质在Win32体系下，窗口的本质是一个由操作系统内核管理的具有层次关系的消息处理单元，其核心是通过句柄（HWND）标识的GUI对象，具体表现为：  内核对象实体：每个窗口对应一个由Windows内核维护的数据结构（WND结构），存储位置、样式、状态等属性，并通过消息队列（Message Queue）接收系统或应用程序产生的输入&#x2F;命令消息； 消息驱动机制：窗口的生命周期完全由消息">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/04/18/f3SKxIvqXMk94io.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/guINkzlsaxcBGE6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/7gVZOdcu6TFjs2K.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/cOaDJPvbpmkFo7n.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/17/3Ih62aAkBVYvgct.png">
+<meta property="article:published_time" content="2025-05-18T05:54:35.859Z">
+<meta property="article:modified_time" content="2026-05-15T10:25:54.747Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/04/18/f3SKxIvqXMk94io.png">
+  
+  
+  
+  <title>窗口机制探讨 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="窗口机制探讨"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">窗口机制探讨</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/04/18/f3SKxIvqXMk94io.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="窗口的本质"><a href="#窗口的本质" class="headerlink" title="窗口的本质"></a>窗口的本质</h1><p>在Win32体系下，窗口的本质是一个由操作系统内核管理的<strong>具有层次关系的消息处理单元</strong>，其核心是通过句柄（HWND）标识的GUI对象，具体表现为：</p>
+<ol>
+<li><strong>内核对象实体</strong>：每个窗口对应一个由Windows内核维护的数据结构（WND结构），存储位置、样式、状态等属性，并通过消息队列（Message Queue）接收系统或应用程序产生的输入&#x2F;命令消息；</li>
+<li><strong>消息驱动机制</strong>：窗口的生命周期完全由消息循环（Message Loop）驱动，包括创建（WM_CREATE）、绘制（WM_PAINT）、销毁（WM_DESTROY）等所有行为都通过消息触发，形成”事件-消息-处理”的异步响应模型；</li>
+<li><strong>可视化与交互载体</strong>：窗口作为GDI&#x2F;GDI+的绘制表面，管理着客户区&#x2F;非客户区的图形渲染，同时通过消息映射将用户输入（鼠标&#x2F;键盘事件）转化为可编程事件（如WM_LBUTTONDOWN）；</li>
+<li><strong>资源管理单元</strong>：窗口句柄关联着所属线程的消息队列、设备上下文（DC）、子窗口链表等资源，其销毁会级联释放相关GDI对象，体现为线程绑定的资源容器。</li>
+</ol>
+<h2 id="GDI-图形设备接口"><a href="#GDI-图形设备接口" class="headerlink" title="GDI - 图形设备接口"></a>GDI - 图形设备接口</h2><p>GDI（Graphics Device Interface）是Windows操作系统最核心的图形子系统，它作为应用程序与图形硬件之间的抽象层，提供了设备无关的二维图形绘制能力。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs css">应用程序层<br>    ↓<br>GDI32<span class="hljs-selector-class">.dll</span>（API接口）<br>    ↓<br>图形引擎（Win32k<span class="hljs-selector-class">.sys</span>）<br>    ↓<br>显示驱动（<span class="hljs-attribute">Display</span> Driver）<br>    ↓<br>图形硬件（GPU/显示器）<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/05/16/guINkzlsaxcBGE6.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="关键组件"><a href="#关键组件" class="headerlink" title="关键组件"></a>关键组件</h3><ul>
+<li><strong>设备上下文（DC）</strong>：绘图操作的画布对象</li>
+<li><strong>GDI对象</strong>：画笔、画刷、字体等绘图工具</li>
+<li><strong>坐标系统</strong>：逻辑单位到设备像素的映射</li>
+<li><strong>绘图模式</strong>：ROP2（光栅操作）代码控制绘制效果</li>
+</ul>
+<h4 id="设备上下文（DC）"><a href="#设备上下文（DC）" class="headerlink" title="设备上下文（DC）"></a>设备上下文（DC）</h4><h5 id="DC类型"><a href="#DC类型" class="headerlink" title="DC类型"></a>DC类型</h5><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>获取方式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>显示DC</td>
+<td><code>GetDC()</code></td>
+<td>对应屏幕区域</td>
+</tr>
+<tr>
+<td>内存DC</td>
+<td><code>CreateCompatibleDC()</code></td>
+<td>离屏缓冲区</td>
+</tr>
+<tr>
+<td>打印机DC</td>
+<td><code>CreateDC(&quot;WINSPOOL&quot;,...)</code></td>
+<td>输出到打印机</td>
+</tr>
+<tr>
+<td>元文件DC</td>
+<td><code>CreateEnhMetaFile()</code></td>
+<td>记录GDI命令</td>
+</tr>
+</tbody></table>
+<h4 id="DC属性管理"><a href="#DC属性管理" class="headerlink" title="DC属性管理"></a>DC属性管理</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 保存当前状态</span><br><span class="hljs-type">int</span> nSaved = SaveDC(hDC); <br><br><span class="hljs-comment">// 修改属性</span><br>SelectObject(hDC, hPen);  <span class="hljs-comment">// 选入新画笔</span><br>SetBkMode(hDC, TRANSPARENT); <span class="hljs-comment">// 设置背景模式</span><br><br><span class="hljs-comment">// 恢复状态</span><br>RestoreDC(hDC, nSaved);<br></code></pre></td></tr></table></figure>
+
+<h4 id="GDI对象系统"><a href="#GDI对象系统" class="headerlink" title="GDI对象系统"></a>GDI对象系统</h4><h5 id="对象类型表"><a href="#对象类型表" class="headerlink" title="对象类型表"></a>对象类型表</h5><table>
+<thead>
+<tr>
+<th>对象类型</th>
+<th>创建函数</th>
+<th>选择函数</th>
+<th>默认对象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>画笔</td>
+<td><code>CreatePen()</code></td>
+<td><code>SelectObject()</code></td>
+<td>BLACK_PEN</td>
+</tr>
+<tr>
+<td>画刷</td>
+<td><code>CreateSolidBrush()</code></td>
+<td><code>SelectObject()</code></td>
+<td>WHITE_BRUSH</td>
+</tr>
+<tr>
+<td>字体</td>
+<td><code>CreateFont()</code></td>
+<td><code>SelectObject()</code></td>
+<td>SYSTEM_FONT</td>
+</tr>
+<tr>
+<td>位图</td>
+<td><code>CreateBitmap()</code></td>
+<td><code>SelectObject()</code></td>
+<td>NULL</td>
+</tr>
+<tr>
+<td>区域</td>
+<td><code>CreateRectRgn()</code></td>
+<td><code>SelectObject()</code></td>
+<td>NULL</td>
+</tr>
+<tr>
+<td>调色板</td>
+<td><code>CreatePalette()</code></td>
+<td><code>SelectPalette()</code></td>
+<td>DEFAULT_PALETTE</td>
+</tr>
+</tbody></table>
+<h5 id="对象生命周期"><a href="#对象生命周期" class="headerlink" title="对象生命周期"></a>对象生命周期</h5><ol>
+<li>创建对象：<code>hObj = CreateXxx(...)</code></li>
+<li>选入DC：<code>hOldObj = SelectObject(hDC, hObj)</code></li>
+<li>使用绘图</li>
+<li>恢复旧对象：<code>SelectObject(hDC, hOldObj)</code></li>
+<li>删除对象：<code>DeleteObject(hObj)</code></li>
+</ol>
+<h4 id="坐标与变换"><a href="#坐标与变换" class="headerlink" title="坐标与变换"></a>坐标与变换</h4><h5 id="坐标系统"><a href="#坐标系统" class="headerlink" title="坐标系统"></a>坐标系统</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">SetMapMode(hDC, MM_TEXT); <span class="hljs-comment">// 1逻辑单位=1像素（默认）</span><br>SetMapMode(hDC, MM_LOENGLISH); <span class="hljs-comment">// 0.01英寸单位</span><br>SetMapMode(hDC, MM_ISOTROPIC); <span class="hljs-comment">// 可伸缩等比例</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="视口-窗口变换"><a href="#视口-窗口变换" class="headerlink" title="视口&#x2F;窗口变换"></a>视口&#x2F;窗口变换</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">SetViewportExtEx(hDC, cx, cy, <span class="hljs-literal">NULL</span>); <span class="hljs-comment">// 设备范围</span><br>SetWindowExtEx(hDC, cx, cy, <span class="hljs-literal">NULL</span>);   <span class="hljs-comment">// 逻辑范围</span><br>SetViewportOrgEx(hDC, x, y, <span class="hljs-literal">NULL</span>);   <span class="hljs-comment">// 设备原点</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="图形绘制技术"><a href="#图形绘制技术" class="headerlink" title="图形绘制技术"></a>图形绘制技术</h4><h5 id="基本绘图函数"><a href="#基本绘图函数" class="headerlink" title="基本绘图函数"></a>基本绘图函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c">MoveToEx(hDC, x1, y1, <span class="hljs-literal">NULL</span>); <span class="hljs-comment">// 移动画笔</span><br>LineTo(hDC, x2, y2);         <span class="hljs-comment">// 画线</span><br>Rectangle(hDC, left, top, right, bottom); <span class="hljs-comment">// 矩形</span><br>Ellipse(hDC, left, top, right, bottom);   <span class="hljs-comment">// 椭圆</span><br>Polygon(hDC, points, count); <span class="hljs-comment">// 多边形</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="消息"><a href="#消息" class="headerlink" title="消息"></a>消息</h1><p>在Win32编程中，<strong>消息（Message）</strong>是Windows操作系统的核心通信机制，本质上是系统与应用程序之间、应用程序内部各窗口之间传递事件和指令的数据包。</p>
+<p>当用户操作（如点击鼠标、按下键盘）、系统事件（如窗口大小调整）或应用程序内部请求发生时，Windows会将这些动作封装为包含特定信息的<strong>MSG结构体</strong>，通过<strong>消息队列</strong>传递给目标窗口。每个消息由三要素构成：<strong>消息类型</strong>（如WM_PAINT表示绘制请求）、<strong>附加参数</strong>（wParam和lParam，承载具体信息如坐标值或控件ID）以及<strong>目标窗口句柄</strong>。</p>
+<p>应用程序通过<strong>消息循环</strong>（GetMessage&#x2F;DispatchMessage）不断从队列中提取消息，并由<strong>窗口过程函数</strong>（WndProc）解析处理，形成”事件-消息-响应”的驱动模式。这种机制实现了异步事件处理、多窗口协作和用户输入响应，是Windows图形界面程序的基础架构，其特点包括：严格的类型分类（系统&#x2F;控件&#x2F;自定义消息）、优先级投递规则（SendMessage立即执行，PostMessage排队处理）以及线程关联性（每个GUI线程拥有独立消息队列）。</p>
+<h2 id="消息类型"><a href="#消息类型" class="headerlink" title="消息类型"></a>消息类型</h2><h3 id="标准-Windows-消息-WM"><a href="#标准-Windows-消息-WM" class="headerlink" title="标准 Windows 消息 (WM_*)"></a>标准 Windows 消息 (WM_*)</h3><p>这些是 Windows 定义的标准消息，范围是 0x0000 到 0x03FF：</p>
+<p><strong>窗口管理消息</strong>：</p>
+<ul>
+<li><code>WM_CREATE</code> - 窗口创建时发送</li>
+<li><code>WM_DESTROY</code> - 窗口销毁时发送</li>
+<li><code>WM_CLOSE</code> - 窗口即将关闭</li>
+<li><code>WM_SIZE</code> - 窗口大小改变</li>
+<li><code>WM_MOVE</code> - 窗口位置改变</li>
+<li><code>WM_PAINT</code> - 需要重绘窗口内容</li>
+</ul>
+<p><strong>输入消息</strong>：</p>
+<ul>
+<li><code>WM_KEYDOWN</code>, <code>WM_KEYUP</code> - 键盘按键按下&#x2F;释放</li>
+<li><code>WM_CHAR</code> - 字符输入</li>
+<li><code>WM_MOUSEMOVE</code> - 鼠标移动</li>
+<li><code>WM_LBUTTONDOWN</code>, <code>WM_LBUTTONUP</code> - 鼠标左键按下&#x2F;释放</li>
+<li><code>WM_RBUTTONDOWN</code>, <code>WM_RBUTTONUP</code> - 鼠标右键按下&#x2F;释放</li>
+</ul>
+<p><strong>系统消息</strong>：</p>
+<ul>
+<li><code>WM_TIMER</code> - 定时器触发</li>
+<li><code>WM_COMMAND</code> - 菜单、控件或快捷键命令</li>
+<li><code>WM_NOTIFY</code> - 公共控件通知</li>
+</ul>
+<h3 id="控件通知消息"><a href="#控件通知消息" class="headerlink" title="控件通知消息"></a>控件通知消息</h3><p>这些消息通常作为 WM_COMMAND 或 WM_NOTIFY 消息的附加信息：</p>
+<ul>
+<li>按钮：<code>BN_CLICKED</code> (按钮被点击)</li>
+<li>编辑框：<code>EN_CHANGE</code> (内容改变)</li>
+<li>列表框：<code>LBN_SELCHANGE</code> (选择改变)</li>
+<li>树形视图：<code>TVN_SELCHANGED</code> (选择改变)</li>
+</ul>
+<h3 id="用户自定义消息"><a href="#用户自定义消息" class="headerlink" title="用户自定义消息"></a>用户自定义消息</h3><p>应用程序可以定义自己的消息类型：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> WM_MY_CUSTOM_MESSAGE (WM_USER + 0x100)</span><br><span class="hljs-comment">// WM_USER 范围: 0x0400-0x7FFF (窗口类私有消息)</span><br><span class="hljs-comment">// WM_APP 范围: 0x8000-0xBFFF (应用程序全局消息)</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="注册窗口消息"><a href="#注册窗口消息" class="headerlink" title="注册窗口消息"></a>注册窗口消息</h3><p>对于需要跨进程通信的消息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">UINT WM_MY_REGISTERED_MSG = RegisterWindowMessage(<span class="hljs-string">L&quot;MyCustomMessage&quot;</span>);<br><span class="hljs-comment">// 返回的消息ID在 0xC000-0xFFFF 范围内</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="特殊消息类型"><a href="#特殊消息类型" class="headerlink" title="特殊消息类型"></a>特殊消息类型</h3><ul>
+<li><code>WM_COPYDATA</code> - 进程间传递数据</li>
+<li><code>WM_DROPFILES</code> - 文件拖放操作</li>
+<li><code>WM_GETMINMAXINFO</code> - 获取窗口最小&#x2F;最大尺寸信息</li>
+<li><code>WM_SETCURSOR</code> - 设置光标形状</li>
+</ul>
+<h3 id="消息处理优先级"><a href="#消息处理优先级" class="headerlink" title="消息处理优先级"></a>消息处理优先级</h3><p>Windows 消息有一定的处理优先级：</p>
+<ol>
+<li>发送的消息 (<code>SendMessage</code>)</li>
+<li>投递的消息 (<code>PostMessage</code>)</li>
+<li>输入消息 (键盘&#x2F;鼠标)</li>
+<li>重绘消息 (<code>WM_PAINT</code>)</li>
+<li>定时器消息 (<code>WM_TIMER</code>)</li>
+</ol>
+<h2 id="消息结构体"><a href="#消息结构体" class="headerlink" title="消息结构体"></a>消息结构体</h2><p>在 Windows 编程中，<code>MSG</code> 结构体是消息处理的核心数据结构，它包含了 Windows 发送到应用程序窗口的所有消息的完整信息。</p>
+<h3 id="MSGSee"><a href="#MSGSee" class="headerlink" title="MSGSee"></a>MSGSee</h3><blockquote>
+<p>This structure contains message information from a thread’s message queue. </p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tagMSG</span> &#123;</span><br>    HWND   hwnd;      <span class="hljs-comment">// 窗口句柄，指定接收消息的窗口</span><br>    UINT   message;   <span class="hljs-comment">// 消息标识符（如 WM_PAINT, WM_KEYDOWN 等）</span><br>    WPARAM wParam;    <span class="hljs-comment">// 附加消息信息（具体含义取决于消息类型）</span><br>    LPARAM lParam;    <span class="hljs-comment">// 附加消息信息（具体含义取决于消息类型）</span><br>    DWORD  time;      <span class="hljs-comment">// 消息被投递时的时间（系统时间）</span><br>    POINT  pt;        <span class="hljs-comment">// 消息被投递时的光标位置（屏幕坐标）</span><br>&#125; MSG, *PMSG, *NPMSG, *LPMSG;<br></code></pre></td></tr></table></figure>
+
+<p>相关重要函数：</p>
+<ol>
+<li><strong><code>GetMessage()</code></strong> - 从消息队列获取消息</li>
+<li><strong><code>PeekMessage()</code></strong> - 检查消息队列但不阻塞</li>
+<li><strong><code>TranslateMessage()</code></strong> - 转换虚拟键消息</li>
+<li><strong><code>DispatchMessage()</code></strong> - 分发消息到窗口过程</li>
+<li><strong><code>PostMessage()</code></strong> - 将消息放入消息队列</li>
+<li><strong><code>SendMessage()</code></strong> - 直接发送消息到窗口过程</li>
+</ol>
+<h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p>消息队列是Windows GUI应用程序运行的核心机制，它构成了Windows事件驱动编程模型的基础。在Win32窗口编程中，消息队列负责管理系统和应用程序之间的通信。</p>
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>Windows操作系统为每个GUI线程维护一个消息队列，这个队列存储着各种输入消息（如键盘、鼠标输入）、系统消息（如窗口管理）和应用程序自定义消息。当用户与窗口交互或系统事件发生时，Windows会将这些事件转换为消息并放入相应线程的消息队列中。</p>
+<h3 id="消息队列的类型"><a href="#消息队列的类型" class="headerlink" title="消息队列的类型"></a>消息队列的类型</h3><p><strong>系统消息队列</strong>：由操作系统维护的全局队列，接收原始硬件输入事件（如键盘敲击、鼠标移动）</p>
+<p><strong>线程消息队列</strong>：每个GUI线程有自己的消息队列，接收已分派到特定线程的窗口消息，包括输入消息、WM_系列窗口消息等</p>
+<p><img src="https://s2.loli.net/2025/05/17/7gVZOdcu6TFjs2K.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="消息处理流程"><a href="#消息处理流程" class="headerlink" title="消息处理流程"></a>消息处理流程</h3><p><strong>消息产生</strong>：</p>
+<ul>
+<li>硬件事件（如鼠标点击）被转换为WM_消息</li>
+<li>系统事件（如定时器到期）产生WM_TIMER消息</li>
+<li>应用程序可以主动发送消息（PostMessage&#x2F;SendMessage）</li>
+</ul>
+<p><strong>消息投递</strong>：</p>
+<ul>
+<li>系统将消息放入相应线程的消息队列</li>
+<li>对于PostMessage，消息被放入队列尾部</li>
+<li>对于SendMessage，直接调用窗口过程（不经过队列）</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/cOaDJPvbpmkFo7n.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>消息循环</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">while</span>(<span class="hljs-built_in">GetMessage</span>(&amp;msg, <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>))<br>&#123;<br>    <span class="hljs-built_in">TranslateMessage</span>(&amp;msg);  <span class="hljs-comment">// 转换键盘消息</span><br>    <span class="hljs-built_in">DispatchMessage</span>(&amp;msg);   <span class="hljs-comment">// 分派到窗口过程</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>消息处理</strong>：DispatchMessage调用目标窗口的窗口过程(WndProc)，窗口过程处理消息或调用DefWindowProc进行默认处理</p>
+<p><img src="https://s2.loli.net/2025/05/17/3Ih62aAkBVYvgct.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="子窗口控件"><a href="#子窗口控件" class="headerlink" title="子窗口控件"></a>子窗口控件</h1><p>CreateWindow</p>
+<blockquote>
+<p>This function creates an overlapped, pop-up, or child window. It specifies the window class, window title, window style, and, optionally, the initial position and size of the window. This function also specifies the window’s parent.</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c">HWND <span class="hljs-title function_">CreateWindow</span><span class="hljs-params">( </span><br><span class="hljs-params">  LPCTSTR lpClassName, </span><br><span class="hljs-params">  LPCTSTR lpWindowName, </span><br><span class="hljs-params">  DWORD dwStyle, </span><br><span class="hljs-params">  <span class="hljs-type">int</span> x, </span><br><span class="hljs-params">  <span class="hljs-type">int</span> y, </span><br><span class="hljs-params">  <span class="hljs-type">int</span> nWidth, </span><br><span class="hljs-params">  <span class="hljs-type">int</span> nHeight, </span><br><span class="hljs-params">  HWND hWndParent, </span><br><span class="hljs-params">  HMENU hMenu, </span><br><span class="hljs-params">  HANDLE hInstance, </span><br><span class="hljs-params">  PVOID lpParam </span><br><span class="hljs-params">)</span>; <br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/mango1997/p/14628463.html">win32 API编程之GDI绘图 - ☞＠_＠ - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/findumars/p/5810941.html">Windows消息编程（写的不错，有前因后果） - findumars - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_46190471/article/details/137998567">win32-显示窗口、消息循环、消息队列_win32消息循环-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/winmsg/about-messages-and-message-queues">关于消息和消息队列 - Win32 apps | Microsoft Learn</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">互联网全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/" class="category-chain-item">大前端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/%E6%A1%8C%E9%9D%A2%E7%AB%AF/" class="category-chain-item">桌面端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/%E6%A1%8C%E9%9D%A2%E7%AB%AF/Win32%E7%BC%96%E7%A8%8B/" class="category-chain-item">Win32编程</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>窗口机制探讨</div>
+      <div>https://hermes37.vercel.app/2025/05/18/互联网全栈开发/大前端/桌面端/Win32编程/窗口机制探讨/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/18/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/%E6%A1%8C%E9%9D%A2%E7%AB%AF/Win32%E7%BC%96%E7%A8%8B/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" title="文件系统">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">文件系统</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/18/%E4%BA%92%E8%81%94%E7%BD%91%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/%E6%A1%8C%E9%9D%A2%E7%AB%AF/Win32%E7%BC%96%E7%A8%8B/%E5%AD%97%E7%AC%A6%E4%B8%8E%E7%BC%96%E7%A0%81/" title="字符与编码">
+                        <span class="hidden-mobile">字符与编码</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
