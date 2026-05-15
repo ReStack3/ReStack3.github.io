@@ -1,0 +1,1225 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Cookie反爬虫在前面的User-Agent和referer反爬虫 - The Peak Tower中我们谈到请求报文中常见的反爬虫字段。其中简单带过了Cookie，这一篇将重点看一看Cookie反爬虫，开始之前需要先了解什么是Cookie? 什么是Cookie？Cookie 是由服务器发送到客户端（通常是浏览器）并存储在客户端上的小块数据【Cookie是你正在访问的网站发送到你正在使用的设备上">
+<meta property="og:type" content="article">
+<meta property="og:title" content="信息校验反爬虫">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/05/15/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E4%BF%A1%E6%81%AF%E6%A0%A1%E9%AA%8C%E5%8F%8D%E7%88%AC%E8%99%AB/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="Cookie反爬虫在前面的User-Agent和referer反爬虫 - The Peak Tower中我们谈到请求报文中常见的反爬虫字段。其中简单带过了Cookie，这一篇将重点看一看Cookie反爬虫，开始之前需要先了解什么是Cookie? 什么是Cookie？Cookie 是由服务器发送到客户端（通常是浏览器）并存储在客户端上的小块数据【Cookie是你正在访问的网站发送到你正在使用的设备上">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/Uq2y5BXp7PwCKjd.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/njfTKOuJtSbdqVN.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/uWUf7TLVAZ3lMGn.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/gK6sAFtR7POyJfI.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/fksGd2tV4C1nbah.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/O4eUwiK9IHkvd6G.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/gvcXS2LFpUJ5dlu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/WFeiyE6p51HVQoY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/5VqXkaro6ZdULbE.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/15DzqA8ndWlyUvM.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/asLztoJm1DZRBrc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/G6PxpgBu93RbU8i.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/Wwzf4QxCqEOn6rd.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/mbrTAZtcXOR8qYB.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/SzNukR7h2Ka1vIG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/KbsjYp5Nvd3rwQc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/EjomXYd127xpMDv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kD8K6ZwdNazRH5c.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kVlBXMpSqzuA1io.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kzCw4tdFfNIJHyu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/OLTJ1VZQ9ERSB5v.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/R96l3r5SOmuLCvk.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/x3UTuKHliFDqaIX.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/Km15xBuVMPZcyQe.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/XgAOTcDfjY5uCBL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/HmkE6wRb95uSOqM.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/nvLOhkuMX3st9zg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/7jRhxq2IbKXQEeg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/jSFtPOY52nGA1qi.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/OGRfXYiJngwBUzm.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/28/kmveyUhjl9KtsDn.png">
+<meta property="article:published_time" content="2026-05-15T13:47:54.920Z">
+<meta property="article:modified_time" content="2026-05-15T13:53:54.509Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/01/28/Uq2y5BXp7PwCKjd.png">
+  
+  
+  
+  <title>信息校验反爬虫 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="信息校验反爬虫"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          55 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">信息校验反爬虫</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Cookie反爬虫"><a href="#Cookie反爬虫" class="headerlink" title="Cookie反爬虫"></a>Cookie反爬虫</h1><p>在前面的<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/03/12/User-Agent%E5%8F%8D%E7%88%AC%E8%99%AB/">User-Agent和referer反爬虫 - The Peak Tower</a>中我们谈到请求报文中常见的反爬虫字段。其中简单带过了Cookie，这一篇将重点看一看Cookie反爬虫，开始之前需要先了解什么是Cookie?</p>
+<h2 id="什么是Cookie？"><a href="#什么是Cookie？" class="headerlink" title="什么是Cookie？"></a>什么是Cookie？</h2><p><strong>Cookie</strong> 是由服务器发送到客户端（通常是浏览器）并存储在客户端上的小块数据【Cookie是你正在访问的网站发送到你正在使用的设备上的小型文档】，用于在用户与网站的交互过程中保存状态信息、跟踪用户行为、保存登录信息等。每当浏览器向同一服务器发送请求时，浏览器会自动将相关的 Cookie 数据附加在请求头中，从而让服务器识别用户的身份或恢复用户的状态。</p>
+<blockquote>
+<p>举个例子：</p>
+<p>Cookie就像网站在每个来访用户身上标记的小标签，以便你下次再来时服务器将你识别为“回头客”，省去重新认识你的过程。此标记允许网站记住你的偏好并且为你提供更个性化的体验。例如，如果你在初次访问网站时选择深色模式且已经接受该网站的Cookie，当你下次打开这个网站时会自动跳呈深色模式。同样的，Cookie可以帮助网站记住你登入的时间，因此你不必在每次访问时都输入一次登入凭证。在比如：如果没有Cookie，你每次登入电商网站都必须将商品重新加入购物车，或者每次打开浏览器都要重新开始对话。</p>
+</blockquote>
+<p> <strong>Cookie 的基本功能</strong> 和 <strong>Cookie 的生命周期</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>类别</strong></th>
+<th><strong>功能&#x2F;描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>基本功能</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>状态保持</td>
+<td>HTTP 协议是无状态的，Cookie 用于在多个请求之间保持用户状态信息，如登录状态和购物车内容。</td>
+</tr>
+<tr>
+<td>身份验证</td>
+<td>Cookie 用于存储会话信息（如 <code>sessionid</code>）和用户认证信息，以保持用户登录状态，避免用户每次访问时重新登录。</td>
+</tr>
+<tr>
+<td>跟踪用户行为</td>
+<td>通过 Cookie 跟踪用户在网站上的浏览行为、偏好设置等，帮助提供个性化的内容或广告。</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th><strong>生命周期</strong></th>
+<th><strong>类型</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>会话 Cookie</td>
+<td>Session Cookie</td>
+<td>没有设置 <code>Expires</code> 或 <code>Max-Age</code> 的 Cookie，会话结束（浏览器关闭）时自动删除。</td>
+</tr>
+<tr>
+<td>持久 Cookie</td>
+<td>Persistent Cookie</td>
+<td>设置了 <code>Expires</code> 或 <code>Max-Age</code> 的 Cookie，在过期前一直有效，直到过期或被删除。</td>
+</tr>
+</tbody></table>
+<p>Cookie 的组成主要包括以下几个部分:</p>
+<table>
+<thead>
+<tr>
+<th><strong>字段&#x2F;部分</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>名称 (Name)</strong></td>
+<td>Cookie 的名称，用于唯一标识该 Cookie。</td>
+<td><code>sessionid</code></td>
+</tr>
+<tr>
+<td><strong>值 (Value)</strong></td>
+<td>与名称对应的值，存储在该 Cookie 中的实际数据。</td>
+<td><code>abc123xyz</code></td>
+</tr>
+<tr>
+<td><strong>过期时间 (Expires)</strong></td>
+<td>Cookie 的过期时间，指定何时删除 Cookie。格式为 UTC 时间。如果没有设置，Cookie 会在浏览器关闭时失效。</td>
+<td><code>Wed, 21 Oct 2025 07:28:00 GMT</code></td>
+</tr>
+<tr>
+<td><strong>最大有效时间 (Max-Age)</strong></td>
+<td>Cookie 的有效时间（单位：秒）。当设置时，<code>Max-Age</code> 会覆盖 <code>Expires</code>。该 Cookie 在指定秒数后过期。</td>
+<td><code>3600</code>（表示 Cookie 在一小时后过期）</td>
+</tr>
+<tr>
+<td><strong>域 (Domain)</strong></td>
+<td>指定哪些域名可以访问该 Cookie。默认为设置该 Cookie 的域名。通常可以指定该 Cookie 作用的子域名。</td>
+<td><code>example.com</code></td>
+</tr>
+<tr>
+<td><strong>路径 (Path)</strong></td>
+<td>指定哪些路径下的页面可以访问该 Cookie。默认为请求 Cookie 时的路径。</td>
+<td><code>/app/</code></td>
+</tr>
+<tr>
+<td><strong>安全标志 (Secure)</strong></td>
+<td>如果设置，Cookie 仅能通过 HTTPS 传输，增强安全性。</td>
+<td><code>Secure</code></td>
+</tr>
+<tr>
+<td><strong>HttpOnly</strong></td>
+<td>如果设置，Cookie 不能通过 JavaScript 访问，减少 XSS 攻击的风险。</td>
+<td><code>HttpOnly</code></td>
+</tr>
+<tr>
+<td><strong>SameSite</strong></td>
+<td>限制跨站请求时是否发送 Cookie。通常有三个值：<code>Strict</code>、<code>Lax</code> 和 <code>None</code>。</td>
+<td><code>SameSite=Lax</code></td>
+</tr>
+</tbody></table>
+<h2 id="什么是session？"><a href="#什么是session？" class="headerlink" title="什么是session？"></a>什么是session？</h2><p><strong>Session（会话）</strong> 是指在一段时间内，用户与服务器之间的交互过程。每当用户与服务器建立连接时，服务器可以通过 Session 机制来跟踪并保存用户的状态信息，以便在多个请求之间保持用户的身份和交互状态。</p>
+<h3 id="1-Session-的基本概念"><a href="#1-Session-的基本概念" class="headerlink" title="1. Session 的基本概念"></a>1. <strong>Session 的基本概念</strong></h3><p>在 HTTP 协议中，每个请求都是独立的，没有任何状态信息（即 HTTP 是无状态的）。为了克服这个限制，Web 应用通常使用 Session 来跟踪用户的交互过程。例如，当你登录某个网站时，服务器创建一个 Session 用于标识你，并存储你的登录信息。这样，后续的请求就能识别你是已经登录的用户，而无需每次都进行身份验证。</p>
+<h3 id="2-Session-的工作原理"><a href="#2-Session-的工作原理" class="headerlink" title="2. Session 的工作原理"></a>2. <strong>Session 的工作原理</strong></h3><ul>
+<li>当用户首次访问某个 Web 应用时，服务器会为该用户创建一个唯一的 <strong>Session ID</strong>。这个 ID 可以保存在客户端的 Cookie 中，或者通过 URL 参数传递。</li>
+<li>在后续的请求中，浏览器会将这个 <strong>Session ID</strong> 发送给服务器（通常存储在 Cookie 中），服务器根据该 ID 找到对应的 Session 信息，恢复用户的状态。</li>
+<li>每个用户的 Session 都是独立的，因此即使多个用户同时访问服务器，服务器也能区分开每个用户的状态。</li>
+</ul>
+<h3 id="3-Session-与-Cookie-的区别"><a href="#3-Session-与-Cookie-的区别" class="headerlink" title="3. Session 与 Cookie 的区别"></a>3. <strong>Session 与 Cookie 的区别</strong></h3><table>
+<thead>
+<tr>
+<th><strong>类别</strong></th>
+<th><strong>Session</strong></th>
+<th><strong>Cookie</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>存储位置</strong></td>
+<td>存储在服务器端，服务器负责管理 Session 数据。</td>
+<td>存储在客户端（浏览器）上，由客户端管理。</td>
+</tr>
+<tr>
+<td><strong>生命周期</strong></td>
+<td>通常会在用户的会话结束时失效，比如用户关闭浏览器或 Session 超时。</td>
+<td>可以设置过期时间，持久化存储在客户端中，直到达到过期时间或被删除。</td>
+</tr>
+<tr>
+<td><strong>安全性</strong></td>
+<td>存储在服务器端，因此相对更安全，防止敏感信息泄漏。</td>
+<td>存储在客户端，可能会被篡改或盗取，容易受到 XSS、CSRF 等攻击。</td>
+</tr>
+</tbody></table>
+<h3 id="4-Session-的作用"><a href="#4-Session-的作用" class="headerlink" title="4. Session 的作用"></a>4. <strong>Session 的作用</strong></h3><ul>
+<li><strong>身份验证</strong>：通过 Session ID，服务器可以在多个请求之间保持用户的登录状态，避免每次请求都需要重新验证身份。</li>
+<li><strong>个性化设置</strong>：Session 可以存储用户的偏好设置、购物车内容等，使得用户的体验更加个性化。</li>
+<li><strong>状态管理</strong>：Session 用于在无状态的 HTTP 请求之间保存和传递用户的数据。</li>
+</ul>
+<h2 id="案例一：基于Session和Cookie的模拟登录爬取"><a href="#案例一：基于Session和Cookie的模拟登录爬取" class="headerlink" title="案例一：基于Session和Cookie的模拟登录爬取"></a>案例一：<strong>基于Session和Cookie的模拟登录爬取</strong></h2><blockquote>
+<p>案例练习网站：<a target="_blank" rel="noopener" href="https://login2.scrape.center/login?next=/">Scrape | Movie</a></p>
+</blockquote>
+<h3 id="分析网站请求过程"><a href="#分析网站请求过程" class="headerlink" title="分析网站请求过程"></a>分析网站请求过程</h3><p><img src="https://s2.loli.net/2025/01/28/Uq2y5BXp7PwCKjd.png" srcset="/img/loading.gif" lazyload alt="image-20250128163001533"></p>
+<p>输入用户名和密码（都是admin），然后单击登录按钮。</p>
+<p>我们输入用户名和密码点击登录后，浏览器发起了一个POST请求，目标URL 是<a target="_blank" rel="noopener" href="https://login2.scrape.center/login">https://login2.scrape.center/login</a></p>
+<p><img src="https://s2.loli.net/2025/01/28/njfTKOuJtSbdqVN.png" srcset="/img/loading.gif" lazyload alt="image-20250128163110570"></p>
+<p>并通过表单提交的方式向服务器提交了登录数据，其中包括username和password两个字段</p>
+<p><img src="https://s2.loli.net/2025/01/28/uWUf7TLVAZ3lMGn.png" srcset="/img/loading.gif" lazyload alt="image-20250128163123333"></p>
+<p>通过观察响应报文：</p>
+<p><img src="https://s2.loli.net/2025/01/28/gK6sAFtR7POyJfI.png" srcset="/img/loading.gif" lazyload alt="image-20250128164432656"></p>
+<p><img src="https://s2.loli.net/2025/01/28/fksGd2tV4C1nbah.png" srcset="/img/loading.gif" lazyload alt="image-20250128164729454"></p>
+<p>可以看到服务器返回了Cookie值。紧接着调用get方法请求网站首页来获取页面内容，要想get请求能够获取到内容，必须与第一次请求的Cookie相同，</p>
+<p><img src="https://s2.loli.net/2025/01/28/O4eUwiK9IHkvd6G.png" srcset="/img/loading.gif" lazyload alt="image-20250128164635504"></p>
+<p>整体分析完毕，接着进行代码的编写。这里可以借助requests内置的Session对象帮我们自动处理Cookie，【可以参考<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2022/09/15/Lxml,BeautifulSoup%E5%92%8CRequet%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">Lxml,BeautifulSoup和Requet基本使用 - The Peak Tower</a>】使用Session对象之后，requests会自动保存每次请求后设置的Cookie，并在下次请求时携带上它，这样就能获取网站的信息。</p>
+<p><img src="https://s2.loli.net/2025/01/28/gvcXS2LFpUJ5dlu.png" srcset="/img/loading.gif" lazyload alt="image-20250128164940223"></p>
+<p>结果如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/WFeiyE6p51HVQoY.png" srcset="/img/loading.gif" lazyload alt="image-20250128165023377"></p>
+<blockquote>
+<p>除了反爬虫之外，重定向和Cookie常常被用来指定网站的入口或提高访问门槛，有些需要在登录后才能访问的网页就是使用了这种方法，但这种方法需要满足一定的需求或场景才能使用。而且示例中所使用的Cookie太简单了，每次使用的Cookie值都是相同的，只要爬虫工程师将Cookie值从浏览器的请求头中复制，就可以一直使用。Cookie反爬虫这么简单吗？岂不是很轻易就被绕过了？</p>
+<p>其实，利用Cookie实现反爬虫的方法不止这一种，接下来我们思考如何将Cookie和JavaScript结合起来实现反爬虫。我们之前在学习JavaScript时了解到，Location对象（即window.location对象）可以将浏览器重定向到其他页面，那么是不是可以利用这个特点呢？如果在HTML代码中引入一个可以将浏览器重定向到目标页面的JavaScript文件，并且在这个文件中实现随机字符串生成和Cookie设置的功能，那么服务器端只需要校验Cookie值的规则即可。这里还需要设置一个页面跳板，当用户希望请求内容页时，浏览器会先跳转到跳板页面，在页面中执行JavaScript文件中的代码，完成Cookie值的生成和设置后再将浏览器重定向到内容页。</p>
+</blockquote>
+<h2 id="案例二：js混淆-动态cookie"><a href="#案例二：js混淆-动态cookie" class="headerlink" title="案例二：js混淆-动态cookie"></a>案例二：js混淆-动态cookie</h2><blockquote>
+<p>案例练习网站：<a target="_blank" rel="noopener" href="https://match.yuanrenxue.cn/match/2">第二题js 混淆 动态cookie 1 - 猿人学</a></p>
+</blockquote>
+<p>本题主要涉及js逆向，这部分内容将在后面专题重点讲解，这里只重点关注动态Cookie内容</p>
+<p><img src="https://s2.loli.net/2025/01/28/5VqXkaro6ZdULbE.png" srcset="/img/loading.gif" lazyload alt="image-20250128165948180"></p>
+<p>点击到第二页的时候就会提示：cookie 失效，正在重置页面，所以 cookie 值是在动态变化的，并且会进行校验， 分析找到其中加密变化的参数：</p>
+<p><img src="https://s2.loli.net/2025/01/28/15DzqA8ndWlyUvM.png" srcset="/img/loading.gif" lazyload alt="a6473a002be275c9e5f704a40e16da13"></p>
+<p>接下来进行js逆向扣代码，这里可以先不必知道什么是扣代码，只需了解这里cookie是有js代码动态生成的。</p>
+<p>网页源码：</p>
+<p><img src="https://s2.loli.net/2025/01/28/asLztoJm1DZRBrc.png" srcset="/img/loading.gif" lazyload alt="image-20250128170331808"></p>
+<p>扣代码补逻辑：</p>
+<p><img src="https://s2.loli.net/2025/01/28/G6PxpgBu93RbU8i.png" srcset="/img/loading.gif" lazyload alt="image-20250128170424086"></p>
+<p>代码调用：</p>
+<p><img src="https://s2.loli.net/2025/01/28/Wwzf4QxCqEOn6rd.png" srcset="/img/loading.gif" lazyload alt="image-20250128170507620"></p>
+<p>结果如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/mbrTAZtcXOR8qYB.png" srcset="/img/loading.gif" lazyload alt="image-20250128170547563"></p>
+<h3 id="签名验证反爬虫"><a href="#签名验证反爬虫" class="headerlink" title="签名验证反爬虫"></a>签名验证反爬虫</h3><blockquote>
+<p>签名是根据数据源进行计算或加密的过程，签名的结果是一个具有唯一性和一致性的字符串。签名结果的特性使得它成为验证数据来源和数据完整性的条件，可以有效避免服务器端将伪造的数据或被篡改的数据当成正常数据处理。签名验证是防止恶意连接和数据被篡改的有效方式之一，也是目前后端API最常用的防护方式之一。与Cookie、User-Agent、Host和Referer等请求头域不同，用于签名验证的信息通常被放在请求正文中发送到服务器端。</p>
+</blockquote>
+<p>本质与上述的动态cookie逻辑相似，也是与JavaScript结合实现请求参数的随机变化的。</p>
+<p>比如小红书的X-S参数，抖音的a_bogus参数等。都是类似逻辑</p>
+<p><img src="https://s2.loli.net/2025/01/28/SzNukR7h2Ka1vIG.png" srcset="/img/loading.gif" lazyload alt="image-20250128171036780"></p>
+<p>这一部分主要是采取js逆向，这里不多赘述。</p>
+<h1 id="User-Agent反爬虫"><a href="#User-Agent反爬虫" class="headerlink" title="User-Agent反爬虫"></a>User-Agent反爬虫</h1><p>先来看无需进行User-Agent验证的正常网页请求的逻辑：</p>
+<blockquote>
+<p>案例网址：<a target="_blank" rel="noopener" href="http://124.222.20.106//verify/uas/index.html#">Steamboat-反爬虫练习</a></p>
+</blockquote>
+<p>代码如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/KbsjYp5Nvd3rwQc.png" srcset="/img/loading.gif" lazyload alt="image-20250128085730156"></p>
+<p>结果如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/EjomXYd127xpMDv.png" srcset="/img/loading.gif" lazyload alt="image-20250128085826624"></p>
+<p>可以看到即使没有User-Agent，也能正常请求到数据</p>
+<hr>
+<p>接下来看一看对User-Agent进行校验的网址：<a target="_blank" rel="noopener" href="https://antispider2.scrape.center/">Scrape | Movie</a></p>
+<p><img src="https://s2.loli.net/2025/01/28/kD8K6ZwdNazRH5c.png" srcset="/img/loading.gif" lazyload alt="image-20250128092612624"></p>
+<p>可以看到正常请求失败，接下来看看浏览器能否正常请求，如果浏览器能请求到数据，说明我们的请求报文缺少东西并针对的添加即可</p>
+<p><img src="https://s2.loli.net/2025/01/28/kVlBXMpSqzuA1io.png" srcset="/img/loading.gif" lazyload alt="image-20250128091746883"></p>
+<p>可以看到浏览器请求成功，并且注意到请求标头中我们缺少的User-Agent。修改python代码再次请求：</p>
+<p><img src="https://s2.loli.net/2025/01/28/kzCw4tdFfNIJHyu.png" srcset="/img/loading.gif" lazyload alt="image-20250128092109629"></p>
+<p>可以看到请求成功。</p>
+<hr>
+<p>在上面你可能会感到奇怪，为什么请求报文中有那么多字段为什么偏偏选择User-Agent？及其反向思考：服务器怎么识别到底是真人操作还是爬虫程序请求？而服务器手中首先有的是请求报文。</p>
+<p>常见request爬虫报文如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/OLTJ1VZQ9ERSB5v.png" srcset="/img/loading.gif" lazyload alt="image-20250128100730995"></p>
+<p>服务器能做到的是针对爬虫程序没有的字段或者建立黑名单利用正则匹配对已有的字段进行检测。以下是 HTTP 请求报文常见字段的解析：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>描述</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Host</strong></td>
+<td>表示目标服务器的域名和端口号，必需字段。</td>
+<td><code>Host: www.example.com</code></td>
+</tr>
+<tr>
+<td><strong>User-Agent</strong></td>
+<td>标识发起请求的客户端应用程序及其版本。通常用于标识浏览器、操作系统等信息。</td>
+<td><code>User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91</code></td>
+</tr>
+<tr>
+<td><strong>Accept</strong></td>
+<td>告诉服务器客户端能够处理的内容类型。</td>
+<td><code>Accept: text/html,application/xhtml+xml,application/xml;q=0.9</code></td>
+</tr>
+<tr>
+<td><strong>Accept-Encoding</strong></td>
+<td>指定客户端支持的内容编码方式，如压缩格式。</td>
+<td><code>Accept-Encoding: gzip, deflate</code></td>
+</tr>
+<tr>
+<td><strong>Accept-Language</strong></td>
+<td>指定客户端支持的语言种类。</td>
+<td><code>Accept-Language: en-US,en;q=0.9</code></td>
+</tr>
+<tr>
+<td><strong>Cookie</strong></td>
+<td>客户端发送给服务器的 cookie 数据，通常用于保存会话信息等。</td>
+<td><code>Cookie: sessionid=abc123xyz; userid=7890</code></td>
+</tr>
+<tr>
+<td><strong>Referer</strong></td>
+<td>表示当前请求页面的来源，通常是发起该请求的页面 URL。</td>
+<td><code>Referer: https://www.example.com/home</code></td>
+</tr>
+<tr>
+<td><strong>Connection</strong></td>
+<td>控制当前连接的选项，常见值为 <code>keep-alive</code> 或 <code>close</code>。</td>
+<td><code>Connection: keep-alive</code></td>
+</tr>
+<tr>
+<td><strong>Authorization</strong></td>
+<td>用于身份验证的凭证，通常是用户名和密码。</td>
+<td><code>Authorization: Basic YWRtaW46cGFzc3dvcmQ=</code></td>
+</tr>
+<tr>
+<td><strong>Upgrade-Insecure-Requests</strong></td>
+<td>表示客户端是否支持自动将 HTTP 请求升级到 HTTPS。</td>
+<td><code>Upgrade-Insecure-Requests: 1</code></td>
+</tr>
+<tr>
+<td><strong>If-Modified-Since</strong></td>
+<td>用于缓存机制，指示服务器只有在指定时间后内容有所更改时才返回资源。</td>
+<td><code>If-Modified-Since: Tue, 15 Nov 2022 12:45:26 GMT</code></td>
+</tr>
+<tr>
+<td><strong>If-None-Match</strong></td>
+<td>用于缓存机制，基于给定的 ETag 判断服务器是否需要返回新的资源。</td>
+<td><code>If-None-Match: &quot;abc123&quot;</code></td>
+</tr>
+<tr>
+<td><strong>Range</strong></td>
+<td>请求指定的资源的一部分，通常用于下载文件的分块请求。</td>
+<td><code>Range: bytes=0-1023</code></td>
+</tr>
+<tr>
+<td><strong>Content-Type</strong></td>
+<td>指定请求体的媒体类型。通常用于 POST 或 PUT 请求中。</td>
+<td><code>Content-Type: application/x-www-form-urlencoded</code></td>
+</tr>
+<tr>
+<td><strong>Content-Length</strong></td>
+<td>请求体的长度（字节数），在有请求体的情况下必填。</td>
+<td><code>Content-Length: 348</code></td>
+</tr>
+<tr>
+<td><strong>DNT (Do Not Track)</strong></td>
+<td>启用或禁用跟踪请求的指令。</td>
+<td><code>DNT: 1</code></td>
+</tr>
+<tr>
+<td><strong>X-Requested-With</strong></td>
+<td>通常用于 AJAX 请求，表示请求是由 JavaScript 发起的。</td>
+<td><code>X-Requested-With: XMLHttpRequest</code></td>
+</tr>
+<tr>
+<td><strong>TE</strong></td>
+<td>指定接受的传输编码方式。</td>
+<td><code>TE: deflate</code></td>
+</tr>
+<tr>
+<td><strong>X-Forwarded-For</strong></td>
+<td>通常由代理服务器使用，表示客户端的原始 IP 地址。</td>
+<td><code>X-Forwarded-For: 192.168.1.1</code></td>
+</tr>
+<tr>
+<td><strong>X-Frame-Options</strong></td>
+<td>控制页面是否可以嵌入到 <code>&lt;iframe&gt;</code> 或 <code>&lt;frame&gt;</code> 中。</td>
+<td><code>X-Frame-Options: DENY</code></td>
+</tr>
+</tbody></table>
+<p>说明：</p>
+<ul>
+<li><strong>必填字段</strong>：<code>Host</code> 是请求报文中唯一必须存在的字段，因为它标识了请求的目标服务器。</li>
+<li><strong>可选字段</strong>：其余字段都是可选的，具体会根据请求的类型（如 <code>GET</code>、<code>POST</code>）和实际需求而有所不同。</li>
+<li><strong>常见字段</strong>：<code>User-Agent</code>、<code>Accept</code>、<code>Cookie</code>、<code>Referer</code> 等经常出现在 HTTP 请求中。</li>
+</ul>
+<p>之所以重点关注<code>User-Agent</code>、<code>Cookie</code>、<code>Referer</code>是因为因为这三个字段能够有效地帮助服务器识别并区分正常用户与自动化爬虫的行为。</p>
+<blockquote>
+<p>首先，<code>User-Agent</code> 字段提供了客户端软件的详细信息，包括浏览器类型、操作系统以及版本号等。通过分析 <code>User-Agent</code>，反爬虫系统可以识别请求是否来自常见的浏览器，若该字段为空或不符合正常浏览器的格式，服务器就能怀疑该请求可能来自自动化工具。虽然爬虫可以伪造 <code>User-Agent</code>，但是一些反爬虫机制通过检测不常见或异常的 <code>User-Agent</code> 字段，能够识别出非正常的访问行为。比如，爬虫往往没有像浏览器一样频繁更改 <code>User-Agent</code> 或者会使用一些不常见的 <code>User-Agent</code>。</p>
+<p>其次，<code>Cookie</code> 字段是反爬虫系统另一个重要的监测对象。正常用户的浏览器会自动存储和发送会话数据、身份验证信息等，而爬虫往往不会正确处理 cookie，因此 <code>Cookie</code> 字段的缺失或异常往往是爬虫的表现。反爬虫系统会检查请求中 <code>Cookie</code> 的一致性，若发现请求没有有效的 <code>Cookie</code>，或者 <code>Cookie</code> 中包含异常的会话 ID，这通常意味着该请求是自动化程序所发出。另外，通过分析请求中的 cookie 行为，反爬虫系统还可以检测是否存在多个请求使用相同会话 ID，或者同一个 <code>Cookie</code> 被多个不同的 IP 地址访问，这也是爬虫的一种常见特征。</p>
+<p>最后，<code>Referer</code> 字段标识了请求的来源页面，是服务器判断请求是否来自正常浏览行为的关键。一般来说，当用户在浏览网页时，浏览器会自动附带上一层 <code>Referer</code>，表明当前页面是从哪个页面跳转过来的。然而，爬虫通常不会像真实用户那样正确设置 <code>Referer</code>，或者其 <code>Referer</code> 字段可能为空，或者是一个不符合常理的 URL。反爬虫系统会检查 <code>Referer</code> 字段的有效性，如果发现其不符合常规的页面跳转路径，便会怀疑该请求是来自自动化工具。</p>
+</blockquote>
+<hr>
+<p>同理接下来看一个对<strong>referer</strong>进行校验的网址：<a target="_blank" rel="noopener" href="https://spiderbuf.cn/playground/n01">User-Agent与Referer校验反爬_N01_Spiderbuf</a></p>
+<p><img src="https://s2.loli.net/2025/01/28/R96l3r5SOmuLCvk.png" srcset="/img/loading.gif" lazyload alt="image-20250128090721480"></p>
+<p>结果如下：</p>
+<p><img src="https://s2.loli.net/2025/01/28/x3UTuKHliFDqaIX.png" srcset="/img/loading.gif" lazyload alt="image-20250128090612367"></p>
+<p>可以看到即使添加上User-agent也请求失败。同理观察浏览器是否请求成功并观察请求报文</p>
+<p><img src="https://s2.loli.net/2025/01/28/Km15xBuVMPZcyQe.png" srcset="/img/loading.gif" lazyload alt="image-20250128092923237"></p>
+<p>浏览器能请求成功，观察请求报文</p>
+<p><img src="https://s2.loli.net/2025/01/28/XgAOTcDfjY5uCBL.png" srcset="/img/loading.gif" lazyload alt="image-20250128093030260"></p>
+<p>可以进行一一尝试，在原来请求头代码上再添加一个Referer试试</p>
+<p><img src="https://s2.loli.net/2025/01/28/HmkE6wRb95uSOqM.png" srcset="/img/loading.gif" lazyload alt="image-20250128093325408"></p>
+<p>可以看到成功请求到，证实了我们的想法</p>
+<hr>
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38230663/article/details/116830990">Python之反爬虫手段（User-Agent，Cookie，Referer，time.sleep()，IP代理池）_反爬虫 ip地址池-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/python_neophyte/article/details/82562330">关于网页referer以及破解referer反爬虫的办法_爬取时如何屏蔽no-referrer-when-downgrade-CSDN博客</a></p>
+<h1 id="WebSoket反爬虫"><a href="#WebSoket反爬虫" class="headerlink" title="WebSoket反爬虫"></a>WebSoket反爬虫</h1><h2 id="什么是WebSocket"><a href="#什么是WebSocket" class="headerlink" title="什么是WebSocket?"></a>什么是WebSocket?</h2><blockquote>
+<p>详细参考：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_74436895/article/details/144331869">WebSocket(看这一篇就够了)-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1887095">万字长文，一篇吃透WebSocket：概念、原理、易错常识、动手实践-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p>这里以这个<a target="_blank" rel="noopener" href="https://websocket1.scrape.center/">Scrape | Movie</a>网站试分析WebSocket连接过程</p>
+<h3 id="WebSocket-握手"><a href="#WebSocket-握手" class="headerlink" title="WebSocket 握手"></a><strong>WebSocket 握手</strong></h3><p>WebSocket 连接的建立是通过 HTTP 协议进行的，称为“握手”过程。握手的过程是通过 HTTP 请求头来升级协议。</p>
+<h4 id="客户端请求"><a href="#客户端请求" class="headerlink" title="客户端请求"></a>客户端请求</h4><p>客户端发起 WebSocket 连接时，向服务器发送一个 HTTP 请求，并在请求头中包含 <code>Upgrade</code> 和 <code>Connection</code> 字段，要求将协议从 HTTP 升级到 WebSocket。</p>
+<p><img src="https://s2.loli.net/2025/01/28/nvLOhkuMX3st9zg.png" srcset="/img/loading.gif" lazyload alt="image-20250128203139889"></p>
+<p>1自然体现是一个 WebSocket URL，它代表客户端希望通过加密的 WebSocket 连接（<code>wss://</code>）连接到 <code>websocket1.scrape.center</code> 服务器上的 <code>/websocket</code> 路径。通过这个连接，客户端和服务器可以建立实时的双向通信。</p>
+<p>注意看这里的2、3、4各字段意思：</p>
+<ul>
+<li><code>Upgrade: websocket</code>：告诉服务器希望从 HTTP 协议升级到 WebSocket 协议。</li>
+<li><code>Connection: Upgrade</code>：请求进行协议升级。</li>
+<li><code>Sec-WebSocket-Key</code>：一个随机的 Base64 编码字符串，用来保证安全性（在握手过程中服务器会使用它来生成响应）。</li>
+<li><code>Sec-WebSocket-Version</code>：指定 WebSocket 协议版本（通常是 13）。</li>
+</ul>
+<h4 id="服务器响应"><a href="#服务器响应" class="headerlink" title="服务器响应"></a>服务器响应</h4><p>服务器收到客户端的握手请求后，如果支持 WebSocket 协议，会返回一个 HTTP 101 状态码表示协议切换，并在响应头中包括 <code>Sec-WebSocket-Accept</code>，这是对 <code>Sec-WebSocket-Key</code> 的响应：</p>
+<p><img src="https://s2.loli.net/2025/01/28/7jRhxq2IbKXQEeg.png" srcset="/img/loading.gif" lazyload alt="image-20250128203522048"></p>
+<ul>
+<li><code>Sec-WebSocket-Accept</code>：根据客户端的 <code>Sec-WebSocket-Key</code> 生成的响应，通常是 <code>Sec-WebSocket-Key</code> 和一个固定的 GUID 字符串（”258EAFA5-E914-47DA-95CA-C5AB0DC85B11”）拼接后，经过 SHA-1 摘要，再进行 Base64 编码生成的。</li>
+</ul>
+<h4 id="握手成功"><a href="#握手成功" class="headerlink" title="握手成功"></a>握手成功</h4><p>握手成功后，HTTP 连接被升级为 WebSocket 连接。此时，客户端和服务器之间的通信就不再是 HTTP 请求&#x2F;响应，而是基于 WebSocket 协议的实时、全双工连接。</p>
+<h3 id="数据传输"><a href="#数据传输" class="headerlink" title="数据传输"></a>数据传输</h3><p>WebSocket 的数据传输是双向的，客户端和服务器都可以在任何时刻发送消息。数据传输的格式是帧（frame），并且支持文本、二进制数据的传输。</p>
+<h4 id="发送消息："><a href="#发送消息：" class="headerlink" title="发送消息："></a>发送消息：</h4><p>客户端或服务器通过 WebSocket 连接发送帧。对于文本消息，消息内容通常是 UTF-8 编码的字符串；对于二进制数据，消息内容可能是字节流。</p>
+<h4 id="Ping-Pong-控制帧："><a href="#Ping-Pong-控制帧：" class="headerlink" title="Ping&#x2F;Pong 控制帧："></a>Ping&#x2F;Pong 控制帧：</h4><p>为了保持连接活跃，WebSocket 协议支持 Ping&#x2F;Pong 控制帧。客户端或服务器可以定期发送 Ping 帧，另一方接收到 Ping 帧后必须回复 Pong 帧。这是 WebSocket 连接的健康检查机制，防止连接超时。</p>
+<p><img src="https://s2.loli.net/2025/01/28/jSFtPOY52nGA1qi.png" srcset="/img/loading.gif" lazyload alt="image-20250128203904336"></p>
+<h4 id="WebSocket数据帧"><a href="#WebSocket数据帧" class="headerlink" title="**WebSocket数据帧 **"></a>**WebSocket数据帧 **</h4><p>WebSocket 连接建立后，数据传输是通过消息帧（Frame）进行的。每个消息都被分成一个或多个数据帧。每个帧包含如下内容：</p>
+<ul>
+<li><strong>FIN</strong>：标志位，表示消息的结束。</li>
+<li><strong>Opcode</strong>：操作码，指示数据帧的类型（例如：文本帧、二进制帧、关闭帧等）。</li>
+<li><strong>Mask</strong>：标志位，表示是否对数据进行掩码处理（客户端发送的消息必须被掩码，服务器发送的则不需要）。</li>
+<li><strong>Payload Length</strong>：负载数据的长度。</li>
+<li><strong>Payload Data</strong>：负载数据本身，即实际的消息内容。</li>
+</ul>
+<p>常见的操作码：</p>
+<ul>
+<li><code>0x1</code>：文本消息（UTF-8 编码）</li>
+<li><code>0x2</code>：二进制数据</li>
+<li><code>0x8</code>：连接关闭</li>
+<li><code>0x9</code>：Ping 消息</li>
+<li><code>0xA</code>：Pong 消息</li>
+</ul>
+<h3 id="关闭连接"><a href="#关闭连接" class="headerlink" title="关闭连接"></a><strong>关闭连接</strong></h3><p>当一方希望关闭 WebSocket 连接时，会发送一个关闭帧。该帧的操作码是 <code>0x8</code>，并且包含关闭代码和一个可选的理由。关闭帧的格式如下：</p>
+<ul>
+<li><strong>FIN</strong>：标志该帧是关闭帧。</li>
+<li><strong>Opcode</strong>：关闭帧的操作码 <code>0x8</code>。</li>
+<li><strong>Payload Data</strong>：包含关闭代码（如 <code>1000</code> 表示正常关闭）和关闭理由。</li>
+</ul>
+<p>服务器收到关闭帧后，会发送一个关闭帧作为响应，然后连接会被关闭。</p>
+<p><img src="https://s2.loli.net/2025/01/28/OGRfXYiJngwBUzm.png" srcset="/img/loading.gif" lazyload alt="image-20250128204600107"></p>
+<h2 id="WebSocket握手验证反爬虫"><a href="#WebSocket握手验证反爬虫" class="headerlink" title="WebSocket握手验证反爬虫"></a>WebSocket握手验证反爬虫</h2><blockquote>
+<p>客户端按照WebSocket规范生成握手信息并向服务器端发送握手请求，然后读取服务器端推送的消息，最后验证握手结果。值得注意的是，WebSocket协议规范只作为参考，服务器端和客户端实际上可以不遵守这些约定。比如服务器端可以在校验握手信息时增加对客户端User-Agent或Referer的验证，如果客户端发送的握手请求中并没有对应的信息，则拒绝连接。</p>
+</blockquote>
+<p> <strong>WebSocket 握手验证反爬虫</strong> 中的几个步骤：</p>
+<table>
+<thead>
+<tr>
+<th>验证方式</th>
+<th>说明</th>
+<th>反爬虫策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>验证 <code>Sec-WebSocket-Key</code> 和 <code>Sec-WebSocket-Accept</code></strong></td>
+<td>服务器通过计算 <code>Sec-WebSocket-Accept</code> 并比对客户端发送的 <code>Sec-WebSocket-Key</code>。</td>
+<td>如果计算结果不匹配，服务器会拒绝连接。</td>
+</tr>
+<tr>
+<td><strong>检查请求头中的 <code>User-Agent</code> 和 <code>Origin</code></strong></td>
+<td>- **<code>User-Agent</code>**：检查是否为合法浏览器请求。 - **<code>Origin</code>**：检查是否来自受信任的网页。</td>
+<td>- 拒绝没有合法 <code>User-Agent</code> 的请求。 - 如果 <code>Origin</code> 非法，拒绝连接。</td>
+</tr>
+<tr>
+<td><strong>验证 <code>Referer</code> 和 <code>Cookie</code></strong></td>
+<td>- **<code>Referer</code>**：检查是否指向受信任的网页。 - **<code>Cookie</code>**：检查是否带有有效的认证信息。</td>
+<td>- 如果 <code>Referer</code> 非法，拒绝连接。 - 如果 <code>Cookie</code> 无效，拒绝连接。</td>
+</tr>
+</tbody></table>
+<h2 id="WebSocket消息校验反爬虫"><a href="#WebSocket消息校验反爬虫" class="headerlink" title="WebSocket消息校验反爬虫"></a>WebSocket消息校验反爬虫</h2><blockquote>
+<p>消息互发阶段也是可以对客户端身份进行校验的，这是因为客户端所获取的消息是由服务器端主动推送的，如果服务器端不主动推送，那么客户端就无法获取消息。我们可以在服务器端新增一个校验逻辑：握手结束后客户端发送特定的消息，服务器端对该消息进行校验，校验通过则将服务器端的数据推送给客户端，否则不作处理。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/01/28/kmveyUhjl9KtsDn.png" srcset="/img/loading.gif" lazyload alt="image-20250128204640994"></p>
+<p><strong>常见的 WebSocket 消息校验反爬虫策略：</strong></p>
+<table>
+<thead>
+<tr>
+<th>校验方式</th>
+<th>说明</th>
+<th>反爬虫策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>消息格式校验</strong></td>
+<td>检查 WebSocket 消息的格式是否符合预期（例如 JSON 格式、特定的字段）。</td>
+<td>如果消息格式不符合规范，拒绝该消息。</td>
+</tr>
+<tr>
+<td><strong>消息内容校验</strong></td>
+<td>检查消息内容是否符合预期的格式或规则（如是否包含有效的用户 ID 或令牌）。</td>
+<td>如果消息内容无效或格式不符，拒绝该消息。</td>
+</tr>
+<tr>
+<td><strong>频率限制（Rate Limiting）</strong></td>
+<td>监控客户端发送消息的频率，防止同一客户端在短时间内发送大量请求。</td>
+<td>如果消息发送过于频繁，拒绝连接或暂时封锁客户端。</td>
+</tr>
+<tr>
+<td><strong>验证码（Captcha）挑战</strong></td>
+<td>要求客户端发送验证码，常见于某些需要验证是否为真人操作的情况。</td>
+<td>爬虫无法处理验证码，因此会无法通过验证。</td>
+</tr>
+<tr>
+<td><strong>消息签名验证</strong></td>
+<td>通过对消息内容进行加密或签名，服务器验证消息的合法性。</td>
+<td>爬虫通常无法生成正确的签名或加密内容，因此消息会被拒绝。</td>
+</tr>
+<tr>
+<td><strong>异常消息检测（Anomaly Detection）</strong></td>
+<td>通过机器学习或规则检测异常行为，比如发送空消息、无效消息或内容不一致的消息。</td>
+<td>如果检测到异常行为，拒绝该消息或断开 WebSocket 连接。</td>
+</tr>
+</tbody></table>
+<h2 id="WebSocket-Ping反爬虫"><a href="#WebSocket-Ping反爬虫" class="headerlink" title="WebSocket Ping反爬虫"></a>WebSocket Ping反爬虫</h2><blockquote>
+<p>通常，Ping帧和Pong帧的Payload Data中是没有内容的，所以只要目标服务器发送Ping帧时，客户端回复没有任何内容的Pong帧即可。WebSocket协议中的规范并不强制遵守，所以开发者可以自定义Ping帧和Pong帧，这就为反爬虫提供了条件。假如开发者在编写服务器端代码时，将Ping帧定义为有一定内容的数据帧，同时对Pong帧的Payload Data进行校验，就可以将不符合规则的连接关闭。</p>
+</blockquote>
+<p><strong>WebSocket Ping反爬虫策略</strong></p>
+<table>
+<thead>
+<tr>
+<th>校验方式</th>
+<th>说明</th>
+<th>反爬虫策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>定期 Ping 消息发送</strong></td>
+<td>服务器定期向客户端发送 Ping 消息，以确认客户端是活跃的且能按协议响应。</td>
+<td>如果客户端未按时回复 Pong，断开连接或标记为爬虫行为。</td>
+</tr>
+<tr>
+<td><strong>自定义 Ping 消息</strong></td>
+<td>服务器发送带有特定内容的 Ping 消息，要求客户端根据内容返回特定的 Pong 消息。</td>
+<td>爬虫无法按照自定义内容回应 Pong，服务器拒绝连接。</td>
+</tr>
+<tr>
+<td><strong>Ping&#x2F;Pong 响应时间检测</strong></td>
+<td>监控客户端对 Ping 消息的响应时间，爬虫可能无法迅速响应，或者延迟较高。</td>
+<td>如果响应时间过长或没有响应，认为连接可能是由爬虫控制的，进行断开。</td>
+</tr>
+<tr>
+<td><strong>客户端未响应 Ping 即断开连接</strong></td>
+<td>如果客户端在设定的时间内没有响应 Ping 消息，服务器自动断开 WebSocket 连接。</td>
+<td>如果爬虫未能正确响应 Ping 消息，服务器将切断连接。</td>
+</tr>
+</tbody></table>
+<h2 id="其他案例"><a href="#其他案例" class="headerlink" title="其他案例"></a>其他案例</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/pigke/p/18682640">某Websocket反爬逆向分析+请求加解密+还原html - 流星Studio - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/" class="category-chain-item">数据采集(爬虫)</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86-%E7%88%AC%E8%99%AB/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/" class="category-chain-item">基础反爬虫</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>信息校验反爬虫</div>
+      <div>https://hermes37.vercel.app/2026/05/15/量化分析系统/数据采集(爬虫)/基础反爬虫/信息校验反爬虫/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/15/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" title="自动化测试">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">自动化测试</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/15/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86(%E7%88%AC%E8%99%AB)/%E5%9F%BA%E7%A1%80%E5%8F%8D%E7%88%AC%E8%99%AB/%E6%96%87%E6%9C%AC%E6%B7%B7%E6%B7%86%E5%8F%8D%E7%88%AC%E8%99%AB/" title="文本混淆反爬虫">
+                        <span class="hidden-mobile">文本混淆反爬虫</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
