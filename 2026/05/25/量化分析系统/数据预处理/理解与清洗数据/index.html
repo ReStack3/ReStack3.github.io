@@ -1,0 +1,1143 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="基本库NumPy 数组计算的数学基础  其设计核心是：“一切皆为同质化的多维数组，运算向量化，避免Python循环。” NumPy 的核心是 ndarray（N-dimensional array），它假设数据是同质的（所有元素类型相同，如 float64）。它的哲学是：将数学运算从元素级别提升到数组级别。可以用数学公式的方式写代码，而不是用循环的方式。 我们使用时需要注意抓住要点：    核心要">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解与清洗数据">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/05/25/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86/%E7%90%86%E8%A7%A3%E4%B8%8E%E6%B8%85%E6%B4%97%E6%95%B0%E6%8D%AE/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="基本库NumPy 数组计算的数学基础  其设计核心是：“一切皆为同质化的多维数组，运算向量化，避免Python循环。” NumPy 的核心是 ndarray（N-dimensional array），它假设数据是同质的（所有元素类型相同，如 float64）。它的哲学是：将数学运算从元素级别提升到数组级别。可以用数学公式的方式写代码，而不是用循环的方式。 我们使用时需要注意抓住要点：    核心要">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/11/10/l2Iedsf7ZQckX9u.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/10/jQ5CObsiNqeKDT7.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/10/yjB7vDMniUPANLR.png">
+<meta property="og:image" content="https://s2.loli.net/2025/12/03/SvrUmtQou6iAD8R.png">
+<meta property="og:image" content="https://s2.loli.net/2025/12/03/9lJQxXsp2LRDY17.png">
+<meta property="og:image" content="https://s2.loli.net/2025/12/03/1yngGf32lzXtCM4.png">
+<meta property="article:published_time" content="2026-05-25T13:30:22.879Z">
+<meta property="article:modified_time" content="2026-05-25T13:57:36.871Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/11/10/l2Iedsf7ZQckX9u.png">
+  
+  
+  
+  <title>理解与清洗数据 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="理解与清洗数据"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          54 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">理解与清洗数据</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="基本库"><a href="#基本库" class="headerlink" title="基本库"></a>基本库</h1><h2 id="NumPy"><a href="#NumPy" class="headerlink" title="NumPy"></a>NumPy</h2><blockquote>
+<p><strong>数组计算的数学基础</strong></p>
+</blockquote>
+<p>其设计核心是：<strong>“一切皆为同质化的多维数组，运算向量化，避免Python循环。”</strong></p>
+<p>NumPy 的核心是 <code>ndarray</code>（N-dimensional array），它假设数据是<strong>同质的</strong>（所有元素类型相同，如 float64）。它的哲学是：<strong>将数学运算从元素级别提升到数组级别</strong>。可以用<strong>数学公式的方式</strong>写代码，而不是用<strong>循环的方式</strong>。</p>
+<p>我们使用时需要注意抓住要点：</p>
+<table>
+<thead>
+<tr>
+<th>核心要点</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>向量化思维</strong></td>
+<td>不要用 <code>for</code> 循环遍历数组，直接用数组运算：<code>a + b</code> 而不是 <code>for i in range(len(a)): c[i]=a[i]+b[i]</code></td>
+</tr>
+<tr>
+<td><strong>广播机制</strong></td>
+<td>不同形状的数组可以运算，NumPy 会自动扩展维度。理解 <code>(3,4)</code> 与 <code>(4,)</code> 如何运算</td>
+</tr>
+<tr>
+<td><strong>索引即视图</strong></td>
+<td>切片返回的是原数组的视图（不复制内存），修改会影响原数组。<code>copy()</code> 可以打破这种关联</td>
+</tr>
+<tr>
+<td><strong>轴的概念</strong></td>
+<td><code>axis=0</code> 是垂直方向（跨行），<code>axis=1</code> 是水平方向（跨列）</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 向量化思维 vs 循环思维（错误）</span><br><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br>arr = np.array([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>])<br><br><span class="hljs-comment"># 错误：Python 循环</span><br>result = []<br><span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> arr:<br>    result.append(x * <span class="hljs-number">2</span>)<br><br><span class="hljs-comment"># 正确：向量化</span><br>result = arr * <span class="hljs-number">2</span>  <span class="hljs-comment"># 快 100 倍以上</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Pandas"><a href="#Pandas" class="headerlink" title="Pandas"></a>Pandas</h2><blockquote>
+<p><strong>表格数据的操作语言</strong></p>
+</blockquote>
+<p>其设计哲学是<strong>“一切都是带标签的二维表格，操作以列为中心，语法像 Excel 和 SQL 的杂交体。”</strong></p>
+<p>Pandas 的核心是 <code>DataFrame</code>（带行索引和列名的二维表格）。它的哲学是：<strong>让数据的筛选、分组、合并、变形变得像说话一样自然</strong>。Pandas 可以用<strong>人类处理表格的方式</strong>操作数据，而不是用计算机的底层逻辑。</p>
+<table>
+<thead>
+<tr>
+<th>核心要点</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>向量化 + 自动对齐</strong></td>
+<td>两个 DataFrame 相加时，会自动按行索引和列名对齐，不匹配的变 NaN</td>
+</tr>
+<tr>
+<td><strong>链式操作</strong></td>
+<td><code>df.dropna().query(&#39;age&gt;30&#39;).groupby(&#39;city&#39;).mean()</code> 一步一步处理</td>
+</tr>
+<tr>
+<td><strong>区分 .loc 和 .iloc</strong></td>
+<td><code>.loc[&#39;行标签&#39;, &#39;列名&#39;]</code> 按标签索引；<code>.iloc[0,1]</code> 按整数位置索引</td>
+</tr>
+<tr>
+<td><strong>长格式 vs 宽格式</strong></td>
+<td><code>melt()</code> 把宽变长，<code>pivot()</code> 把长变宽，这是 Pandas 最让人困惑但也最强大的地方</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd<br><br>df = pd.DataFrame(&#123;<br>    <span class="hljs-string">&#x27;name&#x27;</span>: [<span class="hljs-string">&#x27;Alice&#x27;</span>, <span class="hljs-string">&#x27;Bob&#x27;</span>, <span class="hljs-string">&#x27;Charlie&#x27;</span>],<br>    <span class="hljs-string">&#x27;city&#x27;</span>: [<span class="hljs-string">&#x27;NYC&#x27;</span>, <span class="hljs-string">&#x27;LA&#x27;</span>, <span class="hljs-string">&#x27;NYC&#x27;</span>],<br>    <span class="hljs-string">&#x27;score&#x27;</span>: [<span class="hljs-number">85</span>, <span class="hljs-number">92</span>, <span class="hljs-number">78</span>]<br>&#125;)<br><br><span class="hljs-comment"># 自然语言式的操作</span><br>df.groupby(<span class="hljs-string">&#x27;city&#x27;</span>)[<span class="hljs-string">&#x27;score&#x27;</span>].mean()  <span class="hljs-comment"># &quot;按城市分组，看平均分&quot;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Seaborn"><a href="#Seaborn" class="headerlink" title="Seaborn"></a>Seaborn</h2><blockquote>
+<p><strong>统计可视化的声明式语法</strong></p>
+</blockquote>
+<p><strong>“声明式绘图：告诉它你想看什么关系，它选择合适的图表和美学。”</strong></p>
+<p>Seaborn 的核心是<strong>数据与美学映射</strong>。它的哲学是：<strong>只需要指定数据、变量和图表类型，颜色、刻度、图例、统计变换都自动完成</strong>。这是对 Matplotlib（命令式，你要一步步画）的根本性颠覆。</p>
+<p><strong>用统计学家的语言</strong>（变量关系、分布、分类对比）来画图，而不是用图形学家的语言（点、线、颜色、坐标）。</p>
+<table>
+<thead>
+<tr>
+<th>核心要点</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据是长格式</strong></td>
+<td>Seaborn 天生喜欢“整洁数据”：每行一个观测，每列一个变量</td>
+</tr>
+<tr>
+<td><strong>hue &#x2F; size &#x2F; style</strong></td>
+<td>这三个参数是核心：用颜色&#x2F;大小&#x2F;样式来映射第三个&#x2F;第四个变量</td>
+</tr>
+<tr>
+<td><strong>图形级 vs 轴级</strong></td>
+<td><code>relplot()</code>, <code>displot()</code>, <code>catplot()</code> 是图形级（支持分面）；<code>scatterplot()</code>, <code>histplot()</code> 是轴级（在现有 Axes 上画）</td>
+</tr>
+<tr>
+<td><strong>统计变换自动完成</strong></td>
+<td><code>sns.barplot()</code> 自动计算均值+置信区间，<code>sns.violinplot()</code> 自动算 KDE</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> seaborn <span class="hljs-keyword">as</span> sns<br><span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt<br><br>tips = sns.load_dataset(<span class="hljs-string">&#x27;tips&#x27;</span>)<br><br><span class="hljs-comment"># 声明式：只说&quot;我想看总账单和小费的关系，按性别用不同颜色&quot;</span><br>sns.scatterplot(data=tips, x=<span class="hljs-string">&#x27;total_bill&#x27;</span>, y=<span class="hljs-string">&#x27;tip&#x27;</span>, hue=<span class="hljs-string">&#x27;sex&#x27;</span>)<br><br><span class="hljs-comment"># 对比 Matplotlib 命令式：你要一步步指定颜色、图例、循环...</span><br>plt.show()<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+<p>参考文档：</p>
+<p><a target="_blank" rel="noopener" href="https://numpy.org/doc/stable/user/absolute_beginners.html">NumPy: the absolute basics for beginners — NumPy v2.4 Manual</a></p>
+<p><a target="_blank" rel="noopener" href="https://pandas.pydata.org/">pandas - Python Data Analysis Library</a></p>
+<p><a target="_blank" rel="noopener" href="https://seaborn.pydata.org/">seaborn: statistical data visualization — seaborn 0.13.2 documentation</a></p>
+<h1 id="理解数据"><a href="#理解数据" class="headerlink" title="理解数据"></a>理解数据</h1><h2 id="探索性数据分析"><a href="#探索性数据分析" class="headerlink" title="探索性数据分析"></a>探索性数据分析</h2><p>当拿到一个新的数据集时，下面是基本的工作流程。</p>
+<ol>
+<li>数据有没有组织？数据是以表格形式存在、有不同的行列，还是以非结构化的文本格式存在？</li>
+<li>每列的数据是定量的还是定性的？单元格中的数代表的是数值还是字符串？</li>
+<li>每列处于哪个等级？是定类、定序、定距，还是定比？</li>
+<li>可以用什么图表？条形图、饼图、茎叶图、箱线图、直方图，还是其他？</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/11/10/l2Iedsf7ZQckX9u.png" srcset="/img/loading.gif" lazyload></p>
+<p>探索性数据分析和数据可视化  ：</p>
+<p><img src="https://s2.loli.net/2025/11/10/jQ5CObsiNqeKDT7.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="数据结构的有无"><a href="#数据结构的有无" class="headerlink" title="数据结构的有无"></a>数据结构的有无</h2><p>拿到一个新的数据集后，首要任务是确认数据是结构化还是非结构化的。</p>
+<ul>
+<li>结构化（有组织）数据：可以分成观察值和特征的数据，一般以表格的形式组织（行是观察值，列是特征）。</li>
+<li>非结构化（无组织）数据：作为自由流动的实体，不遵循标准组织结构（例如表格）的数据。通常，非结构化数据在我们看来是一团数据，或只有一个特征（列）。</li>
+</ul>
+<h2 id="定量数据和定性数据"><a href="#定量数据和定性数据" class="headerlink" title="定量数据和定性数据"></a>定量数据和定性数据</h2><p>为了完成对数据的判断，我们从区分度最高的顺序开始。在处理结构化的表格数据时(大部分时候都是如此），第一个问题一般是：数据是定量的，还是定性的？</p>
+<ul>
+<li>定量数据本质上是数值，应该是衡量某样东西的数量。</li>
+<li>定性数据本质上是类别，应该是描述某样东西的性质。</li>
+</ul>
+<p>基本示例：</p>
+<ul>
+<li>以华氏度或摄氏度表示的气温是定量的；</li>
+<li>阴天或晴天是定性的；</li>
+<li>白宫参观者的名字是定性的；</li>
+<li>献血的血量是定量的。</li>
+</ul>
+<h2 id="数据的-4-个等级"><a href="#数据的-4-个等级" class="headerlink" title="数据的 4 个等级"></a>数据的 4 个等级</h2><p>我们已经可以将数据分为定量和定性的，但是还可以继续分类。数据的 4 个等级是： </p>
+<ul>
+<li><strong>Nominal（定类）</strong>：不能比大小，不能算加减。<em>（如：红色、蓝色）</em></li>
+<li><strong>Ordinal（定序）</strong>：能比大小，但不能算加减。<em>（如：好、中、差）</em></li>
+<li><strong>Interval（定距）</strong>：能算加减，但不能算乘除。<em>（如：年份 2023-2000&#x3D;23年）</em></li>
+<li><strong>Ratio（定比）</strong>：能算乘除，有绝对零点。<em>（如：面积、价格、个数）</em></li>
+</ul>
+<p>每个等级都有不同的控制和数学操作等级。了解数据的等级十分重要，因为它决定了可以执 行的可视化类型和操作。</p>
+<h3 id="定类等级"><a href="#定类等级" class="headerlink" title="定类等级"></a>定类等级</h3><p>定类等级是数据的第一个等级， 其结构最弱。 这个等级的数据只按名称分类。 例如， 血型（ A、B、 O 和 AB 型）、动物物种和人名。这些数据都是定性的。  </p>
+<blockquote>
+<p><strong>核心特征</strong>：数据仅用于<strong>分类或命名</strong>，表示类别或组别。没有任何数量关系或顺序关系。只能计算<strong>频数</strong>、<strong>众数</strong>。不能进行加减乘除。数字在这里只是“标签”，没有数学意义。比如，用1代表男，2代表女，并不意味着2比1“大”或“好”。</p>
+</blockquote>
+<p>对于每个等级，我们都会简要介绍可以执行的数学操作，以及不可以执行的数学操作。在这个等级上，不能执行任何定量数学操作，例如加法或除法。这些数学操作没有意义。因为没有加法和除法，所以在此等级上找不到平均值。当然了，没有“平均名”或“平均工作”这种说法。</p>
+<p><strong>例子</strong>：</p>
+<ul>
+<li>性别（男、女）</li>
+<li>婚姻状况（未婚、已婚、离异）</li>
+<li>颜色（红、蓝、绿）</li>
+<li>城市名称（北京、上海、广州）</li>
+</ul>
+<h3 id="定序等级"><a href="#定序等级" class="headerlink" title="定序等级"></a>定序等级</h3><p>定类等级为我们提供了很多进一步探索的方法。向上一级就到了定序等级。定序等级继承了。<br>定类等级的所有属性，而且有重要的附加属性：</p>
+<p><strong>定序等级的数据可以自然排序；有了“顺序”或“等级”的概念，但差异不明确。</strong></p>
+<p>这意味着，可以认为列中的某些数据比其他数据更好或更大。和定类等级一样，定序等级的天然数据属性仍然是<strong>类别</strong>，即使用数来表示类别也是如此。</p>
+<p>和定类等级相比，定序等级多了一些新的能力。在定序等级，我们可以像定类等级那样进行<br>计数，也可以引入比较和排序。因此，可以使用新的图表了。不仅可以继续使用条形图和饼图，<br>而且因为能排序和比较，所以能计算中位数和百分位数。对于中位数和百分位数，我们可以绘制<br>茎叶图和箱线图。</p>
+<blockquote>
+<p><strong>核心特征</strong>：数据可以<strong>分类和排序</strong>，但类别之间的<strong>差异是未知的或没有意义的</strong>。可以计算<strong>频数</strong>、<strong>众数</strong>、<strong>中位数</strong>、<strong>百分位数</strong>。仍然不能进行加减乘除。</p>
+</blockquote>
+<p><strong>例子</strong>：</p>
+<ul>
+<li>学历（小学、初中、高中、大学）-&gt; 我们知道大学 &gt; 高中 &gt; 初中，但不知道“大学和高中”之间的差距是否等于“高中和初中”之间的差距。</li>
+<li>满意度（非常不满意、不满意、一般、满意、非常满意）</li>
+<li>比赛名次（第一名、第二名、第三名）-&gt; 我们知道第一比第二好，但不知道好多少。</li>
+</ul>
+<h3 id="定距等级"><a href="#定距等级" class="headerlink" title="定距等级"></a>定距等级</h3><p>在定类和定序等级，我们一直在处理定性数据。即使其内容是数，也不代表真实的数量。在定距等级，我们摆脱了这个限制，开始研究定量数据。在定距等级，数值数据不仅可以像定序等级的数据一样排序，而且值之间的差异也有意义。这意味着，在定距等级，我们不仅可以对值进行排序和比较，而且可以加减。</p>
+<p>在定距等级上可以进行加减，这改变了整个游戏规则。既然可以把值加在一起，就<br>能引入两个熟悉的概念： 算术平均数（就是均值）和标准差。</p>
+<blockquote>
+<p><strong>核心特征</strong>：数据可以<strong>分类、排序，并且差值具有实际意义</strong>。然而，<strong>没有真正的绝对零点</strong>。可以计算<strong>频数</strong>、<strong>众数</strong>、<strong>中位数</strong>、<strong>均值</strong>、<strong>标准差</strong>。可以进行<strong>加法和减法</strong>，但不能进行乘除（因为零点是任意的）。</p>
+</blockquote>
+<p><strong>例子：</strong></p>
+<ul>
+<li>温度（摄氏度或华氏度）-&gt; 20°C 和 30°C 之间的差异与 30°C 和 40°C 之间的差异相同，都是10°C。但0°C 并不意味着“没有温度”，所以我们不能说40°C是20°C的“两倍热”。</li>
+<li>年份（公元2024年，公元1990年）-&gt; 年份的差值（时间间隔）是有意义的，但公元0年是一个任意的起点，不代表“没有时间”。</li>
+</ul>
+<p>反例：<br>一个经典的反例是李克特量表。因为可以排序，所以我们把李克特量表归为定序等级。但是<br>需要注意的是，对其做减法并没有意义。如果在李克特量表上将 5 减去 3，得出的结果 2 既不代<br>表数字 2，也不代表 2 这个类别。因此，李克特量表的减法很困难。</p>
+<h3 id="定比等级"><a href="#定比等级" class="headerlink" title="定比等级"></a>定比等级</h3><p>在这个等级上，可以说我们拥有最高程度的控制和数学运算能力。和定距等级一样，我们在定比等级上处理的也是定量数据。这里不仅继承了定距等级的加减运算，而且有了一个绝对零点的概念，可以做乘除运算。</p>
+<blockquote>
+<ul>
+<li><strong>核心特征</strong>：数据的<strong>最高等级</strong>。具备定距等级的所有特性，并且<strong>拥有一个真正的、有意义的绝对零点</strong>。可以进行所有数学运算，包括<strong>加、减、乘、除</strong>。可以计算所有统计量，包括<strong>几何平均</strong>、<strong>变异系数</strong>等。</li>
+</ul>
+</blockquote>
+<p>在定比等级，我们可以进行乘除运算。虽然看起来没什么大不了，但是这些运算可以让我们对这个等级上的数据进行独特的观察，而这在低等级上是无法做到的。我们先看几个例子，了解一下这意味着什么</p>
+<p><strong>例子</strong>：</p>
+<ul>
+<li>身高、体重、年龄 -&gt; 0公斤表示“没有重量”，所以80公斤是40公斤的两倍重。</li>
+<li>收入、销售额 -&gt; 0元表示“没有收入”。</li>
+<li>反应时间、距离、数量。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/11/10/yjB7vDMniUPANLR.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="可视化理解"><a href="#可视化理解" class="headerlink" title="可视化理解"></a>可视化理解</h2><h3 id="直方图正态概率图"><a href="#直方图正态概率图" class="headerlink" title="直方图正态概率图"></a>直方图正态概率图</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><span class="hljs-keyword">from</span> scipy.stats <span class="hljs-keyword">import</span> norm<br><br><span class="hljs-comment"># 获取数据</span><br>data = df_train[<span class="hljs-string">&#x27;SalePrice&#x27;</span>].dropna()  <span class="hljs-comment"># 去除缺失值</span><br><br><span class="hljs-comment"># 计算均值和标准差</span><br>mu, std = norm.fit(data)<br><br><span class="hljs-comment"># 绘制直方图</span><br>plt.figure(figsize=(<span class="hljs-number">12</span>, <span class="hljs-number">6</span>))<br>n, bins, patches = plt.hist(data, bins=<span class="hljs-number">50</span>, density=<span class="hljs-literal">True</span>, <br>                            alpha=<span class="hljs-number">0.7</span>, color=<span class="hljs-string">&#x27;steelblue&#x27;</span>, <br>                            edgecolor=<span class="hljs-string">&#x27;black&#x27;</span>, label=<span class="hljs-string">&#x27;Histogram&#x27;</span>)<br><br><span class="hljs-comment"># 绘制正态分布曲线</span><br>xmin, xmax = plt.xlim()<br>x = np.linspace(xmin, xmax, <span class="hljs-number">100</span>)<br>p = norm.pdf(x, mu, std)<br>plt.plot(x, p, <span class="hljs-string">&#x27;k&#x27;</span>, linewidth=<span class="hljs-number">2</span>, label=<span class="hljs-string">f&#x27;Normal Dist. (μ=<span class="hljs-subst">&#123;mu:<span class="hljs-number">.0</span>f&#125;</span>, σ=<span class="hljs-subst">&#123;std:<span class="hljs-number">.0</span>f&#125;</span>)&#x27;</span>)<br><br>plt.xlabel(<span class="hljs-string">&#x27;SalePrice&#x27;</span>, fontsize=<span class="hljs-number">12</span>)<br>plt.ylabel(<span class="hljs-string">&#x27;Density&#x27;</span>, fontsize=<span class="hljs-number">12</span>)<br>plt.title(<span class="hljs-string">&#x27;Histogram with Normal Distribution Fit&#x27;</span>, fontsize=<span class="hljs-number">14</span>)<br>plt.legend()<br>plt.grid(<span class="hljs-literal">True</span>, alpha=<span class="hljs-number">0.3</span>)<br>plt.show()<br></code></pre></td></tr></table></figure>
+
+<h3 id="散点图"><a href="#散点图" class="headerlink" title="散点图"></a><strong>散点图</strong></h3><p>类型：<strong>数值变量 vs 数值变量</strong></p>
+<p><img src="https://s2.loli.net/2025/12/03/SvrUmtQou6iAD8R.png" srcset="/img/loading.gif" lazyload></p>
+<ol>
+<li><strong>观察关系模式</strong>：看面积和房价是否存在线性关系</li>
+<li><strong>发现异常值</strong>：图上离群的点（比如面积很大但价格很低）</li>
+<li><strong>判断相关性</strong>：<ul>
+<li>点越接近一条斜线 → 相关性越强</li>
+<li>从图看，<strong>面积越大，房价越高</strong>（正相关）</li>
+</ul>
+</li>
+</ol>
+<p><strong>适用场景：</strong>探索两个<strong>数值变量</strong>的关系，如：面积 vs 价格、年份 vs 价格、房间数 vs 价格</p>
+<h3 id="箱线图"><a href="#箱线图" class="headerlink" title="箱线图"></a><strong>箱线图</strong></h3><p><img src="https://s2.loli.net/2025/12/03/9lJQxXsp2LRDY17.png" srcset="/img/loading.gif" lazyload></p>
+<ol>
+<li><strong>比较类别差异</strong>：比较有中央空调(Y)和没有(N)的房价分布</li>
+<li><strong>查看统计信息</strong>：<ul>
+<li>中位数（箱内的线）</li>
+<li>四分位数范围（箱子本身）</li>
+<li>异常值（外面的点）</li>
+</ul>
+</li>
+<li><strong>直观结论</strong>：从图看，有中央空调的房子<strong>房价明显更高</strong>，分布更集中（箱子更短）</li>
+</ol>
+<p> <strong>适用场景：</strong>比较不同<strong>类别</strong>对<strong>数值</strong>的影响如：不同社区、房屋类型、装修等级的房价对比</p>
+<h3 id="相关系数矩阵热力图"><a href="#相关系数矩阵热力图" class="headerlink" title="相关系数矩阵热力图"></a>相关系数矩阵热力图</h3><p><img src="https://s2.loli.net/2025/12/03/1yngGf32lzXtCM4.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>热图</strong>是用颜色深浅表示数值大小的矩阵可视化。在代码中：</p>
+<ul>
+<li><strong>X轴和Y轴</strong>：都是数据集的<strong>特征名</strong>（列名）</li>
+<li><strong>每个小格子</strong>：表示两个特征之间的<strong>相关系数值</strong></li>
+<li><strong>颜色深浅</strong>：表示相关性的强弱<ul>
+<li>🔴 <strong>红色越深</strong> → 正相关性越强（接近 +1）</li>
+<li>🔵 <strong>蓝色越深</strong> → 负相关性越强（接近 -1）</li>
+<li>⚪ <strong>白色&#x2F;浅色</strong> → 相关性弱（接近 0）</li>
+</ul>
+</li>
+</ul>
+<p>注意矩阵是对称的：<code>A与B</code>的相关性 &#x3D; <code>B与A</code>的相关性，只看上三角或下三角即可</p>
+<h1 id="清洗数据"><a href="#清洗数据" class="headerlink" title="清洗数据"></a>清洗数据</h1><p><strong>基本清洗：</strong></p>
+<h2 id="缺失值"><a href="#缺失值" class="headerlink" title="缺失值"></a>缺失值</h2><h3 id="识别"><a href="#识别" class="headerlink" title="识别"></a>识别</h3><p><strong>特征增强的第一种方法是识别数据的缺失值</strong>，这可以让我们更好地明白如何使用真实世界中的数据。通常，数据集会因为各种原因有所缺失，例如调查时没有记录某些观察值等。分析数据并了解缺失的数据是什么至关重要，这样才可以决定下一步如何处理这些缺失值。  </p>
+<p><strong>使用 <code>df.isnull()</code> 或 <code>df.isna()</code>（两者在pandas中基本等价）可以得到一个布尔类型的DataFrame，其中<code>True</code>表示该位置是缺失值。</strong></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs py">missing_data = train_data.isnull().<span class="hljs-built_in">sum</span>()<br><span class="hljs-built_in">print</span>(missing_data[missing_data &gt; <span class="hljs-number">0</span>])<br></code></pre></td></tr></table></figure>
+
+<h4 id="可视化缺失值分布"><a href="#可视化缺失值分布" class="headerlink" title="可视化缺失值分布"></a>可视化缺失值分布</h4><p>在进行任何处理之前，先直观地了解缺失情况。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt<br><span class="hljs-keyword">import</span> seaborn <span class="hljs-keyword">as</span> sns<br><br><span class="hljs-comment"># 方法一：使用missingno库（专门用于缺失值可视化）</span><br><span class="hljs-keyword">import</span> missingno <span class="hljs-keyword">as</span> msno<br>msno.matrix(df)<br>plt.show()<br><br><span class="hljs-comment"># 方法二：绘制缺失值热力图</span><br>plt.figure(figsize=(<span class="hljs-number">10</span>, <span class="hljs-number">6</span>))<br>sns.heatmap(df.isnull(), cbar=<span class="hljs-literal">False</span>, yticklabels=<span class="hljs-literal">False</span>, cmap=<span class="hljs-string">&#x27;viridis&#x27;</span>)<br>plt.title(<span class="hljs-string">&#x27;Missing Values Heatmap&#x27;</span>)<br>plt.show()<br><br><span class="hljs-comment"># 方法三：条形图显示每列缺失值数量</span><br>missing_count = df.isnull().<span class="hljs-built_in">sum</span>()<br>missing_percent = (missing_count / <span class="hljs-built_in">len</span>(df)) * <span class="hljs-number">100</span><br>missing_df = pd.DataFrame(&#123;<br>    <span class="hljs-string">&#x27;column&#x27;</span>: missing_count.index,<br>    <span class="hljs-string">&#x27;count&#x27;</span>: missing_count.values,<br>    <span class="hljs-string">&#x27;percent&#x27;</span>: missing_percent.values<br>&#125;)<br><span class="hljs-built_in">print</span>(missing_df[missing_df[<span class="hljs-string">&#x27;count&#x27;</span>] &gt; <span class="hljs-number">0</span>])<br></code></pre></td></tr></table></figure>
+
+<h4 id="分析缺失模式"><a href="#分析缺失模式" class="headerlink" title="分析缺失模式"></a>分析缺失模式</h4><p>了解缺失值的产生机制对于选择处理方法至关重要，它将影响我们如何选择什么方法处理缺失值。</p>
+<ul>
+<li>完全随机缺失(MCAR)：缺失与任何变量都无关</li>
+<li>随机缺失(MAR)：缺失与已观测到的变量有关</li>
+<li>非随机缺失(MNAR)：缺失与未观测到的变量有关（本身的值有关）</li>
+</ul>
+<h3 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h3><h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a><strong>删除</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 删除含有缺失值的行（当缺失值很少时适用）</span><br>df_cleaned = df.dropna()<br><br><span class="hljs-comment"># 删除缺失值比例过高的列（如缺失超过50%）</span><br>threshold = <span class="hljs-built_in">len</span>(df) * <span class="hljs-number">0.5</span><br>df_cleaned = df.dropna(axis=<span class="hljs-number">1</span>, thresh=threshold)<br><br><span class="hljs-comment"># 只删除在关键列上有缺失的行</span><br>df_cleaned = df.dropna(subset=[<span class="hljs-string">&#x27;important_column&#x27;</span>])<br></code></pre></td></tr></table></figure>
+
+<h4 id="填充"><a href="#填充" class="headerlink" title="填充"></a><strong>填充</strong></h4><h5 id="统计量填充（数值型数据）"><a href="#统计量填充（数值型数据）" class="headerlink" title="统计量填充（数值型数据）"></a>统计量填充（数值型数据）</h5><table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">适用场景</th>
+<th align="left">代码示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>均值填充</strong></td>
+<td align="left">数据分布对称、无异常值</td>
+<td align="left"><code>df.fillna(df.mean())</code></td>
+</tr>
+<tr>
+<td align="left"><strong>中位数填充</strong></td>
+<td align="left">数据有偏态分布或有异常值</td>
+<td align="left"><code>df.fillna(df.median())</code></td>
+</tr>
+<tr>
+<td align="left"><strong>众数填充</strong></td>
+<td align="left">离散型数据、分类数据</td>
+<td align="left"><code>df.fillna(df.mode()[0])</code></td>
+</tr>
+<tr>
+<td align="left"><strong>常数填充</strong></td>
+<td align="left">有特殊业务含义（如0、-1）</td>
+<td align="left"><code>df.fillna(0)</code></td>
+</tr>
+</tbody></table>
+<h5 id="前-后向填充（时间序列）"><a href="#前-后向填充（时间序列）" class="headerlink" title="前&#x2F;后向填充（时间序列）"></a>前&#x2F;后向填充（时间序列）</h5><table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">说明</th>
+<th align="left">代码示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>向前填充</strong></td>
+<td align="left">用上一个值填充</td>
+<td align="left"><code>df.fillna(method=&#39;ffill&#39;)</code></td>
+</tr>
+<tr>
+<td align="left"><strong>向后填充</strong></td>
+<td align="left">用下一个值填充</td>
+<td align="left"><code>df.fillna(method=&#39;bfill&#39;)</code></td>
+</tr>
+<tr>
+<td align="left"><strong>插值填充</strong></td>
+<td align="left">线性&#x2F;多项式插值</td>
+<td align="left"><code>df.interpolate()</code></td>
+</tr>
+</tbody></table>
+<h5 id="模型预测填充"><a href="#模型预测填充" class="headerlink" title="模型预测填充"></a>模型预测填充</h5><table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>KNN填充</strong></td>
+<td align="left">用K个最近邻样本的均值&#x2F;众数</td>
+</tr>
+<tr>
+<td align="left"><strong>回归预测</strong></td>
+<td align="left">将缺失列作为目标变量，其他列预测</td>
+</tr>
+<tr>
+<td align="left"><strong>随机森林</strong></td>
+<td align="left">适用于复杂非线性关系</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> sklearn.impute <span class="hljs-keyword">import</span> KNNImputer<br>imputer = KNNImputer(n_neighbors=<span class="hljs-number">5</span>)<br>df_imputed = imputer.fit_transform(df)<br></code></pre></td></tr></table></figure>
+
+<h5 id="特殊场景填充"><a href="#特殊场景填充" class="headerlink" title="特殊场景填充"></a>特殊场景填充</h5><table>
+<thead>
+<tr>
+<th align="left">场景</th>
+<th align="left">推荐方法</th>
+<th align="left">原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>类别特征</strong></td>
+<td align="left">众数 或 新增”未知”类别</td>
+<td align="left">保持分类完整性</td>
+</tr>
+<tr>
+<td align="left"><strong>缺失比例&lt;5%</strong></td>
+<td align="left">直接删除行</td>
+<td align="left">影响最小</td>
+</tr>
+<tr>
+<td align="left"><strong>缺失比例&gt;40%</strong></td>
+<td align="left">删除该列 或 作为特征</td>
+<td align="left">填充意义不大</td>
+</tr>
+<tr>
+<td align="left"><strong>问卷调查</strong></td>
+<td align="left">中位数&#x2F;众数</td>
+<td align="left">避免极端值影响</td>
+</tr>
+<tr>
+<td align="left"><strong>传感器数据</strong></td>
+<td align="left">前向填充 + 插值</td>
+<td align="left">时间连续性</td>
+</tr>
+</tbody></table>
+<h4 id="创建指示器"><a href="#创建指示器" class="headerlink" title="创建指示器"></a>创建指示器</h4><p>对于某些算法，保留缺失信息本身可能有价值：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 为有缺失值的列创建指示器</span><br><span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> df.columns:<br>    <span class="hljs-keyword">if</span> df[col].isnull().<span class="hljs-built_in">any</span>():<br>        df[<span class="hljs-string">f&#x27;<span class="hljs-subst">&#123;col&#125;</span>_missing&#x27;</span>] = df[col].isnull().astype(<span class="hljs-built_in">int</span>)<br><br><span class="hljs-comment"># 然后再进行填充</span><br>df_filled = df.fillna(df.median())<br></code></pre></td></tr></table></figure>
+
+<h2 id="异常值-离群点"><a href="#异常值-离群点" class="headerlink" title="异常值&#x2F;离群点"></a>异常值&#x2F;离群点</h2><h3 id="识别-1"><a href="#识别-1" class="headerlink" title="识别"></a><strong>识别</strong></h3><h4 id="统计方法"><a href="#统计方法" class="headerlink" title="统计方法"></a><strong>统计方法</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd<br><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><span class="hljs-keyword">from</span> scipy <span class="hljs-keyword">import</span> stats<br><br><span class="hljs-comment"># 1. IQR（四分位距）法 - 最常用</span><br>Q1 = df[<span class="hljs-string">&#x27;column&#x27;</span>].quantile(<span class="hljs-number">0.25</span>)<br>Q3 = df[<span class="hljs-string">&#x27;column&#x27;</span>].quantile(<span class="hljs-number">0.75</span>)<br>IQR = Q3 - Q1<br>lower_bound = Q1 - <span class="hljs-number">1.5</span> * IQR<br>upper_bound = Q3 + <span class="hljs-number">1.5</span> * IQR<br><br>outliers_iqr = df[(df[<span class="hljs-string">&#x27;column&#x27;</span>] &lt; lower_bound) | (df[<span class="hljs-string">&#x27;column&#x27;</span>] &gt; upper_bound)]<br><br><span class="hljs-comment"># 2. Z-Score 法（假设数据近似正态分布）</span><br>z_scores = np.<span class="hljs-built_in">abs</span>(stats.zscore(df[<span class="hljs-string">&#x27;column&#x27;</span>]))<br>outliers_z = df[z_scores &gt; <span class="hljs-number">3</span>]  <span class="hljs-comment"># 通常以3为标准差阈值</span><br><br><span class="hljs-comment"># 3. 百分位数法</span><br>lower_p = df[<span class="hljs-string">&#x27;column&#x27;</span>].quantile(<span class="hljs-number">0.01</span>)  <span class="hljs-comment"># 下1%</span><br>upper_p = df[<span class="hljs-string">&#x27;column&#x27;</span>].quantile(<span class="hljs-number">0.99</span>)  <span class="hljs-comment"># 上1%</span><br>outliers_p = df[(df[<span class="hljs-string">&#x27;column&#x27;</span>] &lt; lower_p) | (df[<span class="hljs-string">&#x27;column&#x27;</span>] &gt; upper_p)]<br></code></pre></td></tr></table></figure>
+
+<h4 id="可视化方法"><a href="#可视化方法" class="headerlink" title="可视化方法"></a><strong>可视化方法</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt<br><span class="hljs-keyword">import</span> seaborn <span class="hljs-keyword">as</span> sns<br><br><span class="hljs-comment"># 1. 箱线图 - 最直观显示异常值</span><br>plt.figure(figsize=(<span class="hljs-number">10</span>, <span class="hljs-number">6</span>))<br>sns.boxplot(x=df[<span class="hljs-string">&#x27;column&#x27;</span>])<br>plt.title(<span class="hljs-string">&#x27;Boxplot for Outlier Detection&#x27;</span>)<br>plt.show()<br><br><span class="hljs-comment"># 2. 散点图</span><br>plt.figure(figsize=(<span class="hljs-number">10</span>, <span class="hljs-number">6</span>))<br>plt.scatter(df.index, df[<span class="hljs-string">&#x27;column&#x27;</span>])<br>plt.title(<span class="hljs-string">&#x27;Scatter Plot for Outlier Detection&#x27;</span>)<br>plt.show()<br><br><span class="hljs-comment"># 3. 直方图</span><br>plt.figure(figsize=(<span class="hljs-number">10</span>, <span class="hljs-number">6</span>))<br>sns.histplot(df[<span class="hljs-string">&#x27;column&#x27;</span>], kde=<span class="hljs-literal">True</span>)<br>plt.title(<span class="hljs-string">&#x27;Histogram for Outlier Detection&#x27;</span>)<br>plt.show()<br></code></pre></td></tr></table></figure>
+
+<h4 id="机器学习算法"><a href="#机器学习算法" class="headerlink" title="机器学习算法"></a><strong>机器学习算法</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> sklearn.ensemble <span class="hljs-keyword">import</span> IsolationForest<br><span class="hljs-keyword">from</span> sklearn.neighbors <span class="hljs-keyword">import</span> LocalOutlierFactor<br><span class="hljs-keyword">from</span> sklearn.cluster <span class="hljs-keyword">import</span> DBSCAN<br><br><span class="hljs-comment"># 1. 隔离森林</span><br>iso_forest = IsolationForest(contamination=<span class="hljs-number">0.05</span>, random_state=<span class="hljs-number">42</span>)<br>outlier_labels = iso_forest.fit_predict(df[[<span class="hljs-string">&#x27;column1&#x27;</span>, <span class="hljs-string">&#x27;column2&#x27;</span>]])<br>outliers_iso = df[outlier_labels == -<span class="hljs-number">1</span>]<br><br><span class="hljs-comment"># 2. 局部离群因子</span><br>lof = LocalOutlierFactor(n_neighbors=<span class="hljs-number">20</span>, contamination=<span class="hljs-number">0.05</span>)<br>outlier_labels_lof = lof.fit_predict(df[[<span class="hljs-string">&#x27;column1&#x27;</span>, <span class="hljs-string">&#x27;column2&#x27;</span>]])<br>outliers_lof = df[outlier_labels_lof == -<span class="hljs-number">1</span>]<br></code></pre></td></tr></table></figure>
+
+<h3 id="处理-1"><a href="#处理-1" class="headerlink" title="处理"></a>处理</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 1. 删除异常值</span><br>df_cleaned = df[(df[<span class="hljs-string">&#x27;column&#x27;</span>] &gt;= lower_bound) &amp; (df[<span class="hljs-string">&#x27;column&#x27;</span>] &lt;= upper_bound)]<br><span class="hljs-comment">#train_data = train_data.drop(train_data[(train_data[&quot;OverallQual&quot;] == 10) &amp; (train_data[&quot;SalePrice&quot;] &lt;= 200000)].index)</span><br><br><span class="hljs-comment"># 2. 缩尾处理 - 将异常值拉回到边界值</span><br>df[<span class="hljs-string">&#x27;column_winsorized&#x27;</span>] = np.clip(df[<span class="hljs-string">&#x27;column&#x27;</span>], lower_bound, upper_bound)<br><br><span class="hljs-comment"># 3. 转换处理 - 使用对数、平方根等转换减小异常值影响</span><br>df[<span class="hljs-string">&#x27;column_log&#x27;</span>] = np.log1p(df[<span class="hljs-string">&#x27;column&#x27;</span>])  <span class="hljs-comment"># log(1+x)</span><br><br><span class="hljs-comment"># 4. 分箱离散化</span><br>df[<span class="hljs-string">&#x27;column_binned&#x27;</span>] = pd.cut(df[<span class="hljs-string">&#x27;column&#x27;</span>], bins=<span class="hljs-number">5</span>, labels=<span class="hljs-literal">False</span>)<br><br><span class="hljs-comment"># 5. 用中位数或均值填充（谨慎使用）</span><br>median_value = df[<span class="hljs-string">&#x27;column&#x27;</span>].median()<br>df[<span class="hljs-string">&#x27;column_filled&#x27;</span>] = df[<span class="hljs-string">&#x27;column&#x27;</span>].apply(<br>    <span class="hljs-keyword">lambda</span> x: median_value <span class="hljs-keyword">if</span> (x &lt; lower_bound <span class="hljs-keyword">or</span> x &gt; upper_bound) <span class="hljs-keyword">else</span> x<br>)<br><br><span class="hljs-comment"># 6. 保留但标记异常值</span><br>df[<span class="hljs-string">&#x27;is_outlier&#x27;</span>] = ((df[<span class="hljs-string">&#x27;column&#x27;</span>] &lt; lower_bound) | (df[<span class="hljs-string">&#x27;column&#x27;</span>] &gt; upper_bound)).astype(<span class="hljs-built_in">int</span>)<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="重复值"><a href="#重复值" class="headerlink" title="重复值"></a>重复值</h2><h3 id="识别-2"><a href="#识别-2" class="headerlink" title="识别"></a><strong>识别</strong></h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 1. 识别完全重复的行</span><br>duplicate_rows = df[df.duplicated(keep=<span class="hljs-literal">False</span>)]  <span class="hljs-comment"># keep=False标记所有重复项</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;完全重复的行数: <span class="hljs-subst">&#123;df.duplicated().<span class="hljs-built_in">sum</span>()&#125;</span>&quot;</span>)<br><br><span class="hljs-comment"># 2. 基于特定列检查重复</span><br>duplicate_subset = df[df.duplicated(subset=[<span class="hljs-string">&#x27;id&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>], keep=<span class="hljs-literal">False</span>)]<br><br><span class="hljs-comment"># 3. 查看重复值的分布</span><br>duplicate_info = df.duplicated(subset=[<span class="hljs-string">&#x27;id&#x27;</span>]).value_counts()<br><span class="hljs-built_in">print</span>(duplicate_info)<br></code></pre></td></tr></table></figure>
+
+<h3 id="处理-2"><a href="#处理-2" class="headerlink" title="处理"></a>处理</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 1. 删除完全重复的行（保留第一个出现的）</span><br>df_deduped = df.drop_duplicates()<br><br><span class="hljs-comment"># 2. 删除完全重复的行（保留最后一个出现的）</span><br>df_deduped = df.drop_duplicates(keep=<span class="hljs-string">&#x27;last&#x27;</span>)<br><br><span class="hljs-comment"># 3. 基于关键字段删除重复</span><br>df_deduped = df.drop_duplicates(subset=[<span class="hljs-string">&#x27;id&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>])<br><br><span class="hljs-comment"># 4. 自定义重复数据处理逻辑</span><br><span class="hljs-comment"># 例如：保留最近日期的记录</span><br>df_sorted = df.sort_values(<span class="hljs-string">&#x27;timestamp&#x27;</span>, ascending=<span class="hljs-literal">False</span>)<br>df_deduped = df_sorted.drop_duplicates(subset=[<span class="hljs-string">&#x27;user_id&#x27;</span>])<br><br><span class="hljs-comment"># 5. 聚合重复数据（如求均值）</span><br>df_aggregated = df.groupby(<span class="hljs-string">&#x27;key_column&#x27;</span>).agg(&#123;<br>    <span class="hljs-string">&#x27;numeric_column&#x27;</span>: <span class="hljs-string">&#x27;mean&#x27;</span>,<br>    <span class="hljs-string">&#x27;other_column&#x27;</span>: <span class="hljs-string">&#x27;first&#x27;</span><br>&#125;).reset_index()<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="标准化与归一化"><a href="#标准化与归一化" class="headerlink" title="标准化与归一化"></a>标准化与归一化</h2><p>消除数据中不同特征因<strong>量纲和分布范围</strong>不同而产生的偏差，使模型更公平地对待每一个特征，加速模型收敛。</p>
+<h3 id="归一化"><a href="#归一化" class="headerlink" title="归一化"></a><strong>归一化</strong></h3><p>将数据<strong>缩放到一个固定的范围</strong>，通常是 [0, 1]。</p>
+<p>$$<br>Xnorm&#x3D;(X−Xmin)⁡&#x2F;(Xmax−Xmin)<br>$$<br><strong>适用场景</strong>：数据分布<strong>没有明显的正态性</strong>。需要将数据压缩到特定范围（如图像像素值）。使用<strong>梯度下降</strong>优化的模型（如神经网络）。<strong>缺点</strong>是对<strong>异常值非常敏感</strong>。一个极端异常值会压缩正常数据的分布区间。</p>
+<h3 id="标准化"><a href="#标准化" class="headerlink" title="标准化"></a><strong>标准化</strong></h3><p>将数据转换为<strong>均值为0，标准差为1</strong>的正态分布。</p>
+<p>$$<br>Xstd&#x3D;(X−μ)&#x2F;σ<br>$$<br><strong>适用场景</strong>：数据<strong>近似服从正态分布</strong>，或至少是对称分布。存在<strong>异常值</strong>（标准化对异常值的鲁棒性比归一化稍好）。许多机器学习算法（如SVM、逻辑回归、PCA）的默认假设。<strong>缺点</strong>是转换后的数据不在一个固定的范围内。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>适用场景</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Z-Score 标准化</strong></td>
+<td>数据近似正态分布；存在异常值；大多数机器学习算法</td>
+<td>对异常值相对鲁棒；保持分布形状</td>
+<td>输出范围无限制</td>
+</tr>
+<tr>
+<td><strong>Min-Max 归一化</strong></td>
+<td>需要固定范围；神经网络；图像处理</td>
+<td>输出范围固定；直观易懂</td>
+<td>对异常值敏感</td>
+</tr>
+<tr>
+<td><strong>行归一化</strong></td>
+<td>文本数据；聚类分析；余弦相似度计算</td>
+<td>保持样本间角度关系；适用于稀疏数据</td>
+<td>改变特征间的关系</td>
+</tr>
+</tbody></table>
+<h4 id="Z-Score-标准化"><a href="#Z-Score-标准化" class="headerlink" title="Z-Score 标准化"></a>Z-Score 标准化</h4><p>该方法基于原始数据的均值和标准差进行标准化。经过处理的数据符合标准正态分布，即均值为0，标准差为1。</p>
+<p>$$<br>( z &#x3D; \frac{x - \mu}{\sigma} )<br>$$<br><strong>特点</strong>：对异常值相对鲁棒，输出范围无限制（可能产生很大或很小的值），保持原始分布形状</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd<br><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><span class="hljs-keyword">from</span> sklearn.preprocessing <span class="hljs-keyword">import</span> StandardScaler<br><br><span class="hljs-comment"># 示例数据</span><br>data = &#123;<br>    <span class="hljs-string">&#x27;Age&#x27;</span>: [<span class="hljs-number">25</span>, <span class="hljs-number">30</span>, <span class="hljs-number">35</span>, <span class="hljs-number">40</span>, <span class="hljs-number">45</span>, <span class="hljs-number">50</span>, <span class="hljs-number">200</span>],  <span class="hljs-comment"># 包含异常值200</span><br>    <span class="hljs-string">&#x27;Salary&#x27;</span>: [<span class="hljs-number">50000</span>, <span class="hljs-number">60000</span>, <span class="hljs-number">70000</span>, <span class="hljs-number">80000</span>, <span class="hljs-number">90000</span>, <span class="hljs-number">100000</span>, <span class="hljs-number">120000</span>],<br>    <span class="hljs-string">&#x27;Score&#x27;</span>: [<span class="hljs-number">85</span>, <span class="hljs-number">90</span>, <span class="hljs-number">78</span>, <span class="hljs-number">92</span>, <span class="hljs-number">88</span>, <span class="hljs-number">95</span>, <span class="hljs-number">82</span>]<br>&#125;<br>df = pd.DataFrame(data)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;原始数据统计:&quot;</span>)<br><span class="hljs-built_in">print</span>(df.describe())<br><br><span class="hljs-comment"># Z-Score 标准化</span><br>scaler = StandardScaler()<br>z_scores = scaler.fit_transform(df[[<span class="hljs-string">&#x27;Age&#x27;</span>, <span class="hljs-string">&#x27;Salary&#x27;</span>, <span class="hljs-string">&#x27;Score&#x27;</span>]])<br>df_zscore = pd.DataFrame(z_scores, columns=[<span class="hljs-string">&#x27;Age_Z&#x27;</span>, <span class="hljs-string">&#x27;Salary_Z&#x27;</span>, <span class="hljs-string">&#x27;Score_Z&#x27;</span>])<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\nZ-Score 标准化后:&quot;</span>)<br><span class="hljs-built_in">print</span>(df_zscore.describe())<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;均值: <span class="hljs-subst">&#123;df_zscore.mean().values&#125;</span>&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;标准差: <span class="hljs-subst">&#123;df_zscore.std().values&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><strong>输出结果分析</strong>：所有特征的均值都接近0，所有特征的标准差都接近1，异常值（Age&#x3D;200）仍然存在，但被标准化到一个相对位置</p>
+<h4 id="Min-Max-归一化"><a href="#Min-Max-归一化" class="headerlink" title="Min-Max 归一化"></a>Min-Max 归一化</h4><p>将数据缩放到一个固定的范围，通常是[0, 1]。</p>
+<p>$$<br>x_{\text{scaled}} &#x3D; \frac{x - x_{\min}}{x_{\max} - x_{\min}}<br>$$</p>
+<p>对异常值非常敏感，输出范围固定为[0, 1]，保持原始分布形状</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> sklearn.preprocessing <span class="hljs-keyword">import</span> MinMaxScaler<br><br><span class="hljs-comment"># Min-Max 归一化</span><br>minmax_scaler = MinMaxScaler()<br>minmax_scaled = minmax_scaler.fit_transform(df[[<span class="hljs-string">&#x27;Age&#x27;</span>, <span class="hljs-string">&#x27;Salary&#x27;</span>, <span class="hljs-string">&#x27;Score&#x27;</span>]])<br>df_minmax = pd.DataFrame(minmax_scaled, columns=[<span class="hljs-string">&#x27;Age_MM&#x27;</span>, <span class="hljs-string">&#x27;Salary_MM&#x27;</span>, <span class="hljs-string">&#x27;Score_MM&#x27;</span>])<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\nMin-Max 归一化后:&quot;</span>)<br><span class="hljs-built_in">print</span>(df_minmax.describe())<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;最小值: <span class="hljs-subst">&#123;df_minmax.<span class="hljs-built_in">min</span>().values&#125;</span>&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;最大值: <span class="hljs-subst">&#123;df_minmax.<span class="hljs-built_in">max</span>().values&#125;</span>&quot;</span>)<br><br><span class="hljs-comment"># 异常值的影响很明显</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;\n异常值对Age列的影响:&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;原始Age范围: <span class="hljs-subst">&#123;df[<span class="hljs-string">&#x27;Age&#x27;</span>].<span class="hljs-built_in">min</span>()&#125;</span> - <span class="hljs-subst">&#123;df[<span class="hljs-string">&#x27;Age&#x27;</span>].<span class="hljs-built_in">max</span>()&#125;</span>&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;归一化后Age范围: <span class="hljs-subst">&#123;df_minmax[<span class="hljs-string">&#x27;Age_MM&#x27;</span>].<span class="hljs-built_in">min</span>():<span class="hljs-number">.3</span>f&#125;</span> - <span class="hljs-subst">&#123;df_minmax[<span class="hljs-string">&#x27;Age_MM&#x27;</span>].<span class="hljs-built_in">max</span>():<span class="hljs-number">.3</span>f&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="行归一化"><a href="#行归一化" class="headerlink" title="行归一化"></a>行归一化</h4><p>这种方法按行进行归一化，确保每个样本（行）的特征向量具有相同的范数。</p>
+<p>$$<br>( x_{\text{norm}} &#x3D; \frac{x}{|x|} )<br>$$</p>
+<p>常用于文本数据或余弦相似度计算，将每个样本投影到单位球面上，保持样本间的角度关系</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> sklearn.preprocessing <span class="hljs-keyword">import</span> Normalizer<br><br><span class="hljs-comment"># 行归一化</span><br>normalizer = Normalizer(norm=<span class="hljs-string">&#x27;l2&#x27;</span>)  <span class="hljs-comment"># 使用L2范数（欧几里得距离）</span><br>row_normalized = normalizer.fit_transform(df[[<span class="hljs-string">&#x27;Age&#x27;</span>, <span class="hljs-string">&#x27;Salary&#x27;</span>, <span class="hljs-string">&#x27;Score&#x27;</span>]])<br>df_row_norm = pd.DataFrame(row_normalized, columns=[<span class="hljs-string">&#x27;Age_RN&#x27;</span>, <span class="hljs-string">&#x27;Salary_RN&#x27;</span>, <span class="hljs-string">&#x27;Score_RN&#x27;</span>])<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n行归一化后:&quot;</span>)<br><span class="hljs-built_in">print</span>(df_row_norm.head())<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;\n每行的L2范数:&quot;</span>)<br>row_norms = np.linalg.norm(row_normalized, axis=<span class="hljs-number">1</span>)<br><span class="hljs-built_in">print</span>(row_norms)  <span class="hljs-comment"># 应该都接近1</span><br><br><span class="hljs-comment"># 验证第一行的范数</span><br>first_row_norm = np.linalg.norm(df_row_norm.iloc[<span class="hljs-number">0</span>].values)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;第一行范数: <span class="hljs-subst">&#123;first_row_norm&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><table>
+<thead>
+<tr>
+<th align="left">概念</th>
+<th align="left">主要目标</th>
+<th align="left">关键方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>数据分割</strong></td>
+<td align="left">评估模型泛化能力</td>
+<td align="left">训练&#x2F;验证&#x2F;测试分割、交叉验证</td>
+</tr>
+<tr>
+<td align="left"><strong>数据平衡</strong></td>
+<td align="left">处理类别不平衡</td>
+<td align="left">上采样、下采样、SMOTE、类别权重</td>
+</tr>
+<tr>
+<td align="left"><strong>数据格式化</strong></td>
+<td align="left">优化数据存储和处理</td>
+<td align="left">类型转换、编码、分箱、稀疏化</td>
+</tr>
+</tbody></table>
+<hr>
+<p>参考博客</p>
+<p><a target="_blank" rel="noopener" href="https://mifan.im/posts/kaggle">Kaggle数据预处理 - Mifan - bio</a></p>
+<p><a target="_blank" rel="noopener" href="https://ofeng.org/posts/how-to-kaggle-3/">Kaggle竞赛指南 —— 数据预处理 - Feng’s Notes</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/120712651">数据挖掘与分析</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.webkt.com/article/3611">Kaggle 数据预处理：模型训练的幕后英雄 - WEBKT</a></p>
+<p><a target="_blank" rel="noopener" href="https://scikit-learn.cn/stable/modules/preprocessing.html#target-encoder">7.3. 预处理数据 — scikit-learn 1.7.0 文档 - scikit-learn 机器学习库</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86/" class="category-chain-item">数据预处理</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>理解与清洗数据</div>
+      <div>https://hermes37.vercel.app/2026/05/25/量化分析系统/数据预处理/理解与清洗数据/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/25/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%85%A8%E8%A7%A3/" title="微服务全解">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">微服务全解</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/25/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%A0%91%E6%A8%A1%E5%9E%8B/" title="树模型">
+                        <span class="hidden-mobile">树模型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

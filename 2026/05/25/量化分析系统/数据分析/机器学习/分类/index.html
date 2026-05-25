@@ -1,0 +1,854 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="贝叶斯分类器 引入   特性 矩估计 &#x2F; 最大似然估计 贝叶斯估计    对参数的看法 参数θ是固定的未知常数。没有随机性，只有不确定性。 参数θ是随机变量。它本身服从一个概率分布。   核心目标 找到一个最优的点估计值 θ^θ^ (一个数)。 得到参数的完整的后验概率分布 P(θ∣X)P(θ∣X) (一个分布)。   是否使用先验 不使用先验知识。估计完全依赖于当前的样本数据。 必须使">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分类">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/05/25/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E5%88%86%E7%B1%BB/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="贝叶斯分类器 引入   特性 矩估计 &#x2F; 最大似然估计 贝叶斯估计    对参数的看法 参数θ是固定的未知常数。没有随机性，只有不确定性。 参数θ是随机变量。它本身服从一个概率分布。   核心目标 找到一个最优的点估计值 θ^θ^ (一个数)。 得到参数的完整的后验概率分布 P(θ∣X)P(θ∣X) (一个分布)。   是否使用先验 不使用先验知识。估计完全依赖于当前的样本数据。 必须使">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/ZFju3WeYB7fLXp4.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/TUmP65vBMfR7nAK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/ahtARuXpIo5YTnG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/pPt3Fw8GbsXLJMv.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/25/qw7W/image-20250714203011735.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/3LQ9EmCBoiYxZM5.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/etYWp8z1HFdBPfs.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/q341xR5r6uykJMA.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/14/zWYf1Mi89sQ2pwj.png">
+<meta property="article:published_time" content="2026-05-25T13:19:49.338Z">
+<meta property="article:modified_time" content="2026-05-25T13:57:36.842Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/07/14/ZFju3WeYB7fLXp4.png">
+  
+  
+  
+  <title>分类 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="分类"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">分类</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="贝叶斯分类器"><a href="#贝叶斯分类器" class="headerlink" title="贝叶斯分类器"></a>贝叶斯分类器</h1><hr>
+<h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">矩估计 &#x2F; 最大似然估计</th>
+<th align="left">贝叶斯估计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>对参数的看法</strong></td>
+<td align="left"><strong>参数θ是固定的未知常数</strong>。没有随机性，只有不确定性。</td>
+<td align="left"><strong>参数θ是随机变量</strong>。它本身服从一个概率分布。</td>
+</tr>
+<tr>
+<td align="left"><strong>核心目标</strong></td>
+<td align="left">找到一个<strong>最优的点估计值</strong> θ^<em>θ</em>^ (一个数)。</td>
+<td align="left">得到参数的<strong>完整的后验概率分布</strong> P(θ∣X)<em>P</em>(<em>θ</em>∣<em>X</em>) (一个分布)。</td>
+</tr>
+<tr>
+<td align="left"><strong>是否使用先验</strong></td>
+<td align="left"><strong>不使用先验知识</strong>。估计完全依赖于当前的样本数据。</td>
+<td align="left"><strong>必须使用先验分布</strong> P(θ)<em>P</em>(<em>θ</em>)。将先验知识与观测数据相结合。</td>
+</tr>
+<tr>
+<td align="left"><strong>结果与不确定性</strong></td>
+<td align="left">结果是单个值。不确定性通过<strong>置信区间</strong>、<strong>方差</strong>等来<strong>频率意义</strong>地描述（例如，95%置信区间意味着重复抽样下，有95%的区间会覆盖真值）。</td>
+<td align="left">不确定性直接体现在<strong>后验分布</strong>中。我们可以直接说“参数有90%的概率落在某个区间内”（<strong>可信区间</strong>）。</td>
+</tr>
+<tr>
+<td align="left"><strong>哲学比喻</strong></td>
+<td align="left">测量一个<strong>固定的物理常数</strong>（如光速）。你通过实验去逼近这个唯一、真实的值。</td>
+<td align="left">预测<strong>明天的天气</strong>。你根据历史数据（先验）和今天的观测（数据）来更新你对明天天气的信念（后验）。</td>
+</tr>
+</tbody></table>
+<p><strong>矩估计 vs MLE</strong>：是频率学派内部的两种<strong>点估计</strong>方法。MLE通常性质更优，但矩估计更简单。它们都只产出一个“最佳猜测”的数值。</p>
+<p><strong>频率学派 vs 贝叶斯学派</strong>：这是世界观的不同。频率学派将参数视为<strong>固定常数</strong>，贝叶斯学派将参数视为<strong>随机变量</strong>。前者输出一个<strong>点</strong>，后者输出一个<strong>分布</strong>，这个分布融合了数据（似然）和我们事先的信念（先验）。</p>
+<h2 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h2><h3 id="最大似然估计"><a href="#最大似然估计" class="headerlink" title="最大似然估计"></a>最大似然估计</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/haohai9309/p/16867285.html">统计学(十一)——最大似然估计 - 郝hai - 博客园</a></p>
+</blockquote>
+<p><strong>概率</strong>：在<strong>已知参数</strong>（例如，硬币正面概率 θ&#x3D;0.5）的情况下，<strong>预测未来观测结果</strong>（例如，抛10次得到3次正面的概率是多少？）。</p>
+<p><strong>似然</strong>：在<strong>已知观测结果</strong>（例如，抛10次得到3次正面）的情况下，<strong>评估不同参数的合理性</strong>（例如，θ&#x3D;0.3 和 θ&#x3D;0.6，哪个参数更“像”是真的？）。</p>
+<h3 id="贝叶斯定理"><a href="#贝叶斯定理" class="headerlink" title="贝叶斯定理"></a><strong>贝叶斯定理</strong></h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/HuZihu/p/9368355.html">贝叶斯定理推导（Bayes’s Theorem） - HuZihu - 博客园</a></p>
+</blockquote>
+<p>贝叶斯定理是连接<strong>先验概率</strong>与<strong>后验概率</strong>的桥梁，公式如下：<br>$$<br>P(A|B) &#x3D; \frac{P(B|A)P(A)}{P(B)}<br>$$<br>其中：</p>
+<ul>
+<li>P(A))：事件A的<strong>先验概率</strong>；</li>
+<li>P(B∣A))：在A发生的条件下B发生的概率；</li>
+<li>P(A∣B)：在B发生的条件下A的概率，即<strong>后验概率</strong>；</li>
+<li>P(B)：规范化常数，使得所有后验概率之和为1。</li>
+</ul>
+<h4 id="联合概率"><a href="#联合概率" class="headerlink" title="联合概率"></a>联合概率</h4><p>$$<br>P(A,B)&#x3D;P(A∣B)P(B)&#x3D;P(B∣A)P(A)<br>$$</p>
+<h4 id="边缘概率"><a href="#边缘概率" class="headerlink" title="边缘概率"></a>边缘概率</h4><p>$$<br>P(A) &#x3D; \sum_B P(A,B)<br>$$</p>
+<h4 id="连续形式（概率密度函数）"><a href="#连续形式（概率密度函数）" class="headerlink" title="连续形式（概率密度函数）"></a>连续形式（概率密度函数）</h4><p>若为连续变量，贝叶斯定理改写为：</p>
+<p>若为连续变量，贝叶斯定理改写为：</p>
+<p>p(θ∣x)&#x3D;p(x∣θ)p(θ)p(x)&#x3D;p(x∣θ)p(θ)∫p(x∣θ)p(θ)dθp(\theta|x) &#x3D; \frac{p(x|\theta)p(\theta)}{p(x)} &#x3D; \frac{p(x|\theta)p(\theta)}{\int p(x|\theta)p(\theta)d\theta}p(θ∣x)&#x3D;p(x)p(x∣θ)</p>
+<p>这构成了贝叶斯推断的核心思想：<strong>通过数据更新参数的概率分布</strong>。<br>$$<br>p(\theta|x) &#x3D; \frac{p(x|\theta)p(\theta)}{p(x)} &#x3D; \frac{p(x|\theta)p(\theta)}{\int p(x|\theta)p(\theta)d\theta}<br>$$<br>这构成了贝叶斯推断的核心思想：<strong>通过数据更新参数的概率分布</strong>。</p>
+<h3 id="拉普拉斯修正"><a href="#拉普拉斯修正" class="headerlink" title="拉普拉斯修正"></a><strong>拉普拉斯修正</strong></h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2127134">通俗易懂理解朴素贝叶斯分类的拉普拉斯平滑-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p>在朴素贝叶斯中，如果某个条件组合未在训练集中出现，则其概率估计为0，会导致整个类别后验概率为0。</p>
+<p>拉普拉斯修正通过在计数中加上一个常数（通常为1），防止概率为零：<br>$$<br>P(x_i|y_k) &#x3D; \frac{N_{x_i,y_k} + 1}{N_{y_k} + n}<br>$$<br>其中：</p>
+<ul>
+<li>Nxi,yk：类别 yky_kyk 下属性 xix_ixi 出现的次数；</li>
+<li>Nyk：类别 yk 的总样本数；</li>
+<li>n：该特征可能的取值个数。</li>
+</ul>
+<blockquote>
+<p>本质上是给每个事件一个“先验”，使模型更鲁棒。</p>
+</blockquote>
+<h3 id="参数估计"><a href="#参数估计" class="headerlink" title="参数估计"></a>参数估计</h3><p>在朴素贝叶斯模型中，我们需要估计：</p>
+<ol>
+<li><p><strong>类先验概率</strong>：<br>$$<br>P(y_k) &#x3D; \frac{N_{y_k}}{N}<br>$$</p>
+</li>
+<li><p><strong>条件概率分布</strong>（特征条件独立）：<br>$$<br>P(x_i|y_k) &#x3D; \frac{N_{x_i,y_k}}{N_{y_k}}<br>$$</p>
+</li>
+</ol>
+<p>使用拉普拉斯修正后即为上式带平滑项的形式。</p>
+<h2 id="分类器"><a href="#分类器" class="headerlink" title="分类器"></a>分类器</h2><h3 id="朴素贝叶斯"><a href="#朴素贝叶斯" class="headerlink" title="朴素贝叶斯"></a>朴素贝叶斯</h3><p>朴素贝叶斯假设特征之间<strong>条件独立</strong>，即：<br>$$<br>P(x_1,x_2,\dots,x_n|y) &#x3D; \prod_{i&#x3D;1}^{n}P(x_i|y)<br>$$<br>根据贝叶斯公式，分类决策为：<br>$$<br>\hat{y} &#x3D; \arg\max_{y_k} P(y_k|x_1,x_2,\dots,x_n) &#x3D; \arg\max_{y_k} P(y_k)\prod_{i&#x3D;1}^{n}P(x_i|y_k)<br>$$<br>常见类型：</p>
+<ul>
+<li><strong>高斯朴素贝叶斯</strong>：连续特征服从正态分布；</li>
+<li><strong>多项式朴素贝叶斯</strong>：用于文本分类；</li>
+<li><strong>伯努利朴素贝叶斯</strong>：用于二值特征。</li>
+</ul>
+<h3 id="半半朴素贝叶斯"><a href="#半半朴素贝叶斯" class="headerlink" title="半半朴素贝叶斯"></a>半半朴素贝叶斯</h3><p>朴素贝叶斯假设“所有特征相互独立”，往往不现实。半朴素贝叶斯在保持可计算性的前提下，<strong>部分放宽独立假设</strong>。</p>
+<p><strong>独依赖估计</strong></p>
+<p>假设每个属性最多依赖一个其他属性，形式为：<br>$$<br>P(y,x_1,\dots,x_n) &#x3D; P(y)\prod_{i&#x3D;1}^{n}P(x_i|y,pa_i)<br>$$<br>其中 pa_i 表示属性 xi 的父属性（Parent Attribute）。</p>
+<p>典型模型：</p>
+<ul>
+<li><strong>TAN</strong>：基于最大互信息生成一棵属性依赖树；</li>
+<li>**AODE：对所有可能的父节点平均，兼顾精度与稳定性。</li>
+</ul>
+<h3 id="贝叶斯网"><a href="#贝叶斯网" class="headerlink" title="贝叶斯网"></a>贝叶斯网</h3><p><strong>贝叶斯网(Bayesian network)<strong>也称</strong>信念网(belief network)</strong>,它借助**有向无环图(Directed Acyclic Graph,简称DAG)<strong>来刻画属性之间的依赖关系，并使用</strong>条件概率表(Conditional Probability Table,简称CPT)**来描述属性的联合概率分布。</p>
+<p>贝叶斯网是一种用<strong>图结构表示变量间依赖关系</strong>的概率模型。由两部分组成：</p>
+<ol>
+<li><strong>有向无环图（DAG）</strong>：表示变量间的依赖结构；</li>
+<li><strong>条件概率表（CPT）</strong>：描述每个变量在给定父节点下的概率分布。</li>
+</ol>
+<p>整体联合分布可分解为：<br>$$<br>P(X_1,X_2,\dots,X_n) &#x3D; \prod_{i&#x3D;1}^{n} P(X_i|Pa(X_i))<br>$$<br>其中 Pa(Xi)表示结点 Xi 的父节点集合。</p>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><h1 id="逻辑回归"><a href="#逻辑回归" class="headerlink" title="逻辑回归"></a>逻辑回归</h1><p>前面说到线性回归用于<strong>连续数值预测</strong>（如房价、温度）。而当我们需要用于用于<strong>分类问题</strong>（如垃圾邮件识别、疾病诊断），尤其是二分类（是&#x2F;否）时就不太适用：</p>
+<p><img src="https://s2.loli.net/2025/07/14/ZFju3WeYB7fLXp4.png" srcset="/img/loading.gif" lazyload></p>
+<p>如果我们要用线性回归算法来解决一个分类问题，对于分类， 𝑦 取值为 0 或者 1，但 如果你使用的是线性回归，那么假设函数的输出值可能远大于 1，或者远小于 0，即使所有 训练样本的标签 𝑦 都等于 0 或 1。</p>
+<p>尽管我们知道标签应该取值 0 或者 1，但是如果算法 得到的值远大于 1 或者远小于 0 的话，就会感觉很奇怪。所以我们在接下来的要研究的算法 就叫做逻辑回归算法</p>
+<h2 id="理论-1"><a href="#理论-1" class="headerlink" title="理论"></a>理论</h2><p><strong>这个算法的性质是：它的输出值永远在 0 到 1 之间</strong></p>
+<p><img src="https://s2.loli.net/2025/07/14/TUmP65vBMfR7nAK.png" srcset="/img/loading.gif" lazyload></p>
+<p>我们引入一个新的模型，逻辑回归，该模型的输出变量范围始终在 0 和 1 之间。 逻辑回归模型的假设是： $ℎ𝜃 (𝑥) &#x3D; 𝑔(𝜃^𝑇𝑋) $    其中： 𝑋 代表特征向量， 𝑔 代表逻辑函数</p>
+<p><img src="https://s2.loli.net/2025/07/14/ahtARuXpIo5YTnG.png" srcset="/img/loading.gif" lazyload></p>
+<p>ℎ𝜃 (𝑥)的作用是，对于给定的输入变量，根据选择的参数计算输出变量&#x3D;1 的可能性 即ℎ𝜃 (𝑥) &#x3D; 𝑃(𝑦 &#x3D; 1|𝑥; 𝜃)</p>
+<p>注意Sigmoid的导数为：<img src="https://s2.loli.net/2025/07/14/pPt3Fw8GbsXLJMv.png" srcset="/img/loading.gif" lazyload style="zoom: 25%;" />这个性质使得梯度下降优化变得高效（计算梯度时可直接使用）。</p>
+<blockquote>
+<p><strong>为什么逻辑回归需要Sigmoid函数？</strong></p>
+</blockquote>
+<p><strong>(1) 将线性输出映射为概率</strong>：线性回归的输出 $z&#x3D;θ^Tx$是无界的（−∞∼+∞），而概率必须落在 <strong>[0,1]</strong> 区间。Sigmoid函数实现了这一映射。</p>
+<p><strong>(2) 提供非线性决策边界</strong>：虽然逻辑回归本身是线性分类器（决策边界是$ θ^Tx&#x3D;0$），但Sigmoid的<strong>非线性变换</strong>使得模型可以拟合分类问题，而线性回归直接用于分类时效果极差。</p>
+<p><strong>(3) 损失函数（交叉熵）的优化需求</strong>：逻辑回归使用<strong>交叉熵损失</strong>（而非均方误差），其梯度计算依赖Sigmoid的导数：</p>
+<img src="https://files.seeusercontent.com/2026/05/25/qw7W/image-20250714203011735.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<p>Sigmoid的导数形式简单，使得梯度下降高效。</p>
+<p><img src="https://s2.loli.net/2025/07/14/3LQ9EmCBoiYxZM5.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>扩展：尽管Sigmoid在逻辑回归中表现优秀，但在深度学习中逐渐被其他激活函数（如ReLU）取代</p>
+</blockquote>
+<h3 id="预测函数"><a href="#预测函数" class="headerlink" title="预测函数"></a>预测函数</h3><p><img src="https://s2.loli.net/2025/07/14/etYWp8z1HFdBPfs.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>作用</strong>：将线性组合 $θ^Tx$映射到 <strong>(0,1)</strong> 区间，表示概率 P(y&#x3D;1∣x)。输出服从 <strong>伯努利分布</strong></p>
+<h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>对于线性回归模型，我们定义的代价函数是所有模型误差的平方和。理论上来说，我们 也可以对逻辑回归模型沿用这个定义，但是问题在于，当我们将$ℎ𝜃(𝑥) &#x3D; \frac{1}{1+𝑒^{−𝜃^𝑇𝑋}} $带入到这样 定义了的代价函数中时，我们得到的代价函数将是一个非凸函数。</p>
+<p><img src="https://s2.loli.net/2025/07/14/q341xR5r6uykJMA.png" srcset="/img/loading.gif" lazyload alt="image-20250714203654483"></p>
+<p>这意味着我们的代价函数有许多局部最小值，这将影响梯度下降算法寻找全局最小值。</p>
+<p><img src="https://s2.loli.net/2025/07/14/zWYf1Mi89sQ2pwj.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="似然函数"><a href="#似然函数" class="headerlink" title="似然函数"></a>似然函数</h4><p>假设训练集中共有  m 个样本 ((x^{(i)}, y^{(i)}))，且样本相互独立。</p>
+<p>对于每个样本，逻辑回归预测：<br>$$<br>P(y^{(i)}&#x3D;1|x^{(i)};\theta) &#x3D; h_\theta(x^{(i)}), \quad<br> P(y^{(i)}&#x3D;0|x^{(i)};\theta) &#x3D; 1 - h_\theta(x^{(i)})<br>$$<br>联合似然函数为：<br>$$<br>L(\theta) &#x3D; \prod_{i&#x3D;1}^{m} P(y^{(i)}|x^{(i)};\theta) &#x3D;<br> \prod_{i&#x3D;1}^{m} [h_\theta(x^{(i)})]^{y^{(i)}} [1 - h_\theta(x^{(i)})]^{1 - y^{(i)}}<br>$$<br>我们希望<strong>最大化似然函数</strong>，使模型参数在给定样本下出现的概率最大。</p>
+<hr>
+<h4 id="对数似然函数"><a href="#对数似然函数" class="headerlink" title="对数似然函数"></a>对数似然函数</h4><p>由于连乘式数值过小且不便于求导，一般取对数得到：<br>$$<br>\ell(\theta) &#x3D; \ln L(\theta)<br> &#x3D; \sum_{i&#x3D;1}^{m} \left[ y^{(i)} \ln h_\theta(x^{(i)})</p>
+<ul>
+<li><p>(1 - y^{(i)}) \ln (1 - h_\theta(x^{(i)})) \right]<br>$$<br>我们通常将其<strong>取负号</strong>作为<strong>损失函数（代价函数）</strong>，得到逻辑回归的交叉熵损失：<br>$$<br>J(\theta) &#x3D; -\frac{1}{m} \sum_{i&#x3D;1}^{m} \left[ y^{(i)} \ln h_\theta(x^{(i)})</p>
+</li>
+<li><p>(1 - y^{(i)}) \ln (1 - h_\theta(x^{(i)})) \right]<br>$$<br>该损失函数是<strong>凸函数</strong>，这保证了梯度下降能够收敛到全局最优解。</p>
+</li>
+</ul>
+<hr>
+<h3 id="梯度求解"><a href="#梯度求解" class="headerlink" title="梯度求解"></a>梯度求解</h3><p>为了通过梯度下降更新参数，我们对<br>$$<br>J(\theta)<br>$$<br>求偏导。<br>$$<br>\frac{\partial J(\theta)}{\partial \theta_j}<br> &#x3D; \frac{1}{m}\sum_{i&#x3D;1}^{m} \left( h_\theta(x^{(i)}) - y^{(i)} \right) x_j^{(i)}<br>$$</p>
+<p>梯度下降更新规则为：<br>$$<br>\theta :&#x3D; \theta - \alpha \frac{\partial J(\theta)}{\partial \theta}<br>$$</p>
+<p>其中<br>$$<br>(\alpha)<br>$$<br>是学习率。可以看出，逻辑回归的梯度与线性回归类似，只是误差项不同。</p>
+<h2 id="实践-1"><a href="#实践-1" class="headerlink" title="实践"></a>实践</h2><hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://geek-blogs.com/blog/logistic-regression-with-l2-regularization-python-from-scratch/">从零开始实现带 L2 正则化的逻辑回归 - 极客技术博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39451578/article/details/107222168">【机器学习】逻辑回归与正则化_逻辑回归正折化属于分类实验-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.cn/developer/article/2491239">算法入门（六）—— 一文搞懂逻辑回归（内附Kaggle实战源码与数据集）-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/cEbGM0_Lrt8elfubxSF9jg">机器学习(三)：理解逻辑回归及二分类、多分类代码实践</a></p>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://baidinghub.github.io/2020/04/03/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%EF%BC%88%E5%85%AD%EF%BC%89%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%88%86%E7%B1%BB%E5%99%A8/#1%E3%80%81%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%86%B3%E7%AD%96%E8%AE%BA">机器学习（六）贝叶斯分类器 | BaiDing’s blog</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/pinard/p/6069267.html">朴素贝叶斯算法原理小结 - 刘建平Pinard - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" class="category-chain-item">数据分析</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" class="category-chain-item">机器学习</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>分类</div>
+      <div>https://hermes37.vercel.app/2026/05/25/量化分析系统/数据分析/机器学习/分类/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/25/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%A0%91%E6%A8%A1%E5%9E%8B/" title="树模型">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">树模型</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/23/%E6%B8%B8%E6%88%8F%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E7%BE%8E%E6%9C%AF/%E6%B8%B8%E6%88%8F%E7%BE%8E%E5%AD%A6/" title="游戏美学">
+                        <span class="hidden-mobile">游戏美学</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
