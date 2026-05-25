@@ -1,0 +1,893 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在前面分布式理论基础 - The Peak Tower谈到了在分布式系统中如何在网络等一系列不可预计的情况下尽量数据一致性，但尽管如此仍然在基于消息队列(MQ)的实现消息可靠性还有一些业务上的特殊情况需要处理。  用户下单时，可能会由于网络抖动或前端重复提交，导致同一个订单请求被多次发送。如果没有幂等性设计，可能会导致重复创建订单。  用户下单后未支付，库存被锁定但未扣减，需要在一定时间后释放库存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="幂等与延迟消息">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E5%B9%82%E7%AD%89%E4%B8%8E%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="在前面分布式理论基础 - The Peak Tower谈到了在分布式系统中如何在网络等一系列不可预计的情况下尽量数据一致性，但尽管如此仍然在基于消息队列(MQ)的实现消息可靠性还有一些业务上的特殊情况需要处理。  用户下单时，可能会由于网络抖动或前端重复提交，导致同一个订单请求被多次发送。如果没有幂等性设计，可能会导致重复创建订单。  用户下单后未支付，库存被锁定但未扣减，需要在一定时间后释放库存">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/f8GKhkvwPBIiqZo.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/Cev5pGuf3MSD4Hb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/S2zOYPECidXB8FM.png">
+<meta property="og:image" content="https://ucc.alicdn.com/pic/developer-ecology/980d85723fe44d8b8516694c6a94b8f4.gif">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/MXY5fbuSQKPdRzJ.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.142Z">
+<meta property="article:modified_time" content="2026-05-25T12:38:35.302Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="软件工程">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/04/f8GKhkvwPBIiqZo.png">
+  
+  
+  
+  <title>幂等与延迟消息 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="幂等与延迟消息"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          40 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">幂等与延迟消息</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在前面<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/07/26/%E5%88%86%E5%B8%83%E5%BC%8F%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80/">分布式理论基础 - The Peak Tower</a>谈到了在分布式系统中如何在网络等一系列不可预计的情况下尽量数据一致性，但尽管如此仍然在基于消息队列(MQ)的实现消息可靠性还有一些业务上的特殊情况需要处理。</p>
+<ul>
+<li><p>用户下单时，可能会由于网络抖动或前端重复提交，导致同一个订单请求被多次发送。如果没有幂等性设计，可能会导致重复创建订单。</p>
+</li>
+<li><p>用户下单后未支付，库存被锁定但未扣减，需要在一定时间后释放库存。如果立即释放库存，可能会导致库存数据不一致。</p>
+</li>
+<li><p>在商城系统中，订单服务通过消息队列发送“扣减库存”消息，库存服务消费该消息并执行扣减操作。然而，如果库存不足，可能会导致以下问题：</p>
+<ol>
+<li><strong>消息消费失败</strong>：<ul>
+<li>库存服务无法扣减库存，导致消息消费失败。</li>
+<li>消息队列会重新投递消息，但库存仍然不足，导致消息一直无法被成功消费。</li>
+</ul>
+</li>
+<li><strong>数据不一致</strong>：<ul>
+<li>订单服务认为库存已扣减，但库存服务实际未扣减，导致数据不一致。</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<ol>
+<li><strong>库存超卖</strong>：通过分布式锁、乐观锁或预占库存解决。</li>
+<li><strong>库存数据不一致</strong>：通过可靠消息传递、幂等性设计或本地消息表解决。</li>
+<li><strong>库存回滚问题</strong>：通过 TCC 模式、补偿机制或延时任务解决。</li>
+<li><strong>库存热点问题</strong>：通过库存分片、缓存库存或限流降级解决。</li>
+<li><strong>库存更新延迟</strong>：通过实时库存同步、库存预占机制或前端库存校验解决。</li>
+<li><strong>库存负数问题</strong>：通过库存校验、数据库约束或分布式锁解决。</li>
+<li><strong>库存数据丢失</strong>：通过数据备份、日志记录或分布式存储解决。</li>
+<li><strong>库存数据不一致（跨系统）</strong>：通过分布式事务、最终一致性或数据同步解决。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<h1 id="Rocketmq简单介绍和使用"><a href="#Rocketmq简单介绍和使用" class="headerlink" title="Rocketmq简单介绍和使用"></a>Rocketmq简单介绍和使用</h1><p>RocketMQ 是一个高性能、可靠、可扩展的分布式消息队列系统。它适用于高吞吐量、大并发、高可靠性的分布式系统，能够解决微服务架构中的异步消息、流量削峰、解耦等问题。凭借其易扩展性、可靠性、顺序消费等特性，RocketMQ 广泛应用于日志收集、实时数据流处理、异步消息通知等场景。</p>
+<blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/sdk/05go/">Go 客户端 | RocketMQ</a></p>
+<p><a target="_blank" rel="noopener" href="https://rocketmq.io/course/baseLearn/rocketmq_learning-fast/?spm=5176.29160081.0.0.50a9608eMzBaoF">RocketMQ 快速上手体验</a></p>
+</blockquote>
+<h3 id="RocketMQ-的基本概念"><a href="#RocketMQ-的基本概念" class="headerlink" title="RocketMQ 的基本概念"></a><strong>RocketMQ 的基本概念</strong></h3><ol>
+<li><strong>Producer（生产者）</strong>：生产者负责发送消息到 RocketMQ 服务端。生产者可以有多个，并且可以向指定的消息队列发送消息。</li>
+<li><strong>Consumer（消费者）</strong>：消费者负责从 RocketMQ 服务端接收并处理消息。消费者通过订阅消息队列进行消息消费，支持多种消费方式，如顺序消费和并发消费。</li>
+<li><strong>Broker（消息中间件）</strong>：RocketMQ 服务器端的核心组件，负责消息的存储、转发和管理。Broker 存储消息并负责消息的消费调度。它支持高可用、分布式存储。</li>
+<li><strong>Message Queue（消息队列）</strong>：消息队列是存储消息的逻辑概念，消息会根据特定的路由规则发送到不同的队列。每个消息队列可以对应一个或多个消费者进行消费。</li>
+<li><strong>Topic（主题）</strong>：主题是消息的分类标识。生产者发送消息到一个特定的主题，消费者通过订阅主题来接收消息。一个主题可以包含多个消息队列。</li>
+</ol>
+<h3 id="RocketMQ-的工作流程"><a href="#RocketMQ-的工作流程" class="headerlink" title="RocketMQ 的工作流程"></a><strong>RocketMQ 的工作流程</strong></h3><ol>
+<li><p><strong>生产者（Producer）发送消息</strong>：生产者通过与 Broker 的通信，将消息发送到 RocketMQ 服务端。消息会被写入到相应的消息队列中。</p>
+</li>
+<li><p><strong>Broker 存储消息</strong>：Broker 将收到的消息存储在磁盘中，并为每个消息分配一个唯一的消息 ID。消息被存储在特定的队列中。</p>
+</li>
+<li><p><strong>消费者（Consumer）订阅消息</strong>：消费者通过订阅特定的 Topic 或 Queue 来接收消息。消费者可以是多个，RocketMQ 支持多种消费模式（顺序消费、并发消费等）。</p>
+</li>
+<li><p><strong>消息消费</strong>：消费者从 Broker 获取消息并处理。处理完成后，消费者会向 Broker 发送消息消费的确认，确认消息已被成功消费。若没有确认，消息会重新投递给消费者。</p>
+</li>
+<li><p><strong>消息的可靠性保障</strong>：RocketMQ 采用同步和异步的方式进行消息确认，可以确保消息不会丢失。同时，消息在存储时也会进行磁盘持久化，防止服务器宕机导致消息丢失。</p>
+<p><img src="https://s2.loli.net/2025/02/04/f8GKhkvwPBIiqZo.png" srcset="/img/loading.gif" lazyload alt="eb2a803a826b45f6a034f39ff38d4f42"></p>
+</li>
+</ol>
+<h3 id="RocketMQ-与其他消息队列的比较"><a href="#RocketMQ-与其他消息队列的比较" class="headerlink" title="RocketMQ 与其他消息队列的比较"></a><strong>RocketMQ 与其他消息队列的比较</strong></h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>RocketMQ</th>
+<th>Kafka</th>
+<th>RabbitMQ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>吞吐量</strong></td>
+<td>高吞吐量，适合大规模并发</td>
+<td>极高吞吐量，适合日志处理</td>
+<td>吞吐量相对较低，适合任务队列</td>
+</tr>
+<tr>
+<td><strong>消息顺序性</strong></td>
+<td>支持顺序消费</td>
+<td>支持分区内顺序消费</td>
+<td>不支持严格顺序</td>
+</tr>
+<tr>
+<td><strong>可靠性</strong></td>
+<td>支持持久化，消息确认机制</td>
+<td>支持持久化，消息确认机制</td>
+<td>支持持久化，消息确认机制</td>
+</tr>
+<tr>
+<td><strong>消息过滤</strong></td>
+<td>支持消息属性过滤</td>
+<td>不支持消息过滤</td>
+<td>支持消息路由和过滤</td>
+</tr>
+<tr>
+<td><strong>分布式架构</strong></td>
+<td>分布式部署、容错和高可用</td>
+<td>分布式部署、容错和高可用</td>
+<td>支持分布式部署</td>
+</tr>
+<tr>
+<td><strong>协议</strong></td>
+<td>使用自己的协议</td>
+<td>使用 Kafka 协议</td>
+<td>AMQP 协议</td>
+</tr>
+</tbody></table>
+<h1 id="幂等性"><a href="#幂等性" class="headerlink" title="幂等性"></a>幂等性</h1><p>百度对 “幂等” 解释如下</p>
+<blockquote>
+<p>设f为一由X映射至X的一元运算，则f为幂等的，当对于所有在X内的x，<br>f(f(x)) &#x3D; f(x).<br>特别的是，恒等函数一定是幂等的，且任一常数函数也都是幂等的。</p>
+</blockquote>
+<p>这里的关键是 **f(f(x)) &#x3D; f(x)**， 翻译成通俗的解释就是：</p>
+<p><strong>如果有一个操作，多次执行与一次执行所产生的影响是相同的，我们就称这个操作是幂等的。</strong></p>
+<h2 id="消息幂等"><a href="#消息幂等" class="headerlink" title="消息幂等"></a>消息幂等</h2><p>基于上述的概念，结合消息消费的场景，我们能够很容易的总结出消息幂等的概念：</p>
+<blockquote>
+<p>如果消息重试多次，消费者端对该重复消息消费多次与消费一次的结果是相同的，并且多次消费没有对系统产生副作用，那么我们就称这个过程是消息幂等的。</p>
+</blockquote>
+<p>例如：</p>
+<p>支付场景下，消费者消费扣款消息，对一笔订单进行扣款操作，该扣款操作需要扣除10元。这时由于各种原因：或者用户网络卡顿又或许网站系统限流等，用户误以为未支付成功，便进行多次支付操作。</p>
+<p>这个扣款操作重复多次与执行一次的效果相同，只进行一次真实扣款，用户的扣款记录中对应该笔订单的只有一条扣款流水。不会多扣。那么我们就说这个扣款操作是符合要求的，这个消费过程是消息幂等的。</p>
+<blockquote>
+<p>就是无论别人对你的接口请求多少次，你都需要保证接口调用一次和多次的结果是相同的。</p>
+</blockquote>
+<h4 id="需要进行消息幂等的场景"><a href="#需要进行消息幂等的场景" class="headerlink" title="需要进行消息幂等的场景"></a>需要进行消息幂等的场景</h4><p>首先我们回顾一下需要进行消息幂等的场景，也就是上一篇文章提到的消息重复的场景。</p>
+<h5 id="发送时重复"><a href="#发送时重复" class="headerlink" title="发送时重复"></a>发送时重复</h5><p>生产者发送消息时，消息成功投递到broker，但此时发生网络闪断或者生产者down掉，导致broker发送ACK失败。此时生产者由于未能收到消息发送响应，认为发送失败，因此尝试重新发送消息到broker。当消息发送成功后，在broker中就会存在两条相同内容的消息，最终消费者会拉取到两条内容一样并且Message ID也相同的消息。因此造成了消息的重复。</p>
+<h5 id="消费时重复"><a href="#消费时重复" class="headerlink" title="消费时重复"></a>消费时重复</h5><p>消费消息时同样会出现重复消费的情况。当消费者在处理业务完成返回消费状态给broker时，由于网络闪断等异常情况导致未能将消费完成的CONSUME_SUCCESS状态返回给broker。broker为了保证消息被至少消费一次的语义，会在网络环境恢复之后再次投递该条被处理的消息，最终造成消费者多次收到内容一样并且Message ID也相同的消息，造成了消息的重复。</p>
+<hr>
+<p><strong>可以看到，无论是发送时重复还是消费时重复，最终的效果均为消费者消费时收到了重复的消息，那么我们就知道：只需要在消费者端统一进行幂等处理就能够实现消息幂等。</strong></p>
+<h2 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a>业务场景</h2><p>基于优惠券重复发放问题的前提下，流程图：</p>
+<p><img src="https://s2.loli.net/2025/02/04/Cev5pGuf3MSD4Hb.png" srcset="/img/loading.gif" lazyload alt="image-20250204171003233"></p>
+<h3 id="解决优惠券重复方法的问题"><a href="#解决优惠券重复方法的问题" class="headerlink" title="解决优惠券重复方法的问题"></a><strong>解决优惠券重复方法的问题</strong></h3><h4 id="抽象原因"><a href="#抽象原因" class="headerlink" title="抽象原因"></a>抽象原因</h4><ul>
+<li>原因1：生产者多次发送同一条消息，导致消费者多次消息同一条消息，因此重复发放优惠券</li>
+<li>原因2：生产者发送一次消息，但消费者多次消费同一条消息，因此重复发送优惠券</li>
+</ul>
+<h4 id="具象原因"><a href="#具象原因" class="headerlink" title="具象原因"></a>具象原因</h4><ul>
+<li>比如原因1，用户支付订单后，订单系统处理有点慢，这会让支付系统以为请求超时，这时支付系统会再次调用订单系统。这就会导致订单系统多次发送同一条支付消息。消息重试，网络异常，都会导致生产者多次发送同一条消息</li>
+<li>比如原因2，用户支付成功，订单系统和支付系统交互也没超时，顺利发送一条支付消息，这个时候优惠券系统也成功消费支付消息，这时发放了一张优惠券。但意外来了，这个时候优惠券系统崩了，但还没来得及提交消费进度offset到RocketMQ。因而重启优惠券系统后，又会重新消费一次支付消息，从而重复发放优惠券。</li>
+</ul>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><h3 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h3><p>那么如何才能实现消息幂等呢？</p>
+<p>首先要定义消息幂等的两要素：</p>
+<ol>
+<li>幂等令牌</li>
+<li>处理唯一性的确保</li>
+</ol>
+<p>必须保证存在幂等令牌的情况下保证业务处理结果的唯一性，才认为幂等实现是成功的。接下来分别解释这两个要素</p>
+<h4 id="幂等令牌"><a href="#幂等令牌" class="headerlink" title="幂等令牌"></a>幂等令牌</h4><p>幂等令牌是生产者和消费者两者中的既定协议，在业务中通常是具备唯一业务标识的字符串，如：订单号、流水号等。且一般由生产者端生成并传递给消费者端。</p>
+<h4 id="处理唯一性的确保"><a href="#处理唯一性的确保" class="headerlink" title="处理唯一性的确保"></a>处理唯一性的确保</h4><p>即服务端应当采用一定的策略保证同一个业务逻辑一定不会重复执行成功多次。如：使用支付宝进行支付，买一个产品支付多次只会成功一笔。</p>
+<p>较为常用的方式是采用缓存去重并且通过对业务标识添加数据库的唯一索引实现幂等。</p>
+<p>具体的思路为：如支付场景下，支付的发起端生成了一个支付流水号，服务端处理该支付请求成功后，数据持久化成功。由于表中对支付流水添加了唯一索引，因此当重复支付时会因为唯一索引的存在报错 <strong>duplicate entry</strong>，服务端的业务逻辑捕获该异常并返回调用侧“重复支付”提示。这样就不会重复扣款。</p>
+<p>在上面场景的基础上，还可以引入Redis等缓存组件实现去重：当支付请求打到服务端，首先去缓存进行判断，根据key&#x3D;“支付流水号”去get存储的值，如果返回为空，表明是首次进行支付操作同时将当前的支付流水号作为key、value可以为任意字符串通过set(key,value,expireTime)存储在redis中。</p>
+<p>当重复的支付请求到来时，尝试进行get(支付流水号)操作，这个操作会命中缓存，因此我们可以认为该请求是重复的支付请求，服务端业务将重复支付的业务提示返回给请求方。</p>
+<p>由于我们一般都会在缓存使用过程中设置过期时间，缓存可能会失效从而导致请求穿透到持久化存储中（如：MySQL）。因此不能因为引入缓存而放弃使用唯一索引，将二者结合在一起是一个比较好的方案。</p>
+<h3 id="具体方案"><a href="#具体方案" class="headerlink" title="具体方案"></a>具体方案</h3><h4 id="业务状态机判断"><a href="#业务状态机判断" class="headerlink" title="业务状态机判断"></a><strong>业务状态机判断</strong></h4><p>举个例子，在电商系统中，有订单id，这个时候在优惠券系统每消费一条支付消息，同步插入一条订单数据，能插入成功，证明之前这个订单没被消费过，发送优惠券。插入失败，则证明这个订单之前已经被消费过了。不做任何操作即可。</p>
+<p><img src="https://s2.loli.net/2025/02/04/S2zOYPECidXB8FM.png" srcset="/img/loading.gif" lazyload alt="image-20250204213554245"></p>
+<h4 id="Redis缓存法"><a href="#Redis缓存法" class="headerlink" title="Redis缓存法"></a>Redis缓存法</h4><p>在并发量特别高的订单系统中，支付消息会特别多，这个时候，如果用业务判断法，插入数据库，容易存在瓶颈。这个时候如果想要提高并发量，可以考虑使用Redis。Redis缓存订单id，如果这个订单id已经被消费过后，会存在Redis中。当这个订单id再次被消费时，就会被过滤，不操作。</p>
+<p>这也是一种幂等性的实现方法。但Redis容易丢数据，这也是需要考虑的。<img src="https://ucc.alicdn.com/pic/developer-ecology/980d85723fe44d8b8516694c6a94b8f4.gif" srcset="/img/loading.gif" lazyload alt="image.gif"></p>
+<h4 id="RocketMQ场景下"><a href="#RocketMQ场景下" class="headerlink" title="RocketMQ场景下"></a>RocketMQ场景下</h4><p>了解了两个要素及典型案例之后，回到消息消费的场景。</p>
+<p>作为一款高性能的消息中间件，RocketMQ能够保证消息不丢失但不保证消息不重复。如果在RocketMQ中实现消息去重实际也是可以的，但是考虑到高可用以及高性能的需求，如果做了服务端的消息去重，RocketMQ就需要对消息做额外的rehash、排序等操作，这会花费较大的时间和空间等资源代价，收益并不明显。RocketMQ考虑到正常情况下出现重复消息的概率其实是很小的，因此RocketMQ将消息幂等操作交给了业务方处理。</p>
+<p>实际上，上述问题的本质在于：网络调用本身存在不确定性，也就是既不成功也不失败的第三种状态，即所谓的 <strong>处理中</strong> 状态，因此会有重复的情况发生。这个问题是很多其他的MQ产品同样会遇到的，<strong>通常的方法就是要求消费方在消费消息时进行去重，也就是本文说的消费幂等性。</strong></p>
+<blockquote>
+<p>每条消息都有一个MessageID，那么能否使用该ID作为去重依据，也就是上面提到的幂等令牌呢？</p>
+<p>答案是否定的，因为MessageID可能出现冲突的情况，因此不建议通过MessageID作为处理依据而应当使用业务唯一标识如：订单号、流水号等作为幂等处理的关键依据。</p>
+</blockquote>
+<p>上面也提到了，幂等依据应当由消息生产者生成，在发送消息时候，我们能够通过消息的key设置该id，对应的API为 <strong>org.apache.rocketmq.common.message.setKeys(String keys)</strong> 代码如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Message sendMessage = new Message(<br>                MessageProtocolConst.WALLET_PAY_TOPIC.getTopic(),<br>                message.getBytes());<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf">sendMessage.setKeys(<span class="hljs-string">&quot;OD0000000001&quot;</span>)<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p>当消息消费者收到该消息时，根据该消息的key做幂等处理，API为 <strong>org.apache.rocketmq.common.message.getKeys()</strong> 代码如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">(msgs, context) -&gt; &#123;<br>    try &#123;<br>        // 默认msgs只有一条消息<br>        for (MessageExt msg : msgs) &#123;<br>            String key = msg.getKeys();<br>            return walletCharge(msg);<br>        &#125;<br>        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;<br>    &#125; catch (Exception e) &#123;<br>        LOGGER.error(&quot;钱包扣款消费异常,e=&#123;&#125;&quot;, e);<br>        return ConsumeConcurrentlyStatus.RECONSUME_LATER;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>消费者通过getKeys()能够读取到生产者设置的幂等依据（如：订单号等），然后业务逻辑围绕该id进行幂等处理即可。</p>
+<p>如果觉得每次都需要在生产者侧setkey，在消费者侧getkey，有点繁琐。也可以将该幂等依据设置在消息协议中，消费者接收到消息后解析该id进行幂等操作也是可以的。只需要消息的生产者和消费者约定好如何解析id的协议即可。</p>
+<h5 id="消费端常见的幂等操作"><a href="#消费端常见的幂等操作" class="headerlink" title="消费端常见的幂等操作"></a>消费端常见的幂等操作</h5><h6 id="业务操作之前进行状态查询"><a href="#业务操作之前进行状态查询" class="headerlink" title="业务操作之前进行状态查询"></a>业务操作之前进行状态查询</h6><p>消费端开始执行业务操作时，通过幂等id首先进行业务状态的查询，如：修改订单状态环节，当订单状态为成功&#x2F;失败则不需要再进行处理。那么我们只需要在消费逻辑执行之前通过订单号进行订单状态查询，一旦获取到确定的订单状态则对消息进行提交，通知broker消息状态为：<strong>ConsumeConcurrentlyStatus.CONSUME_SUCCESS</strong> 。</p>
+<h6 id="业务操作前进行数据的检索"><a href="#业务操作前进行数据的检索" class="headerlink" title="业务操作前进行数据的检索"></a>业务操作前进行数据的检索</h6><p>逻辑和第一点相似，即消费之前进行数据的检索，如果能够通过业务唯一id查询到对应的数据则不需要进行再后续的业务逻辑。如：下单环节中，在消费者执行异步下单之前首先通过订单号查询订单是否已经存在，这里可以查库也可以查缓存。如果存在则直接返回消费成功，否则进行下单操作。</p>
+<hr>
+<p>详细参考：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2371740">一文讲透消息队列RocketMQ实现消费幂等-腾讯云开发者社区-腾讯云</a></p>
+<blockquote>
+<p>不论怎样，请牢记一个原则：<strong>缓存是不可靠的，查询是不可靠的</strong> 。</p>
+<p>在高并发的场景下，一定要通过持久化存储的唯一索引以及引入锁机制作为共同保障数据准确性和完整性的最后一道防线！</p>
+</blockquote>
+<h1 id="延时消息"><a href="#延时消息" class="headerlink" title="延时消息"></a>延时消息</h1><blockquote>
+<p>详见：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/339459783">消息队列——延时消息应用解析及实践 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43270074/article/details/141028713">图解RocketMQ之如何实现定时延时消息_rocketmq延时消息-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1659393">一口气说出 6种 延时队列的实现方法，面试官也得服-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p>RocketMQ 在 Broker 端为每个延迟级别维护一个单独的队列。</p>
+<p>消息发送时，指定延迟级别，消息会被存储在对应的延迟队列中。</p>
+<p>延迟时间到达后，消息会被转移到普通队列中，供消费者消费。</p>
+<h1 id="库存问题"><a href="#库存问题" class="headerlink" title="库存问题"></a>库存问题</h1><p><img src="https://s2.loli.net/2025/03/20/MXY5fbuSQKPdRzJ.png" srcset="/img/loading.gif" lazyload></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">软件全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/" class="category-chain-item">后端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="category-chain-item">微服务</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="print-no-link">#软件工程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>幂等与延迟消息</div>
+      <div>https://hermes37.vercel.app/2025/05/09/软件全栈开发/后端/微服务/幂等与延迟消息/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA%E3%80%81%E9%99%90%E6%B5%81%E3%80%81%E7%86%94%E6%96%AD%E3%80%81%E9%99%8D%E7%BA%A7/" title="链路追踪、限流、熔断、降级">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">链路追踪、限流、熔断、降级</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/%E5%88%86%E5%B8%83%E5%BC%8F%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80/" title="分布式理论基础">
+                        <span class="hidden-mobile">分布式理论基础</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
