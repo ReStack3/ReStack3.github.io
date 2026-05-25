@@ -1,0 +1,832 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="为什么需要所有权与借用所有权系统能静态避免 C&#x2F;C++ 常见灾难：  Use-after-free：由于引用不能比所有者活得久（生命周期规则），编译器自动禁止悬空访问。 Double free：只有一个所有者，无法重复释放。 Data race：不可变引用可并发共享，但 mut 引用必须独占，天生避免数据竞争。 零成本抽象：所有验证在编译期进行，无运行时开销，是 Rust 面向系统的优势">
+<meta property="og:type" content="article">
+<meta property="og:title" content="所有权和借用">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/11/14/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Rust/%E6%89%80%E6%9C%89%E6%9D%83%E5%92%8C%E5%80%9F%E7%94%A8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="为什么需要所有权与借用所有权系统能静态避免 C&#x2F;C++ 常见灾难：  Use-after-free：由于引用不能比所有者活得久（生命周期规则），编译器自动禁止悬空访问。 Double free：只有一个所有者，无法重复释放。 Data race：不可变引用可并发共享，但 mut 引用必须独占，天生避免数据竞争。 零成本抽象：所有验证在编译期进行，无运行时开销，是 Rust 面向系统的优势">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-11-14T04:26:56.487Z">
+<meta property="article:modified_time" content="2026-05-25T12:57:56.075Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>所有权和借用 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="所有权和借用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">所有权和借用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="为什么需要所有权与借用"><a href="#为什么需要所有权与借用" class="headerlink" title="为什么需要所有权与借用"></a>为什么需要所有权与借用</h1><p>所有权系统能静态避免 C&#x2F;C++ 常见灾难：</p>
+<ul>
+<li>Use-after-free：由于引用不能比所有者活得久（生命周期规则），编译器自动禁止悬空访问。</li>
+<li>Double free：只有一个所有者，无法重复释放。</li>
+<li>Data race：不可变引用可并发共享，但 mut 引用必须独占，天生避免数据竞争。</li>
+<li>零成本抽象：所有验证在编译期进行，无运行时开销，是 Rust 面向系统的优势。</li>
+</ul>
+<h1 id="核心思想概览"><a href="#核心思想概览" class="headerlink" title="核心思想概览"></a>核心思想概览</h1><p>Rust 的内存安全来自一个思想：<strong>每块内存只有一个“主人”（所有者），其他访问者必须是“借用者”，所有者死亡后内存立即自动释放，没有 GC，没有悬空指针。</strong></p>
+<blockquote>
+<ul>
+<li><strong>所有权</strong>解决的是”谁负责清理”的问题，确保每个值都有明确的责任人。</li>
+<li><strong>借用</strong>解决的是”如何安全共享”的问题，允许访问数据而不承担责任。</li>
+</ul>
+</blockquote>
+<p>这个思想在编译期验证，不会产生运行时开销。Rust 定义了三个核心规则：</p>
+<ol>
+<li><strong>每个值有且只有一个所有者（Owner）</strong></li>
+<li><strong>一个值在任意时刻要么有多个不可变引用，要么只有一个可变引用（mut），不可混用</strong></li>
+<li><strong>当所有者离开作用域，该值自动释放（drop）</strong></li>
+</ol>
+<p>这些规则保证：</p>
+<ul>
+<li>不会 use-after-free</li>
+<li>不会 double free</li>
+<li>不会数据竞争（data race）</li>
+<li>不需要 GC 也能达到 C&#x2F;C++ 水平的性能</li>
+</ul>
+<h1 id="所有权"><a href="#所有权" class="headerlink" title="所有权"></a>所有权</h1><p>所有权就是内存的归属权。当一个值绑定到变量时，这个变量就是它的 <strong>唯一所有者</strong>。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>); <span class="hljs-comment">// s 是所有者</span><br></code></pre></td></tr></table></figure>
+
+<p>当所有者出作用域时，Rust 自动释放资源：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs rust">&#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br>&#125; <span class="hljs-comment">// 离开作用域自动 drop</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="深层价值"><a href="#深层价值" class="headerlink" title="深层价值"></a>深层价值</h2><ul>
+<li><strong>静态内存安全模型（No GC，No UAF）</strong>：Rust 在类型系统层面解决 C&#x2F;C++ 的大部分内存安全漏洞。适用于区块链虚拟机、共识算法、序列化引擎、数据库引擎、逆向分析工具等。</li>
+<li><strong>显式资源管理（RAII 强化版）</strong>：不仅自动释放，还防止错误释放。这比 C++ RAII 更严格，因为 Rust 默认禁止复制资源。</li>
+<li><strong>完美匹配高性能系统模型</strong>：没有 GC，没有暂停，零成本抽象</li>
+</ul>
+<h2 id="所有权的三条核心规则"><a href="#所有权的三条核心规则" class="headerlink" title="所有权的三条核心规则"></a>所有权的三条核心规则</h2><p><strong>规则一：每个值都有一个所有者（owner）</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);  <span class="hljs-comment">// s 是这个字符串的所有者</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>规则二：同一时间只能有一个所有者</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">s1</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-keyword">let</span> <span class="hljs-variable">s2</span> = s1;  <span class="hljs-comment">// 所有权从 s1 移动到 s2</span><br><span class="hljs-comment">// println!(&quot;&#123;&#125;&quot;, s1);  // 错误！s1 不再拥有数据</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>规则三：当所有者离开作用域，值被丢弃（内存被释放）</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs rust">&#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);  <span class="hljs-comment">// s 进入作用域</span><br>    <span class="hljs-comment">// 使用 s</span><br>&#125;  <span class="hljs-comment">// s 离开作用域，内存自动释放</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="移动（Move）"><a href="#移动（Move）" class="headerlink" title="移动（Move）"></a>移动（Move）</h2><p>Rust 在变量赋值、传参时采用 <strong>移动语义</strong>（非 Copy 类型）。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">s1</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-keyword">let</span> <span class="hljs-variable">s2</span> = s1;  <span class="hljs-comment">// 所有权转移（move）</span><br></code></pre></td></tr></table></figure>
+
+<p>此时 s1 不再可用为什么？因为 <code>String</code> 包含堆内存指针。如果允许 s1 和 s2 同时释放，就会 double free。Rust 直接禁止这种情况。</p>
+<h3 id="所有权转移的三种方式"><a href="#所有权转移的三种方式" class="headerlink" title="所有权转移的三种方式"></a>所有权转移的三种方式</h3><h4 id="赋值转移（Move）"><a href="#赋值转移（Move）" class="headerlink" title="赋值转移（Move）"></a>赋值转移（Move）</h4><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">v1</span> = <span class="hljs-built_in">vec!</span>[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>];<br><span class="hljs-keyword">let</span> <span class="hljs-variable">v2</span> = v1;  <span class="hljs-comment">// 所有权从 v1 移动到 v2</span><br><span class="hljs-comment">// v1 不能再被使用！</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="函数参数转移"><a href="#函数参数转移" class="headerlink" title="函数参数转移"></a>函数参数转移</h4><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">take_ownership</span>(s: <span class="hljs-type">String</span>) &#123;  <span class="hljs-comment">// s 进入作用域</span><br>    <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, s);<br>&#125;  <span class="hljs-comment">// s 离开作用域，内存被释放</span><br><br><span class="hljs-keyword">let</span> <span class="hljs-variable">my_string</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-title function_ invoke__">take_ownership</span>(my_string);  <span class="hljs-comment">// 所有权转移给函数</span><br><span class="hljs-comment">// my_string 不再有效</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="函数返回值转移"><a href="#函数返回值转移" class="headerlink" title="函数返回值转移"></a>函数返回值转移</h4><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">give_ownership</span>() <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">String</span> &#123;<br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br>    s  <span class="hljs-comment">// 返回所有权</span><br>&#125;<br><br><span class="hljs-keyword">let</span> <span class="hljs-variable">s1</span> = <span class="hljs-title function_ invoke__">give_ownership</span>();  <span class="hljs-comment">// 所有权转移给 s1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="深拷贝-vs-浅拷贝"><a href="#深拷贝-vs-浅拷贝" class="headerlink" title="深拷贝 vs 浅拷贝"></a>深拷贝 vs 浅拷贝</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-comment">// 栈数据：自动复制（实现了 Copy trait）</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">x</span> = <span class="hljs-number">5</span>;<br><span class="hljs-keyword">let</span> <span class="hljs-variable">y</span> = x;  <span class="hljs-comment">// 复制值，x 仍然可用</span><br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;x = &#123;&#125;, y = &#123;&#125;&quot;</span>, x, y);  <span class="hljs-comment">// 正常</span><br><br><span class="hljs-comment">// 堆数据：所有权转移</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">s1</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-keyword">let</span> <span class="hljs-variable">s2</span> = s1;  <span class="hljs-comment">// 所有权转移，s1 无效</span><br><span class="hljs-comment">// println!(&quot;&#123;&#125;&quot;, s1);  // 错误！</span><br><br><span class="hljs-comment">// 显式深拷贝</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">s3</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-keyword">let</span> <span class="hljs-variable">s4</span> = s3.<span class="hljs-title function_ invoke__">clone</span>();  <span class="hljs-comment">// 深拷贝，s3 仍然有效</span><br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;s3 = &#123;&#125;, s4 = &#123;&#125;&quot;</span>, s3, s4);  <span class="hljs-comment">// 正常</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="借用（访问，但不拥有）"><a href="#借用（访问，但不拥有）" class="headerlink" title="借用（访问，但不拥有）"></a>借用（访问，但不拥有）</h1><p><strong>借用就是引用（reference）</strong>：允许你访问值但不拥有它。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">s1</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-keyword">let</span> <span class="hljs-variable">len</span> = <span class="hljs-title function_ invoke__">calculate_length</span>(&amp;s1);  <span class="hljs-comment">// &amp; 创建引用（借用）</span><br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#x27;&#123;&#125;&#x27; 的长度是 &#123;&#125;&quot;</span>, s1, len);  <span class="hljs-comment">// s1 仍然可用！</span><br><br><span class="hljs-keyword">fn</span> <span class="hljs-title function_">calculate_length</span>(s: &amp;<span class="hljs-type">String</span>) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">usize</span> &#123;  <span class="hljs-comment">// 借用，不获取所有权</span><br>    s.<span class="hljs-title function_ invoke__">len</span>()<br>&#125;  <span class="hljs-comment">// 这里 s 离开作用域，但因为它不拥有所有权，所以不释放内存</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="引用类型"><a href="#引用类型" class="headerlink" title="引用类型"></a>引用类型</h2><p>借用是 Rust 的第二条安全线。借用分两类：</p>
+<ul>
+<li><strong>不可变借用</strong>：<code>&amp;T</code></li>
+<li><strong>可变借用</strong>：<code>&amp;mut T</code></li>
+</ul>
+<p>借用的核心约束是：<strong>在同一段时间内，要么有任意多个不可变引用，要么只能有一个可变引用。</strong></p>
+<p>这个思想本质是 <strong>编译期的数据竞争规避</strong>。</p>
+<h3 id="不可变借用：只读访问"><a href="#不可变借用：只读访问" class="headerlink" title="不可变借用：只读访问"></a>不可变借用：只读访问</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">print_len</span>(s: &amp;<span class="hljs-type">String</span>) &#123;<br>    <span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, s.<span class="hljs-title function_ invoke__">len</span>());<br>&#125;<br><br><span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-title function_ invoke__">print_len</span>(&amp;s);  <span class="hljs-comment">// 借用，不转移所有权</span><br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;&quot;</span>, s); <span class="hljs-comment">// 原所有者仍然可用</span><br></code></pre></td></tr></table></figure>
+
+<p>不可变借用允许共享访问，因为只读不影响安全性。</p>
+<h3 id="可变借用：独占访问"><a href="#可变借用：独占访问" class="headerlink" title="可变借用：独占访问"></a>可变借用：独占访问</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">push_word</span>(s: &amp;<span class="hljs-keyword">mut</span> <span class="hljs-type">String</span>) &#123;<br>    s.<span class="hljs-title function_ invoke__">push_str</span>(<span class="hljs-string">&quot; world&quot;</span>);<br>&#125;<br><br><span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-title function_ invoke__">push_word</span>(&amp;<span class="hljs-keyword">mut</span> s);<br></code></pre></td></tr></table></figure>
+
+<p>可变借用保证：</p>
+<ul>
+<li>不会有两个线程同时写</li>
+<li>不会读写冲突</li>
+</ul>
+<p>这让 Rust 的并发模型天生安全。</p>
+<h2 id="借用规则（编译时检查）"><a href="#借用规则（编译时检查）" class="headerlink" title="借用规则（编译时检查）"></a>借用规则（编译时检查）</h2><p><strong>规则一：任意时刻，要么只能有一个可变引用，要么只能有多个不可变引用</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br><br><span class="hljs-comment">// 可行：多个不可变引用</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">r1</span> = &amp;s;<br><span class="hljs-keyword">let</span> <span class="hljs-variable">r2</span> = &amp;s;<br><span class="hljs-built_in">println!</span>(<span class="hljs-string">&quot;&#123;&#125;, &#123;&#125;&quot;</span>, r1, r2);<br><br><span class="hljs-comment">// 可行：一个可变引用</span><br><span class="hljs-keyword">let</span> <span class="hljs-variable">r3</span> = &amp;<span class="hljs-keyword">mut</span> s;<br>r3.<span class="hljs-title function_ invoke__">push_str</span>(<span class="hljs-string">&quot;, world&quot;</span>);<br><br><span class="hljs-comment">// 不可行：同时存在可变和不可变引用</span><br><span class="hljs-comment">// let r1 = &amp;s;</span><br><span class="hljs-comment">// let r2 = &amp;mut s;  // 编译错误！</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>规则二：引用必须总是有效的（不能出现悬垂引用）</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">dangle</span>() <span class="hljs-punctuation">-&gt;</span> &amp;<span class="hljs-type">String</span> &#123;  <span class="hljs-comment">// 错误：返回对局部变量的引用</span><br>    <span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-type">String</span>::<span class="hljs-title function_ invoke__">from</span>(<span class="hljs-string">&quot;hello&quot;</span>);<br>    &amp;s  <span class="hljs-comment">// s 将被释放，&amp;s 成为悬垂引用</span><br>&#125;  <span class="hljs-comment">// s 离开作用域，被释放</span><br></code></pre></td></tr></table></figure>
+
+
+
+<table>
+<thead>
+<tr>
+<th align="left">场景</th>
+<th align="left">推荐方式</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">只读访问</td>
+<td align="left">不可变借用</td>
+<td align="left"><code>fn f(s: &amp;str) -&gt; usize</code></td>
+</tr>
+<tr>
+<td align="left">修改数据</td>
+<td align="left">可变借用</td>
+<td align="left"><code>fn f(s: &amp;mut String)</code></td>
+</tr>
+<tr>
+<td align="left">消费数据</td>
+<td align="left">获取所有权</td>
+<td align="left"><code>fn f(s: String) -&gt; String</code></td>
+</tr>
+<tr>
+<td align="left">返回新数据</td>
+<td align="left">转移所有权</td>
+<td align="left"><code>fn create() -&gt; Vec&lt;i32&gt;</code></td>
+</tr>
+<tr>
+<td align="left">共享访问</td>
+<td align="left">多个不可变引用</td>
+<td align="left"><code>let r1 = &amp;x; let r2 = &amp;x;</code></td>
+</tr>
+<tr>
+<td align="left">独占修改</td>
+<td align="left">单个可变引用</td>
+<td align="left"><code>let r = &amp;mut x;</code></td>
+</tr>
+</tbody></table>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/" class="category-chain-item">工科知识骨架</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" class="category-chain-item">编程语言</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Rust/" class="category-chain-item">Rust</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>所有权和借用</div>
+      <div>https://hermes37.vercel.app/2025/11/14/工科知识骨架/计算机科学与技术/软件工程/编程语言/Rust/所有权和借用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年11月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/11/14/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Rust/%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" title="生命周期">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">生命周期</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/11/14/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/Rust/%E6%B3%9B%E5%9E%8B%E7%89%B9%E5%BE%81%E5%92%8C%E6%96%B9%E6%B3%95/" title="泛型特征和方法">
+                        <span class="hidden-mobile">泛型特征和方法</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

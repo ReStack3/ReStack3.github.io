@@ -1,0 +1,909 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="什么是Socket在“传输层”那篇文章中，我们谈到：套接字是网络通信的核心抽象概念，用于唯一标识通信的端点。本质上是 （IP地址 + 端口号）的组合，用于唯一标识网络中的某个进程。起作用就像电话插孔一样，为数据通信提供“接口”，使不同主机上的进程能交换数据。为什么这里还要再谈Socket呢？ 从通信端点视角来看Socket 是网络协议栈的实体(具体实现)，由 (IP, 端口, 协议) 唯一标识，确">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Socket模型">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/Socket%E6%A8%A1%E5%9E%8B/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="什么是Socket在“传输层”那篇文章中，我们谈到：套接字是网络通信的核心抽象概念，用于唯一标识通信的端点。本质上是 （IP地址 + 端口号）的组合，用于唯一标识网络中的某个进程。起作用就像电话插孔一样，为数据通信提供“接口”，使不同主机上的进程能交换数据。为什么这里还要再谈Socket呢？ 从通信端点视角来看Socket 是网络协议栈的实体(具体实现)，由 (IP, 端口, 协议) 唯一标识，确">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/mYNi5ncLM3UElPp.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/lnCYzZuMeK5QydO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/4jP2xnyhJEZ3rMf.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/AnzhsWRG7tXFkyQ.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/NXe3bargthfL2vV.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/Pyxd98H1iQUTrwR.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/nClkSLawRei8rt5.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/FBQ8tAmC19epKiP.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/H6VofUtzvWwSO3d.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/aeQfOg7pPmuXcNx.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/MNcWd8p2VBbEK9m.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/lA8jeMFfKkIgcp9.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/d6I8lHYRsSOQu7X.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/5MAcjd7RbHsuKzZ.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/7soz3ynjE4Up5bw.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/hq52X943beSz6Pv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/IOdWRx3X95ltrao.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/YsjJo6eSGx8ZDQb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/ql21V6mLceOkdRB.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/eunDNvHFOQTk8ld.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/dCuZfLpD2XoK1B4.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/09/FfKTWy1nXzYtoxS.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.386Z">
+<meta property="article:modified_time" content="2026-05-25T12:57:56.040Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/05/09/mYNi5ncLM3UElPp.png">
+  
+  
+  
+  <title>Socket模型 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Socket模型"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Socket模型</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="什么是Socket"><a href="#什么是Socket" class="headerlink" title="什么是Socket"></a>什么是Socket</h1><p>在“传输层”那篇文章中，我们谈到：<strong>套接字是网络通信的</strong>核心抽象概念，用于唯一标识通信的端点。本质上是 <strong>（IP地址 + 端口号）的组合</strong>，用于唯一标识网络中的某个进程。起作用就像电话插孔一样，为数据通信提供“接口”，使不同主机上的进程能交换数据。<strong>为什么这里还要再谈Socket呢？</strong></p>
+<p>从<strong>通信端点视角</strong>来看Socket 是网络协议栈的实体(具体实现)，由 <code>(IP, 端口, 协议)</code> 唯一标识，确保数据能准确送达目标进程。</p>
+<p>而本文要谈的Socket从操作系统的角度来看的，我们知道<strong>Unix 的“一切皆文件”哲学</strong>，即Unix&#x2F;Linux 将所有 I&#x2F;O 资源（包括硬件设备、磁盘文件、管道、网络连接等）抽象为<strong>文件描述符</strong>，Socket 是其中之一。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> fd = <span class="hljs-built_in">socket</span>(AF_INET, SOCK_STREAM, <span class="hljs-number">0</span>);  <span class="hljs-comment">// 返回的文件描述符可用于读写</span><br><span class="hljs-built_in">read</span>(fd, buffer, <span class="hljs-built_in">sizeof</span>(buffer));          <span class="hljs-comment">// 像操作文件一样读Socket数据</span><br></code></pre></td></tr></table></figure>
+
+<p>当调用 <code>socket()</code> 时，内核会创建一个 <strong>struct socket</strong> 结构体，并将其与一个文件描述符绑定。该描述符指向内核的<strong>套接字缓冲区</strong>，数据通过缓冲区传输。</p>
+<p><img src="https://s2.loli.net/2025/05/09/mYNi5ncLM3UElPp.png" srcset="/img/loading.gif" lazyload></p>
+<p>通过这一层抽象，操作系统为Socket操作提供统一的 <code>read()</code>&#x2F;<code>write()</code> 等API接口。能够实现跨网络、跨设备的数据交换。Socket使得程序<strong>不需要直接操控底层网络协议</strong>，而是通过一套统一的接口来<strong>收发</strong>数据包，方便了网络应用开发。</p>
+<img src="https://s2.loli.net/2025/05/09/lnCYzZuMeK5QydO.png" srcset="/img/loading.gif" lazyload style="zoom: 33%;" />
+
+<p>文件描述符是用户操作 Socket 的“手柄”，而通信端点是内核中 Socket 的网络身份。所以两者并不矛盾，而是互补关系，反映了操作系统设计的抽象层次差异。</p>
+<p><img src="https://s2.loli.net/2025/05/09/4jP2xnyhJEZ3rMf.jpg" srcset="/img/loading.gif" lazyload></p>
+<h2 id="内核数据结构"><a href="#内核数据结构" class="headerlink" title="内核数据结构"></a>内核数据结构</h2><p>在每一个进程中，都有一个数据结构<code>task_struct</code>，该结构体里有一个指向「文件描述符数组」的成员指针。这个数组列出了这个进程打开的所有的文件。数组的下标是文件描述符即fd句柄，是一个整数，而数组的内容就是文件描述符所对应的那个文件的指针，指向内核中所有打开的文件的列表。</p>
+<p><img src="https://s2.loli.net/2025/05/09/AnzhsWRG7tXFkyQ.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>注意，这里的fs的指针指向的，是内核文件列表中的指向一个叫<code>struct file</code>结构体的指针，而<code>struct file</code>用于表示一个打开的文件的结构体。每个打开的文件都会有一个<code>struct file</code>实例，用于维护与该文件相关的状态信息。</p>
+<p><img src="https://s2.loli.net/2025/05/09/NXe3bargthfL2vV.png" srcset="/img/loading.gif" lazyload></p>
+<p>在Linux内核中，有一个叫做**<code>sock</code><strong>的结构，是用于</strong>实现Socket的核心数据结构**，它负责维护与Socket相关的所有信息和状态，涵盖了网络协议栈的各个层次。sock的主要功能包括：</p>
+<ul>
+<li>存储与网络连接相关的信息，如源地址、目标地址、协议类型等</li>
+<li>提供数据包的接收和发送功能，包括队列管理、缓冲区管理</li>
+<li>网络协议之间的交互，例如TCP、UDP、ICMP等</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/09/Pyxd98H1iQUTrwR.png" srcset="/img/loading.gif" lazyload></p>
+<p>我们可以把Socket看作是一个内核提供的接口库，包含着多个进行网络通信的方法例如:<code>bind()</code>,<code>listen()</code>,<code>read()</code>,<code>write()</code>等，它介于用户空间和linux内核之间，而真正进行操作网络通信的数据的是内核中的sock结构，我们只需要调用socket提供的方法，就能去对sock操作。</p>
+<p><strong>文件系统视角下的Socket</strong>:</p>
+<p>在文件系统中，有一个叫做<code>inode</code>的通用结构，用于描述文件的元数据。在Linux和Unix系统中，<strong>一切皆文件</strong>的设计理念下，<code>inode</code>是文件系统中管理文件的基础结构，适用于普通文件、目录、符号链接、设备文件等。</p>
+<p>每一个文件都会有一个inode，Socket文件的inode指向了内核的sock结构，sock结构体里面有两个队列，分别是<strong>发送队列</strong>和<strong>接受队列</strong>，这两个队列里面保存的是一个个<code>sk_buff</code>结构体，用链表的组织形式穿起来。</p>
+<p><img src="https://s2.loli.net/2025/05/09/nClkSLawRei8rt5.png" srcset="/img/loading.gif" lazyload></p>
+<p>sk_buff可以表示各个层的数据包，在应用层叫做data，在TCP层叫做segment，在IP层叫做packet，在数据链路层叫做frame。</p>
+<p><strong>为什么全部数据包都只用一个结构体来描述呢？</strong></p>
+<p>协议栈采用的是分层结构，上层向下层传递数据时需要增加包头，下层向上层传递数据时又需要去掉包头，如果每一层都用一个不同的结构体，那么层之间传递就需要发生多次数据拷贝，降低系统效率。</p>
+<p>于是为了不让层级之间传递数据时不发生数据拷贝，我们只用sk_buff一个结构体来描述所有的网络包，它是如何做到的呢？是通过调整sk_buff中<code>data</code>的指针。从下图我们可以看到，发送报文时data指针的移动过程。</p>
+<p><img src="https://s2.loli.net/2025/05/09/FBQ8tAmC19epKiP.jpg" srcset="/img/loading.gif" lazyload></p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><p><strong>Q1：为什么不用文件操作代替网络API？</strong></p>
+<p>网络特性需求：</p>
+<ul>
+<li>需要处理连接状态（如 <code>accept()</code>）、超时控制（<code>SO_RCVTIMEO</code>）、广播（<code>UDP</code>）等。</li>
+<li>文件操作无法获取通信对端地址或发送带外数据。。</li>
+</ul>
+<p><strong>Q2：非Unix系统（如Windows）也这样吗？</strong></p>
+<p>Windows 使用 <code>HANDLE</code> 而非文件描述符，但逻辑类似（通过 <code>WSASocket()</code> 创建的对象支持部分文件API）。</p>
+<h1 id="套接字编程"><a href="#套接字编程" class="headerlink" title="套接字编程"></a>套接字编程</h1><p>详见：</p>
+<h1 id="IO模型"><a href="#IO模型" class="headerlink" title="IO模型"></a>IO模型</h1><p><img src="https://s2.loli.net/2025/05/09/H6VofUtzvWwSO3d.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="阻塞-非阻塞"><a href="#阻塞-非阻塞" class="headerlink" title="阻塞&#x2F;非阻塞"></a><strong>阻塞&#x2F;非阻塞</strong></h2><p>阻塞与非阻塞在API上区别在于socket是否设置了<code>SOCK_NONBLOCK</code>这个参数，默认情况下是阻塞的，设置了该参数则为非阻塞。</p>
+<h3 id="阻塞"><a href="#阻塞" class="headerlink" title="阻塞"></a>阻塞</h3><p><img src="https://s2.loli.net/2025/05/09/aeQfOg7pPmuXcNx.png" srcset="/img/loading.gif" lazyload></p>
+<p>当处于运行状态的用户线程发起recv系统调用时，如果socket内核缓冲区内没有数据，则内核会将当前线程投入睡眠，让出CPU的占用。</p>
+<p>直到网络数据到达网卡，网卡DMA数据到内存，再经过硬中断、软中断，由内核线程唤醒用户线程。</p>
+<p>此时socket的数据已经准备就绪，用户线程由用户态进入到内核态，执行数据拷贝，将数据从内核空间拷贝到用户空间，系统调用结束。此阶段，开发者通常认为用户线程处于等待（称为阻塞也行）状态，因为在用户态的角度上，线程确实啥也没干（虽然在内核态干得累死累活）。</p>
+<h3 id="非阻塞"><a href="#非阻塞" class="headerlink" title="非阻塞"></a>非阻塞</h3><p><img src="https://s2.loli.net/2025/05/09/MNcWd8p2VBbEK9m.png" srcset="/img/loading.gif" lazyload></p>
+<p>用户线程发起系统调用，如果socket内核缓冲区中没有数据，则系统调用立即返回，不会挂起线程。而线程会继续轮询，直到socket内核缓冲区内有数据为止。</p>
+<p>如果socket内核缓冲区内有数据，则用户线程进入内核态，将数据从内核空间拷贝到用户空间</p>
+<h2 id="同步与异步"><a href="#同步与异步" class="headerlink" title="同步与异步"></a><strong>同步与异步</strong></h2><p><strong>同步</strong>和<strong>异步</strong>主要看请求发起方对消息结果的获取方式，是<strong>主动获取</strong>还是<strong>被动通知</strong>。区别主要体现在数据拷贝阶段。</p>
+<h3 id="同步"><a href="#同步" class="headerlink" title="同步"></a>同步</h3><p>同步指的是数据到达socket内核缓冲区之后，由用户线程参与到数据拷贝过程中，直到数据从内核空间拷贝到用户空间。可以看到无论是阻塞还是非阻塞其数据拷贝阶段其实都是同步。</p>
+<p>而IO多路复用，对于应用程序而言，仍然只能算是一种同步，因为应用程序仍然花费时间等待IO结果，等待期间CPU要么用于遍历文件描述符的状态，要么用于休眠等待事件发生。</p>
+<h3 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h3><blockquote>
+<p>应用进程通知内核开始一个异步I&#x2F;O操作，并让内核在整个操作（包含将数据从内核复制到应该进程的缓冲区）完成后通知应用进程。</p>
+</blockquote>
+<p>理论上异步是用户进程发起非阻塞调用，内核直接返回结果之后，用户线程可以立即处理下一个任务，只需要IO完成之后通过信号或回调函数的方式将数据传递给用户线程。</p>
+<p><img src="https://s2.loli.net/2025/05/09/lA8jeMFfKkIgcp9.png" srcset="/img/loading.gif" lazyload></p>
+<p>现实中有模拟实现异步的：</p>
+<p>比如让某个主线程执行主要的非IO逻辑操作，另外再起多个专门用于IO操作的线程，让IO线程进行阻塞IO或者非阻塞IO加轮询的方式来完成数据获取，通过IO线程和主线程之间通信进行数据传递，以此来实现异步。</p>
+<p><img src="https://s2.loli.net/2025/05/09/d6I8lHYRsSOQu7X.png" srcset="/img/loading.gif" lazyload></p>
+<p>也有windows IOCP模型</p>
+<p><img src="https://s2.loli.net/2025/05/09/5MAcjd7RbHsuKzZ.jpg" srcset="/img/loading.gif" lazyload></p>
+<h2 id="信号驱动IO"><a href="#信号驱动IO" class="headerlink" title="信号驱动IO"></a>信号驱动IO</h2><p>信号驱动IO是非阻塞的IO类型，我们梳理了以上的三种IO模型，除了非阻塞IO模型是非阻塞IO除外，其余的都是阻塞IO，但是非阻塞IO并不代表对CPU资源使用友好，尤其当CPU空转时系统开销可能更大，上面介绍的三种IO类型只有使用了epoll的多路复用IO模型对系统开销最为友好。信号驱动IO模型和使用epoll的多路复用IO模型比较相似，其中他们最大的不同点就是I<strong>O执行的数据准备阶段，信号驱动IO不会阻塞用户进程</strong>。如下图所示，当用户进程需要等待数据的时候，会向内核发送一个信号，然后用户进程继续向下执行。当内核中数据准备完成之后，内核向进程发送一个信号，然后<strong>用户进程从内核态拷贝数据到用户态</strong>，整个IO操作流程结束。我们可以看到在<strong>第一阶段线程数据准备阶段应用并没有阻塞，而第二阶段数据拷贝阶段应用被阻塞</strong>，因此信号驱动IO是<strong>同步非阻塞</strong>IO。</p>
+<p><img src="https://s2.loli.net/2025/05/09/7soz3ynjE4Up5bw.jpg" srcset="/img/loading.gif" lazyload></p>
+<h1 id="如何服务更多的用户？"><a href="#如何服务更多的用户？" class="headerlink" title="如何服务更多的用户？"></a>如何服务更多的用户？</h1><h2 id="多进程模型"><a href="#多进程模型" class="headerlink" title="多进程模型"></a>多进程模型</h2><p><strong>工作原理</strong>：为每个客户端连接创建一个独立进程</p>
+<p>当服务器通过accept()函数返回一个「已连接」Socket的时候，就可以通过<code>fork()</code>函数创建一个子进程，实际上就是把父进程相关的东西都复制一份。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>    <span class="hljs-comment">//调用accept()系统调用，阻塞等待新的客户端连接,当有新连接时，返回一个新的socket文件描述符(client_fd)用于与该客户端通信</span><br>    <span class="hljs-type">int</span> client_fd = accept(server_fd);<br>    <span class="hljs-keyword">if</span> (fork() == <span class="hljs-number">0</span>) &#123;  <span class="hljs-comment">// 子进程</span><br>        handle_connection(client_fd);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>    &#125;<br>    close(client_fd);    <span class="hljs-comment">// 父进程</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这种模型在应对100个客户端是可行的，但是当客户端数量高达一万的时候肯定会撑不住，因为每生产一个进程，必定会占据一定的系统资源，而且进程间的上下文切换的“包袱”是很重的，性能一定会大打折扣。</p>
+<h2 id="多线程模型"><a href="#多线程模型" class="headerlink" title="多线程模型"></a>多线程模型</h2><p>尽然在进程间上下文切换带来的负担比较大，那么我们就转而使用轻量级的模型来应对多用户的请求——<strong>多线程模型</strong>。</p>
+<p>当服务器与客户端TCP完成连接后，通过<code>pthread_create()</code>函数创建线程，然后将「已连接Socket」的文件描述符传递给线程函数，接着在线程里和客户端进行通信，从而达到并发处理的目的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span>* <span class="hljs-title function_">thread_func</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span> &#123;<br>    <span class="hljs-type">int</span> client_fd = *(<span class="hljs-type">int</span>*)arg;<br>    handle_connection(client_fd);<br>    close(client_fd);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br><br><span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>    <span class="hljs-type">int</span> client_fd = accept(server_fd);<br>    pthread_create(&amp;tid, <span class="hljs-literal">NULL</span>, thread_func, &amp;client_fd);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>如果每来一个连接就创建一个线程，线程运行完后，还得操作系统销毁线程，虽说线程的上下文切换开销不大，但是频繁的创建和销毁也是不必要的性能损耗。</p>
+<p>所以我们可以引用<strong>线程池</strong>的方法，来避免线程频繁创建和销毁带来的损耗。线程池就是提前创建若干个线程，当有新连接建立需要消耗一个线程的时候，就从线程池中取出一个来使用，运行完了再放回去。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">ThreadPool <span class="hljs-title function_">pool</span><span class="hljs-params">(<span class="hljs-number">4</span>)</span>;  <span class="hljs-comment">// 4个工作线程</span><br><br><span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>    <span class="hljs-type">int</span> client_fd = accept(server_fd);<br>    pool.addTask([client_fd] &#123;<br>        handle_connection(client_fd);<br>        close(client_fd);<br>    &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>还会存在着一个问题，新到来一个TCP连接就意味着要分配一个线程，那么如果并发量来到C10K，意味着一台机器要维护1万个线程，操作系统也是扛不住的。</p>
+<h2 id="I-O多路复用"><a href="#I-O多路复用" class="headerlink" title="I&#x2F;O多路复用"></a><strong>I&#x2F;O多路复用</strong></h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>一个进程虽然任意时刻只能处理一个请求，但是处理每个请求的事件耗时如果能控制在1毫秒以内，这样1秒内就可以处理上千个请求，把时间拉长来看多个请求复用了一个进程，这就是多路复用，这种思想类似于一个CPU并发多个进程，所以也叫做时分多路复用。</p>
+<p>Socket IO多路复用是一种高效的网络编程技术，它允许单个线程或进程同时监控多个socket连接，而无需为每个连接创建单独的线程。</p>
+<p>多路复用指的是通过一种机制同时处理多个IO通道。在socket编程中，它解决了以下问题：</p>
+<ul>
+<li>传统阻塞IO模型下，每个连接需要一个线程，资源消耗大</li>
+<li>非阻塞IO需要不断轮询，CPU利用率低</li>
+</ul>
+<blockquote>
+<p>线程池是一种多路复用技术吗？</p>
+<p>并不完全是。多路复用通常是指在一个线程中同时管理多个I&#x2F;O操作，而线程池更专注于管理和复用线程资源，以处理并发任务。线程池的复用机制与多路复用的思想类似，但线程池并不是在一个线程内处理多个任务，而是让多个线程并行处理不同任务。</p>
+</blockquote>
+<p>接下来将简单看看Linux下是如何实现多路复用的以及简单看看window的IO多路复用。</p>
+<h3 id="select-poll"><a href="#select-poll" class="headerlink" title="select&#x2F;poll"></a>select&#x2F;poll</h3><blockquote>
+<p>select系统调用是一个用于I&#x2F;O多路复用的接口，允许程序监视多个文件描述符，以便它们变得可读、可写或出现异常时进行处理。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/05/09/hq52X943beSz6Pv.png" srcset="/img/loading.gif" lazyload></p>
+<p>select实现多路复用的方式是，将<strong>已连接</strong>的Socket都放到一个<strong>文件描述符集合</strong>中，然后调用select函数将该集合<strong>拷贝</strong>到内核里面</p>
+<p><img src="https://s2.loli.net/2025/05/09/IOdWRx3X95ltrao.png" srcset="/img/loading.gif" lazyload></p>
+<p>然后让内核来检查是否有网络事件的发生。检查的方式就是<strong>遍历</strong>，当检查到有事件后，就将Socket标记为可读或者可写，接着再把整个fd集合<strong>拷贝</strong>回用户态里，然后用户态还需要再通过<strong>遍历</strong>的方式找到可读或可写的Socket，然后再进行处理。</p>
+<p><img src="https://s2.loli.net/2025/05/09/YsjJo6eSGx8ZDQb.png" srcset="/img/loading.gif" lazyload></p>
+<p>所以对于select这个方式，需要进行<strong>2次「遍历」文件描述符集合</strong>，一次是在内核态里，一次是在用户态里，而且还会发生<strong>2次「拷贝」文件描述符集合</strong>，先从用户空间传入内核空间，由内核修改后，再传出到用户空间中。</p>
+<p>select使用固定长度的BitsMap表示文件描述符集合，而且所支持的文件秒舒服的个数是有限制的，在Linux系统中，由内核中的FD_SETSIZE限制，默认最大值为1024，只能监听0~1023的文件描述符。</p>
+<p><img src="https://s2.loli.net/2025/05/09/ql21V6mLceOkdRB.png" srcset="/img/loading.gif" lazyload></p>
+<p>poll不再用BitsMap来存储所关注的文件描述符，取而代之用动态数组，以链表形式来组织，突破了select的文件描述符个数限制，当然还会受到系统文件描述符限制。</p>
+<p>但是poll和select并没有太大的本质区别，<strong>都是使用「线性结构」存储进程关注的Socket集合，因此都需要遍历文件描述符集合来找到可读或可写的Socket，时间复杂度为O(n)，而且需要在用户态与内核态之间拷贝文件描述符集合</strong>，这种方式随着并发数上来，性能的损耗会呈指数级增长。</p>
+<h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><p>epoll是Linux操作系统提供的高效I&#x2F;O多路复用机制，用于替代了select和poll，适合高并发的场景。与select和poll的线性扫描方式不同，epoll通过事件驱动的机制来高效管理大量文件描述符，极大地减少了在高并发场景下的CPU和内存开销。</p>
+<p>使用epoll的方法如下：首先使用<code>epoll_create</code>创建一个<code>epoll</code>对象<code>epfd</code>，再通过<code>epoll_ctl</code>将需要监视的socket添加到<code>epfd</code>中，最后调用<code>epoll_wait</code>等待数据。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_EVENTS 10</span><br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">epoll_event</span> <span class="hljs-title">ev</span>, <span class="hljs-title">events</span>[<span class="hljs-title">MAX_EVENTS</span>];</span><br>    <span class="hljs-type">int</span> listen_sock, conn_sock, nfds, epollfd;<br>    <br>    <span class="hljs-comment">// 创建epoll实例</span><br>    epollfd = epoll_create1(<span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (epollfd == <span class="hljs-number">-1</span>) &#123;<br>        perror(<span class="hljs-string">&quot;epoll_create1&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 添加监听socket到epoll</span><br>    ev.events = EPOLLIN;<br>    ev.data.fd = listen_sock;<br>    <span class="hljs-keyword">if</span> (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &amp;ev) == <span class="hljs-number">-1</span>) &#123;<br>        perror(<span class="hljs-string">&quot;epoll_ctl: listen_sock&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 事件循环</span><br>    <span class="hljs-keyword">for</span> (;;) &#123;<br>        nfds = epoll_wait(epollfd, events, MAX_EVENTS, <span class="hljs-number">-1</span>);<br>        <span class="hljs-keyword">if</span> (nfds == <span class="hljs-number">-1</span>) &#123;<br>            perror(<span class="hljs-string">&quot;epoll_wait&quot;</span>);<br>            <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>        &#125;<br>        <br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> n = <span class="hljs-number">0</span>; n &lt; nfds; ++n) &#123;<br>            <span class="hljs-keyword">if</span> (events[n].data.fd == listen_sock) &#123;<br>                <span class="hljs-comment">// 处理新连接</span><br>                conn_sock = accept(listen_sock, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br>                ev.events = EPOLLIN | EPOLLET;  <span class="hljs-comment">// 边缘触发模式</span><br>                ev.data.fd = conn_sock;<br>                epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &amp;ev);<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-comment">// 处理客户端数据</span><br>                handle_client(events[n].data.fd);<br>            &#125;<br>        &#125;<br>    &#125;<br>    close(epollfd);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>epoll的底层主要的核心结构有两方面：</p>
+<p><strong>第一</strong>，epoll在内核使用<strong>红黑树来跟踪进程所有待检测的文件描述字</strong>，把需要监控的socket通过<code>epoll_ctl()</code>函数加入内核中的红黑树里，内核会维护这一个红黑树，相比与select&#x2F;poll，可以减少了内核和用户空间的大量数据拷贝和内存分配。</p>
+<p><img src="https://s2.loli.net/2025/05/09/eunDNvHFOQTk8ld.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>第二</strong>，epoll使用<strong>事件驱动机制</strong>，内核里<strong>维护了一个链表来记录就绪事件</strong>，当某个socket发生事件的时候，通过<strong>回调函数</strong>内核会将其加入到这个就绪事件列表中，当用户调用epoll_wait()函数时，只会返回有事件发生的文件描述符的个数，不需要像select&#x2F;poll那样轮询扫描整个socket集合，提高了检测的效率。</p>
+<p>三大核心数据结构：</p>
+<table>
+<thead>
+<tr>
+<th align="left">数据结构</th>
+<th align="left">作用</th>
+<th align="left">特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>红黑树(rbr)</strong></td>
+<td align="left">存储所有监控的文件描述符</td>
+<td align="left">查找效率O(log n)</td>
+</tr>
+<tr>
+<td align="left"><strong>就绪链表(rdllist)</strong></td>
+<td align="left">存放已就绪的文件描述符</td>
+<td align="left">直接遍历无需扫描</td>
+</tr>
+<tr>
+<td align="left"><strong>wq等待队列</strong></td>
+<td align="left">存放等待事件的进程</td>
+<td align="left">事件触发时唤醒</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2025/05/09/dCuZfLpD2XoK1B4.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="epoll的边缘触发和水平触发"><a href="#epoll的边缘触发和水平触发" class="headerlink" title="epoll的边缘触发和水平触发"></a>epoll的边缘触发和水平触发</h4><p>epoll支持两种事件触发模式，一种是<strong>边缘触发（edge-triggered, ET）</strong>和<strong>水平触发（level-triggered, LT）</strong>。<img src="https://s2.loli.net/2025/05/09/FfKTWy1nXzYtoxS.png" srcset="/img/loading.gif" lazyload></p>
+<p>使用边缘触发时，当被监控的Socket描述符上有可读事件发生时，<strong>服务器只会从epoll_wait中苏醒一次</strong>，即使进程没有调用read函数从内核读取数据，也依然苏醒一次，因此我们程序要保证一次性将内核缓冲区的数据读取完；</p>
+<p>使用水平触发时，当被监控的Socket上有可读事件发生时，<strong>服务器不断地从epoll_wait中苏醒，直到内核缓冲区数据被read函数读完才结束</strong>，目的是告诉我们有数据需要读取；</p>
+<p>使用边缘触发模式的时候，由于I&#x2F;O事件发生时只会通知一次，而且我们不知道到底能读写多少数据，所以在收到通知后应该尽可能的读写数据，<strong>以免错失读写的机会</strong>。因此，我们会循环地从fd读写数据，那么如果fd是阻塞的，没有数据可以读写时，进程会阻塞在读写函数那里，程序就没有办法继续往下执行。所以<strong>边缘触发模式一般和非阻塞I&#x2F;O搭配使用</strong>，程序会一直执行I&#x2F;O操作，直到系统调用（如<code>read</code>和<code>write</code>）返回错误，错误类型为<code>EAGIN</code>或<code>EWOULDBLOCK</code>。</p>
+<p>一般来说，边缘触发的效率会更高，它避免了重复事件的处理，提高了效率，但是需要更高的编程要求。</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">水平触发(LT)</th>
+<th align="left">边缘触发(ET)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>触发条件</strong></td>
+<td align="left">只要缓冲区有数据就会通知</td>
+<td align="left">只有数据到达时通知一次</td>
+</tr>
+<tr>
+<td align="left"><strong>事件处理</strong></td>
+<td align="left">可以部分读取数据</td>
+<td align="left">必须一次性读完所有数据</td>
+</tr>
+<tr>
+<td align="left"><strong>性能</strong></td>
+<td align="left">可能有重复通知</td>
+<td align="left">减少不必要的唤醒，性能更高</td>
+</tr>
+<tr>
+<td align="left"><strong>使用难度</strong></td>
+<td align="left">较简单</td>
+<td align="left">需要更精细的控制</td>
+</tr>
+<tr>
+<td align="left"><strong>适用场景</strong></td>
+<td align="left">默认模式，通用场景</td>
+<td align="left">高性能服务器开发</td>
+</tr>
+</tbody></table>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://realdaiwei.github.io/2021/09/15/socket-and-io/#IO%E6%A8%A1%E5%9E%8B">网络编程 — Socket编程与IO模型 - Daiwei‘s blog</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/MelonTe/p/18526283#24io%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8">Socket编程与IO多路复用 - MelonTe - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u013161278/article/details/112545688">Socket通信原理及模型实现_tcp socket通信模型-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.songlin.life/%E4%BB%8Esocket%E7%BC%96%E7%A8%8B%E8%B5%B0%E5%90%91IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8">从socket编程走向IO多路复用的并发编程</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/stux/p/17816974.html">Linux TCP&#x2F;UDP socket 通信和IO多路复用 - imXuan - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.chanmufeng.com/posts/storage/Redis/%E5%90%8C%E6%AD%A5%E5%BC%82%E6%AD%A5%E4%B8%8E%E9%98%BB%E5%A1%9E%E9%9D%9E%E9%98%BB%E5%A1%9E.html">同步异步与阻塞非阻塞 | 蝉沐风</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/270010926">深入理解 I&#x2F;O(阻塞、非阻塞，同步、异步)的概念及其区别 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44030476/article/details/123556203">（看了就懂）彻底理解同步、异步、阻塞和非阻塞的概念_同步异步、阻塞非阻塞-CSDN博客</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/" class="category-chain-item">工科知识骨架</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" class="category-chain-item">计算机网络</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/" class="category-chain-item">传输层</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Socket模型</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识骨架/计算机科学与技术/计算机网络/传输层/Socket模型/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/TCP-UDP%E5%A5%97%E6%8E%A5%E5%AD%97%E7%BC%96%E7%A8%8B/" title="TCP-UDP套接字编程">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">TCP-UDP套接字编程</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E5%B1%82/" title="网络层">
+                        <span class="hidden-mobile">网络层</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

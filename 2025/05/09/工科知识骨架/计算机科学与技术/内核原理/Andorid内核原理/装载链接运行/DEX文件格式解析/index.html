@@ -1,0 +1,930 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="纸上得来终觉浅DEX的由来   阶段 描述    Java与移动设备的限制 标准的Java字节码（JVM字节码）在移动设备上运行效率低，尤其在内存和处理器资源受限的环境中。   Dalvik虚拟机的诞生 为了解决性能问题，Android团队开发了Dalvik虚拟机（DVM），用于替代标准的Java虚拟机（JVM），专为移动设备优化。   DEX文件格式 DEX文件（Dalvik Executabl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DEX文件格式解析">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/DEX%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="纸上得来终觉浅DEX的由来   阶段 描述    Java与移动设备的限制 标准的Java字节码（JVM字节码）在移动设备上运行效率低，尤其在内存和处理器资源受限的环境中。   Dalvik虚拟机的诞生 为了解决性能问题，Android团队开发了Dalvik虚拟机（DVM），用于替代标准的Java虚拟机（JVM），专为移动设备优化。   DEX文件格式 DEX文件（Dalvik Executabl">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/oNDh3e9lQ1d8FAU.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/23/bvphztNoreDnwd7.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/3VY9f5edmrqH8I7.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/7EXuDgVTqpaxYRO.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/Q46EZCGpUqPAuJx.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/ECP3h7qmMZRlrHj.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/RQihNucqXT3KYzn.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/pakHF3OXPUBcTQK.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/lNZbLcaV5nivGjT.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/zMqBUkaH8FGwbyu.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/bfIDjnRXKp1CSNc.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/j9Yfyh6z7DiOgPm.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/BpMPARgYmakf5oy.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/KdzY8OGxWrXtJ2U.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/5fv8txAo2LSrgqZ.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/NoJK8qTQSXvbPHZ.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/7UhF6ECzBQ15Iwp.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/w3uCsAkmeVYEZrg.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/goDqr7ZxpHnfBuh.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/RhsagT5y7fKcVpL.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/poY7wfhscBtTm2J.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/fgUSc5LKixeRIOA.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/8V6uIqxElspyWDv.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/27/qMz2SkpR4iCrPyv.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/02/26/2Sy6YH1haiXBJk7.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.569Z">
+<meta property="article:modified_time" content="2026-05-25T12:57:55.916Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/23/oNDh3e9lQ1d8FAU.png">
+  
+  
+  
+  <title>DEX文件格式解析 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="DEX文件格式解析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          40 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">DEX文件格式解析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="纸上得来终觉浅"><a href="#纸上得来终觉浅" class="headerlink" title="纸上得来终觉浅"></a>纸上得来终觉浅</h1><h2 id="DEX的由来"><a href="#DEX的由来" class="headerlink" title="DEX的由来"></a>DEX的由来</h2><table>
+<thead>
+<tr>
+<th><strong>阶段</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Java与移动设备的限制</strong></td>
+<td>标准的Java字节码（JVM字节码）在移动设备上运行效率低，尤其在内存和处理器资源受限的环境中。</td>
+</tr>
+<tr>
+<td><strong>Dalvik虚拟机的诞生</strong></td>
+<td>为了解决性能问题，Android团队开发了Dalvik虚拟机（DVM），用于替代标准的Java虚拟机（JVM），专为移动设备优化。</td>
+</tr>
+<tr>
+<td><strong>DEX文件格式</strong></td>
+<td>DEX文件（Dalvik Executable）是Dalvik虚拟机的字节码格式，采用了紧凑的编码方式，多个类文件被合并成一个DEX文件，优化内存和存储效率。</td>
+</tr>
+<tr>
+<td><strong>优化特性</strong></td>
+<td>1. 紧凑的字节码格式，减少内存占用。  2. 多个类文件合并为一个DEX文件，减少I&#x2F;O操作。  3. 内存管理优化，适应移动设备资源限制。</td>
+</tr>
+<tr>
+<td><strong>ART虚拟机的演变</strong></td>
+<td>从Android 5.0开始，Dalvik虚拟机被Android Runtime（ART）替代，ART优化了应用的执行速度，但仍支持DEX文件格式，直接运行或将其转换为更高效的运行时格式。</td>
+</tr>
+</tbody></table>
+<h2 id="DEX整体结构"><a href="#DEX整体结构" class="headerlink" title="DEX整体结构"></a>DEX整体结构</h2><p>如下图所示：</p>
+<p><img src="https://s2.loli.net/2024/12/23/oNDh3e9lQ1d8FAU.png" srcset="/img/loading.gif" lazyload alt="dex文件结构"></p>
+<h2 id="以案例看DEX"><a href="#以案例看DEX" class="headerlink" title="以案例看DEX"></a>以案例看DEX</h2><h4 id="Java-类-Person-例子："><a href="#Java-类-Person-例子：" class="headerlink" title="Java 类 Person 例子："></a>Java 类 <code>Person</code> 例子：</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br>    <span class="hljs-keyword">private</span> String name;<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">int</span> age;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">(String name, <span class="hljs-type">int</span> age)</span> &#123;<br>        <span class="hljs-built_in">this</span>.name = name;<br>        <span class="hljs-built_in">this</span>.age = age;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> name;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setName</span><span class="hljs-params">(String name)</span> &#123;<br>        <span class="hljs-built_in">this</span>.name = name;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getAge</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> age;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setAge</span><span class="hljs-params">(<span class="hljs-type">int</span> age)</span> &#123;<br>        <span class="hljs-built_in">this</span>.age = age;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="DEX-文件中的各部分结构与对应的示例："><a href="#DEX-文件中的各部分结构与对应的示例：" class="headerlink" title="DEX 文件中的各部分结构与对应的示例："></a>DEX 文件中的各部分结构与对应的示例：</h3><h5 id="1-文件头部（Header）"><a href="#1-文件头部（Header）" class="headerlink" title="1. 文件头部（Header）"></a>1. <strong>文件头部（Header）</strong></h5><ul>
+<li><strong>magic</strong>：标识 DEX 文件版本，例如 <code>0x64 65 78 0a 30 33 35 00</code> 表示 “dex\n035\0”。</li>
+<li><strong>file_size</strong>：表示整个 DEX 文件的大小。</li>
+<li><strong>string_ids_size</strong>、<strong>string_ids_off</strong>：字符串标记的数量和偏移位置。</li>
+<li><strong>type_ids_size</strong>、<strong>type_ids_off</strong>：类型标记的数量和偏移位置。</li>
+<li><strong>method_ids_size</strong>、<strong>method_ids_off</strong>：方法标记的数量和偏移位置。</li>
+<li><strong>class_defs_size</strong>、<strong>class_defs_off</strong>：类定义的数量和偏移位置。</li>
+</ul>
+<h5 id="2-字符串标记（String-IDs）"><a href="#2-字符串标记（String-IDs）" class="headerlink" title="2. 字符串标记（String IDs）"></a>2. <strong>字符串标记（String IDs）</strong></h5><p><code>String IDs</code> 表存储了所有字符串，例如类名、字段名、方法名等。每个 <code>String ID</code> 表项指向字符串数据的偏移地址。对于 <code>Person</code> 类的例子：</p>
+<ul>
+<li><code>&quot;Person&quot;</code>：表示类名。</li>
+<li><code>&quot;name&quot;</code>：表示字段名称。</li>
+<li><code>&quot;age&quot;</code>：表示字段名称。</li>
+<li><code>&quot;getName&quot;</code>、<code>&quot;setName&quot;</code>：表示方法名称。</li>
+<li><code>&quot;getAge&quot;</code>、<code>&quot;setAge&quot;</code>：表示方法名称。</li>
+<li><code>&quot;Ljava/lang/String;&quot;</code>：表示 <code>String</code> 类型的描述符。</li>
+<li><code>&quot;I&quot;</code>：表示 <code>int</code> 类型的描述符。</li>
+</ul>
+<p>这些字符串以 <code>UTF-8</code> 编码存储，并在 <code>String IDs</code> 中保存其偏移。</p>
+<h5 id="3-类型标记（Type-IDs）"><a href="#3-类型标记（Type-IDs）" class="headerlink" title="3. 类型标记（Type IDs）"></a>3. <strong>类型标记（Type IDs）</strong></h5><p><code>Type IDs</code> 表存储类、基本类型和数组类型。每个 <code>Type ID</code> 指向 <code>String IDs</code> 中的一个字符串，表示具体的类型。对于 <code>Person</code> 类：</p>
+<ul>
+<li><code>LPerson;</code>：表示 <code>Person</code> 类，指向 <code>String IDs</code> 中的 <code>&quot;Person&quot;</code>。</li>
+<li><code>Ljava/lang/String;</code>：表示 <code>String</code> 类型，指向 <code>String IDs</code> 中的 <code>&quot;Ljava/lang/String;&quot;</code>。</li>
+<li><code>I</code>：表示 <code>int</code> 类型，指向 <code>String IDs</code> 中的 <code>&quot;I&quot;</code>。</li>
+</ul>
+<h5 id="4-方法原型标记（Proto-IDs）"><a href="#4-方法原型标记（Proto-IDs）" class="headerlink" title="4. 方法原型标记（Proto IDs）"></a>4. <strong>方法原型标记（Proto IDs）</strong></h5><p><code>Proto IDs</code> 表存储方法的原型信息，包括方法的返回类型和参数类型。例如，在 <code>Person</code> 类中：</p>
+<ul>
+<li><p><code>public Person(String name, int age)</code> 的方法原型：</p>
+<ul>
+<li>参数类型列表为 <code>[Ljava/lang/String;, I</code>（即一个 <code>String</code> 和一个 <code>int</code>）。</li>
+<li>返回类型为 <code>V</code>（表示 <code>void</code>，因为构造函数没有返回值）。</li>
+</ul>
+</li>
+<li><p><code>public String getName()</code> 的方法原型：</p>
+<ul>
+<li>参数类型为空。</li>
+<li>返回类型为 <code>Ljava/lang/String;</code>（表示返回值是 <code>String</code> 类型）。</li>
+</ul>
+</li>
+</ul>
+<p>每个方法原型指向 <code>Type IDs</code> 表中对应的类型，并通过 <code>Proto IDs</code> 表项记录返回类型和参数类型。</p>
+<h5 id="5-字段标记（Field-IDs）"><a href="#5-字段标记（Field-IDs）" class="headerlink" title="5. 字段标记（Field IDs）"></a>5. <strong>字段标记（Field IDs）</strong></h5><p><code>Field IDs</code> 表存储类中的所有字段信息，包括字段的类型、字段名称和所属类。对于 <code>Person</code> 类中的字段：</p>
+<ul>
+<li><p><strong>name</strong>：</p>
+<ul>
+<li><code>class_idx</code>：指向 <code>Type IDs</code> 表中的 <code>Person</code>。</li>
+<li><code>type_idx</code>：指向 <code>Type IDs</code> 表中的 <code>String</code> 类型。</li>
+<li><code>name_idx</code>：指向 <code>String IDs</code> 表中的 <code>&quot;name&quot;</code>。</li>
+</ul>
+</li>
+<li><p><strong>age</strong>：</p>
+<ul>
+<li><code>class_idx</code>：指向 <code>Type IDs</code> 表中的 <code>Person</code>。</li>
+<li><code>type_idx</code>：指向 <code>Type IDs</code> 表中的 <code>int</code> 类型。</li>
+<li><code>name_idx</code>：指向 <code>String IDs</code> 表中的 <code>&quot;age&quot;</code>。</li>
+</ul>
+</li>
+</ul>
+<h5 id="6-方法标记（Method-IDs）"><a href="#6-方法标记（Method-IDs）" class="headerlink" title="6. 方法标记（Method IDs）"></a>6. <strong>方法标记（Method IDs）</strong></h5><p><code>Method IDs</code> 表存储类中的所有方法信息，包括方法名称、方法原型和所属类。对于 <code>Person</code> 类中的方法：</p>
+<ul>
+<li><p><strong>getName</strong>：</p>
+<ul>
+<li><code>class_idx</code>：指向 <code>Type IDs</code> 表中的 <code>Person</code>。</li>
+<li><code>proto_idx</code>：指向 <code>Proto IDs</code> 表中的原型（返回 <code>String</code>，无参数）。</li>
+<li><code>name_idx</code>：指向 <code>String IDs</code> 表中的 <code>&quot;getName&quot;</code>。</li>
+</ul>
+</li>
+<li><p><strong>setName</strong>：</p>
+<ul>
+<li><code>class_idx</code>：指向 <code>Type IDs</code> 表中的 <code>Person</code>。</li>
+<li><code>proto_idx</code>：指向 <code>Proto IDs</code> 表中的原型（参数为 <code>String</code>，返回 <code>void</code>）。</li>
+<li><code>name_idx</code>：指向 <code>String IDs</code> 表中的 <code>&quot;setName&quot;</code>。</li>
+</ul>
+</li>
+</ul>
+<h5 id="7-类定义（Class-Definitions）"><a href="#7-类定义（Class-Definitions）" class="headerlink" title="7. 类定义（Class Definitions）"></a>7. <strong>类定义（Class Definitions）</strong></h5><p><code>Class Definitions</code> 表存储类的结构信息，包括类的访问权限、父类、接口、类中的字段和方法等信息。对于 <code>Person</code> 类：</p>
+<ul>
+<li><strong>class_idx</strong>：指向 <code>Type IDs</code> 表中的 <code>Person</code> 类。</li>
+<li><strong>access_flags</strong>：表示类的访问权限，例如 <code>public</code>、<code>final</code> 等。</li>
+<li><strong>superclass_idx</strong>：指向父类（通常是 <code>Ljava/lang/Object;</code>，即 <code>Object</code> 类）。</li>
+<li><strong>interfaces_off</strong>：指向实现的接口（如果有）。</li>
+<li><strong>class_data_off</strong>：指向类的数据（包括类的字段和方法）。</li>
+</ul>
+<h5 id="8-数据区（Data-Section）"><a href="#8-数据区（Data-Section）" class="headerlink" title="8. 数据区（Data Section）"></a>8. <strong>数据区（Data Section）</strong></h5><p>数据区包含方法的字节码实现、静态字段的初始值、注解等。对于 <code>Person</code> 类的构造方法和 <code>getName</code> 方法，数据区存储了它们的具体字节码：</p>
+<ul>
+<li><strong>字节码（Code Items）</strong>：方法的字节码，包含指令、寄存器数、异常处理表等。例如，<code>getName()</code> 方法的字节码实现会加载 <code>name</code> 字段并返回其值。</li>
+<li><strong>字符串数据</strong>：存储了所有字符串内容，如 <code>&quot;Person&quot;</code>、<code>&quot;name&quot;</code>、<code>&quot;getName&quot;</code> 等。</li>
+<li><strong>类型列表</strong>：存储方法的参数类型列表。</li>
+</ul>
+<p>如图：</p>
+<p><img src="https://s2.loli.net/2024/12/23/bvphztNoreDnwd7.png" srcset="/img/loading.gif" lazyload alt="dex文件结构"></p>
+<h1 id="绝知此事要躬行"><a href="#绝知此事要躬行" class="headerlink" title="绝知此事要躬行"></a>绝知此事要躬行</h1><p><img src="https://s2.loli.net/2024/12/27/3VY9f5edmrqH8I7.png" srcset="/img/loading.gif" lazyload alt="image-20241227142405356"></p>
+<p>这里先给出声明：</p>
+<p><img src="https://s2.loli.net/2024/12/27/7EXuDgVTqpaxYRO.png" srcset="/img/loading.gif" lazyload alt="image-20241227145405664"></p>
+<p><img src="https://s2.loli.net/2024/12/27/Q46EZCGpUqPAuJx.png" srcset="/img/loading.gif" lazyload alt="image-20241227145425246"></p>
+<p>要注意解析过程中的Uleb128结构和mutf-8结构</p>
+<p>可变长度的类型其实都是基于 LEB128(Little-Endian Base) 类型的，可以用于表示 32 位大小的 int 数字，其根据所要表示的数字的大小来选择合适的长度。如下图所示，其中每个字节的最高位表示是否使用下一个字节，1 表示使用，0 表示不使用。故而每个字节其实只有 7 个有效的 bit 位用来表示相应的数字。如果有一个 LEB128 类型的变量使用了 5 个字节，并且第五个字节的最高位为 1 ，那说明出现了问题。</p>
+<p><img src="https://s2.loli.net/2024/12/27/ECP3h7qmMZRlrHj.png" srcset="/img/loading.gif" lazyload alt="image-20241227145903678"></p>
+<p>mutf-8结构可参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/Roland_Sun/article/details/46716965">MUTF-8编码解析-CSDN博客</a></p>
+<h2 id="文件头解析"><a href="#文件头解析" class="headerlink" title="文件头解析"></a>文件头解析</h2><h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://s2.loli.net/2024/12/27/RQihNucqXT3KYzn.png" srcset="/img/loading.gif" lazyload alt="image-20241227142346605"></p>
+<h3 id="解析代码"><a href="#解析代码" class="headerlink" title="解析代码"></a>解析代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">DexParse::ParseDexHeader</span><span class="hljs-params">(FILE* fp)</span> </span>&#123;<br>    <span class="hljs-comment">// 为 dex_hdr 分配内存</span><br>    DexHeader* dex_hdr = <span class="hljs-keyword">new</span> <span class="hljs-built_in">DexHeader</span>();<br>    <span class="hljs-comment">// 移动文件指针到文件开头</span><br>    <span class="hljs-built_in">fseek</span>(fp, <span class="hljs-number">0</span>, SEEK_SET);<br>    <span class="hljs-comment">// 从文件中读取 DexHeader 内容到动态分配的内存中</span><br>    <span class="hljs-type">size_t</span> bytesRead = <span class="hljs-built_in">fread</span>(dex_hdr, <span class="hljs-built_in">sizeof</span>(DexHeader), <span class="hljs-number">1</span>, fp);<br>    <span class="hljs-keyword">if</span> (bytesRead != <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Failed to read DexHeader&quot;</span>);<br>        <span class="hljs-keyword">delete</span> dex_hdr;  <span class="hljs-comment">// 确保释放内存</span><br>        dex_hdr = <span class="hljs-literal">nullptr</span>;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <span class="hljs-comment">// 输出文件标识符</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;文件标识符：&quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">8</span>; i++) &#123;<br>        <span class="hljs-keyword">if</span> (dex_hdr-&gt;magic[i] == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>        &#125;<br>        <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, dex_hdr-&gt;magic[i]);<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;校验码：%x\n&quot;</span>, dex_hdr-&gt;checksum);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHA-1 签名：&quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; kSHA1DigestLen; i++) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%02x&quot;</span>, dex_hdr-&gt;signature[i]);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;文件大小：%u 字节\n&quot;</span>, dex_hdr-&gt;fileSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;文件头的大小：%u 字节\n&quot;</span>, dex_hdr-&gt;headerSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字节序标记：0x%08x&quot;</span>, dex_hdr-&gt;endianTag);<br>    <span class="hljs-comment">// 判断字节序类型</span><br>    <span class="hljs-keyword">if</span> (dex_hdr-&gt;endianTag == <span class="hljs-number">0x12345678</span>) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[大端序（Big-Endianness）]\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (dex_hdr-&gt;endianTag == <span class="hljs-number">0x78563412</span>) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[小端序（Little-Endianness）]\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字节序标记未知\n&quot;</span>);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;链接段大小：%u 字节\n&quot;</span>, dex_hdr-&gt;linkSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;链接段偏移位置：0x%08x\n&quot;</span>, dex_hdr-&gt;linkOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;map偏移位置：0x%08x\n&quot;</span>, dex_hdr-&gt;mapOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字符串数量：%u\n&quot;</span>, dex_hdr-&gt;stringIdsSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字符串表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;stringIdsOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;类型标识符列表中的元素数量：%u\n&quot;</span>, dex_hdr-&gt;typeIdsSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;类型标识符表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;typeIdsOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;原型（方法）标识符列表中的元素数量：%u\n&quot;</span>, dex_hdr-&gt;protoIdsSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;原型（方法）标识符表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;protoIdsOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字段标识符列表中的元素数量：%u\n&quot;</span>, dex_hdr-&gt;fieldIdsSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字段标识符表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;fieldIdsOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;方法标识符列表中的元素数量：%u\n&quot;</span>, dex_hdr-&gt;methodIdsSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;方法标识符表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;methodIdsOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;类定义列表中的元素数量：%u\n&quot;</span>, dex_hdr-&gt;classDefsSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;类定义列表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;classDefsOff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;方法标识符列表中的元素数量：%u\n&quot;</span>, dex_hdr-&gt;dataSize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;方法标识符表偏移：0x%08x\n&quot;</span>, dex_hdr-&gt;dataOff);<br>    <span class="hljs-comment">// 释放内存</span><br>    <span class="hljs-keyword">delete</span> dex_hdr;<br>    dex_hdr = <span class="hljs-literal">nullptr</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/pakHF3OXPUBcTQK.png" srcset="/img/loading.gif" lazyload alt="image-20241227142504492"></p>
+<h2 id="字符串标识符"><a href="#字符串标识符" class="headerlink" title="字符串标识符"></a>字符串标识符</h2><h3 id="数据结构-1"><a href="#数据结构-1" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://s2.loli.net/2024/12/27/lNZbLcaV5nivGjT.png" srcset="/img/loading.gif" lazyload alt="image-20241227142749890"></p>
+<h3 id="解析代码-1"><a href="#解析代码-1" class="headerlink" title="解析代码"></a>解析代码</h3><p><img src="https://s2.loli.net/2024/12/27/zMqBUkaH8FGwbyu.png" srcset="/img/loading.gif" lazyload alt="image-20241227142813535"></p>
+<h3 id="结果-1"><a href="#结果-1" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/bfIDjnRXKp1CSNc.png" srcset="/img/loading.gif" lazyload alt="image-20241227142844815"></p>
+<h2 id="类型标识符"><a href="#类型标识符" class="headerlink" title="类型标识符"></a>类型标识符</h2><h3 id="数据结构-2"><a href="#数据结构-2" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://s2.loli.net/2024/12/27/j9Yfyh6z7DiOgPm.png" srcset="/img/loading.gif" lazyload alt="image-20241227142939743"></p>
+<h3 id="解析代码-2"><a href="#解析代码-2" class="headerlink" title="解析代码"></a>解析代码</h3><p><img src="https://s2.loli.net/2024/12/27/BpMPARgYmakf5oy.png" srcset="/img/loading.gif" lazyload alt="image-20241227143019559"></p>
+<h3 id="结果-2"><a href="#结果-2" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/KdzY8OGxWrXtJ2U.png" srcset="/img/loading.gif" lazyload alt="image-20241227143041616"></p>
+<h2 id="原型标识符"><a href="#原型标识符" class="headerlink" title="原型标识符"></a>原型标识符</h2><h3 id="数据结构-3"><a href="#数据结构-3" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://s2.loli.net/2024/12/27/5fv8txAo2LSrgqZ.png" srcset="/img/loading.gif" lazyload alt="image-20241227143136904"></p>
+<h3 id="解析代码-3"><a href="#解析代码-3" class="headerlink" title="解析代码"></a>解析代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">DexParse::ParseProtoIds</span><span class="hljs-params">(FILE* fp)</span> </span>&#123;<br>    <span class="hljs-comment">// 获取文件大小</span><br>    <span class="hljs-built_in">fseek</span>(fp, <span class="hljs-number">0</span>, SEEK_END);<br>    <span class="hljs-type">size_t</span> fileSize = <span class="hljs-built_in">ftell</span>(fp);<br>    <span class="hljs-built_in">fseek</span>(fp, <span class="hljs-number">0</span>, SEEK_SET);<br>    <span class="hljs-comment">// 读取整个文件到 byteArray</span><br>    <span class="hljs-function">std::vector&lt;<span class="hljs-type">uint8_t</span>&gt; <span class="hljs-title">byteArray</span><span class="hljs-params">(fileSize)</span></span>;<br>    <span class="hljs-built_in">fread</span>(byteArray.<span class="hljs-built_in">data</span>(), <span class="hljs-number">1</span>, fileSize, fp);<br><br>    <span class="hljs-comment">// 使用智能指针管理 dex_hdr 内存</span><br>    <span class="hljs-keyword">auto</span> dex_hdr = std::<span class="hljs-built_in">make_unique</span>&lt;DexHeader&gt;();<br>    <span class="hljs-comment">// 从 byteArray 读取 DexHeader 内容</span><br>    <span class="hljs-built_in">memcpy</span>(dex_hdr.<span class="hljs-built_in">get</span>(), byteArray.<span class="hljs-built_in">data</span>(), <span class="hljs-built_in">sizeof</span>(DexHeader));<br>    <span class="hljs-function">std::vector&lt;DexProtoId&gt; <span class="hljs-title">Prototable</span><span class="hljs-params">(dex_hdr-&gt;protoIdsSize)</span></span>;<br>    <span class="hljs-built_in">memcpy</span>(Prototable.<span class="hljs-built_in">data</span>(), byteArray.<span class="hljs-built_in">data</span>() + dex_hdr-&gt;protoIdsOff, <span class="hljs-built_in">sizeof</span>(DexProtoId) * dex_hdr-&gt;protoIdsSize);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;=======================Proto======================================\n&quot;</span>);<br><br>    <span class="hljs-comment">// 遍历并打印所有类型的字符串</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; dex_hdr-&gt;protoIdsSize; i++) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Proto %d :&quot;</span>, i);<br>        <span class="hljs-comment">// 获取每个类型对应的字符串偏移（通过 descriptorIdx 获取对应的 DexStringId）</span><br>        <span class="hljs-type">uint32_t</span> shortyIdx = Prototable[i].shortyIdx;<br>        <span class="hljs-keyword">if</span> (shortyIdx &lt; decodedStrings.<span class="hljs-built_in">size</span>()) &#123;<br>            std::string decodedString1 = decodedStrings[shortyIdx];<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>, decodedString1.<span class="hljs-built_in">c_str</span>());<br>        &#125;<br>        <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid shortyIdx: %u&quot;</span>, shortyIdx);<br>        &#125;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;:&quot;</span>);<br><br>        <span class="hljs-comment">// 获取每个类型对应的字符串偏移（通过 descriptorIdx 获取对应的 DexStringId）</span><br>        <span class="hljs-type">uint32_t</span> returntersOff = Prototable[i].returnTypeIdx;<br>        <span class="hljs-keyword">if</span> (returntersOff &lt; typeStrings.<span class="hljs-built_in">size</span>()) &#123;<br>            std::string decodedString2 = typeStrings[returntersOff];<br>            typeStrings.<span class="hljs-built_in">push_back</span>(decodedString2);<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>,decodedString2.<span class="hljs-built_in">c_str</span>());<br>        &#125;<br>        <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid returntersOff: %u&quot;</span>, returntersOff);<br>        &#125;<br><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;(&quot;</span>);<br>        <span class="hljs-type">uint32_t</span> parameters = Prototable[i].parametersOff;<br>        <span class="hljs-keyword">if</span> (parameters == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;proto %d has no parameters\n&quot;</span>, i);<br>            <span class="hljs-keyword">continue</span>; <span class="hljs-comment">// 跳过没有参数的 proto</span><br>        &#125;<br>        <span class="hljs-comment">// 移动文件指针到 parameters 偏移位置</span><br>        <span class="hljs-built_in">fseek</span>(fp, parameters, SEEK_SET);<br><br>        <span class="hljs-comment">// 读取 TypeList 的 size</span><br>        DexTypeList typeListHeader;<br>        <span class="hljs-built_in">fread</span>(&amp;typeListHeader, <span class="hljs-built_in">sizeof</span>(<span class="hljs-type">uint32_t</span>), <span class="hljs-number">1</span>, fp); <span class="hljs-comment">// 只读取 size</span><br><br>        <span class="hljs-comment">// 检查 size 是否有效</span><br>        <span class="hljs-keyword">if</span> (typeListHeader.size == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;proto %d has no parameters\n&quot;</span>, i);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br><br>        <span class="hljs-comment">// 读取参数类型索引数组</span><br>        <span class="hljs-function">std::vector&lt;DexTypeItem&gt; <span class="hljs-title">typeIndices</span><span class="hljs-params">(typeListHeader.size)</span></span>;<br>        <span class="hljs-built_in">fread</span>(typeIndices.<span class="hljs-built_in">data</span>(), <span class="hljs-built_in">sizeof</span>(DexTypeItem), typeListHeader.size, fp);<br><br>        <span class="hljs-comment">// 遍历每个参数的类型索引</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; typeListHeader.size; j++) &#123;<br>            <span class="hljs-type">uint16_t</span> typeIdx2 = typeIndices[j].typeIdx;<br>            <span class="hljs-keyword">if</span> (typeIdx2 &lt; typeStrings.<span class="hljs-built_in">size</span>()) &#123;<br>                std::string decodedString3 = typeStrings[typeIdx2];<br>                typeStrings.<span class="hljs-built_in">push_back</span>(decodedString3);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>, decodedString3.<span class="hljs-built_in">c_str</span>());<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;,&quot;</span>);<br>            &#125;<br>            <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid returntersOff: %u&quot;</span>, returntersOff);<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;)&quot;</span>);<br><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="结果-3"><a href="#结果-3" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/NoJK8qTQSXvbPHZ.png" srcset="/img/loading.gif" lazyload alt="image-20241227143253634"></p>
+<h2 id="字段标识符"><a href="#字段标识符" class="headerlink" title="字段标识符"></a>字段标识符</h2><h3 id="数据结构-4"><a href="#数据结构-4" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://s2.loli.net/2024/12/27/7UhF6ECzBQ15Iwp.png" srcset="/img/loading.gif" lazyload alt="image-20241227143319968"></p>
+<h3 id="解析代码-4"><a href="#解析代码-4" class="headerlink" title="解析代码"></a>解析代码</h3><p><img src="https://s2.loli.net/2024/12/27/w3uCsAkmeVYEZrg.png" srcset="/img/loading.gif" lazyload alt="image-20241227143356792"></p>
+<h3 id="结果-4"><a href="#结果-4" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/goDqr7ZxpHnfBuh.png" srcset="/img/loading.gif" lazyload alt="image-20241227143417836"></p>
+<h2 id="方法标识符"><a href="#方法标识符" class="headerlink" title="方法标识符"></a>方法标识符</h2><h3 id="数据结构-5"><a href="#数据结构-5" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://s2.loli.net/2024/12/27/RhsagT5y7fKcVpL.png" srcset="/img/loading.gif" lazyload alt="image-20241227143438902"></p>
+<h3 id="解析代码-5"><a href="#解析代码-5" class="headerlink" title="解析代码"></a>解析代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; dex_hdr-&gt;methodIdsSize; i++)<br>&#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;method %d :&quot;</span>, i);<br>    <span class="hljs-type">uint16_t</span> protoIndex1 = methodtable[i].protoIdx;<br>    DexProtoId protoId = Prototable[protoIndex1];<br>    <span class="hljs-comment">// 获取每个类型对应的字符串偏移（通过 descriptorIdx 获取对应的 DexStringId）</span><br>    <span class="hljs-type">uint32_t</span> shortyIdx = protoId.shortyIdx;<br>    <span class="hljs-keyword">if</span> (shortyIdx &lt; decodedStrings.<span class="hljs-built_in">size</span>()) &#123;<br>        std::string decodedString = decodedStrings[shortyIdx];<br>        typeStrings.<span class="hljs-built_in">push_back</span>(decodedString);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>, decodedString.<span class="hljs-built_in">c_str</span>());<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid stringIdx: %u\n&quot;</span>, shortyIdx);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;: &quot;</span>);<br><br>    <span class="hljs-type">uint16_t</span> typeIndex = methodtable[i].classIdx;<br>    DexTypeId TypeId = Typetable[typeIndex];<br>    <span class="hljs-comment">//printf(&quot;typeIndex: %d, descriptorIdx: %d\n&quot;, typeIndex, TypeId.descriptorIdx);  // 打印 descriptorIdx 的值</span><br>    <span class="hljs-type">uint32_t</span> stringIdx = TypeId.descriptorIdx;<br>    <span class="hljs-keyword">if</span> (stringIdx &lt; decodedStrings.<span class="hljs-built_in">size</span>()) &#123;<br>        std::string decodedString1 = decodedStrings[stringIdx];<br>        typeStrings.<span class="hljs-built_in">push_back</span>(decodedString1);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>, decodedString1.<span class="hljs-built_in">c_str</span>());<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid stringIdx: %u\n&quot;</span>, stringIdx);<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;.&quot;</span>);<br><br>    <span class="hljs-type">uint32_t</span> stringIdx3 = methodtable[i].nameIdx;<br>    <span class="hljs-keyword">if</span> (stringIdx3 &lt; decodedStrings.<span class="hljs-built_in">size</span>()) &#123;<br>        std::string decodedString2 = decodedStrings[stringIdx3];<br>        typeStrings.<span class="hljs-built_in">push_back</span>(decodedString2);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s&quot;</span>, decodedString2.<span class="hljs-built_in">c_str</span>());<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid stringIdx: %u\n&quot;</span>, stringIdx3);<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="结果-5"><a href="#结果-5" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/poY7wfhscBtTm2J.png" srcset="/img/loading.gif" lazyload alt="image-20241227144010393"></p>
+<h2 id="类定义列表"><a href="#类定义列表" class="headerlink" title="类定义列表"></a>类定义列表</h2><blockquote>
+<p>DexClassDex文件中所有数据都是uleb128，包括之后的偏移，所以，DexClassDataHeader这个结构体它的长度取决于这四个uleb128的长度<br>同时，接着的几个成员变量，也就是类中的成员和方法的偏移所处位置，就是DexClassDataHeader之后。<br>什么意思呢？就是说，DexClassDex结构中，位于DexClassDataHeader结构内存之后，拥有这个结构中提取出的四个整数的和的个数个uleb128整数，而每一个整数，就是一个偏移.</p>
+</blockquote>
+<p>在这里直接解析DexClassData和DexClassDataHeader这两个比较重要的结构，其他结构读者按需解析即可</p>
+<h3 id="数据结构-6"><a href="#数据结构-6" class="headerlink" title="数据结构"></a>数据结构</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 类的基本信息-------------------------------------------</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DexClassDef</span> &#123;<br>    u4 classIdx;    <span class="hljs-comment">/* 类的类型，指向DexTypeId列表的索引 */</span><br>    u4 accessFlags; <span class="hljs-comment">/* 访问标志 */</span><br>    u4 superclassIdx;  <span class="hljs-comment">/* 父类类型，指向DexTypeId列表的索引 */</span><br>    u4 interfacesOff; <span class="hljs-comment">/* 接口，指向DexTypeList的偏移 */</span><br>    u4 sourceFileIdx; <span class="hljs-comment">/* 源文件名，指向DexStringId列表的索引 */</span><br>    u4 annotationsOff; <span class="hljs-comment">/* 注解，指向DexAnnotationsDirectoryItem结构 */</span><br>    u4 classDataOff;   <span class="hljs-comment">/* 指向DexClassData结构的偏移 */</span><br>    u4 staticValuesOff;  <span class="hljs-comment">/* 指向DexEncodedArray结构的偏移 */</span><br>&#125;;<br><br><span class="hljs-comment">// 详细描述类的字段个数与方法个数</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DexClassDataHeader</span> &#123;<br>    uleb128 staticFieldsSize;  <span class="hljs-comment">/* 静态字段个数 */</span><br>    uleb128 instanceFieldsSize; <span class="hljs-comment">/* 实例字段个数 */</span><br>    uleb128 directMethodsSize;  <span class="hljs-comment">/* 直接方法个数 */</span><br>    uleb128 virtualMethodsSize; <span class="hljs-comment">/* 虚方法个数 */</span><br>&#125;;<br><br><span class="hljs-comment">// 字段定义</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DexField</span> &#123;<br>    uleb128 fieldIdx;    <span class="hljs-comment">/* 指向DexFieldId的索引*/</span><br>    uleb128 accessFlags; <span class="hljs-comment">/* 访问标志 */</span><br>&#125;;<br><br><span class="hljs-comment">// 方法定义</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DexMethod</span> &#123;<br>    uleb128 methodIdx;   <span class="hljs-comment">/* 指向DexMethodId的索引 */</span><br>    uleb128 accessFlags; <span class="hljs-comment">/* 访问标志*/</span><br>    uleb128 codeOff;     <span class="hljs-comment">/* 指向DexCode结构的偏移*/</span><br>&#125;;<br><br><span class="hljs-comment">// 代码概况</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DexCode</span> &#123;<br>    u2 registersSize;   <span class="hljs-comment">/* 使用的寄存器个数 */</span><br>    u2 insSize;         <span class="hljs-comment">/* 参数个数 */</span><br>    u2 outsSize;        <span class="hljs-comment">/* 调用其他方法时其它方法使用的寄存器个数，会在自己的调用栈申请，并压栈（猜测） */</span><br>    u2 triesSize;       <span class="hljs-comment">/* Try/Catch个数 */</span><br>    u4 debugInfoOff;    <span class="hljs-comment">/* 指向调试信息的偏移 */</span><br>    u4 insnsSize;       <span class="hljs-comment">/* 指令集个数，以2字节为单位 */</span><br>    u2 insns[<span class="hljs-number">1</span>];        <span class="hljs-comment">/* 指令集 */</span><br>&#125;;<br><br><span class="hljs-comment">// 类的字段与方法概况</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DexClassData</span> &#123;<br>    DexClassDataHeader header; <span class="hljs-comment">/* 指定字段与方法的个数 */</span><br>    DexField* staticFields;    <span class="hljs-comment">/* 静态字段，DexField结构 */</span><br>    DexField* instanceFields;  <span class="hljs-comment">/* 实例字段，DexField结构 */</span><br>    DexMethod* directMethods;  <span class="hljs-comment">/* 直接方法，DexMethod结构 */</span><br>    DexMethod* virtualMethods; <span class="hljs-comment">/* 虚方法，DexMethod结构 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="解析代码-6"><a href="#解析代码-6" class="headerlink" title="解析代码"></a>解析代码</h3><p><img src="https://s2.loli.net/2024/12/27/fgUSc5LKixeRIOA.png" srcset="/img/loading.gif" lazyload alt="image-20241227144742929"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><code class="hljs c++">  <span class="hljs-comment">//静态字段</span><br><span class="hljs-keyword">if</span> (staticFieldCount &gt; <span class="hljs-number">0</span>) &#123;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;---------------------static Fields=================================================&gt; \n&quot;</span>);<br>      <span class="hljs-keyword">while</span> (staticFieldCount--) &#123;<br>          <span class="hljs-type">int</span> tmpLength = <span class="hljs-number">0</span>;<br>          <span class="hljs-type">int</span> fieldIndx = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset);<br>          <span class="hljs-type">int</span> accessFlags = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset);<br><br>          <span class="hljs-comment">//----field----------</span><br>          <span class="hljs-type">uint16_t</span> typeIndex = fieldtable[fieldIndx].typeIdx;<br>          DexTypeId TypeId = Typetable[typeIndex];<br>          <span class="hljs-type">uint32_t</span> stringIdx = TypeId.descriptorIdx;<br>          <span class="hljs-keyword">if</span> (stringIdx &gt;= dex_hdr-&gt;stringIdsSize) &#123;<br>              <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid descriptorIdx: %d\n&quot;</span>, stringIdx);<br>              <span class="hljs-keyword">continue</span>;<br>          &#125;<br>          DexStringId stringId = stringtable[stringIdx];<br>          <span class="hljs-type">size_t</span> stringOffset = stringId.stringDataOff;<br>          <span class="hljs-keyword">if</span> (stringOffset &gt;= byteArray.<span class="hljs-built_in">size</span>()) &#123;<br>              <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid stringDataOff: %zu\n&quot;</span>, stringOffset);<br>              <span class="hljs-keyword">continue</span>;<br>          &#125;<br>          <span class="hljs-comment">// 解码字符串</span><br>          <span class="hljs-type">size_t</span> offset0 = stringOffset;<br>          <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> length = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset0);<br>          std::string decodedString = <span class="hljs-built_in">decodeString</span>(byteArray, offset0, length);<br><br>          <span class="hljs-comment">// 打印解码后的字符串</span><br>          <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> ch : decodedString) &#123;<br>              <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>                  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>              &#125;<br>              <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;;&#x27;</span>) &#123;<br>                  <span class="hljs-keyword">continue</span>;<br>              &#125;<br>              <span class="hljs-keyword">else</span> &#123;<br>                  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, ch);<br>              &#125;<br>          &#125;<br>          <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot; &quot;</span>);<br>          <span class="hljs-type">uint16_t</span> typeIndex1 = fieldtable[i].classIdx;<br>          DexTypeId TypeId1 = Typetable[typeIndex1];<br>          <span class="hljs-type">uint32_t</span> stringIdx1 = TypeId1.descriptorIdx;<br>          <span class="hljs-keyword">if</span> (stringIdx1 &gt;= dex_hdr-&gt;stringIdsSize) &#123;<br>              <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid descriptorIdx: %d\n&quot;</span>, stringIdx);<br>              <span class="hljs-keyword">continue</span>;<br>          &#125;<br>          DexStringId stringId1 = stringtable[stringIdx1];<br>          <span class="hljs-type">size_t</span> stringOffset1 = stringId1.stringDataOff;<br>          <span class="hljs-keyword">if</span> (stringOffset1 &gt;= byteArray.<span class="hljs-built_in">size</span>()) &#123;<br>              <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid stringDataOff: %zu\n&quot;</span>, stringOffset1);<br>              <span class="hljs-keyword">continue</span>;<br>          &#125;<br>          <span class="hljs-comment">// 解码字符串</span><br>          <span class="hljs-type">size_t</span> offset1 = stringOffset1;<br>          <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> length1 = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset1);<br>          std::string decodedString1 = <span class="hljs-built_in">decodeString</span>(byteArray, offset1, length1);<br>          <span class="hljs-comment">// 打印解码后的字符串</span><br>          <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> ch : decodedString1) &#123;<br>              <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>                  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>              &#125;<br>              <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;;&#x27;</span>) &#123;<br>                  <span class="hljs-keyword">continue</span>;<br>              &#125;<br>              <span class="hljs-keyword">else</span> &#123;<br>                  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, ch);<br>              &#125;<br>          &#125;<br>          <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;.&quot;</span>);<br><br>          <span class="hljs-type">uint32_t</span> stringIdx3 = fieldtable[i].nameIdx;<br>          <span class="hljs-keyword">if</span> (stringIdx1 &gt;= dex_hdr-&gt;stringIdsSize) &#123;<br>              <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid descriptorIdx: %d\n&quot;</span>, stringIdx);<br>              <span class="hljs-keyword">continue</span>;<br>          &#125;<br>          DexStringId stringId3 = stringtable[stringIdx3];<br>          <span class="hljs-type">size_t</span> stringOffset3 = stringId3.stringDataOff;<br>          <span class="hljs-keyword">if</span> (stringOffset3 &gt;= byteArray.<span class="hljs-built_in">size</span>()) &#123;<br>              <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid stringDataOff: %zu\n&quot;</span>, stringOffset);<br>              <span class="hljs-keyword">continue</span>;<br>          &#125;<br>          <span class="hljs-comment">// 解码字符串</span><br>          <span class="hljs-type">size_t</span> offset3 = stringOffset3;<br>          <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> length3 = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset3);<br>          std::string decodedString3 = <span class="hljs-built_in">decodeString</span>(byteArray, offset3, length3);<br>          <span class="hljs-comment">// 打印解码后的字符串</span><br>          <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> ch : decodedString3) &#123;<br>              <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>                  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>              &#125;<br>              <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;;&#x27;</span>) &#123;<br>                  <span class="hljs-keyword">continue</span>;<br>              &#125;<br>              <span class="hljs-keyword">else</span> &#123;<br>                  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, ch);<br>              &#125;<br>          &#125;<br>          <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>          <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot; accflag=0x%X\n&quot;</span>, accessFlags);<br>      &#125;<br>  &#125;<br></code></pre></td></tr></table></figure>
+
+<p>实例字段同静态字段相同，只是改了相关结构命名，这里不多赘述</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">//直接方法</span><br><span class="hljs-keyword">if</span> (directMethodCount &gt; <span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;-----------------direct Method===================================&gt; \n&quot;</span>);<br>    <span class="hljs-keyword">while</span> (directMethodCount--) &#123;<br>        <span class="hljs-type">int</span> directMethodIndx = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset);<br>        <span class="hljs-type">int</span> accessFlags = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset);<br>        <span class="hljs-type">int</span> codeOff = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset);<br>        <span class="hljs-comment">//----------directMethod</span><br>        <span class="hljs-type">uint16_t</span> protoIndex1 = methodtable[directMethodIndx].protoIdx;<br>        DexProtoId protoId = Prototable[protoIndex1];<br>        <span class="hljs-comment">// 获取每个类型对应的字符串偏移（通过 descriptorIdx 获取对应的 DexStringId）</span><br>        <span class="hljs-type">uint32_t</span> shortyIdx = protoId.shortyIdx;<br>        <span class="hljs-comment">// 获取对应的 DexStringId</span><br>        DexStringId stringId = stringtable[shortyIdx];<br>        <span class="hljs-comment">// 获取字符串的偏移量</span><br>        <span class="hljs-type">size_t</span> stringOffset = stringId.stringDataOff;<br>        <span class="hljs-comment">// 读取该字符串的 ULEB128 解码的长度</span><br>        <span class="hljs-type">size_t</span> offset0 = stringOffset;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> length = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset0);<br>        <span class="hljs-comment">// 解码字符串（MUTF-8）</span><br>        std::string decodedString = <span class="hljs-built_in">decodeString</span>(byteArray, offset0, length);<br>        <span class="hljs-comment">// 打印解码后的字符串</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> ch : decodedString) &#123;<br>            <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>            &#125;<br>            <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, ch);<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;: &quot;</span>);<br><br>        <span class="hljs-type">uint16_t</span> typeIndex = methodtable[i].classIdx;<br>        <span class="hljs-comment">// 检查类型索引是否有效</span><br>        <span class="hljs-keyword">if</span> (typeIndex &gt;= dex_hdr-&gt;typeIdsSize) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Invalid typeIndex: %d\n&quot;</span>, typeIndex);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br>        DexTypeId TypeId = Typetable[typeIndex];<br>        <span class="hljs-comment">//printf(&quot;typeIndex: %d, descriptorIdx: %d\n&quot;, typeIndex, TypeId.descriptorIdx);  // 打印 descriptorIdx 的值</span><br>        <span class="hljs-type">uint32_t</span> stringIdx = TypeId.descriptorIdx;<br>        <span class="hljs-keyword">if</span> (stringIdx &gt;= dex_hdr-&gt;stringIdsSize) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid descriptorIdx: %d\n&quot;</span>, stringIdx);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br>        DexStringId stringId2 = stringtable[stringIdx];<br>        <span class="hljs-type">size_t</span> stringOffset2 = stringId2.stringDataOff;<br>        <span class="hljs-keyword">if</span> (stringOffset &gt;= byteArray.<span class="hljs-built_in">size</span>()) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid stringDataOff: %zu\n&quot;</span>, stringOffset);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br>        <span class="hljs-comment">// 解码字符串</span><br>        <span class="hljs-type">size_t</span> offset2 = stringOffset2;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> length2 = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset2);<br>        std::string decodedString2 = <span class="hljs-built_in">decodeString</span>(byteArray, offset, length2);<br><br>        <span class="hljs-comment">// 打印解码后的字符串</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> ch : decodedString2) &#123;<br>            <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>            &#125;<br>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;;&#x27;</span>) &#123;<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br>            <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, ch);<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;.&quot;</span>);<br><br>        <span class="hljs-type">uint32_t</span> stringIdx3 = methodtable[i].nameIdx;<br>        <span class="hljs-keyword">if</span> (stringIdx3 &gt;= dex_hdr-&gt;stringIdsSize) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid descriptorIdx: %d\n&quot;</span>, stringIdx3);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br>        DexStringId stringId3 = stringtable[stringIdx3];<br>        <span class="hljs-type">size_t</span> stringOffset3 = stringId3.stringDataOff;<br>        <span class="hljs-keyword">if</span> (stringOffset3 &gt;= byteArray.<span class="hljs-built_in">size</span>()) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;  Invalid stringDataOff: %zu\n&quot;</span>, stringOffset);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br>        <span class="hljs-comment">// 解码字符串</span><br>        <span class="hljs-type">size_t</span> offset3 = stringOffset3;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> length3 = <span class="hljs-built_in">readUnsignedLeb128</span>(byteArray, offset3);<br>        std::string decodedString3 = <span class="hljs-built_in">decodeString</span>(byteArray, offset3, length3);<br><br>        <span class="hljs-comment">// 打印解码后的字符串</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> ch : decodedString3) &#123;<br>            <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;\n&#x27;</span>) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\\n&quot;</span>);<br>            &#125;<br>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;;&#x27;</span>) &#123;<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br>            <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%c&quot;</span>, ch);<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot; accflag=0x%X\n&quot;</span>, accessFlags);<br><br>    <br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>虚拟方法同直接方法相同，只是改了相关结构命名，这里不多赘述</p>
+<h3 id="结果-6"><a href="#结果-6" class="headerlink" title="结果"></a>结果</h3><p><img src="https://s2.loli.net/2024/12/27/8V6uIqxElspyWDv.png" srcset="/img/loading.gif" lazyload alt="image-20241227144232208"></p>
+<p>最后再给出DEX完整结构:</p>
+<p><img src="https://s2.loli.net/2024/12/27/qMz2SkpR4iCrPyv.jpg" srcset="/img/loading.gif" lazyload alt="v2-adbcde93c3d86ddda2811c3ae0d40de2_r"></p>
+<hr>
+<h1 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h1><h2 id="map-list结构"><a href="#map-list结构" class="headerlink" title="map_list结构"></a>map_list结构</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://source.android.google.cn/docs/core/dalvik/dex-format?hl=zh-cn#items">Dalvik 可执行文件格式  | Android Open Source Project</a></p>
+<p><a target="_blank" rel="noopener" href="https://nextstart.online/2017/01/16/Android-.dex-format/">Android .dex file format</a></p>
+</blockquote>
+<p>在文件头解析中简单提到了mapOff这个偏移量，当时没太在意，之后在解析Frida-dexdump脱壳脚本时，才发现遗漏了这个比较重要的结构，故做补充。</p>
+<blockquote>
+<p>mapOff是DexMapList结构的文件偏移。</p>
+</blockquote>
+<p><code>map_off</code>（映射列表偏移）是DEX文件头（Header）中的一个关键字段，用于指向 <strong><code>map_list</code>段</strong> 的起始偏移地址。此段记录了DEX文件中所有数据结构的 <strong>类型、数量及内存偏移</strong>，是DEX格式的全局索引表。</p>
+<h3 id="map-list定义格式"><a href="#map-list定义格式" class="headerlink" title="map_list定义格式"></a>map_list定义格式</h3><p> map_offset是map_list的文件偏移，通常在dex文件末尾   map_list有两个成员,map_item有四个成员  </p>
+<h4 id="DexMapList"><a href="#DexMapList" class="headerlink" title="DexMapList"></a>DexMapList</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">DexMapList</span> &#123;</span><br>    u4  size;               <span class="hljs-comment">/* DexMapItem 的个数 */</span><br>    DexMapItem <span class="hljs-built_in">list</span>[<span class="hljs-number">1</span>];     <span class="hljs-comment">/* DexMapItem 数组 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="DexMapItem"><a href="#DexMapItem" class="headerlink" title="DexMapItem"></a>DexMapItem</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">DexMapItem</span> &#123;</span>  <br>    <span class="hljs-type">uint16_t</span> type;    <span class="hljs-comment">// 类型标识（如0x0001=类型定义）  </span><br>    <span class="hljs-type">uint16_t</span> unused;  <span class="hljs-comment">// 保留字段  </span><br>    <span class="hljs-type">uint32_t</span> count;   <span class="hljs-comment">// 该类型条目数量  </span><br>    <span class="hljs-type">uint32_t</span> offset;  <span class="hljs-comment">// 段起始偏移  </span><br>&#125;;  <br></code></pre></td></tr></table></figure>
+
+<h5 id="常见类型标识"><a href="#常见类型标识" class="headerlink" title="常见类型标识"></a><strong>常见类型标识</strong></h5><p><img src="https://s2.loli.net/2025/02/26/2Sy6YH1haiXBJk7.png" srcset="/img/loading.gif" lazyload alt="类型代码"></p>
+<p>正如官方文档所言，map_off处于data section中。map_list记录了整个dex文件拥有哪些Item Type，以及它们各自在文件中的偏移地址。放置这个map_list的目的是 可以更快速的迭代整个dex文件。比方说，我们需要获得String：</p>
+<ul>
+<li>需要先找到string_ids_off(第一步)，再根据size把所有的string_ids（其实就是String的偏移地址）拿到（第二步），然后根据ids去data section中取String（第三步）；</li>
+<li>如果有map_list，找到map_off（第一步），就可以定位到string_data_item（maplist中的类型值是<code>0x2002</code>），得到String的个数和偏移地址（第二步），从偏移地址取String（第三步）。</li>
+</ul>
+<p>好像都需要三步，没有什么变化呀！但是，如果是迭代dex文件，后续获取其它类型数据时，不再需要取map_off了（省了一步），由此可见，map_list的作用相当于减少了1&#x2F;3的处理时间，这使得Android系统在加载dex文件时获得优异的性能提升。</p>
+<h1 id="青，取之于蓝，而青于蓝"><a href="#青，取之于蓝，而青于蓝" class="headerlink" title="青，取之于蓝，而青于蓝"></a>青，取之于蓝，而青于蓝</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/itermeng/article/details/79218060">Android Dex VS Class：实例图解剖析两种格式文件结构、优劣_dex文件格式-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/webor2006/p/16609029.html">02-为什么dex文件比class文件更适合移动端？ - cexo - 博客园 (cnblogs.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://weichao.io/eca312d65798/">第 3 章：深入理解 Dex 文件格式 - 『魏超』的 blog (weichao.io)</a></p>
+<p><a target="_blank" rel="noopener" href="https://gal2xy.github.io/2023/11/10/Android%E5%AE%89%E5%85%A8/dex%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/">dex文件格式解析 - gla2xy’s blog (gal2xy.github.io)</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1663852">一文读懂 DEX 文件格式解析-腾讯云开发者社区-腾讯云 (tencent.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/beyond702/article/details/52460721">图解Dex文件结构及解析要点_dex opcode-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhanweisun.github.io/2019/12/28/dex-wen-jian-jie-gou-yu-jie-xi/">DEX文件结构与解析 | 孙老师 (zhanweisun.github.io)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/li0978/article/details/114981769">来，同学，坐下，谈谈对Dex文件的认识_dex什么语言-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://deepinout.com/android-system-analysis/android-framework-related/easy-to-understand-dex-file-format.html">Android dex文件格式介绍|极客笔记 (deepinout.com)</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/" class="category-chain-item">工科知识骨架</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>DEX文件格式解析</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识骨架/计算机科学与技术/内核原理/Andorid内核原理/装载链接运行/DEX文件格式解析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/ELF%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/" title="ELF文件格式解析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ELF文件格式解析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/Dex%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/" title="Dex加载流程">
+                        <span class="hidden-mobile">Dex加载流程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

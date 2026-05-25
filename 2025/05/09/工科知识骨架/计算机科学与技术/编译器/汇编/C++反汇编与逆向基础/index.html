@@ -1,0 +1,1273 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="结构体和类 对象的内存布局1234567891011121314151617181920212223242526#include &lt;iostream&gt;  using namespace std;class Person &#123;private:    int age;    int height;public:    &#x2F;&#x2F; 初始化列表优化      Person(int a &#x3D; 1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++反汇编与逆向基础">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B1%87%E7%BC%96/C++%E5%8F%8D%E6%B1%87%E7%BC%96%E4%B8%8E%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="结构体和类 对象的内存布局1234567891011121314151617181920212223242526#include &lt;iostream&gt;  using namespace std;class Person &#123;private:    int age;    int height;public:    &#x2F;&#x2F; 初始化列表优化      Person(int a &#x3D; 1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/UhJB5FEk2ZGSM6f.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/PrwVqeG6SvX7YHR.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/X67whEz1Kje9AYQ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/FPp4LBscJRNaKO1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/eVfQCAnM3SIT8am.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/G1raZMIJ5XKBkO8.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/VxGu1NgceCmMv2R.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/YBcfsrNmZlDHoUg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/G9H64xRTwQrXy5B.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/6dCNUoWA3aVcTxD.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/LdRyxO9WMjCkqTi.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/1iswSOrqWvpfnQY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/04/4gPNpsTfVvXAomR.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/pXNiel78cJKZfVH.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/UG8qZc5np46J1jb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/YQaO3y8lZmSPDo6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/05/q2U5wL7dWFP6SJY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/24/4MhTGK6fBW1CdFc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/24/IUsAh7BqFMnCuYO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/24/SwC6tjn7zqTPD14.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.623Z">
+<meta property="article:modified_time" content="2026-05-25T12:57:56.023Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="逆向(android)">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/03/04/UhJB5FEk2ZGSM6f.png">
+  
+  
+  
+  <title>C++反汇编与逆向基础 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++反汇编与逆向基础"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          100 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++反汇编与逆向基础</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="结构体和类"><a href="#结构体和类" class="headerlink" title="结构体和类"></a>结构体和类</h1><p><img src="https://s2.loli.net/2025/03/04/UhJB5FEk2ZGSM6f.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span>  </span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> age;<br>    <span class="hljs-type">int</span> height;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 初始化列表优化  </span><br>    <span class="hljs-built_in">Person</span>(<span class="hljs-type">int</span> a = <span class="hljs-number">18</span>, <span class="hljs-type">int</span> h = <span class="hljs-number">180</span>) : <span class="hljs-built_in">age</span>(a), <span class="hljs-built_in">height</span>(h) &#123;&#125;<br><br>    <span class="hljs-comment">// const成员函数保证对象状态安全  </span><br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">getAge</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> age; &#125;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">getHeight</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> height; &#125;<br><br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 正确实例化方式  </span><br>    Person* p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Person</span>();<br>    cout &lt;&lt; <span class="hljs-string">&quot;Age: &quot;</span> &lt;&lt; p-&gt;<span class="hljs-built_in">getAge</span>() &lt;&lt; endl;  <span class="hljs-comment">// 通过接口访问  </span><br>    <span class="hljs-keyword">delete</span> p;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>内存布局如下：</p>
+<p><img src="https://s2.loli.net/2025/03/04/PrwVqeG6SvX7YHR.png" srcset="/img/loading.gif" lazyload></p>
+<p>对象person在内存中的地址为0x00000218565053B0，该地址处定义了对象person的各个数据成员，分别存放在地址0x00000218565053B0与0x00000218565053B4处。<strong>对象person中先定义的数据成员在低地址处，后定义的数据成员在高地址处，依次排列。对象的大小只包含数据成员，类成员函数属于执行代码，不属于类对象的数据。</strong>凡是属于Person类型的变量，在内存中都会占据8字节的空间。这8字节由类中的两个数据成员组成，它们都是int类型，数据长度为4字节。从内存布局上看，类与数组非常相似，都是由多个数据元素构成的，但类的能力要远远大于数组。类成员的数据类型定义非常广泛，除本身的对象外，任何已知的数据类型都可以在类中定义。</p>
+<blockquote>
+<p>为什么在类中不能定义自身的对象呢？这是因为类需要在申请内存的过程中计算出自身的大小，以用于实例化。如果在类中定义了自身的对象，在计算各数据成员的长度时，又会回到自身，这样就形成了递归定义，而这个递归并没有出口，是一个无限循环的递归定义，所以不能定义自身对象作为类成员。</p>
+</blockquote>
+<p><em>对象长度&#x3D;sizeof（数据成员1）+sizeof（数据成员2）+…+sizeof（数据成员n）这句话是错误的，且看：</em></p>
+<h3 id="空类"><a href="#空类" class="headerlink" title="空类"></a>空类</h3><p>空类中没有任何数据成员，按照该公式计算得出的对象长度为0字节。类型长度为0，则此类的对象不占内存空间。<strong>而实际情况是，空类的长度为1字节。如果对象完全不占用内存空间，空类就无法取得实例对象的地址，this指针失效，因此不能被实例化。</strong>而类的定义是由成员数据和成员函数组成的，在没有成员数据的情况下，还可以有成员函数，因此仍然需要做实例化。分配1字节的空间用于类的实例化，这1字节的数据并没有被使用。</p>
+<h3 id="内存对齐"><a href="#内存对齐" class="headerlink" title="内存对齐"></a>内存对齐</h3><hr>
+<h4 id="什么是内存对齐？"><a href="#什么是内存对齐？" class="headerlink" title="什么是内存对齐？"></a><strong>什么是内存对齐？</strong></h4><p>内存对齐要求数据的起始地址是其数据类型大小的整数倍。例如：</p>
+<ul>
+<li>一个4字节的<code>int</code>类型变量，其地址必须是4的倍数（如0x1000、0x1004）。</li>
+<li>一个8字节的<code>double</code>类型变量，其地址必须是8的倍数（如0x1000、0x1008）。<ul>
+<li>[逆向与风控, 逆向基础与进阶, 架构与汇编]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="为什么需要内存对齐？"><a href="#为什么需要内存对齐？" class="headerlink" title="为什么需要内存对齐？"></a><strong>为什么需要内存对齐？</strong></h4><p>内存对齐的主要目的是<strong>优化内存访问效率</strong>，原因如下：</p>
+<ul>
+<li><strong>硬件要求</strong>：许多CPU架构要求数据对齐，否则会触发<strong>总线错误</strong>或<strong>性能下降</strong>。</li>
+<li><strong>访问效率</strong>：对齐的数据可以一次性从内存中读取，而非对齐的数据可能需要多次访问内存，降低性能。</li>
+<li><strong>缓存优化</strong>：对齐数据有助于更好地利用CPU缓存，减少缓存未命中的概率。</li>
+</ul>
+<hr>
+<h4 id="规则"><a href="#规则" class="headerlink" title="规则"></a><strong>规则</strong></h4><ul>
+<li><strong>基本类型对齐</strong>：数据类型的对齐值通常等于其大小。例如：<ul>
+<li><code>char</code>（1字节）对齐到1字节边界。</li>
+<li><code>int</code>（4字节）对齐到4字节边界。</li>
+<li><code>double</code>（8字节）对齐到8字节边界。</li>
+</ul>
+</li>
+<li><strong>结构体对齐</strong>：结构体的对齐值是其成员中最大对齐值，结构体的大小需要是其对齐值的整数倍。<ul>
+<li>例如，结构体中包含<code>char</code>（1字节）和<code>int</code>（4字节），则结构体的对齐值为4字节。</li>
+</ul>
+</li>
+<li><strong>填充字节</strong>：为了满足对齐要求，编译器会在数据之间插入<strong>填充字节</strong>（padding）。<ul>
+<li>[逆向与风控, 逆向基础与进阶, 架构与汇编]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a><strong>示例</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Example</span> &#123;<br>    <span class="hljs-type">char</span> a;      <span class="hljs-comment">// 1字节，对齐到1字节</span><br>    <span class="hljs-type">int</span> b;       <span class="hljs-comment">// 4字节，对齐到4字节</span><br>    <span class="hljs-type">double</span> c;    <span class="hljs-comment">// 8字节，对齐到8字节</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>假设结构体起始地址为0x1000：</p>
+<ul>
+<li><code>a</code>存储在0x1000。</li>
+<li><code>b</code>需要对齐到4字节边界，因此<code>a</code>后填充3字节，<code>b</code>存储在0x1004。</li>
+<li><code>c</code>需要对齐到8字节边界，因此<code>b</code>后填充4字节，<code>c</code>存储在0x1008。</li>
+</ul>
+<p>结构体总大小为16字节。</p>
+<hr>
+<h4 id="内存对齐的控制"><a href="#内存对齐的控制" class="headerlink" title="内存对齐的控制"></a><strong>内存对齐的控制</strong></h4><ul>
+<li><strong>编译器默认对齐</strong>：编译器通常会自动处理对齐，但可以通过编译选项或指令调整对齐方式。<ul>
+<li>例如，GCC中使用<code>__attribute__((aligned(n)))</code>指定对齐值。</li>
+</ul>
+</li>
+<li><strong>强制对齐</strong>：在某些场景下，程序员可能需要手动调整对齐以满足特定需求。</li>
+</ul>
+<h3 id="静态数据成员"><a href="#静态数据成员" class="headerlink" title="静态数据成员"></a>静态数据成员</h3><p>当类中的数据成员被修饰为静态时，对象的长度计算又会发生变化。虽然静态数据成员是在类中被定义的，但它与局部静态变量类似，存放的位置和全局变量一致。只是编译器增加了作用域的检查，在作用域之外不可见。同类对象将共同享有静态数据成员的空间。</p>
+<hr>
+<p>对象的内存布局并不简单。在类中定义了虚函数和类为派生类等情况下，对象的内存布局中将含有虚函数表和父类数据成员等信息，这将使长度计算变得更为复杂。</p>
+<h2 id="this指针"><a href="#this指针" class="headerlink" title="this指针"></a>this指针</h2><p>this指针应属于指针类型。this指针在32位环境下占4字节空间，在64位环境下占8字节空间，保存了所属对象的首地址。</p>
+<p>先来了解一下使用指针访问结构体或类成员的公式，假设type为某个正确定义的结构体或者类，member是type中可以访问的成员。</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs txt">先来了解一下使用指针访问结构体或类成员的公式，假设type为某个正确定义的结构体或者类，member是type中可以访问的成员。<br>type *p;<br>// 此处略去p的赋值<br>// 以下是整型加法<br>p-&gt;member的地址=指针p的地址值+ member在type中的偏移量<br></code></pre></td></tr></table></figure>
+
+<p>示例代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// C++ 源码</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">setAge</span><span class="hljs-params">(<span class="hljs-type">int</span> age)</span> </span>&#123;                 <span class="hljs-comment">//公有成员函数</span><br>        <span class="hljs-keyword">this</span>-&gt;age = age;<br>    &#125;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">int</span> age;                               <span class="hljs-comment">//公有数据成员</span><br>&#125;;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>    Person person;<br>    person.<span class="hljs-built_in">setAge</span>(<span class="hljs-number">5</span>);                      <span class="hljs-comment">//调用成员函数</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Person : %d\n&quot;</span>, person.age);   <span class="hljs-comment">//获取数据成员</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>对象调用成员的方法以及取出数据成员的过程。使用默认的调用约定时，在调用成员函数的过程中，编译器做了一个“小动作”：利用寄存器ecx保存了对象的首地址，并以寄存器传参的方式将其传递到成员函数中，这便是this指针的由来。由此可见，所有成员函数（非静态成员函数）都有一个隐藏参数，即自身类型的指针，这样的默认调用约定称为thiscall。</p>
+<p>32位下：</p>
+<p><img src="https://s2.loli.net/2025/03/04/X67whEz1Kje9AYQ.png" srcset="/img/loading.gif" lazyload></p>
+<p>64位下：</p>
+<p><img src="https://s2.loli.net/2025/03/04/FPp4LBscJRNaKO1.png" srcset="/img/loading.gif" lazyload></p>
+<p>在成员函数中访问数据成员也是通过this指针间接访问的，这便是在成员函数内可以直接使用数据成员的原因。在类中使用数据成员和成员函数时，编译器隐藏了如下操作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">//隐藏传递了this指针，这里实际为this-&gt;getAge()</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>, <span class="hljs-built_in">getAge</span>());<br>  &#125;<br>  <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">getAge</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">//隐藏传递了this指针，这里实际为retrun this-&gt;age</span><br>    <span class="hljs-keyword">return</span> age;<br>  &#125;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-type">int</span> age;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong><code>this</code>指针的传递方式</strong>：</p>
+<ul>
+<li>在32位程序中，<code>this</code>指针通常通过<code>ecx</code>寄存器传递，而不是通过栈传递。<code>ecx</code>寄存器中保存的是调用成员函数的对象实例的首地址。</li>
+</ul>
+<p><strong><code>thiscall</code>调用约定</strong>：</p>
+<ul>
+<li><code>thiscall</code>是C++成员函数特有的调用约定,但不是C++关键字，无法显式声明为调用方式。，用于传递<code>this</code>指针。</li>
+<li>与<code>__stdcall</code>类似，<code>thiscall</code>由被调用方负责栈平衡。不同之处在于，<code>thiscall</code>的第一个参数（即<code>this</code>指针）通过<code>ecx</code>寄存器传递，而不是通过栈顶传递。</li>
+<li>类的成员函数默认使用<code>thiscall</code>调用约定。</li>
+</ul>
+<p><strong>识别成员函数的关键点</strong>：</p>
+<ul>
+<li>在32位程序中，如果某函数使用<code>ecx</code>寄存器传递第一个参数，且<code>ecx</code>中保存的是对象的首地址，则可以怀疑该函数是成员函数。</li>
+<li>在函数实现代码中，如果存在<code>this</code>指针参与的寄存器相对间接访问（如<code>[reg+8]</code>），则可以进一步确认该函数是成员函数。</li>
+<li>在64位程序中，<code>this</code>指针通过<code>rcx</code>寄存器传递，这与64位调用约定（如<code>__fastcall</code>）一致，因此无法通过寄存器使用方式直接区分成员函数。</li>
+</ul>
+<p>使用#cdecl和#stdcall声明的成员函数，this指针并不像thiscall那样容易识别。使用栈方式传递参数，并且第一个参数为对象首地址的函数很多，很难区分。虽然难以区分，但如果能确定函数的第一个参数为this指针，并且在函数体内将this指针存入某寄存器，然后出现寄存器相对间接访问方式，那么将其还原为成员函数也是等价的。</p>
+<p>使用thiscall调用方式的成员函数要点分析如下。</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs txt">lea ecx, [mem]            ; 取对象首地址并存入ecx，要注意观察内存<br><br>call FUN_ADDRESS          ; 调用成员函数<br><br>                          ; 在函数调用内，ecx 尚未重新赋值之前<br>mov XXX,    ecx           ; 发现函数内使用ecx中的数据，说明函数调用前对ecx的赋值<br>                          ; 实际上是在传递参数<br>                          ; 其后 ecx 中的内容会传递给其他寄存器<br>mov [reg+i], XXX          ; 发现了寄存器相对间接寻址方式，如果能排除数组访问，说明reg中保存的是结构体或者类对象的首地址<br></code></pre></td></tr></table></figure>
+
+<p>符合以上特点，基本可判定这是调用类的成员函数。通过分析函数代码中访问ecx的方式，再结合内存窗口，以ecx中的值为地址观察其数据，可以进一步分析并还原对象中的各数据成员。</p>
+<p>__stdcall与__cdecl调用方式的成员函数分析如下。</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs llvm">lea reg<span class="hljs-punctuation">,</span> [mem]      <span class="hljs-comment">; 取出对象首地址并存入寄存器变量</span><br>push reg            <span class="hljs-comment">; 将保存对象首地址的寄存器作为参数压栈</span><br><span class="hljs-keyword">call</span> FUN_ADDRESS    <span class="hljs-comment">; 调用成员函数</span><br><span class="hljs-comment">; 在函数调用内，将第一个函数参数作为指针变量，以寄存器相对间接寻址方式进行访问</span><br></code></pre></td></tr></table></figure>
+
+<p>对于这种形式的代码，应重点分析压入的第一个参数是否为对象的首地址。如果是，则通过分析可知，该函数等价于此对象中的成员函数。根据第一个参数的使用以及它所指向的地址，可还原该结构中的各数据成员。对于64位程序，应重点分析rcx是否为对象的首地址。如果是，则通过分析可知，该函数等价于该对象中的成员函数。根据rcx参数的使用以及它所指向的地址，可还原该结构中的各数据成员。</p>
+<h2 id="静态数据成员-1"><a href="#静态数据成员-1" class="headerlink" title="静态数据成员"></a>静态数据成员</h2><p><img src="https://s2.loli.net/2025/03/04/eVfQCAnM3SIT8am.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="静态数据成员的本质"><a href="#静态数据成员的本质" class="headerlink" title="静态数据成员的本质"></a><strong>静态数据成员的本质</strong></h3><p><strong>全局变量的特性</strong>：</p>
+<ul>
+<li>静态数据成员的本质是一个<strong>带有类作用域的全局变量</strong>。</li>
+<li>它的生命周期与程序的生命周期相同，从程序启动时分配内存，到程序结束时释放内存。</li>
+</ul>
+<p><strong>存储在全局数据区</strong>：</p>
+<ul>
+<li>静态数据成员的内存分配在程序的全局数据区（而非栈或堆），因此它在程序加载时就已经存在。<ul>
+<li>[逆向与风控, 逆向基础与进阶, 架构与汇编]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="静态数据成员与对象的关系"><a href="#静态数据成员与对象的关系" class="headerlink" title="静态数据成员与对象的关系"></a><strong>静态数据成员与对象的关系</strong></h3><p><strong>独立于对象</strong>：</p>
+<ul>
+<li>静态数据成员不属于任何一个类的实例对象，而是属于类本身。</li>
+<li>即使没有创建任何类的对象，静态数据成员也已经存在。</li>
+</ul>
+<p><strong>一对多的关系</strong>：</p>
+<ul>
+<li>多个类的实例对象共享同一个静态数据成员。</li>
+<li>修改静态数据成员的值会影响到所有对象。</li>
+</ul>
+<hr>
+<h3 id="静态数据成员的生命周期"><a href="#静态数据成员的生命周期" class="headerlink" title="静态数据成员的生命周期"></a><strong>静态数据成员的生命周期</strong></h3><p><strong>程序启动时初始化</strong>：</p>
+<ul>
+<li>静态数据成员的初值在编译链接时被写入执行文件。</li>
+<li>当程序被加载时，操作系统会将这些初值读到对应的内存单元中。</li>
+</ul>
+<p><strong>生命周期与程序相同</strong>：</p>
+<ul>
+<li>静态数据成员在程序启动时初始化，在程序结束时销毁。</li>
+<li>它的生命周期与类的实例对象无关。<ul>
+<li>[逆向与风控, 逆向基础与进阶, 架构与汇编]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="静态数据成员的访问"><a href="#静态数据成员的访问" class="headerlink" title="静态数据成员的访问"></a><strong>静态数据成员的访问</strong></h3><p><strong>通过类名访问</strong>：</p>
+<ul>
+<li>静态数据成员可以通过类名直接访问，无需创建对象。</li>
+<li>例如：<code>ClassName::staticMember</code>。</li>
+</ul>
+<p><strong>通过对象访问</strong>：</p>
+<ul>
+<li>也可以通过类的对象访问静态数据成员，但这只是语法上的便利，实际访问的仍然是类的静态成员。</li>
+</ul>
+<hr>
+<h3 id="静态数据成员的初始化"><a href="#静态数据成员的初始化" class="headerlink" title="静态数据成员的初始化"></a><strong>静态数据成员的初始化</strong></h3><ul>
+<li><p><strong>类外初始化</strong>：</p>
+<ul>
+<li>静态数据成员必须在类外进行初始化。</li>
+<li>例如：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClass</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-type">static</span> <span class="hljs-type">int</span> staticMember;  <span class="hljs-comment">// 声明静态数据成员</span><br>&#125;;<br><span class="hljs-type">int</span> MyClass::staticMember = <span class="hljs-number">0</span>;  <span class="hljs-comment">// 类外初始化</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p><strong>初始化时机</strong>：</p>
+<ul>
+<li>静态数据成员的初始化在程序启动时完成，早于任何对象的创建。</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>静态数据成员</th>
+<th>普通成员变量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>生命周期</strong></td>
+<td>与程序相同</td>
+<td>与对象相同</td>
+</tr>
+<tr>
+<td><strong>内存分配</strong></td>
+<td>全局数据区</td>
+<td>对象的内存空间</td>
+</tr>
+<tr>
+<td><strong>访问方式</strong></td>
+<td>通过类名或对象访问</td>
+<td>只能通过对象访问</td>
+</tr>
+<tr>
+<td><strong>共享性</strong></td>
+<td>所有对象共享</td>
+<td>每个对象独立拥有</td>
+</tr>
+<tr>
+<td><strong>初始化</strong></td>
+<td>类外初始化</td>
+<td>构造函数初始化</td>
+</tr>
+</tbody></table>
+<p>示例代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// C++ 源码</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">show</span><span class="hljs-params">()</span></span>;<br>	<span class="hljs-type">static</span> <span class="hljs-type">int</span> count;                               <span class="hljs-comment">//静态数据成员</span><br>	<span class="hljs-type">int</span> age;                                        <span class="hljs-comment">//普通数据成员</span><br>&#125;;<br><br><span class="hljs-type">int</span> Person::count = <span class="hljs-number">0</span>;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Person::show</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;age = %d , count = %d&quot;</span>, age, count);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>	Person person;<br>	person.age = <span class="hljs-number">1</span>;<br>	person.count = <span class="hljs-number">2</span>;<br>	person.<span class="hljs-built_in">show</span>();<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>汇编代码：</p>
+<p><img src="https://s2.loli.net/2025/03/04/G1raZMIJ5XKBkO8.png" srcset="/img/loading.gif" lazyload></p>
+<p>静态数据成员在反汇编代码中很难被识别，这是因为其展示形态与全局变量相同，很难被还原成对应的高级代码。可参考其代码的功能，酌情处理。</p>
+<p><img src="https://s2.loli.net/2025/03/04/VxGu1NgceCmMv2R.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="对象作为函数参数"><a href="#对象作为函数参数" class="headerlink" title="对象作为函数参数"></a>对象作为函数参数</h2><p><strong>对象作为函数的参数时，其传递过程较为复杂，传递方式也比较独特。对象的传参过程与数组不同，数组变量的名称代表数组的首地址，而对象的变量名称却不能代表对象的首地址。传参时不会像数组那样以首地址作为参数传递，而是先将对象中的所有数据进行备份（复制），将备份的数据作为形参传递到调用函数中使用。</strong></p>
+<h3 id="简单类"><a href="#简单类" class="headerlink" title="简单类"></a>简单类</h3><p>在基本的数据类型中，32位程序下，除双精度浮点和long long类型外，其他所有数据类型的大小都不超过4字节，64位程序类型不超过8字节，使用一个栈元素即可完成数据的复制和传递。<strong>而类对象是自定义数据类型，是除自身外的所有数据类型的集合，各个对象的长度不定。对象在传参的过程中是如何被复制和传递的呢？</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-type">int</span> age;<br>	<span class="hljs-type">int</span> height;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">show</span><span class="hljs-params">(Person person)</span> </span>&#123;                   <span class="hljs-comment">//参数为类Person的对象</span><br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;age = %d , height = %d\n&quot;</span>, person.age, person.height);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>	Person person;<br>	person.age = <span class="hljs-number">1</span>;<br>	person.height = <span class="hljs-number">2</span>;<br>	<span class="hljs-built_in">show</span>(person);<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>汇编：</p>
+<p><img src="https://s2.loli.net/2025/03/05/YBcfsrNmZlDHoUg.png" srcset="/img/loading.gif" lazyload></p>
+<p>类Person的体积不大，只有两个数据成员，编译器在调用函数传参的过程中分别将对象的两个成员依次压栈，也就是直接将两个数据成员当成两个int类型数据，并将它们当作printf函数的参数。64位程序中直接使用一个寄存器存储类的两个数据成员。同理，它们也是一份复制数据，除数据相同外，与对象中的两个数据成员没有关系。</p>
+<h3 id="复杂类"><a href="#复杂类" class="headerlink" title="复杂类"></a>复杂类</h3><p>类对象中数据成员的传参顺序为最先定义的数据成员最后压栈，最后定义的数据成员最先压栈。当类的体积过大，或者其中定义有数组类型的数据成员时，会将数组的首地址作为参数压栈吗？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Person</span>() : <span class="hljs-built_in">age</span>(<span class="hljs-number">0</span>), <span class="hljs-built_in">height</span>(<span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-built_in">memset</span>(name, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(name));<br>    &#125;<br>    <span class="hljs-type">int</span> age;<br>    <span class="hljs-type">int</span> height;<br>    <span class="hljs-type">char</span> name[<span class="hljs-number">32</span>];  <span class="hljs-comment">// 定义数组类型的数据成员</span><br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">show</span><span class="hljs-params">(Person person)</span> </span>&#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;age = %d , height = %d name:%s\n&quot;</span>, person.age, person.height, person.name);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>    Person person;<br>    person.age = <span class="hljs-number">1</span>;<br>    person.height = <span class="hljs-number">2</span>;<br>    <span class="hljs-built_in">strcpy_s</span>(person.name, <span class="hljs-built_in">sizeof</span>(person.name), <span class="hljs-string">&quot;tom&quot;</span>);  <span class="hljs-comment">// 使用安全的 strcpy_s</span><br>    <span class="hljs-built_in">show</span>(person);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<p><strong>内存布局</strong></p>
+<p><img src="https://s2.loli.net/2025/03/05/G9H64xRTwQrXy5B.png" srcset="/img/loading.gif" lazyload></p>
+<p>0x0093FC10为对象person的首地址，第一个4字节的数据为数据成员age。由此向后，第二个4字节的数据为数据成员height，以0x0093FC18为起始地址，后面的第一个32字节数据为数组成员name。对象person占用的内存大小为40字节，而代码却只为栈空间申请了32字节。以对象的首地址为起始点，使用指令“rep movs”复制了40字节的数据，比栈空间申请的大小多出了8字节。</p>
+<p>原因在于：调用的函数strcpy，该函数的调用方式为__cdecl，当函数调用结束后，并没有平衡参数使用的栈顶。函数strcpy有两个参数，正好使用了8字节的栈空间。在函数show的调用过程中，重新利用这8字节的栈空间，完成了对对象person中数据的复制。当函数show调用结束后，调用指令“add esp,28h”平衡了该函数参数使用的40字节栈空间。</p>
+<p><img src="https://s2.loli.net/2025/03/05/6dCNUoWA3aVcTxD.png" srcset="/img/loading.gif" lazyload></p>
+<p>在64位程序中，因为栈顶为栈预留空间，所以无法将对象的数据成员复制到栈顶，编译器将对象的数据成员先复制到临时对象，再将临时对象的地址传递给show函数，在show函数内部使用this指针间接访问对象的数据成员。</p>
+<p>对象作为参数在传递过程中会制作一份对象的复制数据，当向对象分配内存时，如果有构造函数，编译器会再调用一次构造函数，并做一些初始化工作。当代码执行到作用域结束时，局部对象将被销毁，而对象中可能会涉及资源释放的问题，同样，编译器也会再调用一次局部对象的析构函数，从而完成资源数据的释放。</p>
+<p>当对象作为函数的参数时，因为重新复制了对象，所以等同于又定义了一个对象，在某些情况下会调用特殊的构造函数——<strong>复制构造函数</strong></p>
+<h3 id="资源释放错误"><a href="#资源释放错误" class="headerlink" title="资源释放错误"></a>资源释放错误</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-built_in">Person</span>() &#123;<br>    name = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[<span class="hljs-number">32</span>];  <span class="hljs-comment">//申请堆空间，只要不释放，进程退出前将一直存在</span><br>    <span class="hljs-keyword">if</span> (name != <span class="hljs-literal">NULL</span>) &#123;   <span class="hljs-comment">//堆空间申请成功与否</span><br>       <span class="hljs-built_in">strcpy</span>(name, <span class="hljs-string">&quot;tom&quot;</span>);<br>    &#125;<br>  &#125;<br>  ~<span class="hljs-built_in">Person</span>() &#123;<br>    <span class="hljs-keyword">if</span> (name != <span class="hljs-literal">NULL</span>) &#123;  <span class="hljs-comment">//检查资源</span><br>      <span class="hljs-keyword">delete</span>[] name;     <span class="hljs-comment">//释放堆空间</span><br>      name = <span class="hljs-literal">NULL</span>;<br>    &#125;<br>  &#125;<br><br>  <span class="hljs-function"><span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title">getName</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> name;        <span class="hljs-comment">//获取数据成员</span><br>  &#125;<br><span class="hljs-keyword">private</span>:<br>  <span class="hljs-type">char</span> *name;          <span class="hljs-comment">//数据成员定义，保存堆的首地址</span><br>&#125;;<br><br><span class="hljs-comment">//参数为Person类对象的函数</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">show</span><span class="hljs-params">(Person obj)</span>  </span>&#123;<br>  <span class="hljs-built_in">printf</span>(obj.<span class="hljs-built_in">getName</span>());<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>  Person person;  <span class="hljs-comment">//类对象定义</span><br>  <span class="hljs-built_in">show</span>(person);<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当对象作为参数传递时，参数obj复制了对象person中的数据成员name，产生了两个Person类的对象。由于没有编写复制构造函数，因此在传递参数的时候就没有被调用，这时候编译器以浅拷贝处理，它们的数据成员name都指向了同一个堆地址</p>
+<p><img src="https://s2.loli.net/2025/03/05/LdRyxO9WMjCkqTi.png" srcset="/img/loading.gif" lazyload></p>
+<p>当函数退出时，复制的对象作为函数内的局部变量，将会被销毁。当存在析构函数时，则会调用析构函数</p>
+<p>两个对象中的数据成员name指向了相同地址，当函数show调用结束后，便会释放对象obj，以对象obj的首地址作为this指针调用析构函数。在析构函数中，调用delete函数释放对象obj的数据成员name保存的堆空间的首地址。但对象obj是person的复制品，真正的person仍存在，而数据成员name保存的堆空间的首地址却被释放了，如果出现以下代码便会产生错误。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++">Person person;<br><span class="hljs-comment">// 当该函数调用结束后，对象person中的数据成员name保存的堆空间已经</span><br><span class="hljs-comment">// 被释放，再次使用此对象中的数据成员name便无法得到堆空间的数据</span><br><span class="hljs-built_in">show</span>(person);<br><span class="hljs-built_in">show</span>(person);     ; 显示地址中为错误数据<br></code></pre></td></tr></table></figure>
+
+<p>因为使用delete函数后，堆空间被置为某个标记值；而在02选项中，并不会对释放堆中的数据进行检查。如果没有再次申请堆空间，此地址中的数据仍然存在，会导致错误被隐蔽，为程序埋下隐患。</p>
+<h3 id="两种解决方案"><a href="#两种解决方案" class="headerlink" title="两种解决方案"></a>两种解决方案</h3><p>有两种解决方案可以修正这个错误：深拷贝数据和设置引用计数，这两种解决方案都需要复制构造函数的配合。</p>
+<ol>
+<li>深拷贝数据:在复制对象时，编译器会调用一次该类的复制构造函数，给编码者一次机会。深拷贝利用这次机会原对象的数据成员保存的资源信息制作一份副本。这样，当销毁复制对象时，销毁的资源是复制对象在复制构造函数中制作的副本，而非原对象中保存的资源信息。</li>
+<li>设置引用计数:在进入复制构造函数时，记录类对象被复制引用的次数。当对象被销毁时，检查这个引用计数中保存的引用复制次数是否为0。如果是，则释放申请的资源，否则引用计数减1。当参数为对象的指针类型时，则不存在这种错误。传递的数据是指针类型，在函数内的操作都是针对原对象的，不存在对象被复制的问题。因为没有副本，所以在函数进入和退出时不会调用构造函数和析构函数，也就不存在资源释放的错误隐患。在使用类对象作为参数时，如无特殊需求，应尽量使用指针或引用。这样做不但可以避免资源释放的错误隐患，还可以在函数调用过程中避免复制对象的过程，提升程序运行的效率。</li>
+</ol>
+<h2 id="对象作为返回值"><a href="#对象作为返回值" class="headerlink" title="对象作为返回值"></a>对象作为返回值</h2><p>对象作为函数的返回值时，与基本的数据类型不同。基本数据类型（浮点类型、非标准类型除外）作为返回值时，32位程序不超过4字节的数据通过eax返回，在64位程序不超过8字节的数据使用rax返回。而对象属于自定义类型，寄存器eax&#x2F;rax无法保存对象中的所有数据，所以在函数返回时，寄存器eax&#x2F;rax不能满足需求。对象作为返回值与对象作为参数的处理方式非常相似。对象作为参数时，进入函数前预先保留对象使用的栈空间并将实参对象中的数据复制到栈空间中。该栈空间作为函数参数，用于函数内部使用。同理，对象作为返回值时，进入函数后将申请返回对象使用的栈空间，在退出函数时，将返回对象中的数据复制到临时的栈空间中，以这个临时栈空间的首地址作为返回值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-type">int</span> count;<br>  <span class="hljs-type">int</span> buffer[<span class="hljs-number">10</span>]; <span class="hljs-comment">//定义两个数据成员，该类的大小为44字节</span><br>&#125;;<br><br><span class="hljs-function">Person <span class="hljs-title">getPerson</span><span class="hljs-params">()</span>  </span>&#123;<br>  Person person;<br>  person.count = <span class="hljs-number">10</span>;<br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++)&#123;<br>    person.buffer[i] = i+<span class="hljs-number">1</span>;<br>  &#125;<br>  <span class="hljs-keyword">return</span> person;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>  Person person;<br>  person = <span class="hljs-built_in">getPerson</span>();<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d %d %d&quot;</span>, person.count, person.buffer[<span class="hljs-number">0</span>], person.buffer[<span class="hljs-number">9</span>]);<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><code class="hljs x86asm"><span class="hljs-number">00401060</span>  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">ebp</span><br><span class="hljs-number">00401061</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ebp</span>, <span class="hljs-built_in">esp</span><br><span class="hljs-number">00401063</span>  <span class="hljs-keyword">sub</span>     <span class="hljs-built_in">esp</span>, <span class="hljs-number">88h</span>           <span class="hljs-comment">;预留返回对象的栈空间</span><br><span class="hljs-number">00401069</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, ___security_cookie<br>0040106E  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">eax</span>, <span class="hljs-built_in">ebp</span><br><span class="hljs-number">00401070</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">4</span>], <span class="hljs-built_in">eax</span><br><span class="hljs-number">00401073</span>  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">esi</span><br><span class="hljs-number">00401074</span>  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">edi</span><br><span class="hljs-number">00401075</span>  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">eax</span>, [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">88h</span>]     <span class="hljs-comment">;获取返回对象的栈空间首地址</span><br>0040107B  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">eax</span>                <span class="hljs-comment">;将返回对象的首地址压入栈中，用于保存返回对象的数据</span><br>0040107C  <span class="hljs-keyword">call</span>    sub_401000         <span class="hljs-comment">;调用getPerson函数</span><br><span class="hljs-number">00401081</span>  <span class="hljs-keyword">add</span>     <span class="hljs-built_in">esp</span>, <span class="hljs-number">4</span>             <span class="hljs-comment">;函数调用结束后，eax中保存着地址ebp-88h，即返回对</span><br>                                     <span class="hljs-comment">;象的首地址</span><br><span class="hljs-number">00401084</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">0Bh</span>           <span class="hljs-comment">;设置循环次数</span><br><span class="hljs-number">00401089</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">esi</span>, <span class="hljs-built_in">eax</span>                <span class="hljs-comment">;将返回对象的首地址存入esi中</span><br>0040108B  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">edi</span>, [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">5Ch</span>]          <span class="hljs-comment">;获取临时对象的首地址</span><br>0040108E  <span class="hljs-keyword">rep</span> <span class="hljs-keyword">movsd</span>                       <span class="hljs-comment">;每次从返回对象中复制4字节数据到临时对象的</span><br>                                          <span class="hljs-comment">;地址中，共复制11次</span><br><span class="hljs-number">00401090</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">0Bh</span>                <span class="hljs-comment">;重新设置复制次数</span><br><span class="hljs-number">00401095</span>  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">esi</span>, [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">5Ch</span>]          <span class="hljs-comment">;获取临时对象的首地址</span><br><span class="hljs-number">00401098</span>  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">edi</span>, [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">30h</span>]          <span class="hljs-comment">;获取对象person的首地址</span><br>0040109B  <span class="hljs-keyword">rep</span> <span class="hljs-keyword">movsd</span>                       <span class="hljs-comment">;将数据复制到对象person中</span><br><span class="hljs-number">0040109D</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">4</span><br>004010A2  <span class="hljs-keyword">imul</span>    <span class="hljs-built_in">edx</span>, <span class="hljs-built_in">ecx</span>, <span class="hljs-number">9</span><br>004010A5  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, [<span class="hljs-built_in">ebp</span>+<span class="hljs-built_in">edx</span>-<span class="hljs-number">2Ch</span>]      <span class="hljs-comment">;eax=[ebp-30h+4+9*4]</span><br>004010A9  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">eax</span>                     <span class="hljs-comment">;参数4，person.buffer[9]</span><br>004010AA  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">4</span><br>004010AF  <span class="hljs-keyword">imul</span>    <span class="hljs-built_in">edx</span>, <span class="hljs-built_in">ecx</span>, <span class="hljs-number">0</span><br>004010B2  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, [<span class="hljs-built_in">ebp</span>+<span class="hljs-built_in">edx</span>-<span class="hljs-number">2Ch</span>]      <span class="hljs-comment">;eax=[ebp-30h+4+0*4]</span><br>004010B6  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">eax</span>                     <span class="hljs-comment">;参数3，person.buffer[0]</span><br>004010B7  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">30h</span>]<br>004010BA  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">ecx</span>                     <span class="hljs-comment">;参数2，person.count</span><br>004010BB  <span class="hljs-keyword">push</span>    offset aDDD             <span class="hljs-comment">;参数1，&quot;%d %d %d&quot;</span><br>004010C0  <span class="hljs-keyword">call</span>    sub_401120              <span class="hljs-comment">;调用printf函数</span><br>004010C5  <span class="hljs-keyword">add</span>     <span class="hljs-built_in">esp</span>, <span class="hljs-number">10h</span><br>004010C8  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">eax</span>, <span class="hljs-built_in">eax</span><br>004010CA  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">edi</span><br>004010CB  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">esi</span><br>004010CC  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, [<span class="hljs-built_in">ebp</span>-<span class="hljs-number">4</span>]<br>004010CF  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-built_in">ebp</span><br>004010D1  <span class="hljs-keyword">call</span>    @__security_check_cookie@<span class="hljs-number">4</span> <span class="hljs-comment">; __security_check_cookie(x)</span><br>004010D6  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">esp</span>, <span class="hljs-built_in">ebp</span><br>004010D8  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">ebp</span><br>004010D9  <span class="hljs-keyword">retn</span><br>//x64_vs对应汇编代码讲解<br><span class="hljs-number">0000000140001080</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">10h</span>], <span class="hljs-built_in">rdx</span><br><span class="hljs-number">0000000140001085</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">8</span>], <span class="hljs-built_in">ecx</span><br><span class="hljs-number">0000000140001089</span>  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">rsi</span><br>000000014000108A  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">rdi</span><br>000000014000108B  <span class="hljs-keyword">sub</span>     <span class="hljs-built_in">rsp</span>, <span class="hljs-number">0C8h</span>          <span class="hljs-comment">;预留返回对象的栈空间</span><br><span class="hljs-number">0000000140001092</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rax</span>, <span class="hljs-built_in">cs</span>:__security_cookie<br><span class="hljs-number">0000000140001099</span>  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">rax</span>, <span class="hljs-built_in">rsp</span><br>000000014000109C  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">0B0h</span>], <span class="hljs-built_in">rax</span><br>00000001400010A4  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rcx</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">20h</span>]     <span class="hljs-comment">;参数1，返回对象的首地址</span><br>00000001400010A9  <span class="hljs-keyword">call</span>    sub_140001000      <span class="hljs-comment">;调用getPerson函数</span><br>00000001400010AE  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rcx</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">80h</span>]<br>00000001400010B6  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rdi</span>, <span class="hljs-built_in">rcx</span>           <span class="hljs-comment">;获取临时对象的首地址</span><br>00000001400010B9  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rsi</span>, <span class="hljs-built_in">rax</span>           <span class="hljs-comment">;返回对象的首地址存入rsi中</span><br>00000001400010BC  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">2Ch</span>           <span class="hljs-comment">;循环次数</span><br>00000001400010C1  <span class="hljs-keyword">rep</span> <span class="hljs-keyword">movsb</span>                  <span class="hljs-comment">;复制数据到临时对象的地址中，共复制44字节</span><br>00000001400010C3  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rax</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">50h</span>]     <span class="hljs-comment">;获取对象person的首地址</span><br>00000001400010C8  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rcx</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">80h</span>]     <span class="hljs-comment">;获取临时对象的首地址</span><br>00000001400010D0  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rdi</span>, <span class="hljs-built_in">rax</span><br>00000001400010D3  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rsi</span>, <span class="hljs-built_in">rcx</span><br>00000001400010D6  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">2Ch</span>           <span class="hljs-comment">;重新设置复制次数</span><br>00000001400010<span class="hljs-built_in">DB</span>  <span class="hljs-keyword">rep</span> <span class="hljs-keyword">movsb</span>                  <span class="hljs-comment">;将数据复制到对象person中</span><br>00000001400010<span class="hljs-built_in">DD</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, <span class="hljs-number">4</span><br>00000001400010E2  <span class="hljs-keyword">imul</span>    <span class="hljs-built_in">rax</span>, <span class="hljs-number">9</span><br>00000001400010E6  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">4</span><br>00000001400010EB  <span class="hljs-keyword">imul</span>    <span class="hljs-built_in">rcx</span>, <span class="hljs-number">0</span><br>00000001400010EF  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">r9d</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-built_in">rax</span>+<span class="hljs-number">54h</span>] <span class="hljs-comment">;参数4，person.buffer[9]</span><br>00000001400010F4  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">r8d</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-built_in">rcx</span>+<span class="hljs-number">54h</span>] <span class="hljs-comment">;参数3，person.buffer[0]</span><br>00000001400010F9  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">edx</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">50h</span>]     <span class="hljs-comment">;参数2，person.count</span><br>00000001400010FD  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rcx</span>, aDDD          <span class="hljs-comment">;参数1，&quot;%d %d %d&quot;</span><br><span class="hljs-number">0000000140001104</span>  <span class="hljs-keyword">call</span>    sub_140001190      <span class="hljs-comment">;调用printf函数</span><br><span class="hljs-number">0000000140001109</span>  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">eax</span>, <span class="hljs-built_in">eax</span><br>000000014000110B  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rcx</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">0B0h</span>]<br><span class="hljs-number">0000000140001113</span>  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">rcx</span>, <span class="hljs-built_in">rsp</span>           <span class="hljs-comment">; StackCookie</span><br><span class="hljs-number">0000000140001116</span>  <span class="hljs-keyword">call</span>    __security_check_cookie<br>000000014000111B  <span class="hljs-keyword">add</span>     <span class="hljs-built_in">rsp</span>, <span class="hljs-number">0C8h</span><br><span class="hljs-number">0000000140001122</span>  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">rdi</span><br><span class="hljs-number">0000000140001123</span>  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">rsi</span><br><span class="hljs-number">0000000140001124</span>  <span class="hljs-keyword">retn</span><br><br><span class="hljs-number">0000000140001000</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">8</span>], <span class="hljs-built_in">rcx</span><br><span class="hljs-number">0000000140001005</span>  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">rsi</span><br><span class="hljs-number">0000000140001006</span>  <span class="hljs-keyword">push</span>    <span class="hljs-built_in">rdi</span><br><span class="hljs-number">0000000140001007</span>  <span class="hljs-keyword">sub</span>     <span class="hljs-built_in">rsp</span>, <span class="hljs-number">48h</span><br>000000014000100B  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rax</span>, <span class="hljs-built_in">cs</span>:__security_cookie<br><span class="hljs-number">0000000140001012</span>  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">rax</span>, <span class="hljs-built_in">rsp</span><br><span class="hljs-number">0000000140001015</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">38h</span>], <span class="hljs-built_in">rax</span><br>000000014000101A  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">dword</span> <span class="hljs-built_in">ptr</span> [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">8</span>], <span class="hljs-number">0Ah</span>  <span class="hljs-comment">;person.count = 10</span><br><span class="hljs-number">0000000140001022</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">dword</span> <span class="hljs-built_in">ptr</span> [<span class="hljs-built_in">rsp</span>], <span class="hljs-number">0</span>      <span class="hljs-comment">;i=0</span><br><span class="hljs-number">0000000140001029</span>  <span class="hljs-keyword">jmp</span>     short loc_140001033     <span class="hljs-comment">;for循环</span><br>000000014000102B  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, [<span class="hljs-built_in">rsp</span>]<br>000000014000102E  <span class="hljs-keyword">inc</span>     <span class="hljs-built_in">eax</span><br><span class="hljs-number">0000000140001030</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>], <span class="hljs-built_in">eax</span>              <span class="hljs-comment">;i++</span><br><span class="hljs-number">0000000140001033</span>  <span class="hljs-keyword">cmp</span>     <span class="hljs-built_in">dword</span> <span class="hljs-built_in">ptr</span> [<span class="hljs-built_in">rsp</span>], <span class="hljs-number">0Ah</span><br><span class="hljs-number">0000000140001037</span>  <span class="hljs-keyword">jge</span>     short loc_140001048     <span class="hljs-comment">;如果i&gt;=10，则结束循环</span><br><span class="hljs-number">0000000140001039</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">eax</span>, [<span class="hljs-built_in">rsp</span>]<br>000000014000103C  <span class="hljs-keyword">inc</span>     <span class="hljs-built_in">eax</span><br>000000014000103E  <span class="hljs-keyword">movsxd</span>  <span class="hljs-built_in">rcx</span>, <span class="hljs-built_in">dword</span> <span class="hljs-built_in">ptr</span> [<span class="hljs-built_in">rsp</span>]<br><span class="hljs-number">0000000140001042</span>  <span class="hljs-keyword">mov</span>     [<span class="hljs-built_in">rsp</span>+<span class="hljs-built_in">rcx</span>*<span class="hljs-number">4</span>+<span class="hljs-number">0Ch</span>], <span class="hljs-built_in">eax</span>    <span class="hljs-comment">;person.buffer[i] = i+1;</span><br><span class="hljs-number">0000000140001046</span>  <span class="hljs-keyword">jmp</span>     short loc_14000102B<br><span class="hljs-number">0000000140001048</span>  <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">rax</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">8</span>]<br><span class="hljs-number">000000014000104D</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rdi</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">60h</span>]  <span class="hljs-comment">;获取返回对象的首地址</span><br><span class="hljs-number">0000000140001052</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rsi</span>, <span class="hljs-built_in">rax</span>        <span class="hljs-comment">;获取局部对象的首地址，&amp;person</span><br><span class="hljs-number">0000000140001055</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">ecx</span>, <span class="hljs-number">2Ch</span>        <span class="hljs-comment">;设置循环次数为44次</span><br>000000014000105A  <span class="hljs-keyword">rep</span> <span class="hljs-keyword">movsb</span>               <span class="hljs-comment">;将局部对象person中的数据复制到返回对象中</span><br>000000014000105C  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rax</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">60h</span>]  <span class="hljs-comment">;获取返回对象的首地址并保存到rax中，作为返回值</span><br><span class="hljs-number">0000000140001061</span>  <span class="hljs-keyword">mov</span>     <span class="hljs-built_in">rcx</span>, [<span class="hljs-built_in">rsp</span>+<span class="hljs-number">38h</span>]<br><span class="hljs-number">0000000140001066</span>  <span class="hljs-keyword">xor</span>     <span class="hljs-built_in">rcx</span>, <span class="hljs-built_in">rsp</span>        <span class="hljs-comment">; StackCookie</span><br><span class="hljs-number">0000000140001069</span>  <span class="hljs-keyword">call</span>    __security_check_cookie<br>000000014000106E  <span class="hljs-keyword">add</span>     <span class="hljs-built_in">rsp</span>, <span class="hljs-number">48h</span><br><span class="hljs-number">0000000140001072</span>  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">rdi</span><br><span class="hljs-number">0000000140001073</span>  <span class="hljs-keyword">pop</span>     <span class="hljs-built_in">rsi</span><br><span class="hljs-number">0000000140001074</span>  <span class="hljs-keyword">retn</span><br></code></pre></td></tr></table></figure>
+
+<p>在调用getPerson前，编译器将在main()函数中申请的返回对象的首地址作为参数压栈，在函数getPerson调用结束后进行数据复制，将getPerson函数中定义的局部对象person的数据复制到这个返回对象的空间中，再将这个返回的对象复制给目标对象person，从而达到返回对象的目的。因为在这个示例中不存在函数返回后为对象的引用赋值，所以这里的返回对象是临时存在的，也就是C++中的临时对象，作用域仅限于单条语句。</p>
+<p>产生临时对象的原因在于C++函数返回对象时的<strong>生命周期</strong>和<strong>内存管理</strong>问题。</p>
+<p><strong>返回对象的操作</strong>：  </p>
+<ul>
+<li>当调用返回对象的函数时，可能会出现类似<code>getPerson().count</code>的写法，这类操作仅针对返回对象，而函数已经退出，其栈帧也随之关闭。  </li>
+<li>函数退出后，局部对象的内存空间被释放，直接操作局部对象是不安全的。</li>
+</ul>
+<p><strong>临时对象的作用</strong>：  </p>
+<ul>
+<li>为了解决这个问题，<strong>调用方</strong>需要准备空间，建立<strong>临时对象</strong>，将函数中的局部对象复制到临时对象中，再将临时对象交给调用方操作。  </li>
+<li>例如，<code>person = getPerson();</code>中，<code>getPerson()</code>函数返回时栈空间已关闭，<code>person</code>不能直接与函数内的局部对象进行赋值运算，因此需要临时对象记录返回值后再参与赋值。</li>
+</ul>
+<p><strong>临时对象的风险</strong>：  </p>
+<ul>
+<li>虽然临时对象解决了返回值的问题，但也引入了<strong>数据复制</strong>和<strong>资源管理</strong>的风险。  </li>
+<li>当临时对象被销毁时，会执行其析构函数。如果析构函数中涉及资源释放，可能会导致<strong>同一资源多次释放</strong>的错误。</li>
+</ul>
+<p>临时对象的产生是为了在函数退出后安全地操作返回值，但其引入的数据复制和析构行为可能带来资源管理风险。程序员需要特别注意临时对象的生命周期和析构行为，以避免潜在的错误。</p>
+<p>当对象作为函数的参数时，可以传递指针；当对象作为返回值时，如果对象在函数内部被定义为局部变量，则不可返回此对象的首地址或引用，以避免返回已经被释放的局部变量</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span>&#123;<br><span class="hljs-keyword">public</span>:<br>  <span class="hljs-type">int</span> mem1;<br>  <span class="hljs-type">int</span> mem2;<br>&#125;;<br><span class="hljs-comment">// 错误1：返回局部对象的首地址</span><br><span class="hljs-function">Test* <span class="hljs-title">getTest</span><span class="hljs-params">()</span></span>&#123;<br>  Test test;<br>  <span class="hljs-keyword">return</span> &amp;test;<br>&#125;<br><br><span class="hljs-comment">//错误2：返回局部对象的引用，等同于返回局部对象的首地址</span><br><span class="hljs-function">Test&amp; <span class="hljs-title">getTest</span><span class="hljs-params">()</span></span>&#123;<br>  Test test;<br>  <span class="hljs-keyword">return</span> test;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>由于函数退出后栈内对象的空间将被释放，因此无法保证返回值指向地址的数据的正确性。引用返回值后，如果运气好，会导致数据访问错误和程序当场出错。如果运气再好一点，程序就会直接崩溃，这样就能在调试的时候发现错误。如果运气实在很差，在开发时数据访问正常，程序也工作正常，这个问题可能会成为一个隐藏很深的错误。</p>
+<h1 id="构造函数和析构函数"><a href="#构造函数和析构函数" class="headerlink" title="构造函数和析构函数"></a>构造函数和析构函数</h1><h2 id="构造函数的出现时机"><a href="#构造函数的出现时机" class="headerlink" title="构造函数的出现时机"></a>构造函数的出现时机</h2><p>根据对象的作用域和存储类型，可以将对象分为以下几类</p>
+<table>
+<thead>
+<tr>
+<th align="left">对象类型</th>
+<th align="left">存储位置</th>
+<th align="left">构造函数调用时机</th>
+<th align="left">析构函数调用时机</th>
+<th align="left">内存管理特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>局部对象</strong></td>
+<td align="left">栈</td>
+<td align="left">执行到定义语句时</td>
+<td align="left">离开作用域时</td>
+<td align="left">自动管理</td>
+</tr>
+<tr>
+<td align="left"><strong>堆对象</strong></td>
+<td align="left">堆</td>
+<td align="left">new 操作时</td>
+<td align="left">delete 操作时</td>
+<td align="left">需手动管理</td>
+</tr>
+<tr>
+<td align="left"><strong>参数对象</strong></td>
+<td align="left">栈</td>
+<td align="left">函数调用时（拷贝构造）</td>
+<td align="left">函数返回时</td>
+<td align="left">可能产生拷贝开销</td>
+</tr>
+<tr>
+<td align="left"><strong>返回值对象</strong></td>
+<td align="left">栈&#x2F;寄存器</td>
+<td align="left">return 时（可能触发拷贝或移动）</td>
+<td align="left">临时对象立即析构&#x2F;随接收变量生命周期</td>
+<td align="left">可能被返回值优化(RVO)消除</td>
+</tr>
+<tr>
+<td align="left"><strong>全局对象</strong></td>
+<td align="left">数据段</td>
+<td align="left">main() 执行前</td>
+<td align="left">main() 执行后</td>
+<td align="left">整个程序生命周期</td>
+</tr>
+<tr>
+<td align="left"><strong>静态局部对象</strong></td>
+<td align="left">数据段</td>
+<td align="left">首次执行到定义处</td>
+<td align="left">main() 执行后</td>
+<td align="left">只初始化一次</td>
+</tr>
+<tr>
+<td align="left"><strong>静态成员变量</strong></td>
+<td align="left">数据段</td>
+<td align="left">首次使用时（C++17前需外部定义）</td>
+<td align="left">main() 执行后</td>
+<td align="left">类所有实例共享</td>
+</tr>
+<tr>
+<td align="left"><strong>线程局部对象</strong></td>
+<td align="left">TLS</td>
+<td align="left">线程首次使用时</td>
+<td align="left">线程结束时</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>局部对象</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;<br>    MyClass obj; <span class="hljs-comment">// 构造函数调用</span><br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数调用</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>堆对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MyClass* obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">MyClass</span>(); <span class="hljs-comment">// 构造函数调用</span><br><span class="hljs-keyword">delete</span> obj; <span class="hljs-comment">// 析构函数调用</span><br></code></pre></td></tr></table></figure>
+<p>参数对象</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">(MyClass obj)</span> </span>&#123; <span class="hljs-comment">// 拷贝构造函数调用</span><br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数调用</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>返回对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">MyClass <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;<br>    MyClass obj;<br>    <span class="hljs-keyword">return</span> obj; <span class="hljs-comment">// 拷贝构造函数调用</span><br>&#125; <span class="hljs-comment">// 析构函数调用（销毁局部对象）</span><br></code></pre></td></tr></table></figure>
+<p>全局对象</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MyClass globalObj; <span class="hljs-comment">// 构造函数在main函数前调用</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数在main函数后调用</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>静态对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">static</span> MyClass staticObj; <span class="hljs-comment">// 构造函数在第一次调用func时调用</span><br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数在程序结束时调用</span><br></code></pre></td></tr></table></figure>
+<h2 id="每个对象是否都有默认的构造函数"><a href="#每个对象是否都有默认的构造函数" class="headerlink" title="每个对象是否都有默认的构造函数"></a>每个对象是否都有默认的构造函数</h2><blockquote>
+<p>有些C++类图书在介绍构造函数时提到，当没有定义构造函数时，编译器会提供默认的构造函数，这个函数什么事情都不做，其内容类似于“{}”的形式。但是笔者经过研究发现，编译器不是在任何情况下都提供默认构造函数的。在许多情况下，编译器并没有提供默认的构造函数，而且02选项优化编译后，某些结构简单的类会被转换为连续定义的变量，哪里还会需要构造函数呢？</p>
+</blockquote>
+<p>在何种情况下编译器会提供默认的构造函数呢？有以下两种情况。</p>
+<p><strong>本类和本类中定义的成员对象或者父类中存在虚函数</strong></p>
+<p><em>因为需要初始化虚表，且这个工作理应在构造函数中隐式完成，所以在没有定义构造函数的情况下，编译器会添加默认的构造函数，用于隐式完成虚表的初始化工作.</em></p>
+<p><strong>父类或本类中定义的成员对象带有构造函数</strong></p>
+<p>在对象被定义时，因为对象本身为派生类，所以构造顺序是先构造父类再构造自身。当父类中带有构造函数时，将会调用父类构造函数，而这个调用过程需要在构造函数内完成，因此编译器添加了默认的构造函数来完成这个调用过程。</p>
+<p>成员对象带有构造函数的情况与此相同。在没有定义构造函数的情况下，当类中没有虚函数存在，父类和成员对象也没有定义构造函数时，提供默认的构造函数已没有任何意义，只会降低程序的执行效率，因此编译器没有对这种情况的类提供默认的构造函数。</p>
+<h2 id="析构函数的出现时机"><a href="#析构函数的出现时机" class="headerlink" title="析构函数的出现时机"></a>析构函数的出现时机</h2><table>
+<thead>
+<tr>
+<th align="left">对象类型</th>
+<th align="left">构造时机</th>
+<th align="left">析构时机</th>
+<th align="left">示例代码片段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>局部对象</strong></td>
+<td align="left">定义时</td>
+<td align="left">离开作用域时</td>
+<td align="left"><code>&#123; MyClass obj; &#125; // 析构调用</code></td>
+</tr>
+<tr>
+<td align="left"><strong>堆对象</strong></td>
+<td align="left">new 时</td>
+<td align="left">delete 时</td>
+<td align="left"><code>delete ptr; // 析构调用</code></td>
+</tr>
+<tr>
+<td align="left"><strong>参数对象</strong></td>
+<td align="left">传参时（拷贝构造）</td>
+<td align="left">函数返回时</td>
+<td align="left"><code>void f(MyClass obj)&#123;&#125;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>返回值对象</strong></td>
+<td align="left">return 时（可能优化）</td>
+<td align="left">临时对象立即析构&#x2F;接收者作用域结束</td>
+<td align="left"><code>MyClass f()&#123;return MyClass();&#125;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>全局对象</strong></td>
+<td align="left">main() 前</td>
+<td align="left">main() 后</td>
+<td align="left"><code>MyClass global;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>静态局部对象</strong></td>
+<td align="left">首次执行到定义处</td>
+<td align="left">main() 后</td>
+<td align="left"><code>static MyClass obj;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>静态成员变量</strong></td>
+<td align="left">首次使用时（C++17前需定义）</td>
+<td align="left">main() 后</td>
+<td align="left"><code>class C&#123;static MyClass m;&#125;;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>智能指针管理</strong></td>
+<td align="left">创建时</td>
+<td align="left">最后一个智能指针释放时</td>
+<td align="left"><code>shared_ptr&lt;MyClass&gt; p(new...);</code></td>
+</tr>
+</tbody></table>
+<p><strong>局部对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;<br>    MyClass obj; <span class="hljs-comment">// 构造函数调用</span><br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数调用（作用域结束）</span><br></code></pre></td></tr></table></figure>
+<p><strong>堆对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MyClass* obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">MyClass</span>(); <span class="hljs-comment">// 构造函数调用</span><br><span class="hljs-keyword">delete</span> obj; <span class="hljs-comment">// 析构函数调用</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>参数对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">(MyClass obj)</span> </span>&#123; <span class="hljs-comment">// 拷贝构造函数调用</span><br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数调用（函数结束）</span><br></code></pre></td></tr></table></figure>
+<p><strong>返回对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">MyClass <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;<br>    MyClass obj;<br>    <span class="hljs-keyword">return</span> obj; <span class="hljs-comment">// 拷贝构造函数调用</span><br>&#125; <span class="hljs-comment">// 析构函数调用（销毁局部对象）</span><br><br>MyClass ret = <span class="hljs-built_in">func</span>(); <span class="hljs-comment">// 返回对象被赋值，生命周期与ret一致</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>全局对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MyClass globalObj; <span class="hljs-comment">// 构造函数调用（程序启动时）</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数调用（程序结束时）</span><br></code></pre></td></tr></table></figure>
+<p><strong>静态对象</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">static</span> MyClass staticObj; <span class="hljs-comment">// 构造函数调用（第一次调用func时）</span><br>    <span class="hljs-comment">// ...</span><br>&#125; <span class="hljs-comment">// 析构函数调用（程序结束时）</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h1><h2 id="虚函数的机制"><a href="#虚函数的机制" class="headerlink" title="虚函数的机制"></a>虚函数的机制</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/268324735">c++ vtable 深入解析 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/malecrab/p/5573368.html">C&#x2F;C++杂记：深入虚表结构 - malecrab - 博客园</a></p>
+</blockquote>
+<p>在C++中，使用关键字virtual声明函数为虚函数。<strong>当类中定义有虚函数时，编译器会将该类中所有虚函数的首地址保存在一张地址表中，这张表被称为虚函数地址表，简称虚表。</strong>同时，编译器还会在类中添加一个隐藏数据成员，称为<strong>虚表指针</strong>。该指针保存着虚表的首地址，用于记录和查找虚函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">//C++源码</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">getAge</span><span class="hljs-params">()</span> </span>&#123;  <span class="hljs-comment">//虚函数定义</span><br>        <span class="hljs-keyword">return</span> age;<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setAge</span><span class="hljs-params">(<span class="hljs-type">int</span> age)</span> </span>&#123;  <span class="hljs-comment">//虚函数定义</span><br>        <span class="hljs-keyword">this</span>-&gt;age = age;<br>    &#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> age;<br>&#125;;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>    Person person;<br>    <span class="hljs-type">int</span> size = <span class="hljs-built_in">sizeof</span>(Person);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>类定义了两个虚函数和一个数据成员。如果这个类没有定义虚函数，则其长度为4，定义了虚函数后，因为还含有隐藏数据成员（虚表指针），所以32位程序大小为8，64程序大小为16</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/03/04/1iswSOrqWvpfnQY.png" srcset="/img/loading.gif" lazyload></p>
+<p>类Person确实多出了一个指针大小数据，这个数据用于保存虚表指针。在虚表指针指向的函数指针数组中，保存着虚函数getAge和setAge的首地址。对于开发者而言，虚表和虚表指针都是隐藏的，在常规的开发过程中感觉不到它们的存在。对象中的虚表指针和虚表的关系如图:</p>
+<p><img src="https://s2.loli.net/2025/03/04/4gPNpsTfVvXAomR.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>有了虚表指针，就可以通过该指针得到类中所有虚函数的首地址。</strong></p>
+<p><img src="https://s2.loli.net/2025/03/05/pXNiel78cJKZfVH.png" srcset="/img/loading.gif" lazyload></p>
+<p>编译器为类Person提供了默认的构造函数。该默认构造函数先取得虚表的首地址，然后赋值到虚表指针中.</p>
+<p><img src="https://s2.loli.net/2025/03/05/UG8qZc5np46J1jb.png" srcset="/img/loading.gif" lazyload></p>
+<p>虚表中的两个地址信息，分别为成员函数getAge和setAge的地址。因此，<strong>得到虚表指针就相当于得到了类中所有虚函数的首地址</strong>。</p>
+<p><strong>对象的虚表指针初始化是通过编译器在构造函数内插入代码完成的</strong>。在用户没有编写构造函数时，因为必须初始化虚表指针，所以编译器会提供默认的构造函数，以完成虚表指针的初始化。</p>
+<p>因为虚表信息在编译后会被链接到对应的执行文件中，所以获得的虚表地址是一个相对固定的地址。虚表中虚函数的地址排列顺序因虚函数在类中的声明顺序而定，<strong>先声明的虚函数的地址会被排列在虚表靠前的位置。第一个被声明的虚函数的地址在虚表的首地址处。</strong></p>
+<p>前面展示了默认构造函数初始化虚表指针的过程。对于含有构造函数的类而言，<strong>其虚表初始化过程和默认构造函数相同，都是在对象首地址处保存虚表的首地址。在虚表指针的初始化过程中，对象执行了构造函数后，就得到了虚表指针，</strong></p>
+<ul>
+<li><strong>当其他代码访问这个对象的虚函数时，会根据对象的首地址，取出对应的虚表元素。</strong></li>
+<li><strong>当函数被调用时，会间接访问虚表，得到对应的虚函数首地址并调用执行。这种调用方式是一个间接的调用过程，需要多次寻址才能完成。</strong></li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// C++ 源码说明：类CVirtual的定义见代码清单11-1</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">int</span> <span class="hljs-title">getAge</span><span class="hljs-params">()</span> </span>&#123;  <span class="hljs-comment">//虚函数定义</span><br>        <span class="hljs-keyword">return</span> age;<br>    &#125;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">setAge</span><span class="hljs-params">(<span class="hljs-type">int</span> age)</span> </span>&#123;  <span class="hljs-comment">//虚函数定义</span><br>        <span class="hljs-keyword">this</span>-&gt;age = age;<br>    &#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> age;<br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>* argv[])</span> </span>&#123;<br>	Person person;<br>	person.<span class="hljs-built_in">setAge</span>(<span class="hljs-number">20</span>);<br>	<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d\n&quot;</span>, person.<span class="hljs-built_in">getAge</span>());<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>通过虚表间接寻址访问的情况只有在使用对象的指针或引用调用虚函数的时候才会出现。当直接使用对象调用自身虚函数时，没有必要查表访问。这是因为已经明确调用的是自身成员函数，根本没有构成多态性，查询虚表只会画蛇添足，降低程序的执行效率，所以将这种情况处理为直接调用方式。</p>
+<p><img src="https://s2.loli.net/2025/03/05/YQaO3y8lZmSPDo6.png" srcset="/img/loading.gif" lazyload></p>
+<p>直接通过对象调用自身的成员虚函数，因此编译器使用了直接调用函数的方式，没有访问虚表指针，间接获取虚函数地址。</p>
+<p><strong>对象的多态性常常体现在派生和继承关系中：</strong></p>
+<p>我们会发现编译器隐藏了初始化虚表指针的实现代码，当类中出现虚函数时，必须在构造函数中对虚表指针执行初始化操作，而没有虚函数类对象构造时，不会进行初始化虚表指针的操作。由此可见，在分析构造函数时，又增加了一个新特征——<strong>虚表指针初始化。</strong></p>
+<p>对于单线继承的类结构，在某个成员函数中，<strong>将this指针的地址初始化为虚表首地址时，可以判定这个成员函数为构造函数。</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">//添加</span><br> ~<span class="hljs-built_in">Person</span>() &#123;  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;~Person()\n&quot;</span>); &#125; <br></code></pre></td></tr></table></figure>
+
+<img src="https://s2.loli.net/2025/03/05/q2U5wL7dWFP6SJY.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<p>构造函数与析构函数的分析流程可知，二者对虚表的操作几乎相同，都是将虚表指针设置为当前对象所属类中的虚表首地址。然而二者看似相同，事实上差别很大。</p>
+<p>构造函数中完成的是初始化虚表指针的工作，此时虚表指针并没有指向虚表地址，而执行析构函数时，对象的虚表指针已经指向了某个虚表首地址。</p>
+<blockquote>
+<p>大家是否觉得在析构函数中填写虚表是没必要的呢？这里实际上是在还原虚表指针，让其指向自身的虚表首地址，防止在析构函数中调用虚函数时取到非自身虚表，从而导致函数调用错误。</p>
+</blockquote>
+<p>判定析构函数的依据和虚表指针相关，<strong>识别析构函数的充分条件是写入虚表指针</strong>，但是请注意，它与前面讨论的虚表指针初始化不同。所谓虚表指针初始化，是指对象原来的虚表指针位置不是有效的，经过初始化才指向了正确的虚函数表。而写入虚表指针，是指对象的虚表指针可能是有效的，已经指向了正确的虚函数表，将对象的虚表指针重新赋值后，其指针可能指向了另一个虚表，虚表的内容不一定和原来的一样。</p>
+<blockquote>
+<p>结合IDA中的引用参考可知，只要确定一个构造函数或者析构函数，我们就能顺藤摸瓜找到其他构造函数以及类之间的关系。</p>
+</blockquote>
+<h2 id="虚函数的识别"><a href="#虚函数的识别" class="headerlink" title="虚函数的识别"></a>虚函数的识别</h2><h2 id="在C-中，识别虚函数、构造函数和析构函数的关键在于理解虚表（vtable）和虚表指针（vptr）的实现机制。"><a href="#在C-中，识别虚函数、构造函数和析构函数的关键在于理解虚表（vtable）和虚表指针（vptr）的实现机制。" class="headerlink" title="在C++中，识别虚函数、构造函数和析构函数的关键在于理解虚表（vtable）和虚表指针（vptr）的实现机制。"></a>在C++中，识别<strong>虚函数</strong>、<strong>构造函数</strong>和<strong>析构函数</strong>的关键在于理解<strong>虚表（vtable）</strong>和<strong>虚表指针（vptr）</strong>的实现机制。</h2><h3 id="识别虚函数的关键特征"><a href="#识别虚函数的关键特征" class="headerlink" title="识别虚函数的关键特征"></a><strong>识别虚函数的关键特征</strong></h3><ul>
+<li><strong>隐式数据成员</strong>：  类中隐式定义了一个位于首地址的指针大小的数据成员（虚表指针）。</li>
+<li><strong>虚表指针初始化</strong>：  构造函数将虚表指针初始化为某个数组的首地址（虚表）。</li>
+<li><strong>虚表内容</strong>：  虚表是一个函数指针数组，每个元素指向一个虚函数。</li>
+<li><strong>this指针</strong>：  虚函数被调用时，第一个参数必然是<code>this</code>指针，且函数内部可能对<code>this</code>指针进行间接访问。</li>
+</ul>
+<hr>
+<h3 id="识别构造函数和析构函数"><a href="#识别构造函数和析构函数" class="headerlink" title="识别构造函数和析构函数"></a><strong>识别构造函数和析构函数</strong></h3><ul>
+<li><strong>构造函数</strong>：  在对象构造时调用，负责初始化虚表指针。虚表指针在构造函数执行前未指向虚表首地址。通过分析<code>this</code>指针指向的内存数据，跟踪赋值操作，判断是否为虚表首地址。</li>
+<li><strong>析构函数</strong>：  在对象销毁时调用，负责还原虚表指针。虚表指针在析构函数执行前已指向虚表首地址。通过分析虚表指针的修改操作，判断是否为析构函数。</li>
+</ul>
+<h3 id="利用虚表和IDA交叉参考"><a href="#利用虚表和IDA交叉参考" class="headerlink" title="利用虚表和IDA交叉参考"></a>利用虚表和IDA交叉参考</h3><ul>
+<li><strong>虚表首地址</strong>：  识别虚表首地址是找到虚函数、构造函数和析构函数的关键。</li>
+<li><strong>IDA交叉参考</strong>：  使用IDA的交叉参考功能，找到所有引用虚表首地址的函数地址。只有构造函数和析构函数会修改虚表指针，因此可以准确定位它们。</li>
+<li><strong>构造函数与析构函数的区分</strong>：  <ul>
+<li>构造函数出现在析构函数之前，且虚表指针在构造函数执行前未初始化。</li>
+<li>析构函数出现在所有成员函数之后，且虚表指针在析构函数执行前已初始化。</li>
+</ul>
+</li>
+</ul>
+<h3 id="全局对象的构造函数和析构函数"><a href="#全局对象的构造函数和析构函数" class="headerlink" title="全局对象的构造函数和析构函数"></a><strong>全局对象的构造函数和析构函数</strong></h3><p>全局对象的构造函数在<code>main</code>函数执行前调用，析构函数在<code>main</code>函数执行后调用。通过虚表和IDA交叉参考，可以快速识别全局对象对应的类的构造函数和析构函数。</p>
+<h2 id="虚函数多态使用"><a href="#虚函数多态使用" class="headerlink" title="虚函数多态使用"></a>虚函数多态使用</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span> </span>&#123; cout &lt;&lt; <span class="hljs-string">&quot;Base::foo&quot;</span> &lt;&lt; endl; &#125;<br>    <span class="hljs-type">int</span> a = <span class="hljs-number">1</span>;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span> : <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123; cout &lt;&lt; <span class="hljs-string">&quot;Derived::foo&quot;</span> &lt;&lt; endl; &#125;<br>    <span class="hljs-type">int</span> b = <span class="hljs-number">2</span>;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    Derived d;<br>    Base* ptr = &amp;d;  <span class="hljs-comment">// 向上转型</span><br>    <br>    <span class="hljs-comment">// 验证内存布局</span><br>    cout &lt;&lt; <span class="hljs-string">&quot;Base*地址: &quot;</span> &lt;&lt; ptr &lt;&lt; endl;<br>    cout &lt;&lt; <span class="hljs-string">&quot;Derived*地址: &quot;</span> &lt;&lt; &amp;d &lt;&lt; endl;  <span class="hljs-comment">// 两者地址相同</span><br>    <br>    <span class="hljs-comment">// 验证虚函数调用</span><br>    ptr-&gt;<span class="hljs-built_in">foo</span>();  <span class="hljs-comment">// 输出&quot;Derived::foo&quot;</span><br>    <br>    <span class="hljs-comment">// 验证成员访问</span><br>    cout &lt;&lt; ptr-&gt;a &lt;&lt; endl;  <span class="hljs-comment">// 正确访问基类成员</span><br>    <span class="hljs-comment">// cout &lt;&lt; ptr-&gt;b &lt;&lt; endl;  // 错误：Base*无法访问派生类成员</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>派生类对象包含完整的基类部分</strong><br><code>Derived</code> 对象的内存布局中，<strong>最前面</strong>就是 <code>Base</code> 的子对象（基类部分），之后才是派生类新增的成员。  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123; <span class="hljs-type">int</span> a; &#125;;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span> : <span class="hljs-keyword">public</span> Base &#123; <span class="hljs-type">int</span> b; &#125;;<br></code></pre></td></tr></table></figure>
+<p>内存布局：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-selector-attr">[Base部分]</span><span class="hljs-selector-attr">[Derived部分]</span><br><span class="hljs-selector-attr">[a]</span><span class="hljs-selector-attr">[b]</span>  // Base*指针实际指向<span class="hljs-selector-tag">a</span>的地址<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/05/24/4MhTGK6fBW1CdFc.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>指针类型转换是安全的</strong><br><code>Base*</code> 指针只需访问对象的前半部分（基类部分），编译器能正确计算成员偏移量。</p>
+<hr>
+<p><strong>虚函数表动态绑定（多态关键）</strong></p>
+<p><strong>虚函数表指针（vptr）的位置</strong><br>如果 <code>Base</code> 有虚函数，<code>Derived</code> 对象的最开头是 <strong>vptr</strong>（指向 <code>Derived</code> 的虚函数表），然后是基类成员：  </p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-selector-attr">[vptr]</span><span class="hljs-selector-attr">[Base成员]</span><span class="hljs-selector-attr">[Derived成员]</span><br></code></pre></td></tr></table></figure>
+<p>即使通过 <code>Base*</code> 访问，vptr 仍然指向 <code>Derived</code> 的虚表，保证调用的是派生类重写的虚函数。</p>
+<p><img src="https://s2.loli.net/2025/05/24/IUsAh7BqFMnCuYO.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>动态绑定的底层实现</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">ptr-&gt;<span class="hljs-built_in">virtual_func</span>();  <span class="hljs-comment">// 实际调用步骤：</span><br></code></pre></td></tr></table></figure>
+<ol>
+<li>通过 <code>ptr</code> 找到对象的 vptr  </li>
+<li>通过 vptr 找到 <code>Derived</code> 的虚函数表  </li>
+<li>从虚表中取出 <code>virtual_func</code> 的实际地址（<code>Derived::virtual_func</code>）  </li>
+<li>执行函数调用</li>
+</ol>
+<hr>
+<blockquote>
+<p><strong>类型系统与隐式向上转换</strong></p>
+<p><strong>C++的类型规则允许向上转型（Upcasting）</strong><br><code>Derived*</code> 可以隐式转换为 <code>Base*</code>，因为：</p>
+<ul>
+<li>语法上：<code>Derived</code> “是一个” <code>Base</code>（符合is-a关系）  </li>
+<li>内存上：<code>Base</code> 子对象总是位于派生类对象的起始位置</li>
+</ul>
+<p><strong>反之则不行（需显式向下转型）</strong>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Derived* d = <span class="hljs-built_in">static_cast</span>&lt;Derived*&gt;(base_ptr);  <span class="hljs-comment">// 需要显式转换</span><br></code></pre></td></tr></table></figure>
+<p>因为编译器无法确保 <code>Base*</code> 实际指向的是 <code>Derived</code> 对象。</p>
+</blockquote>
+<p><strong>对象构造时</strong>：<br><code>new Derived()</code> 的执行顺序：  </p>
+<ol>
+<li>分配内存  </li>
+<li>调用 <code>Base</code> 构造函数（初始化基类部分）  </li>
+<li>调用 <code>Derived</code> 构造函数（初始化派生类部分）  </li>
+<li>返回的指针天然就是 <code>Base*</code> 兼容的</li>
+</ol>
+<p><strong>对象析构时</strong>：  如果 <code>Base</code> 有虚析构函数：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">delete</span> ptr;  <span class="hljs-comment">// 正确调用Derived::~Derived() → Base::~Base()</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/05/24/SwC6tjn7zqTPD14.png" srcset="/img/loading.gif" lazyload></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/" class="category-chain-item">工科知识骨架</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/" class="category-chain-item">编译器</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B1%87%E7%BC%96/" class="category-chain-item">汇编</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E9%80%86%E5%90%91-android/" class="print-no-link">#逆向(android)</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++反汇编与逆向基础</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识骨架/计算机科学与技术/编译器/汇编/C++反汇编与逆向基础/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B1%87%E7%BC%96/%E3%80%8AC++%E5%8F%8D%E6%B1%87%E7%BC%96%E4%B8%8E%E9%80%86%E5%90%91%E5%88%86%E6%9E%90%E3%80%8B%E9%98%85%E8%AF%BB%E4%BA%8C/" title="《C++反汇编与逆向分析》阅读二">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">《C++反汇编与逆向分析》阅读二</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B1%87%E7%BC%96/%E3%80%8AC++%E5%8F%8D%E6%B1%87%E7%BC%96%E4%B8%8E%E9%80%86%E5%90%91%E5%88%86%E6%9E%90%E3%80%8B%E9%98%85%E8%AF%BB%E4%B8%80/" title="《C++反汇编与逆向分析》阅读一">
+                        <span class="hidden-mobile">《C++反汇编与逆向分析》阅读一</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

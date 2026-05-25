@@ -1,0 +1,810 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="非转载抄袭，早年知乎文章搬运于此  socket网络编程（服务器-客户端）步骤：  关于socket套接字请参考：计算机菜鸟一枚：计算机网络知识点总结（一）应用层 主要函数必须要有的头文件和库 12#include&lt;WinSock2.h&gt;#pragma comment(lib,&quot;ws2_32.lib&quot;)  1.socket函数函数原型： 123456SOCKET">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP-UDP套接字编程">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/TCP-UDP%E5%A5%97%E6%8E%A5%E5%AD%97%E7%BC%96%E7%A8%8B/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="非转载抄袭，早年知乎文章搬运于此  socket网络编程（服务器-客户端）步骤：  关于socket套接字请参考：计算机菜鸟一枚：计算机网络知识点总结（一）应用层 主要函数必须要有的头文件和库 12#include&lt;WinSock2.h&gt;#pragma comment(lib,&quot;ws2_32.lib&quot;)  1.socket函数函数原型： 123456SOCKET">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picx.zhimg.com/v2-4b82afb967276c528c052b4be434061d_720w.jpg?source=d16d100b">
+<meta property="og:image" content="https://picx.zhimg.com/v2-d8ece2f84fdb67371d7d30fc4b7810da_720w.jpg?source=d16d100b">
+<meta property="article:published_time" content="2025-05-09T07:31:42.388Z">
+<meta property="article:modified_time" content="2026-05-25T12:57:56.040Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picx.zhimg.com/v2-4b82afb967276c528c052b4be434061d_720w.jpg?source=d16d100b">
+  
+  
+  
+  <title>TCP-UDP套接字编程 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="TCP-UDP套接字编程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          36 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">TCP-UDP套接字编程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>非转载抄袭，早年知乎文章搬运于此</p>
+</blockquote>
+<h2 id="socket网络编程（服务器-客户端）步骤："><a href="#socket网络编程（服务器-客户端）步骤：" class="headerlink" title="socket网络编程（服务器-客户端）步骤："></a>socket网络编程（服务器-客户端）步骤：</h2><p><img src="https://picx.zhimg.com/v2-4b82afb967276c528c052b4be434061d_720w.jpg?source=d16d100b" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://picx.zhimg.com/v2-d8ece2f84fdb67371d7d30fc4b7810da_720w.jpg?source=d16d100b" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>关于socket套接字请参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/646873436">计算机菜鸟一枚：计算机网络知识点总结（一）应用层</a></p>
+<h2 id="主要函数"><a href="#主要函数" class="headerlink" title="主要函数"></a>主要函数</h2><p>必须要有的头文件和库</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;WinSock2.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib,<span class="hljs-string">&quot;ws2_32.lib&quot;</span>)</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="1-socket函数"><a href="#1-socket函数" class="headerlink" title="1.socket函数"></a>1.socket函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">SOCKET <span class="hljs-title">socket</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> af,	<span class="hljs-comment">//地址类型，常用IPv4地址：AF_INET，和IPv6地址：AF_INET6</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> type, <span class="hljs-comment">//套接字类型，常用TCP协议：SOCK_STREAM,UDP协议：SOCK_DGRAM</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> protocol <span class="hljs-comment">//协议类型，一般填0，自动选择即可</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><span class="hljs-comment">//返回值，INVALID_SOCKET失败，该宏实则定义为-1，否则成功</span><br></code></pre></td></tr></table></figure>
+
+<p>函数使用：</p>
+<p>本教程使用 IPv4 地址，参数 af 的值为 PF_INET。如果使用 SOCK_STREAM 传输数据，那么满足这两个条件的协议只有 TCP，因此可以这样来调用 socket() 函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">int</span> tcp_socket = <span class="hljs-built_in">socket</span>(AF_INET, SOCK_STREAM, IPPROTO_TCP);  <span class="hljs-comment">//IPPROTO_TCP表示TCP协议</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-bind函数"><a href="#2-bind函数" class="headerlink" title="2.bind函数"></a>2.bind函数</h3><p>函数原型</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">bind</span><span class="hljs-params">( </span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s, <span class="hljs-comment">//创建的socket</span></span></span><br><span class="hljs-params"><span class="hljs-function">sockaddr * name, <span class="hljs-comment">//包含地址和端口的结构体</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> namelen <span class="hljs-comment">//sockaddr 结构长度</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>函数使用</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _WINSOCK_DEPRECATED_NO_WARNINGS <span class="hljs-comment">//vs环境下必须定义，否则无法使用inet_addr函数</span></span><br>sockaddr_in addr;<br>addr.sin_family = AF_INET; <span class="hljs-comment">//地址为IPv4协议</span><br>addr.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">9999</span>); <span class="hljs-comment">//端口为9999</span><br>addr.sin_addr.S_un.S_addr = <span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>); <span class="hljs-comment">//具体绑定本机的地址</span><br>ret=<span class="hljs-built_in">bind</span>(sock,(sockaddr*)&amp;addr, <span class="hljs-built_in">sizeof</span>(addr)); <span class="hljs-comment">//绑定</span><br><span class="hljs-keyword">if</span> (ret == <span class="hljs-number">-1</span>) &#123;<br>	cout &lt;&lt; <span class="hljs-string">&quot;绑定地址端口失败&quot;</span>;<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里我们使用 sockaddr_in 结构体，然后再强制转换为 sockaddr 类型，后边会讲解为什么这样做。</p>
+<p>补充：</p>
+<p>sockaddr_in 结构体：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span>&#123;<br>    <span class="hljs-type">sa_family_t</span>     sin_family;   <span class="hljs-comment">//地址族（Address Family），也就是地址类型</span><br>    <span class="hljs-type">uint16_t</span>        sin_port;     <span class="hljs-comment">//16位的端口号</span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">in_addr</span>  sin_addr;     <span class="hljs-comment">//32位IP地址</span><br>    <span class="hljs-type">char</span>            sin_zero[<span class="hljs-number">8</span>];  <span class="hljs-comment">//不使用，一般用0填充</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>sin_family 和 socket() 的第一个参数的含义相同，取值也要保持一致。</p>
+<p>sin_prot 为端口号。uint16_t 的长度为两个字节，理论上端口号的取值范围为 0<del>65536，但 0</del>1023 的端口一般由系统分配给特定的服务程序，例如 Web 服务的端口号为 80，FTP 服务的端口号为 21，所以我们的程序要尽量在 1024~65536 之间分配端口号。</p>
+<p>in_addr 结构体：</p>
+<p>sockaddr_in 的第3个成员是 in_addr 类型的结构体，该结构体只包含一个成员，如下所示：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">in_addr</span>&#123;<br>    <span class="hljs-type">in_addr_t</span>  s_addr;  <span class="hljs-comment">//32位的IP地址</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>in_addr_t 在头文件 &lt;netinet&#x2F;in.h&gt; 中定义，等价于 unsigned long，长度为4个字节。也就是说，s_addr 是一个整数，而IP地址是一个字符串，所以需要 inet_addr() 函数进行转换</p>
+<p>此处详细请参考：<a href="http://link.zhihu.com/?target=https://blog.csdn.net/qq_41854911/article/details/121448143%23t7">【C&#x2F;C++服务器开发】socket网络编程函数接口详解_socket接口_小熊coder的博客-CSDN博客</a></p>
+<h3 id="3-listen函数"><a href="#3-listen函数" class="headerlink" title="3.listen函数"></a>3.listen函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">listen</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s, <span class="hljs-comment">//要监听的socket</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> backlog <span class="hljs-comment">//等待连接的最大队列长度</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><span class="hljs-comment">//返回值：返回SOCKET_ERROR失败，该宏被定义为-1，否则成功，返回值为0</span><br></code></pre></td></tr></table></figure>
+
+<p>函数使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">listen</span><span class="hljs-params">(<span class="hljs-type">int</span> sock, <span class="hljs-type">int</span> backlog)</span></span>;  <span class="hljs-comment">//Linux</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="4-accept函数"><a href="#4-accept函数" class="headerlink" title="4.accept函数"></a>4.accept函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">SOCKET <span class="hljs-title">accept</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s, <span class="hljs-comment">//接收的socket</span></span></span><br><span class="hljs-params"><span class="hljs-function">sockaddr* addr, <span class="hljs-comment">//接收到客户端的地址信息</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> * addrlen <span class="hljs-comment">//地址信息长度</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><span class="hljs-comment">//返回值：返回INVALID_SOCKET失败，该宏定义为-1，否则成功返回客户端的套接字，可进行发送和接收消息</span><br></code></pre></td></tr></table></figure>
+
+<p>函数使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++">sockaddr addrCli;<br><span class="hljs-type">int</span> len = <span class="hljs-built_in">sizeof</span>(addrCli);<br>SOCKET sockCli=<span class="hljs-built_in">accept</span>(sock,&amp;addrCli,&amp;len);<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：<br>1，accept() 返回一个新的套接字来和客户端通信，addr 保存了客户端的IP地址和端口号，而 sock 是服务器端的套接字，大家注意区分。后面和客户端通信时，要使用这个新生成的套接字，而不是原来服务器端的套接字。<br>2，listen() 只是让套接字进入监听状态，并没有真正接收客户端请求，listen() 后面的代码会继续执行，直到遇到 accept()。accept() 会阻塞程序执行（后面代码不能被执行），直到有新的请求到来。</p>
+</blockquote>
+<h3 id="5-send函数"><a href="#5-send函数" class="headerlink" title="5.send函数"></a>5.send函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">send</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s,</span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">char</span> * buf,<span class="hljs-comment">//要发送的内容</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> len, <span class="hljs-comment">//内容长度</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> flags <span class="hljs-comment">//一般为0，拷贝到程序中就立即删除内核中的数据,或MSG_DONTROUTE:要求传输层不要将数据路由出去，MSG_OOB：标志数据应该被带外发送</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><span class="hljs-comment">//返回值：-1（或宏SOCKET_ERROR）表示发送失败，否则返回发送成功的字节数</span><br></code></pre></td></tr></table></figure>
+
+<p>函数使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-type">char</span> buf[<span class="hljs-number">0xFF</span>] = <span class="hljs-string">&quot;我是服务器&quot;</span>;<br>ret=<span class="hljs-built_in">send</span>(sockCli, buf, <span class="hljs-built_in">strlen</span>(buf),<span class="hljs-number">0</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-recv函数"><a href="#6-recv函数" class="headerlink" title="6.recv函数"></a>6.recv函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">recv</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s, <span class="hljs-comment">//套接字</span></span></span><br><span class="hljs-params"><span class="hljs-function"> <span class="hljs-type">char</span> * buf, <span class="hljs-comment">//接受数据的缓存区</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> len, <span class="hljs-comment">//缓存区大小</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> flags <span class="hljs-comment">//标志，一般填0，将消息拷贝到应用程序中，将内核中的数据删除，还可以填MSG_PEEK,只取数据，不从内核中删除数据，MSG_OOB：处理带外数据</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><span class="hljs-comment">//返回值：小于等于0都表示出错，大于0则表示接收成功的数据大小</span><br></code></pre></td></tr></table></figure>
+
+<p>函数使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++">ret=<span class="hljs-built_in">recv</span>(sockCli,buf,<span class="hljs-number">0xFF</span>,<span class="hljs-number">0</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-connect函数"><a href="#7-connect函数" class="headerlink" title="7.connect函数"></a>7.connect函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">connect</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s, <span class="hljs-comment">//与服务器连接的socket</span></span></span><br><span class="hljs-params"><span class="hljs-function">sockaddr* name, <span class="hljs-comment">//服务器的地址端口</span></span></span><br><span class="hljs-params"><span class="hljs-function"><span class="hljs-type">int</span> namelen <span class="hljs-comment">//上个参数结构体的长度</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br><span class="hljs-comment">//返回值：-1失败，否则成功</span><br></code></pre></td></tr></table></figure>
+
+<p>函数使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c++">sockaddr_in addr;<br>addr.sin_family = AF_INET;<br>addr.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">9999</span>);<br>addr.sin_addr.S_un.S_addr = <span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<br><span class="hljs-type">int</span> ret = <span class="hljs-built_in">connect</span>(sock, (sockaddr*)&amp;addr, <span class="hljs-built_in">sizeof</span>(addr));<br></code></pre></td></tr></table></figure>
+
+<h3 id="8-write函数"><a href="#8-write函数" class="headerlink" title="8.write函数"></a>8.write函数</h3><blockquote>
+<p>使用 write() 可以向套接字中写入数据，使用 read() 可以从套接字中读取数据。两台计算机之间的通信相当于两个套接字之间的通信，在服务器端用 write() 向套接字写入数据，客户端就能收到，然后再使用 read() 从套接字中读取出来，就完成了一次通信。</p>
+</blockquote>
+<p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">ssize_t</span> <span class="hljs-title">write</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">const</span> <span class="hljs-type">void</span> *buf, <span class="hljs-type">size_t</span> nbytes)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="9-read函数"><a href="#9-read函数" class="headerlink" title="9.read函数"></a>9.read函数</h3><p>函数原型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">ssize_t</span> <span class="hljs-title">read</span><span class="hljs-params">(<span class="hljs-type">int</span> fd, <span class="hljs-type">void</span> *buf, <span class="hljs-type">size_t</span> nbytes)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="10-closesocket函数"><a href="#10-closesocket函数" class="headerlink" title="10.closesocket函数"></a>10.closesocket函数</h3><blockquote>
+<p>该函数就是关闭不用的socket，释放资源</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">closesocket</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">SOCKET s <span class="hljs-comment">//要关闭的socket</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="11-WSACleanup函数"><a href="#11-WSACleanup函数" class="headerlink" title="11.WSACleanup函数"></a>11.WSACleanup函数</h3><blockquote>
+<p>无任何参数，直接调用即可</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-built_in">WSACleanup</span>();<br></code></pre></td></tr></table></figure>
+
+<h3 id="12-其他"><a href="#12-其他" class="headerlink" title="12.其他"></a>12.其他</h3><ul>
+<li>inet_addr:负责将我们平时看到的网络地址127.0.0.1等转化为网络字节序</li>
+<li>inet_ntoa：负责将网络字节序还原为我们平时看到的字符串127.0.0.1等</li>
+</ul>
+<p>这种函数名有固定的意义：</p>
+<ul>
+<li>h:home</li>
+<li>n:network</li>
+<li>s:short</li>
+<li>l:long</li>
+</ul>
+<p>htons：意思就是本机字节序转到网络字节序，short类型的长度</p>
+<p>ntohs：意思就是网络字节序转到本机字节序，short类型的长度</p>
+<hr>
+<h2 id="1-单线程网络编程"><a href="#1-单线程网络编程" class="headerlink" title="1.单线程网络编程"></a>1.单线程网络编程</h2><h3 id="1-1，服务器开发"><a href="#1-1，服务器开发" class="headerlink" title="1.1，服务器开发"></a>1.1，服务器开发</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _WINSOCK_DEPRECATED_NO_WARNINGS</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;WinSock2.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib,<span class="hljs-string">&quot;ws2_32&quot;</span>)</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>	WSADATA data;<br>	<span class="hljs-type">int</span> ret=<span class="hljs-built_in">WSAStartup</span>(<span class="hljs-built_in">MAKEWORD</span>(<span class="hljs-number">2</span>,<span class="hljs-number">2</span>),&amp;data);<br>	<span class="hljs-keyword">if</span> (ret) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;初始化网络错误！&quot;</span> &lt;&lt; endl;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	SOCKET sock=<span class="hljs-built_in">socket</span>(AF_INET,SOCK_STREAM,<span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span> (sock == <span class="hljs-number">-1</span>) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;创建套接字失败&quot;</span>;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	sockaddr_in addr;<br>	addr.sin_family = AF_INET;<br>	addr.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">9999</span>);<br>	addr.sin_addr.S_un.S_addr = <span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<br>	ret=<span class="hljs-built_in">bind</span>(sock,(sockaddr*)&amp;addr, <span class="hljs-built_in">sizeof</span>(addr));<br>	<span class="hljs-keyword">if</span> (ret == <span class="hljs-number">-1</span>) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;绑定地址端口失败&quot;</span>;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	ret=<span class="hljs-built_in">listen</span>(sock,<span class="hljs-number">5</span>);<br>	<span class="hljs-keyword">if</span> (ret == <span class="hljs-number">-1</span>) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;监听套接字失败&quot;</span>;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	sockaddr addrCli;<br>	<span class="hljs-type">int</span> len = <span class="hljs-built_in">sizeof</span>(addrCli);<br>	SOCKET sockCli=<span class="hljs-built_in">accept</span>(sock,&amp;addrCli,&amp;len);<br>	<span class="hljs-keyword">if</span> (sockCli == <span class="hljs-number">-1</span>) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;接收客户端连接失败&quot;</span>;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	<span class="hljs-type">char</span> buf[<span class="hljs-number">0xFF</span>] = <span class="hljs-string">&quot;我是服务器&quot;</span>;<br>	ret=<span class="hljs-built_in">send</span>(sockCli, buf, <span class="hljs-built_in">strlen</span>(buf)+<span class="hljs-number">1</span>,<span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span> (ret == <span class="hljs-number">-1</span>) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;发送信息失败&quot;</span>;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	ret=<span class="hljs-built_in">recv</span>(sockCli,buf,<span class="hljs-number">0xFF</span>,<span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span> (ret &lt;= <span class="hljs-number">0</span>) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;接受客户端数据失败&quot;</span>;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	<span class="hljs-built_in">WSACleanup</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="1-2，客户端开发"><a href="#1-2，客户端开发" class="headerlink" title="1.2，客户端开发"></a>1.2，客户端开发</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">define</span> _WINSOCK_DEPRECATED_NO_WARNINGS</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;WinSock2.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib,<span class="hljs-string">&quot;ws2_32.lib&quot;</span>)</span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>	WSADATA data;<br>	<span class="hljs-type">int</span> ret = <span class="hljs-built_in">WSAStartup</span>(<span class="hljs-built_in">MAKEWORD</span>(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), &amp;data);<br>	<span class="hljs-keyword">if</span> (ret) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;初始化网络错误！&quot;</span> &lt;&lt; endl;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	SOCKET sock = <span class="hljs-built_in">socket</span>(AF_INET, SOCK_STREAM, <span class="hljs-number">0</span>);<br>	sockaddr_in addr;<br>	addr.sin_family = AF_INET;<br>	addr.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">9999</span>);<br>	addr.sin_addr.S_un.S_addr = <span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<br>	<span class="hljs-type">int</span> ret = <span class="hljs-built_in">connect</span>(sock, (sockaddr*)&amp;addr, <span class="hljs-built_in">sizeof</span>(addr));<br>	<span class="hljs-keyword">if</span> (ret == <span class="hljs-number">-1</span>) &#123;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		cout &lt;&lt; <span class="hljs-string">&quot;连接服务器失败&quot;</span> &lt;&lt; endl;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	<span class="hljs-type">char</span> buf[<span class="hljs-number">0xFF</span>];<br>	ret=<span class="hljs-built_in">recv</span>(sock,buf,<span class="hljs-built_in">sizeof</span>(buf),<span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span> (ret &lt;= <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		cout &lt;&lt; <span class="hljs-string">&quot;接收服务器数据失败&quot;</span> &lt;&lt; endl;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	cout &lt;&lt; <span class="hljs-string">&quot;服务器：&quot;</span> &lt;&lt; buf &lt;&lt; endl;<br><br>	ret=<span class="hljs-built_in">send</span>(sock,buf,ret,<span class="hljs-number">0</span>); <span class="hljs-comment">//将接收到的数据发回服务器</span><br>	<span class="hljs-keyword">if</span> (ret &lt;= <span class="hljs-number">0</span>) &#123;<br>		<span class="hljs-built_in">WSACleanup</span>();<br>		cout &lt;&lt; <span class="hljs-string">&quot;发送服务器数据失败&quot;</span> &lt;&lt; endl;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>	&#125;<br>	<span class="hljs-built_in">WSACleanup</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-多线程网络编程"><a href="#2-多线程网络编程" class="headerlink" title="2.多线程网络编程"></a>2.多线程网络编程</h2><p>如果想要实现多人通信就必须依赖多线程的方式来解决</p>
+<h3 id="2-1服务器开发"><a href="#2-1服务器开发" class="headerlink" title="2.1服务器开发"></a>2.1服务器开发</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;Winsock2.h&gt;</span><span class="hljs-comment">//socket头文件</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;cstring&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib,<span class="hljs-string">&quot;ws2_32.lib&quot;</span>);<span class="hljs-comment">//socket库</span></span><br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> WAIT_TIME=<span class="hljs-number">10</span>;<br><span class="hljs-type">const</span> <span class="hljs-type">int</span> buffer_size=<span class="hljs-number">1024</span>;<span class="hljs-comment">//缓冲区的大小</span><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> max_link_num=<span class="hljs-number">10</span>;<span class="hljs-comment">//最大客户端链接数量</span><br>SOCKET clinsock[max_link_num];<span class="hljs-comment">//客户端套接字为0的是服务器</span><br>WSAEVENT clinevent[max_link_num];<span class="hljs-comment">//客户端事件 0号为服务端,它用于让程序的一部分等待来自另一部分的信号</span><br>SOCKADDR_IN clinaddr[max_link_num];<span class="hljs-comment">//客户端地址</span><br><span class="hljs-type">int</span> total;<span class="hljs-comment">//目前链接的总数</span><br><br><span class="hljs-function">DWORD WINAPI <span class="hljs-title">servEventThread</span><span class="hljs-params">(LPVOID IpParameter)</span></span>;<span class="hljs-comment">//...</span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">//初始化socket库</span><br>    WSADATA data;<span class="hljs-comment">//获取版本信息</span><br>    <span class="hljs-built_in">WSAStartup</span>(<span class="hljs-built_in">MAKEWORD</span>(<span class="hljs-number">2</span>,<span class="hljs-number">2</span>),&amp;data);<span class="hljs-comment">//MAKEWORD（主版本，副版本）</span><br><br>    <span class="hljs-comment">//创建socket（）</span><br>    SOCKET servsock=<span class="hljs-built_in">socket</span>(AF_INET,SOCK_STREAM,<span class="hljs-number">0</span>);<span class="hljs-comment">//面对网络的流式套接字-&gt;AF_INET：IP地址族，用IP协议版本4。SOCK_STREAM：面对连接的流式套接字。0：使用的默认协议</span><br><br>    <span class="hljs-comment">//将服务器地址打包进一个结构体中</span><br>    sockaddr_in servaddr;<span class="hljs-comment">//sockaddr_in （sockaddr）是internat下套接字的地址形式</span><br>    servaddr.sin_family=AF_INET;<span class="hljs-comment">//sin_family为协议簇ipv4</span><br>    servaddr.sin_addr.S_un.S_addr=<span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<span class="hljs-comment">//服务端地址设置为本地回环地址,将IP地址转化为32位网络字节</span><br>    servaddr.sin_port=<span class="hljs-built_in">htons</span>(<span class="hljs-number">12345</span>);<span class="hljs-comment">//s设置端口号,htons：意思就是本机字节序转到网络字节序，short类型的长度</span><br><br>    <span class="hljs-comment">//绑定服务端的socket和打包好的地址</span><br>    <span class="hljs-built_in">bind</span>(servsock,(SOCKADDR*)&amp;servaddr,<span class="hljs-built_in">sizeof</span>(servaddr));<br><br>    <span class="hljs-comment">//给客户端绑定一个事件对象，用来接收客户端发来的链接</span><br>    WSAEVENT servEvent=<span class="hljs-built_in">WSACreateEvent</span>();<br>    <span class="hljs-built_in">WSAEventSelect</span>(servsock,servEvent,FD_ALL_EVENTS);<br>    <br>    clinsock[<span class="hljs-number">0</span>]=servsock;<br>    clinevent[<span class="hljs-number">0</span>]=servEvent;<br><br>    <span class="hljs-comment">//开启监听</span><br>    <span class="hljs-built_in">listen</span>(servsock,<span class="hljs-number">10</span>);<span class="hljs-comment">//等待连接的最大队列长度</span><br><br><br>    <span class="hljs-built_in">CloseHandle</span>(<span class="hljs-built_in">CreateThread</span>(<span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>, servEventThread, (LPVOID)&amp;servsock, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>));<span class="hljs-comment">//创建一个线程，并将该线程的句柄存储在一个句柄变量中。这个线程将执行`servEventThread`函数，并且将`servsock`作为参数传递给该函数。`CreateThread`函数的返回值是线程的句柄，通过`CloseHandle`函数来关闭这个句柄，以释放资源</span><br><br><br>    cout &lt;&lt; <span class="hljs-string">&quot;start communiate&quot;</span> &lt;&lt; endl;<br>	connect;<br>    <br>    <span class="hljs-comment">//（用于读取用户输入的内容，并将其发送给所有已连接的套接字，实现了消息的广播功能）</span><br>    <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>)<br>    &#123; <br>        <span class="hljs-comment">//声明了两个字符数组变量contentbuf和sendbuf，用于存储用户输入的内容和发送给套接字的消息。</span><br>        <span class="hljs-type">char</span> contentbuf[buffer_size]=&#123;<span class="hljs-number">0</span>&#125;;<br>        <span class="hljs-type">char</span> sendbuf[buffer_size]=&#123;<span class="hljs-number">0</span>&#125;;<br>        <span class="hljs-comment">//使用cin.getline()函数读取用户输入的内容，并将其存储在contentbuf数组中。</span><br>        cin.<span class="hljs-built_in">getline</span>(contentbuf,<span class="hljs-built_in">sizeof</span>(contentbuf));<br>        <span class="hljs-comment">//使用sprintf()函数将用户输入的内容加上前缀&quot;[智能小易]&quot;，并将结果存储在sendbuf数组中。</span><br>        <span class="hljs-built_in">sprintf</span>(sendbuf,<span class="hljs-string">&quot;[AI]%s&quot;</span>, contentbuf);<br>        <span class="hljs-comment">//使用for循环遍历所有已连接的套接字，使用send()函数将sendbuf数组中的内容发送给每个套接字</span><br>        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;=total;j++)<br>        &#123;<br>            <span class="hljs-built_in">send</span>(clinsock[j],sendbuf,<span class="hljs-built_in">sizeof</span>(sendbuf),<span class="hljs-number">0</span>);<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">WSACleanup</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-function">DWORD WINAPI <span class="hljs-title">servEventThread</span><span class="hljs-params">(LPVOID IpParameter)</span></span><br><span class="hljs-function"></span>&#123;<br>    SOCKET servsock=*(SOCKET*)IpParameter;<span class="hljs-comment">//LPVOID为空指针类型，需要先转成SOCKET类型再引用，即可使用传入的SOCKET</span><br>    <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>)<br>    &#123;<br>         <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;total+<span class="hljs-number">1</span>;i++)<br>        &#123;<br>            <span class="hljs-comment">//若有一个客户端链接，total==1，循环两次，包含客户端和服务端</span><br>			<span class="hljs-comment">//对每一个终端（客户端和服务端），查看是否发生事件，等待WAIT_TIME毫秒</span><br>            <span class="hljs-type">int</span> index=<span class="hljs-built_in">WSAWaitForMultipleEvents</span>(<span class="hljs-number">1</span>,&amp;clinevent[i],<span class="hljs-literal">false</span>,WAIT_TIME,<span class="hljs-number">0</span>);<span class="hljs-comment">//返回事件发生的索引</span><br>            index-=WSA_WAIT_EVENT_0;<span class="hljs-comment">//此时index为发生事件的终端下标</span><br>            <span class="hljs-comment">//如果出错或者超时，即跳过此终端</span><br>            <span class="hljs-keyword">if</span>(index==WSA_WAIT_TIMEOUT||index==WSA_WAIT_FAILED)<br>            &#123;<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br>            <span class="hljs-comment">//1，没有事件发生，执行以下操作：</span><br>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(index==<span class="hljs-number">0</span>)<br>            &#123;<br>                <span class="hljs-comment">//1，可以获取特定套接字cliSock[i]上发生的网络事件，并将其存储在networkEvents结构体变量中。</span><br>                WSANETWORKEVENTS networkEvents;<span class="hljs-comment">//声明一个名为networkEvents的WSANETWORKEVENTS结构体变量</span><br>                <span class="hljs-built_in">WSAEnumNetworkEvents</span>(clinsock[i],clinevent[i],&amp;networkEvents);<span class="hljs-comment">//调用WSAEnumNetworkEvents函数，用于获取与指定套接字相关联的网络事件</span><br>                <br>                <span class="hljs-comment">//如果网络事件中包含FD_ACCEPT（表示有新的连接请求），则执行以下操作</span><br>                <span class="hljs-keyword">if</span>(networkEvents.lNetworkEvents &amp; FD_ACCEPT)<span class="hljs-comment">//`lNetworkEvents` 字段存储了发生的网络事件的掩码</span><br>                &#123;<br>                    <span class="hljs-comment">//检查FD_ACCEPT_BIT对应的错误码，如果不为0，则输出连接出现错误的信息，并继续下一次循环。</span><br>                    <span class="hljs-keyword">if</span>(networkEvents.iErrorCode[FD_ACCEPT_BIT]!=<span class="hljs-number">0</span>)<span class="hljs-comment">//</span><br>                    &#123;<br>                        cout&lt;&lt;<span class="hljs-string">&quot;error connect&quot;</span>&lt;&lt;networkEvents.iErrorCode[FD_ACCEPT_BIT]&lt;&lt;endl;<br>                        <span class="hljs-keyword">continue</span>;<br>                    &#125;<br>                    <span class="hljs-comment">//如果当前连接数（total）加1小于最大连接数（max_link_num），则执行以下操作：</span><br>                    <span class="hljs-keyword">if</span>(total+<span class="hljs-number">1</span>&lt;max_link_num)<br>                    &#123;<br>                        <span class="hljs-comment">//获取新连接的地址长度（addrlen），并使用accept函数接受新的连接请求，返回一个新的套接字（newsock）</span><br>                        <span class="hljs-type">int</span> nextindex=total+<span class="hljs-number">1</span>;<br>                        <span class="hljs-type">int</span> addrlen=<span class="hljs-built_in">sizeof</span>(SOCKADDR);<br>                        SOCKET newsock=<span class="hljs-built_in">accept</span>(servsock,(SOCKADDR*)&amp;clinaddr[nextindex],&amp;addrlen);<br><br>                        <span class="hljs-comment">// 如果新的套接字不是无效套接字（INVALID_SOCKET），则执行以下操作：</span><br>                        <span class="hljs-keyword">if</span>(newsock!=INVALID_SOCKET)<br>                        &#123;<br>                            <span class="hljs-comment">//将新的套接字（newsock）保存到clinsock数组中的下一个位置（nextindex）</span><br>                            clinsock[nextindex]=newsock;<br>                            <span class="hljs-comment">//创建一个新的事件（newevent）并将新的套接字（newsock）与该事件关联，监听FD_CLOSE、FD_READ和FD_WRITE事件</span><br>                            WSAEVENT newevent=<span class="hljs-built_in">WSACreateEvent</span>();<br>                            <span class="hljs-built_in">WSAEventSelect</span>(clinsock[nextindex],newevent,FD_CLOSE | FD_READ | FD_WRITE);<br>                            <span class="hljs-comment">//将新的事件（newevent）保存到clinevent数组中的下一个位置（nextindex）</span><br>                            clinevent[nextindex] = newevent;<br>                            <span class="hljs-comment">//连接数加一</span><br>							total++;<br><br>                            <span class="hljs-comment">// 构造一个欢迎消息（buf），包含游客的IP地址，并发送给所有已连接的套接字。</span><br>                            <span class="hljs-type">char</span> buf[buffer_size] = <span class="hljs-string">&quot;[AI]welcome IP:&quot;</span>;<br>							<span class="hljs-built_in">strcat</span>(buf, <span class="hljs-built_in">inet_ntoa</span>(clinaddr[nextindex].sin_addr));<br>							<span class="hljs-built_in">strcat</span>(buf, <span class="hljs-string">&quot;)had came&quot;</span>);<br>							<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = i; j &lt;=total; j++)<br>							&#123;<br>								<br>								<span class="hljs-built_in">send</span>(clinsock[j], buf, <span class="hljs-built_in">sizeof</span>(buf),<span class="hljs-number">0</span>);<br>								<br>							&#125;<br>                        &#125;<br>                   &#125;<br>                &#125; <br>            <br>             <span class="hljs-comment">//如果网络事件中包含FD_CLOSE（表示有连接关闭），则执行以下操作：</span><br>             <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(networkEvents.lNetworkEvents &amp; FD_CLOSE)<br>             &#123;<br>                <span class="hljs-comment">//减少当前连接数（total）的值。</span><br>                total--;<br>                cout&lt;&lt;<span class="hljs-string">&quot;#&quot;</span>&lt;&lt;i&lt;&lt;endl;<br><br>                <span class="hljs-comment">//关闭对应的套接字（clinsock[i]）</span><br>                <span class="hljs-built_in">closesocket</span>(clinsock[i]);<br>                <span class="hljs-comment">//关闭对应的事件（clinevent[i]）。</span><br>                <span class="hljs-built_in">WSACloseEvent</span>(clinevent[i]);<br>                <br>                <span class="hljs-comment">//将后面的连接信息（clinsock、clinevent和clinaddr数组）向前移动一个位置，覆盖掉被关闭的连接信息。</span><br>                <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=i;j&lt;total;j++)<br>                &#123;<br>                    clinsock[j]=clinsock[j+<span class="hljs-number">1</span>];<br>                    clinevent[j]=clinevent[j+<span class="hljs-number">1</span>];<br>                    clinaddr[j]=clinaddr[j+<span class="hljs-number">1</span>];<br>                &#125;<br>                <br>                <span class="hljs-comment">//构造一个退出消息（buf），包含退出的IP地址，并发送给所有已连接的套接字</span><br>                <span class="hljs-type">char</span> buf[buffer_size]=<span class="hljs-string">&quot;[AI](IP:&quot;</span>;<br>                <span class="hljs-built_in">strcat</span>(buf,<span class="hljs-built_in">inet_ntoa</span>(clinaddr[i].sin_addr));<br>                <span class="hljs-built_in">strcat</span>(buf, <span class="hljs-string">&quot;)quit&quot;</span>);<br>                <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">1</span>; j &lt;=total; j++)<br>				&#123;<br>					<span class="hljs-built_in">send</span>(clinsock[j], buf, <span class="hljs-built_in">sizeof</span>(buf), <span class="hljs-number">0</span>);<br> <br>				&#125;<br><br>             &#125;<br>          <br>             <span class="hljs-comment">//如果网络事件中包含FD_READ（表示有数据可读取），则执行以下操作：</span><br>             <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(networkEvents.lNetworkEvents &amp; FD_READ)<br>             &#123;<br>                <span class="hljs-comment">//创建一个缓冲区（buffer）和一个用于存储格式化后消息的缓冲区（buffer1）。</span><br>                <span class="hljs-type">char</span> buffer[buffer_size]=&#123;<span class="hljs-number">0</span>&#125;;<br>                <span class="hljs-type">char</span> buffer1[buffer_size]=&#123;<span class="hljs-number">0</span>&#125;;<br>                <br>                <span class="hljs-comment">//遍历所有已连接的套接字（从1到total）</span><br>                <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=total;i++)<br>                &#123;<br>                    <span class="hljs-comment">//使用recv函数接收套接字中的数据，并返回接收到的字节数（nrecv）</span><br>                    <span class="hljs-type">int</span> nrecv=<span class="hljs-built_in">recv</span>(clinsock[i],buffer,<span class="hljs-built_in">sizeof</span>(buffer),<span class="hljs-number">0</span>);<br>                    <span class="hljs-comment">//如果接收到的字节数大于0，则执行以下操作：</span><br>                    <span class="hljs-keyword">if</span>(nrecv&gt;<span class="hljs-number">0</span>)<br>                    &#123;<br>                        <span class="hljs-comment">//将接收到的数据格式化为带有连接索引号的消息（buffer1）</span><br>                        <span class="hljs-built_in">sprintf</span>(buffer1,<span class="hljs-string">&quot;[#%d]%s&quot;</span>,i,buffer);<br>                        <span class="hljs-comment">//输出格式化后的消息（buffer1）</span><br>                        cout&lt;&lt;buffer1&lt;&lt;endl;<br>                        <span class="hljs-comment">//遍历所有已连接的套接字，并将格式化后的消息发送给每个套接字。</span><br>                        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> k=<span class="hljs-number">0</span>;k&lt;total;k++)<br>                        &#123;<br>                            <span class="hljs-built_in">send</span>(clinsock[k],buffer1,<span class="hljs-built_in">sizeof</span>(buffer1),<span class="hljs-number">0</span>);<br>                        &#125;<br><br>                     &#125;<br><br>                 &#125;<br>              &#125;<br>            &#125;<br>        &#125; <br>    &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br>   <br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2客户端开发"><a href="#2-2客户端开发" class="headerlink" title="2.2客户端开发"></a>2.2客户端开发</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;winsock2.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;cstring&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib,<span class="hljs-string">&quot;ws2_32.lib&quot;</span>)</span><br><br><span class="hljs-type">const</span> <span class="hljs-type">int</span> BUFFER_SIZE = <span class="hljs-number">1024</span>;<span class="hljs-comment">//缓冲区大小</span><br> <br><span class="hljs-function">DWORD WINAPI <span class="hljs-title">recvMsgThread</span><span class="hljs-params">(LPVOID IpParameter)</span></span>;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    WSADATA data;<br>    <span class="hljs-built_in">WSAStartup</span>(<span class="hljs-built_in">MAKEWORD</span>(<span class="hljs-number">2</span>,<span class="hljs-number">2</span>),&amp;data);<br><br>    SOCKET clinsock=<span class="hljs-built_in">socket</span>(AF_INET,SOCK_STREAM,<span class="hljs-number">0</span>);<br><br>   <br>    sockaddr_in clinaddr;<br>    clinaddr.sin_family=AF_INET;<br>    clinaddr.sin_addr.s_addr=<span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<br>    clinaddr.sin_port=<span class="hljs-built_in">htons</span>(<span class="hljs-number">12345</span>);<br>    <span class="hljs-comment">//设置服务器的地址和端口信息，将其存储在sockaddr_in结构体对象中</span><br>    sockaddr_in sockaddr;<br>    sockaddr.sin_family=AF_INET;<br>    sockaddr.sin_addr.s_addr=<span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<br>    sockaddr.sin_port=<span class="hljs-built_in">htons</span>(<span class="hljs-number">12345</span>);<br><br>    <span class="hljs-comment">//调用connect函数来连接到服务器。如果连接出现错误，会输出错误代码</span><br>    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">connect</span>(clinsock,(SOCKADDR*)&amp;sockaddr,<span class="hljs-built_in">sizeof</span>(SOCKADDR))==SOCKET_ERROR)<br>    &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;error&quot;</span> &lt;&lt; <span class="hljs-built_in">WSAGetLastError</span>() &lt;&lt; endl;<br>    &#125;<br><br>    <span class="hljs-comment">//创建一个线程来接收服务器发送的消息。线程函数是recvMsgThread，它通过参数传递了客户端套接字</span><br>    <span class="hljs-built_in">CloseHandle</span>(<span class="hljs-built_in">CreateThread</span>(<span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>, recvMsgThread, (LPVOID)&amp;clinsock, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>));<br><br>    <span class="hljs-comment">//通过循环读取用户输入的消息，并发送给服务器。如果用户输入&quot;quit&quot;，则退出聊天室。</span><br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) <br>	&#123;<br>		<span class="hljs-type">char</span> buf[BUFFER_SIZE] = &#123; <span class="hljs-number">0</span> &#125;;<br>		cin.<span class="hljs-built_in">getline</span>(buf,<span class="hljs-built_in">sizeof</span>(buf));<br>		<span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(buf, <span class="hljs-string">&quot;quit&quot;</span>) == <span class="hljs-number">0</span>)<span class="hljs-comment">//若输入“quit”，则退出聊天室</span><br>		&#123;<br>			<span class="hljs-keyword">break</span>;<br>		&#125;<br>		<span class="hljs-built_in">send</span>(clinsock, buf, <span class="hljs-built_in">sizeof</span>(buf), <span class="hljs-number">0</span>);<br>	&#125;<br>	<span class="hljs-built_in">closesocket</span>(clinsock);<br>	<span class="hljs-built_in">WSACleanup</span>();<br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><br><span class="hljs-function">DWORD WINAPI <span class="hljs-title">recvMsgThread</span><span class="hljs-params">(LPVOID IpParameter)</span></span><br><span class="hljs-function"></span>&#123;<br>      SOCKET clinsock = *(SOCKET*)IpParameter;<span class="hljs-comment">//函数首先将传入的IpParameter转换为SOCKET类型，并赋值给变量clinsock。</span><br><br>      <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>)<br>      &#123;<br>        <span class="hljs-type">char</span> buffer[BUFFER_SIZE]=&#123;<span class="hljs-number">0</span>&#125;;<span class="hljs-comment">//定义一个大小为BUFFER_SIZE的字符数组buffer，并将其所有元素初始化为0</span><br>        <span class="hljs-type">int</span> nrecv=<span class="hljs-built_in">recv</span>(clinsock,buffer,<span class="hljs-built_in">sizeof</span>(buffer),<span class="hljs-number">0</span>);<span class="hljs-comment">//调用recv函数接收来自clinsock的数据，并将接收到的数据存储在buffer中</span><br>        <span class="hljs-keyword">if</span>(recv&gt;<span class="hljs-number">0</span>)<span class="hljs-comment">//如果接收到的字节数大于0，则将buffer中的内容输出到标准输出流（cout）。</span><br>        &#123;<br>             cout&lt;&lt;buffer&lt;&lt;endl;<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            cout&lt;&lt;<span class="hljs-string">&quot;don&#x27;t connect&quot;</span>&lt;&lt;endl;<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br>      &#125;<br>      <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/" class="category-chain-item">工科知识骨架</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" class="category-chain-item">计算机网络</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/" class="category-chain-item">传输层</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>TCP-UDP套接字编程</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识骨架/计算机科学与技术/计算机网络/传输层/TCP-UDP套接字编程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/%E4%BC%A0%E8%BE%93%E5%B1%82/" title="传输层">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">传输层</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/Socket%E6%A8%A1%E5%9E%8B/" title="Socket模型">
+                        <span class="hidden-mobile">Socket模型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

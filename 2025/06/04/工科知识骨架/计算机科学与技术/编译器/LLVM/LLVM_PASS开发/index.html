@@ -1,0 +1,1139 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="基于LLVM的控制流平坦化的魔改和混淆Pass实战 - 吾爱破解 - 52pojie.cn 开门见山【Pass开发整体流程】LLVM Pass 是 LLVM 编译框架中用于 分析和转换代码 的核心模块，它允许开发者在编译过程的不同阶段干预中间表示（IR），实现优化、静态分析或代码变形。对 LLVM IR 进行以下操作：  转换（Transformation）：修改 IR（如优化、混淆）。 分析（A">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLVM_PASS开发">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/04/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/LLVM/LLVM_PASS%E5%BC%80%E5%8F%91/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="基于LLVM的控制流平坦化的魔改和混淆Pass实战 - 吾爱破解 - 52pojie.cn 开门见山【Pass开发整体流程】LLVM Pass 是 LLVM 编译框架中用于 分析和转换代码 的核心模块，它允许开发者在编译过程的不同阶段干预中间表示（IR），实现优化、静态分析或代码变形。对 LLVM IR 进行以下操作：  转换（Transformation）：修改 IR（如优化、混淆）。 分析（A">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/06/11/MlGQvnhE52FOSeK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/04/y8VHC5aZ4vUGEKz.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/11/IwDznZjtlTobPOr.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/11/v6cYXyI2ClheHkN.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/11/84tXpE7aRVLyePc.png">
+<meta property="article:published_time" content="2025-06-04T13:10:43.596Z">
+<meta property="article:modified_time" content="2026-05-25T12:57:56.012Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/06/11/MlGQvnhE52FOSeK.png">
+  
+  
+  
+  <title>LLVM_PASS开发 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="LLVM_PASS开发"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">LLVM_PASS开发</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1369130-1-1.html">基于LLVM的控制流平坦化的魔改和混淆Pass实战 - 吾爱破解 - 52pojie.cn</a></p>
+<h1 id="开门见山【Pass开发整体流程】"><a href="#开门见山【Pass开发整体流程】" class="headerlink" title="开门见山【Pass开发整体流程】"></a>开门见山【Pass开发整体流程】</h1><p>LLVM Pass 是 LLVM 编译框架中用于 <strong>分析和转换代码</strong> 的核心模块，它允许开发者在编译过程的不同阶段干预中间表示（IR），实现优化、静态分析或代码变形。对 LLVM IR 进行以下操作：</p>
+<ul>
+<li><strong>转换（Transformation）</strong>：修改 IR（如优化、混淆）。</li>
+<li><strong>分析（Analysis）</strong>：收集信息（如统计指令数量、检测漏洞）。</li>
+</ul>
+<p>设计目标:</p>
+<ul>
+<li><strong>模块化</strong>：每个 Pass 专注单一任务（如“内联函数”或“删除死代码”）。</li>
+<li><strong>可组合性</strong>：多个 Pass 可串联形成优化管道。</li>
+<li><strong>可扩展性</strong>：用户可轻松添加自定义 Pass。</li>
+</ul>
+<p>这里首先给出LLVM-PASS开发的整个流程，读者只需知道其大致流程和每一个步骤大底是干什么的即可。</p>
+<h2 id="安装-LLVM-与-Clang"><a href="#安装-LLVM-与-Clang" class="headerlink" title="安装 LLVM 与 Clang"></a>安装 LLVM 与 Clang</h2><p>既然是基于LLVM的PASS编写自然是需要依赖LLVM提供好的一些库文件。主要有两种方式来安装LLVM</p>
+<blockquote>
+<p>LLVM 项目有多个组件。项目的核心本身称为“LLVM”。它包含处理中间表示并将其转换为目标文件所需的所有工具、库和头文件。工具包括汇编器、反汇编器、位代码分析器和位代码优化器。它还包含基本的回归测试。</p>
+<p>类似 C 的语言使用 <a target="_blank" rel="noopener" href="https://clang.llvm.gnu.ac.cn/">Clang</a> 前端。此组件将 C、C++、Objective C 和 Objective C++ 代码编译为 LLVM 位代码 – 然后使用 LLVM 将其编译为目标文件。</p>
+</blockquote>
+<h3 id="预编译版本"><a href="#预编译版本" class="headerlink" title="预编译版本"></a><strong>预编译版本</strong></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo apt install llvm clang libllvm-dev<span class="hljs-comment"># Ubuntu/Debian</span><br></code></pre></td></tr></table></figure>
+
+<p>Ubuntu 20.04 默认仓库中提供的 LLVM&#x2F;Clang 版本为 <strong>LLVM 10</strong>。 所以读者如果需要安装更高的版本，有两种方法：</p>
+<ol>
+<li>使用<code>sudo apt install llvm-x.y clang-x.y</code>来指定安装当前源可获取的版本。</li>
+<li>想要安装最新版本，可以根据 <a href="https://link.zhihu.com/?target=https://apt.llvm.org/">apt.llvm.org</a>这个网站列出的方法配置源并安装。</li>
+</ol>
+<h3 id="源码编译"><a href="#源码编译" class="headerlink" title="源码编译"></a><strong>源码编译</strong></h3><blockquote>
+<p>详见：</p>
+<p><a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/GettingStarted.html#getting-the-source-code-and-building-llvm">LLVM 系统入门 — LLVM 21.0.0git 文档 - LLVM 项目</a></p>
+<p><a target="_blank" rel="noopener" href="https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh-cn/latest/ch01.html#id6">第1章 编译和安装LLVM — Getting Started with LLVM Core Libraries 文档</a></p>
+</blockquote>
+<p>这里不多赘述.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">cmake -G <span class="hljs-string">&quot;Unix Makefiles&quot;</span> \               <span class="hljs-comment"># 指定生成 Makefile 格式的构建文件</span><br>      -DLLVM_ENABLE_PROJECTS=<span class="hljs-string">&quot;clang&quot;</span> \    <span class="hljs-comment"># 启用 Clang 子项目（C/C++ 前端）</span><br>      -DCMAKE_BUILD_TYPE=Release \        <span class="hljs-comment"># 编译为 Release 模式（优化性能）</span><br>      -DLLVM_TARGETS_TO_BUILD=<span class="hljs-string">&quot;X86&quot;</span> \     <span class="hljs-comment"># 仅编译 X86 后端（减少编译时间）</span><br>      -DBUILD_SHARED_LIBS=On \            <span class="hljs-comment"># 生成动态链接库（.so 文件）</span><br>      ../llvm                             <span class="hljs-comment"># 指定 LLVM 主源码路径</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="编写-LLVM-Pass"><a href="#编写-LLVM-Pass" class="headerlink" title="编写 LLVM Pass"></a>编写 LLVM Pass</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/WritingAnLLVMNewPMPass.html">编写 LLVM Pass — LLVM 21.0.0git 文档 - LLVM 项目</a></p>
+</blockquote>
+<p>这里是本文的重点，将在下面重点介绍，在此之前，需要知道简单知道LLVM Pass是什么？以及它的输入输出是什么？</p>
+<ul>
+<li>LLVM Pass框架是整个LLVM 提供给用户用来干预代码优化过程的框架，也是我们编写代码混淆工具的基础。</li>
+<li>编译后的LLVM Pass通过优化器opt进行加载，可以对LLVM IR中间代码进行分析和修改，生成新的中间代码。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/06/11/MlGQvnhE52FOSeK.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="输入输出"><a href="#输入输出" class="headerlink" title="输入输出"></a>输入输出</h3><p>LLVM Pass 模块的输入和输出是 <strong>LLVM 中间表示（IR）</strong>，但具体形式和处理方式取决于 Pass 的类型（分析、转换、函数&#x2F;模块级等）。</p>
+<p><img src="https://s2.loli.net/2025/06/04/y8VHC5aZ4vUGEKz.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>可以看到pass知识编译系统中的一个模块，只需直接通过<code>Module</code>、<code>Function</code>、<code>BasicBlock</code>、<code>Instruction</code> 等 ，就可以全局直接获取系统知道IR</p>
+</blockquote>
+<h4 id="输入"><a href="#输入" class="headerlink" title="输入"></a>输入</h4><p>所有 LLVM Pass 的输入都是 <strong>LLVM IR</strong>，但 IR 的粒度取决于 Pass 的作用范围：</p>
+<ul>
+<li><p>模块级 Pass（ModulePass）：输入是整个模块（llvm::Module</p>
+<p>），包含全局变量、函数、元数据等。</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-keyword">define</span> void <span class="hljs-title">@foo</span>() &#123; ... &#125;<br><span class="hljs-title">@global</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">external</span> <span class="hljs-keyword">global</span> <span class="hljs-type">i32</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>函数级 Pass（FunctionPass）：输入是单个函数（llvm::Function），包括其基本块（BasicBlock）和指令（Instruction）。</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-keyword">define</span> <span class="hljs-type">i32</span> <span class="hljs-title">@bar</span>(<span class="hljs-type">i32</span> <span class="hljs-variable">%x</span>) &#123;<br>  <span class="hljs-variable">%add</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">add</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%x</span><span class="hljs-punctuation">,</span> <span class="hljs-number">1</span><br>  <span class="hljs-keyword">ret</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%add</span><br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>循环级 Pass（LoopPass）</strong>：<br> 输入是循环结构（<code>llvm::Loop</code>），需先通过循环分析获取。</p>
+</li>
+</ul>
+<p><strong>输入的数据结构</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类名</th>
+<th>作用</th>
+<th>示例用法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>llvm::Module</code></td>
+<td>代表整个编译单元（如一个 <code>.c</code> 文件）</td>
+<td><code>Module::getFunctionList()</code></td>
+</tr>
+<tr>
+<td><code>llvm::Function</code></td>
+<td>单个函数定义</td>
+<td><code>Function::arg_begin()</code></td>
+</tr>
+<tr>
+<td><code>llvm::BasicBlock</code></td>
+<td>基本块（无分支的指令序列）</td>
+<td><code>BasicBlock::getTerminator()</code></td>
+</tr>
+<tr>
+<td><code>llvm::Instruction</code></td>
+<td>单条 IR 指令（如 <code>add</code>、<code>call</code>）</td>
+<td><code>Instruction::getOpcode()</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="输出"><a href="#输出" class="headerlink" title="输出"></a>输出</h4><p>Pass 的输出类型取决于其功能类别：</p>
+<p><strong>(1) 分析 Pass（Analysis Pass）</strong></p>
+<p><strong>输出</strong>：生成 <strong>分析结果</strong>（如数据流信息、依赖关系等），供其他 Pass 使用。</p>
+<p>示例：<code>DominatorTree</code>（支配树分析），<code>AliasAnalysis</code>（别名分析）</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs 1c"><span class="hljs-comment">// 获取函数的支配树分析结果</span><br>DominatorTree <span class="hljs-meta">&amp;DT = getAnalysis&lt;DominatorTree&gt;(F);</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>(2) 转换 Pass（Transformation Pass）</strong></p>
+<p><strong>输出</strong>：修改后的 <strong>新 IR</strong>（可能改变原 IR 结构）。</p>
+<p>示例操作：删除无用代码（<code>-adce</code>），内联函数（<code>-inline</code>）</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs scss"><span class="hljs-comment">// 删除一个基本块</span><br>DeadBB-&gt;<span class="hljs-built_in">eraseFromParent</span>();<br></code></pre></td></tr></table></figure>
+
+<p><strong>(3) 工具类 Pass</strong></p>
+<p><strong>输出</strong>：可能生成辅助信息（如优化报告、性能计数器等）。</p>
+<p>示例：<code>-time-passes</code>（统计各 Pass 耗时）和<code>-print-after-all</code>（打印 IR 修改过程）</p>
+<pre><code class=" mermaid">graph LR
+    A[输入IR] --&gt; B&#123;Pass类型&#125;
+    B --&gt;|分析Pass| C[生成分析结果]
+    B --&gt;|转换Pass| D[输出修改后的IR]
+    B --&gt;|工具Pass| E[生成报告/统计]
+    C --&gt; F[其他Pass使用]
+    D --&gt; G[后续优化或代码生成]
+</code></pre>
+
+
+
+<h2 id="编译LLVM-Pass"><a href="#编译LLVM-Pass" class="headerlink" title="编译LLVM Pass"></a>编译LLVM Pass</h2><p>在编写完Pass后，我们需要编译它，得到一个动态库。以便后面使用优化器 opt 将处理中间代码，生成新的中间代码或者直接生成可执行文件</p>
+<p>在这里又有三种方式：</p>
+<table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">优点</th>
+<th align="left">缺点</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>与LLVM一起编译</strong></td>
+<td align="left">深度集成，调试方便</td>
+<td align="left">编译耗时极长（30分钟~数小时）</td>
+<td align="left">修改LLVM核心代码或长期开发</td>
+</tr>
+<tr>
+<td align="left"><strong>CMake单独编译</strong></td>
+<td align="left">快速编译（秒级），工程化管理</td>
+<td align="left">需要配置CMakeLists.txt</td>
+<td align="left">90%的日常Pass开发</td>
+</tr>
+<tr>
+<td align="left"><strong>命令行单独编译</strong></td>
+<td align="left">无需配置构建系统</td>
+<td align="left">难以管理依赖，项目越大越混乱</td>
+<td align="left">快速原型验证或小型测试</td>
+</tr>
+</tbody></table>
+<p>大名鼎鼎的Ollvm便是维护一个定制化LLVM分支修改LLVM核心代码，定制pass执行的。【Pass代码需要存放在llvm&#x2F;lib&#x2F;Transforms文件夹中】</p>
+<p>当然若非深度定制化LLVM，更推荐使用Cmake进行单独编译使用</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/CMake.html#cmake-out-of-source-pass">使用 CMake 构建 LLVM — LLVM 21.0.0git 文档 - LLVM 项目</a></p>
+</blockquote>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cmake"><span class="hljs-keyword">cmake_minimum_required</span>(VERSION <span class="hljs-number">3.13</span>)<br><span class="hljs-keyword">project</span>(YourPass)<br><br><span class="hljs-keyword">find_package</span>(LLVM REQUIRED CONFIG)<br><span class="hljs-keyword">list</span>(APPEND CMAKE_MODULE_PATH <span class="hljs-variable">$&#123;LLVM_CMAKE_DIR&#125;</span>)<br><span class="hljs-keyword">include</span>(AddLLVM)<br><br>add_llvm_library(YourPass MODULE<br>  YourPass.cpp<br>  DEPENDS<br>  intrinsics_gen<br>  )<br><br><span class="hljs-comment"># 兼容不同LLVM版本</span><br><span class="hljs-keyword">target_compile_definitions</span>(YourPass PRIVATE LLVM_VERSION=<span class="hljs-variable">$&#123;LLVM_VERSION_MAJOR&#125;</span>)<br>llvm_update_compile_flags(YourPass)<br></code></pre></td></tr></table></figure>
+
+<p>当临时需要测试，使用命令行单独编译</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 仅适合临时测试</span><br>clang++ -fPIC -shared `llvm-config --cxxflags` YourPass.cpp -o YourPass.so `llvm-config --ldflags`<br></code></pre></td></tr></table></figure>
+
+<h2 id="加载使用LLVM-Pass"><a href="#加载使用LLVM-Pass" class="headerlink" title="加载使用LLVM Pass"></a>加载使用LLVM Pass</h2><p> 当编译好自定义的pass后生成了动态库，既进行使用了。</p>
+<h3 id="通过-opt-工具直接运行"><a href="#通过-opt-工具直接运行" class="headerlink" title="通过 opt 工具直接运行"></a><strong>通过 <code>opt</code> 工具直接运行</strong></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 将C代码转换为LLVM IR</span><br>clang -S -emit-llvm test.c -o test.ll<br><br><span class="hljs-comment"># 使用opt加载Pass处理IR</span><br>opt -load-pass-plugin=./build/libMyPass.so -passes=<span class="hljs-string">&quot;my-pass&quot;</span> test.ll -o optimized.ll<br><br><span class="hljs-comment"># 查看结果</span><br><span class="hljs-built_in">cat</span> optimized.ll<br><br><span class="hljs-comment">#编译 IR 为可执行文件</span><br>clang optimized.ll -o optimized_program<br></code></pre></td></tr></table></figure>
+
+<h3 id="通过Clang插件运行（需Pass支持）"><a href="#通过Clang插件运行（需Pass支持）" class="headerlink" title="通过Clang插件运行（需Pass支持）"></a>通过Clang插件运行（需Pass支持）</h3><p>当代码文件比较多的时候，先把源代码编译成IR代码，然后用opt运行Pass实在麻烦且无趣。 如果能把Pass集成到clang的参数中调用，那该多好啊。 因为这样你就可以做这样的事情 (假设你的构建工具是autotools)：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ CC=clang CFLAGS=<span class="hljs-string">&quot;-arg-to-load-my-pass mypass.so&quot;</span> ./configure<br>$ make<br></code></pre></td></tr></table></figure>
+
+<p>参考：<a target="_blank" rel="noopener" href="https://www.cs.cornell.edu/~asampson/blog/clangpass.html">Adrian Sampson: Run an LLVM Pass Automatically with Clang</a></p>
+<h4 id="方法-1：使用-Xclang-load-参数"><a href="#方法-1：使用-Xclang-load-参数" class="headerlink" title="方法 1：使用 -Xclang -load 参数"></a><strong>方法 1：使用 <code>-Xclang -load</code> 参数</strong></h4><p>现在，可以在clang中直接加载Hello Pass了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">clang -Xclang -load -Xclang path/to/YourPass.so source.c -o output<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-Xclang</code> 将后续参数传递给 Clang 的底层 LLVM 组件。</li>
+<li><code>-load</code> 动态加载指定的 Pass 插件（<code>.so</code> 文件）。</li>
+</ul>
+<h4 id="方法-2：封装为自定义编译器别名"><a href="#方法-2：封装为自定义编译器别名" class="headerlink" title="方法 2：封装为自定义编译器别名"></a><strong>方法 2：封装为自定义编译器别名</strong></h4><p>当然，你还觉得这不够优雅的话，也可以编写一个clang的wrapper程序<code>hello-clang</code>。 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-meta">#!/bin/bash</span><br><span class="hljs-comment"># 自动注入 Pass 加载参数</span><br><span class="hljs-built_in">exec</span> clang -Xclang -load -Xclang path/to/YourPass.so <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>然后通过环境变量调用：<code>CC=your-clang-wrapper ./configure &amp;&amp; make</code></p>
+<p><strong>关键代码修改（Pass 注册方式）</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 1. 传统 opt 使用的注册方式</span><br><span class="hljs-function"><span class="hljs-type">static</span> RegisterPass&lt;YourPass&gt; <span class="hljs-title">X</span><span class="hljs-params">(<span class="hljs-string">&quot;your-pass&quot;</span>, <span class="hljs-string">&quot;Your Pass Description&quot;</span>)</span></span>;<br><br><span class="hljs-comment">// 2. Clang 使用的注册方式（通过 Pass 管道）</span><br><span class="hljs-function"><span class="hljs-type">static</span> RegisterStandardPasses <span class="hljs-title">Y</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    PassManagerBuilder::EP_EarlyAsPossible,</span></span><br><span class="hljs-params"><span class="hljs-function">    [](<span class="hljs-type">const</span> PassManagerBuilder &amp;Builder, legacy::PassManagerBase &amp;PM) &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">        PM.add(<span class="hljs-keyword">new</span> YourPass());</span></span><br><span class="hljs-params"><span class="hljs-function">    &#125;</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p><strong>作用</strong>：</p>
+<ul>
+<li><code>RegisterPass</code>：供 <code>opt -passes=&quot;your-pass&quot;</code> 识别。</li>
+<li><code>RegisterStandardPasses</code>：供 Clang 在编译时自动插入 Pass。</li>
+</ul>
+<h1 id="Pass开发具体"><a href="#Pass开发具体" class="headerlink" title="Pass开发具体"></a>Pass开发具体</h1><p>在前面讲解了pass开发的一般流程，这里将具体讲解pass开发中的一些思想和具体细节。首先先介绍在LLVM旧版中必须要实现的方法然后看看新版中的不同，最后讲述编写PASS的一些个人总结和基本思想</p>
+<p>LLVM的核心是一个<strong>多阶段流水线编译器</strong>，Pass是流水线中的基本处理单元。所有优化和分析都通过Pass实现，因此必须满足LLVM系统的以下要求：</p>
+<ul>
+<li><strong>统一管理</strong>：需注册到PassManager才能被调度</li>
+<li><strong>标准化接口</strong>：必须实现特定方法供系统调用</li>
+<li><strong>生命周期控制</strong>：明确Pass的生效范围和资源管理</li>
+</ul>
+<h2 id="所有Pass必须的共同要素"><a href="#所有Pass必须的共同要素" class="headerlink" title="所有Pass必须的共同要素"></a><strong>所有Pass必须的共同要素</strong></h2><h4 id="1-头文件包含"><a href="#1-头文件包含" class="headerlink" title="1. 头文件包含"></a><strong>1. 头文件包含</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// Legacy PM</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/Pass.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/IR/Function.h&quot;</span></span><br><br><span class="hljs-comment">// New PM</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/IR/PassManager.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/Passes/PassPlugin.h&quot;</span></span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2-输出依赖声明"><a href="#2-输出依赖声明" class="headerlink" title="2. 输出依赖声明"></a><strong>2. 输出依赖声明</strong></h4><figure class="highlight cc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cc"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> llvm;<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-编译要求"><a href="#3-编译要求" class="headerlink" title="3. 编译要求"></a><strong>3. 编译要求</strong></h4><p>必须编译为动态库（<code>.so</code>&#x2F;<code>.dll</code>），链接LLVM核心库（<code>LLVMCore</code>、<code>LLVMSupport</code>等）</p>
+<h2 id="旧版-Legacy-PM"><a href="#旧版-Legacy-PM" class="headerlink" title="旧版(Legacy PM)"></a>旧版(Legacy PM)</h2><pre><code class=" mermaid">flowchart TD
+    A[opt -load X.so] --&gt; B[PassRegistry::addPass]
+    B --&gt; C[PassManager::add]
+    C --&gt; D[Pass::initialize]
+    D --&gt; E[Pass::runOnModule/Function]
+    E --&gt; F[修改IR + 返回bool]
+</code></pre>
+
+<p><strong>逐步淘汰但仍需了解</strong>,这里直接以llvm 4.0版本为基础的ollvm分支的指令混淆Substitution.cpp的Pasa为例，看看旧版必须需要实现什么？</p>
+<p><img src="https://s2.loli.net/2025/06/11/IwDznZjtlTobPOr.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/06/11/v6cYXyI2ClheHkN.png" srcset="/img/loading.gif" lazyload></p>
+<p>可以看到在旧版中：</p>
+<h3 id="必须实现的基类"><a href="#必须实现的基类" class="headerlink" title="必须实现的基类"></a><strong>必须实现的基类</strong></h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/Pass.h&quot;</span></span><br><br><span class="hljs-comment">// 函数级Pass示例</span><br><span class="hljs-comment">// 必须继承XxxPass基类</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MyLegacyPass</span> : <span class="hljs-keyword">public</span> FunctionPass &#123;<br>  <span class="hljs-type">static</span> <span class="hljs-type">char</span> ID;  <span class="hljs-comment">// 必须的静态标识符</span><br>  <span class="hljs-built_in">MyLegacyPass</span>() : <span class="hljs-built_in">FunctionPass</span>(ID) &#123;&#125; <br>  <br>  <span class="hljs-comment">// 必须实现的核心方法</span><br>  <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">runOnFunction</span><span class="hljs-params">(Function &amp;F)</span> <span class="hljs-keyword">override</span> </span>&#123;<br>    <span class="hljs-built_in">errs</span>() &lt;&lt; <span class="hljs-string">&quot;Found function: &quot;</span> &lt;&lt; F.<span class="hljs-built_in">getName</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; <span class="hljs-comment">// 是否修改了IR</span><br>  &#125;<br>&#125;;<br><br><span class="hljs-type">char</span> MyLegacyPass::ID = <span class="hljs-number">0</span>; <span class="hljs-comment">// 必须初始化</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="必须的注册代码"><a href="#必须的注册代码" class="headerlink" title="必须的注册代码"></a><strong>必须的注册代码</strong></h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 注册到LLVM的Pass管理器</span><br><span class="hljs-function"><span class="hljs-type">static</span> RegisterPass&lt;MyLegacyPass&gt; <span class="hljs-title">X</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  <span class="hljs-string">&quot;my-legacy-pass&quot;</span>,      <span class="hljs-comment">// 命令行参数名</span></span></span><br><span class="hljs-params"><span class="hljs-function">  <span class="hljs-string">&quot;My Legacy Pass Demo&quot;</span>, <span class="hljs-comment">// Pass描述</span></span></span><br><span class="hljs-params"><span class="hljs-function">  <span class="hljs-literal">false</span>,                 <span class="hljs-comment">// 是否只分析不修改IR</span></span></span><br><span class="hljs-params"><span class="hljs-function">  <span class="hljs-literal">false</span>                  <span class="hljs-comment">// 是否是CFG-only Pass</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="机制"><a href="#机制" class="headerlink" title="机制"></a>机制</h3><p>LLVM通过基类指针统一管理所有Pass，虚函数<code>runOnXxx</code>是Pass的执行入口（如<code>runOnFunction</code>、<code>runOnModule</code>），为我们知道llvm优化过程中一般有不止一个Pass,为例管理这些Pass。LLVM用ID识别Pass类型，用于Pass依赖分析和去重。而<strong>注册宏</strong>：<code>static RegisterPass&lt;MyPass&gt; X(&quot;opt-name&quot;, &quot;Description&quot;, false, false);</code>则是为了：</p>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">作用</th>
+<th align="left">与LLVM系统的关联</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">“opt-name”</td>
+<td align="left">定义<code>opt -opt-name</code>命令行参数</td>
+<td align="left">将Pass绑定到命令行接口</td>
+</tr>
+<tr>
+<td align="left">“Description”</td>
+<td align="left">Pass的元信息描述</td>
+<td align="left">显示在<code>opt -help</code>中</td>
+</tr>
+<tr>
+<td align="left">false</td>
+<td align="left">是否只分析不修改IR</td>
+<td align="left">影响Pass调度器的优化决策</td>
+</tr>
+</tbody></table>
+<h2 id="新版-New-PM-LLVM-10-默认"><a href="#新版-New-PM-LLVM-10-默认" class="headerlink" title="新版(New PM  LLVM 10+默认)"></a>新版(New PM  LLVM 10+默认)</h2><pre><code class=" mermaid">flowchart TD
+    A[opt -load-pass-plugin X.so] --&gt; B[PassPluginLibraryInfo注册]
+    B --&gt; C[PassBuilder解析-passes参数]
+    C --&gt; D[构建PassPipeline]
+    D --&gt; E[PassManager执行run]
+    E --&gt; F[Pass::run + AnalysisManager交互]
+    F --&gt; G[返回PreservedAnalyses]
+</code></pre>
+
+<h4 id="必须实现的基类-1"><a href="#必须实现的基类-1" class="headerlink" title="必须实现的基类"></a><strong>必须实现的基类</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/IR/PassManager.h&quot;</span></span><br><br><span class="hljs-comment">//继承PassInfoMixin</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MyNewPass</span> : <span class="hljs-keyword">public</span> PassInfoMixin&lt;MyNewPass&gt; &#123;<br>  <span class="hljs-comment">// 必须实现的run方法</span><br>  <span class="hljs-function">PreservedAnalyses <span class="hljs-title">run</span><span class="hljs-params">(Function &amp;F, FunctionAnalysisManager &amp;FAM)</span> </span>&#123;<br>    <span class="hljs-built_in">errs</span>() &lt;&lt; <span class="hljs-string">&quot;Processing: &quot;</span> &lt;&lt; F.<span class="hljs-built_in">getName</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>    <span class="hljs-keyword">return</span> PreservedAnalyses::<span class="hljs-built_in">all</span>(); <span class="hljs-comment">// 或修改后返回PreservedAnalyses::none()</span><br>  &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="必须的插件注册"><a href="#必须的插件注册" class="headerlink" title="必须的插件注册"></a><strong>必须的插件注册</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;llvm/Passes/PassPlugin.h&quot;</span></span><br><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-function">LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo</span><br><span class="hljs-function"><span class="hljs-title">llvmGetPassPluginInfo</span><span class="hljs-params">()</span> </span>&#123;<br>  <span class="hljs-keyword">return</span> &#123;<br>    LLVM_PLUGIN_API_VERSION,<br>    <span class="hljs-string">&quot;MyNewPass&quot;</span>,          <span class="hljs-comment">// Pass名称</span><br>    <span class="hljs-string">&quot;v0.1&quot;</span>,               <span class="hljs-comment">// 版本</span><br>    [](PassBuilder &amp;PB) &#123; <span class="hljs-comment">// 注册回调</span><br>      PB.<span class="hljs-built_in">registerPipelineParsingCallback</span>(<br>        [](StringRef Name, FunctionPassManager &amp;FPM,<br>           ArrayRef&lt;PassBuilder::PipelineElement&gt;) &#123;<br>          <span class="hljs-keyword">if</span> (Name == <span class="hljs-string">&quot;my-new-pass&quot;</span>) &#123;<br>            FPM.<span class="hljs-built_in">addPass</span>(<span class="hljs-built_in">MyNewPass</span>());<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>          &#125;<br>          <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;);<br>    &#125;<br>  &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="机制-1"><a href="#机制-1" class="headerlink" title="机制"></a>机制</h3><p>LLVM新架构采用CRTP模式（编译期多态）,<code>run()</code>返回<code>PreservedAnalyses</code>告诉系统哪些分析结果仍有效。而<strong>插件注册机制</strong>则提供了如下便利：</p>
+<ul>
+<li><strong>动态加载</strong>：允许Pass独立编译为<code>.so</code>文件</li>
+<li><strong>模块化设计</strong>：通过回调函数延迟注册，降低耦合度</li>
+<li><strong>版本控制</strong>：<code>LLVM_PLUGIN_API_VERSION</code>确保ABI兼容</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">要素</th>
+<th align="left">Legacy PM</th>
+<th align="left">New PM</th>
+<th align="left">改进目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>注册方式</strong></td>
+<td align="left">静态注册（编译期）</td>
+<td align="left">动态插件（运行时）</td>
+<td align="left">支持独立编译和热加载</td>
+</tr>
+<tr>
+<td align="left"><strong>接口设计</strong></td>
+<td align="left">虚函数+继承</td>
+<td align="left">CRTP+概念约束</td>
+<td align="left">减少运行时开销</td>
+</tr>
+<tr>
+<td align="left"><strong>依赖管理</strong></td>
+<td align="left">显式声明<code>getAnalysisUsage()</code></td>
+<td align="left">通过<code>AnalysisManager</code>自动处理</td>
+<td align="left">简化Pass间依赖关系</td>
+</tr>
+<tr>
+<td align="left"><strong>返回值</strong></td>
+<td align="left"><code>bool</code>（是否修改IR）</td>
+<td align="left"><code>PreservedAnalyses</code>位掩码</td>
+<td align="left">更精确的优化信息保留</td>
+</tr>
+</tbody></table>
+<h2 id="与LLVM系统的深度交互"><a href="#与LLVM系统的深度交互" class="headerlink" title="与LLVM系统的深度交互"></a><strong>与LLVM系统的深度交互</strong></h2><pre><code class=" mermaid">sequenceDiagram
+    participant Frontend as opt/Clang
+    participant Builder as PassBuilder
+    participant Manager as PassManager
+    participant Pass as LLVM Pass
+    participant Analysis as AnalysisManager
+    participant IR as LLVM IR
+
+    Frontend-&gt;&gt;Builder: 1. 注册Pass插件(llvmGetPassPluginInfo)
+    Frontend-&gt;&gt;Builder: 2. 构建优化管道(-passes=&quot;my-pass&quot;)
+    
+    loop 管道执行
+        Manager-&gt;&gt;Pass: 3. 调用run(Function/Module, AM)
+        Pass-&gt;&gt;Analysis: 4. 请求分析结果(getResult&lt;T&gt;)
+        Analysis--&gt;&gt;Pass: 5. 返回缓存的分析数据
+        Pass-&gt;&gt;IR: 6. 转换或分析IR
+        Pass--&gt;&gt;Manager: 7. 返回PreservedAnalyses
+        Manager-&gt;&gt;Analysis: 8. 根据PreservedAnalyses清理失效分析
+    end
+</code></pre>
+
+<h2 id="开发思想"><a href="#开发思想" class="headerlink" title="开发思想"></a>开发思想</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/WritingAnLLVMNewPMPass.html">编写 LLVM Pass — LLVM 21.0.0git 文档 - LLVM 项目</a></li>
+</ul>
+<p>在前面介绍了LLVM中的Pass的管理系统，自然在编写pass中需要先引入<strong>基础 Pass 框架</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>头文件</strong></th>
+<th><strong>用途</strong></th>
+<th><strong>关键类&#x2F;函数</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>llvm/Pass.h</code></td>
+<td>定义 Pass 基类和注册机制</td>
+<td><code>Pass</code>, <code>RegisterPass</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/PassManager.h</code></td>
+<td>新式 Pass 管理器（LegacyPassManager 的替代）</td>
+<td><code>PassManager</code>, <code>FunctionPassManager</code></td>
+</tr>
+<tr>
+<td><code>llvm/PassRegistry.h</code></td>
+<td>Pass 注册表管理</td>
+<td><code>PassRegistry</code></td>
+</tr>
+</tbody></table>
+<p>不知道读者是否对基于babel的JS反混淆的AST是否有所了解：</p>
+<p><img src="https://s2.loli.net/2025/06/11/84tXpE7aRVLyePc.png" srcset="/img/loading.gif" lazyload></p>
+<p>在我看来两者的思想是相似的，js的AST处理利用了js的中间代码形式，而对于LLVM的中间代码IR的处理是基于控制流程图，<strong>只要从指令，函数，基本块再到块的前驱后驱，函数等的引用操作在块上的体现</strong>。有大致的了解就可以整体对编写pass有一定了解。<a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/ProgrammersManual.html">LLVM 程序员手册 — LLVM 21.0.0git 文档 - LLVM 项目</a>。这里介绍几个常见使用的库：</p>
+<p><strong>IR 数据结构操作</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>头文件</strong></th>
+<th><strong>用途</strong></th>
+<th><strong>关键类&#x2F;函数</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>llvm/IR/Function.h</code></td>
+<td>操作函数（<code>Function</code> 类）</td>
+<td><code>Function</code>, <code>Argument</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/BasicBlock.h</code></td>
+<td>操作基本块（<code>BasicBlock</code> 类）</td>
+<td><code>BasicBlock</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/Instruction.h</code></td>
+<td>操作指令（<code>Instruction</code> 类及其子类）</td>
+<td><code>Instruction</code>, <code>BinaryOperator</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/Module.h</code></td>
+<td>操作整个模块（全局变量、函数集合）</td>
+<td><code>Module</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/IRBuilder.h</code></td>
+<td>生成新指令的辅助工具</td>
+<td><code>IRBuilder</code></td>
+</tr>
+</tbody></table>
+<p><strong>分析与优化支持</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>头文件</strong></th>
+<th><strong>用途</strong></th>
+<th><strong>关键类&#x2F;函数</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>llvm/Analysis/AliasAnalysis.h</code></td>
+<td>别名分析（检测内存访问冲突）</td>
+<td><code>AliasAnalysis</code>, <code>AAResults</code></td>
+</tr>
+<tr>
+<td><code>llvm/Analysis/Dominators.h</code></td>
+<td>支配树分析</td>
+<td><code>DominatorTree</code></td>
+</tr>
+<tr>
+<td><code>llvm/Analysis/LoopInfo.h</code></td>
+<td>循环结构分析</td>
+<td><code>Loop</code>, <code>LoopInfo</code></td>
+</tr>
+<tr>
+<td><code>llvm/Analysis/CallGraph.h</code></td>
+<td>函数调用图分析</td>
+<td><code>CallGraph</code>, <code>CallGraphNode</code></td>
+</tr>
+</tbody></table>
+<p><strong>类型与常量操作</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>头文件</strong></th>
+<th><strong>用途</strong></th>
+<th><strong>关键类&#x2F;函数</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>llvm/IR/Type.h</code></td>
+<td>类型系统（如 <code>i32</code>, <code>float*</code>）</td>
+<td><code>Type</code>, <code>IntegerType</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/Constants.h</code></td>
+<td>常量操作（如 <code>ConstantInt</code>）</td>
+<td><code>Constant</code>, <code>ConstantInt</code></td>
+</tr>
+<tr>
+<td><code>llvm/IR/DerivedTypes.h</code></td>
+<td>派生类型（结构体、数组等）</td>
+<td><code>StructType</code>, <code>ArrayType</code></td>
+</tr>
+</tbody></table>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/LangRef.html#abstract">LLVM 语言参考手册 — LLVM 21.0.0git 文档 - LLVM 项目</a></p>
+<p><a target="_blank" rel="noopener" href="https://llvm.gnu.ac.cn/docs/ProgrammersManual.html#iterating-over-the-basicblock-in-a-function">LLVM 程序员手册 — LLVM 21.0.0git 文档 - LLVM 项目</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/122522485">(69 封私信 &#x2F; 96 条消息) LLVM Pass入门导引 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/BobHuang/p/17640378.html#scroller-4">从零开始教你写一个LLVM Pass - 暴力都不会的蒟蒻 - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/" class="category-chain-item">工科知识骨架</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/" class="category-chain-item">编译器</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/LLVM/" class="category-chain-item">LLVM</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>LLVM_PASS开发</div>
+      <div>https://hermes37.vercel.app/2025/06/04/工科知识骨架/计算机科学与技术/编译器/LLVM/LLVM_PASS开发/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月4日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/06/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/LLVM/Ollvm/%E6%8C%87%E4%BB%A4%E6%9B%BF%E6%8D%A2/" title="指令替换">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">指令替换</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/04/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E9%AA%A8%E6%9E%B6/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E7%BC%96%E8%AF%91%E5%99%A8/LLVM/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3LLVM%E7%9A%84%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90/" title="深入理解LLVM的代码生成">
+                        <span class="hidden-mobile">深入理解LLVM的代码生成</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
