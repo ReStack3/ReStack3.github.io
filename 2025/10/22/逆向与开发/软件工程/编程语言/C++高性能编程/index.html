@@ -1,0 +1,1173 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="性能优化基础高性能C++避免不必要的复制参数传递移动引用&#x2F;右值 引用&#x2F;指针（可移动的类型） 如果函数需要复制参数，则可以考虑按值传递并从参数移动–临时局部变量 返回值优化(RVO) 只要跳过对象的创建和销毁就可以提高性能   替代方法：使用具有输出参数的函数，使用在动态分配的内存中构造结果的工厂函数，并返回拥有的智能指针  使用指针避免复制避免不必要的复制确保所有数据类型是可移">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++高性能编程">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/10/22/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C++%E9%AB%98%E6%80%A7%E8%83%BD%E7%BC%96%E7%A8%8B/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="性能优化基础高性能C++避免不必要的复制参数传递移动引用&#x2F;右值 引用&#x2F;指针（可移动的类型） 如果函数需要复制参数，则可以考虑按值传递并从参数移动–临时局部变量 返回值优化(RVO) 只要跳过对象的创建和销毁就可以提高性能   替代方法：使用具有输出参数的函数，使用在动态分配的内存中构造结果的工厂函数，并返回拥有的智能指针  使用指针避免复制避免不必要的复制确保所有数据类型是可移">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-22T06:43:11.009Z">
+<meta property="article:modified_time" content="2026-05-26T06:42:38.168Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>C++高性能编程 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++高性能编程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          65 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++高性能编程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="性能优化基础"><a href="#性能优化基础" class="headerlink" title="性能优化基础"></a>性能优化基础</h1><h1 id="高性能C"><a href="#高性能C" class="headerlink" title="高性能C++"></a>高性能C++</h1><h2 id="避免不必要的复制"><a href="#避免不必要的复制" class="headerlink" title="避免不必要的复制"></a>避免不必要的复制</h2><h3 id="参数传递"><a href="#参数传递" class="headerlink" title="参数传递"></a>参数传递</h3><p>移动引用&#x2F;右值</p>
+<p>引用&#x2F;指针（可移动的类型）</p>
+<p>如果函数需要复制参数，则可以考虑按值传递并从参数移动–临时局部变量</p>
+<h3 id="返回值优化-RVO"><a href="#返回值优化-RVO" class="headerlink" title="返回值优化(RVO)"></a>返回值优化(RVO)</h3><blockquote>
+<p>只要跳过对象的创建和销毁就可以提高性能</p>
+</blockquote>
+<blockquote>
+<p>替代方法：使用具有输出参数的函数，使用在动态分配的内存中构造结果的工厂函数，并返回拥有的智能指针</p>
+</blockquote>
+<h3 id="使用指针避免复制"><a href="#使用指针避免复制" class="headerlink" title="使用指针避免复制"></a>使用指针避免复制</h3><h3 id="避免不必要的复制-1"><a href="#避免不必要的复制-1" class="headerlink" title="避免不必要的复制"></a>避免不必要的复制</h3><p>确保所有数据类型是可移动的。</p>
+<p>如果类型复制成本高，则从一开始就使它们不可复制，将复制和赋值操作声明为已删除，如果类支持快速移动则可以改成提高移动操作</p>
+<p>如果一个类即不可赋值也不可移动，则无法将其与STL容器一起使用，这种情况下，唯一指针的容器是备选项</p>
+<h2 id="避免低效的内存管理"><a href="#避免低效的内存管理" class="headerlink" title="避免低效的内存管理"></a>避免低效的内存管理</h2><h3 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h3><p><strong>引用计数</strong>是一种内存管理技术，通过跟踪对象被引用的次数来决定何时释放其资源。</p>
+<p>基本思想:</p>
+<ul>
+<li>每个对象附带一个计数器</li>
+<li>当新引用指向对象时，计数器<strong>递增</strong></li>
+<li>当引用失效时，计数器<strong>递减</strong></li>
+<li>当计数器归零时，自动释放对象</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 概念演示（非线程安全）</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ReferenceCounted</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span>* count;  <span class="hljs-comment">// 引用计数器</span><br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">ReferenceCounted</span>() : <span class="hljs-built_in">count</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">int</span>(<span class="hljs-number">1</span>)) &#123;&#125;  <span class="hljs-comment">// 初始计数为1</span><br>    <br>    <span class="hljs-comment">// 拷贝构造：共享所有权，计数递增</span><br>    <span class="hljs-built_in">ReferenceCounted</span>(<span class="hljs-type">const</span> ReferenceCounted&amp; other) : <span class="hljs-built_in">count</span>(other.count) &#123;<br>        ++(*count);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 析构：计数递减，归零时释放</span><br>    ~<span class="hljs-built_in">ReferenceCounted</span>() &#123;<br>        <span class="hljs-keyword">if</span> (--(*count) == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">delete</span> count;  <span class="hljs-comment">// 释放计数器</span><br>            <span class="hljs-comment">// 释放对象本身的其他资源...</span><br>        &#125;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h4><h5 id="嵌入对象内部"><a href="#嵌入对象内部" class="headerlink" title="嵌入对象内部"></a>嵌入对象内部</h5><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Object</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-keyword">mutable</span> std::atomic&lt;<span class="hljs-type">int</span>&gt; count&#123;<span class="hljs-number">1</span>&#125;;  <span class="hljs-comment">// 计数器作为成员变量</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_ref</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; count.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed); &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (count.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>, std::memory_order_acq_rel) == <span class="hljs-number">1</span>) &#123;<br>            <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>;  <span class="hljs-comment">// 自毁！</span><br>        &#125;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优点</strong>：内存局部性好，一次分配<br><strong>缺点</strong>：对象必须知情并配合，侵入式设计</p>
+<h5 id="独立控制块（std-shared-ptr采用）"><a href="#独立控制块（std-shared-ptr采用）" class="headerlink" title="独立控制块（std::shared_ptr采用）"></a>独立控制块（<code>std::shared_ptr</code>采用）</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ControlBlock</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    T* ptr;                    <span class="hljs-comment">// 被管理对象</span><br>    std::atomic&lt;<span class="hljs-type">int</span>&gt; count;    <span class="hljs-comment">// 引用计数</span><br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">ControlBlock</span>(T* p) : <span class="hljs-built_in">ptr</span>(p), <span class="hljs-built_in">count</span>(<span class="hljs-number">1</span>) &#123;&#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_ref</span><span class="hljs-params">()</span> </span>&#123; count.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed); &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (count.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>, std::memory_order_acq_rel) == <span class="hljs-number">1</span>) &#123;<br>            <span class="hljs-keyword">delete</span> ptr;    <span class="hljs-comment">// 释放对象</span><br>            <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>;   <span class="hljs-comment">// 释放控制块</span><br>        &#125;<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">SmartPtr</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    ControlBlock&lt;T&gt;* cb;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">SmartPtr</span><span class="hljs-params">(T* ptr)</span> : cb(new ControlBlock&lt;T&gt;(ptr)) &#123;</span>&#125;<br>    <br>    <span class="hljs-comment">// 拷贝：共享控制块</span><br>    <span class="hljs-built_in">SmartPtr</span>(<span class="hljs-type">const</span> SmartPtr&amp; other) : <span class="hljs-built_in">cb</span>(other.cb) &#123;<br>        cb-&gt;<span class="hljs-built_in">add_ref</span>();<br>    &#125;<br>    <br>    ~<span class="hljs-built_in">SmartPtr</span>() &#123;<br>        cb-&gt;<span class="hljs-built_in">release</span>();<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优点</strong>：非侵入式，可管理任何类型<br><strong>缺点</strong>：两次内存分配，缓存不友好</p>
+<h4 id="循环引用问题"><a href="#循环引用问题" class="headerlink" title="循环引用问题"></a>循环引用问题</h4><p>这是引用计数的经典陷阱：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Node</span> &#123;<br>    std::shared_ptr&lt;Node&gt; next;<br>    std::shared_ptr&lt;Node&gt; prev;<br>    <br>    ~<span class="hljs-built_in">Node</span>() &#123; std::cout &lt;&lt; <span class="hljs-string">&quot;Node destroyed\n&quot;</span>; &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">memory_leak</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">auto</span> node1 = std::<span class="hljs-built_in">make_shared</span>&lt;Node&gt;();<br>    <span class="hljs-keyword">auto</span> node2 = std::<span class="hljs-built_in">make_shared</span>&lt;Node&gt;();<br>    <br>    node1-&gt;next = node2;  <span class="hljs-comment">// node2 引用计数 = 2</span><br>    node2-&gt;prev = node1;  <span class="hljs-comment">// node1 引用计数 = 2</span><br>    <br>    <span class="hljs-comment">// 离开作用域时：</span><br>    <span class="hljs-comment">// node1 计数减为1（因为node2-&gt;prev还在引用）</span><br>    <span class="hljs-comment">// node2 计数减为1（因为node1-&gt;next还在引用）</span><br>    <span class="hljs-comment">// 永远无法归零 → 内存泄漏！</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>解决方案</strong>：<code>std::weak_ptr</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Node</span> &#123;<br>    std::shared_ptr&lt;Node&gt; next;<br>    std::weak_ptr&lt;Node&gt; prev;  <span class="hljs-comment">// 弱引用，不增加计数</span><br>    <br>    ~<span class="hljs-built_in">Node</span>() &#123; std::cout &lt;&lt; <span class="hljs-string">&quot;Node destroyed\n&quot;</span>; &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="并发引用计数"><a href="#并发引用计数" class="headerlink" title="并发引用计数"></a>并发引用计数</h4><p>这才是真正的挑战所在！多线程环境下的引用计数需要精心设计。</p>
+<h5 id="线程安全要求"><a href="#线程安全要求" class="headerlink" title="线程安全要求"></a>线程安全要求</h5><ol>
+<li><strong>引用计数的原子性</strong>：递增&#x2F;递减操作必须是原子的</li>
+<li><strong>内存序正确性</strong>：确保指令重排不会破坏逻辑</li>
+<li><strong>生命周期安全</strong>：防止对象在仍被使用时被释放</li>
+</ol>
+<p>朴素的原子操作（有问题）:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 有潜在问题的实现</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">NaiveThreadSafeRC</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::atomic&lt;<span class="hljs-type">int</span>&gt; count&#123;<span class="hljs-number">1</span>&#125;;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_ref</span><span class="hljs-params">()</span> </span>&#123;<br>        count.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed);<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (count.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed) == <span class="hljs-number">1</span>) &#123;<br>            <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>;  <span class="hljs-comment">// 危险！</span><br>        &#125;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>问题</strong>：在<code>release()</code>中，我们读取到计数值1后立即删除对象，但可能有其他线程正在执行<code>add_ref()</code>！</p>
+<h5 id="正确的并发实现"><a href="#正确的并发实现" class="headerlink" title="正确的并发实现"></a>正确的并发实现</h5><h6 id="强内存序-安全检查"><a href="#强内存序-安全检查" class="headerlink" title="强内存序 + 安全检查"></a>强内存序 + 安全检查</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">SafeReferenceCounted</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::atomic&lt;<span class="hljs-type">int</span>&gt; count&#123;<span class="hljs-number">1</span>&#125;;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 递增：内存序宽松即可，因为不涉及对象访问</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_ref</span><span class="hljs-params">()</span> </span>&#123;<br>        count.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 递减：需要严格的内存序</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-comment">// 获取-释放语义：确保之前的所有操作对其他线程可见</span><br>        <span class="hljs-type">int</span> old_count = count.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>, std::memory_order_acq_rel);<br>        <br>        <span class="hljs-keyword">if</span> (old_count == <span class="hljs-number">1</span>) &#123;<br>            <span class="hljs-comment">// 此时计数为0，确保没有其他线程能再增加引用</span><br>            <span class="hljs-comment">// 因为要访问对象，需要同步</span><br>            std::<span class="hljs-built_in">atomic_thread_fence</span>(std::memory_order_acquire);<br>            <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>;<br>        &#125;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h6 id="基于std-shared-ptr的现代实现"><a href="#基于std-shared-ptr的现代实现" class="headerlink" title="基于std::shared_ptr的现代实现"></a>基于<code>std::shared_ptr</code>的现代实现</h6><p>实际上，现代C++推荐使用标准库，其实现经过千锤百炼：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;atomic&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;memory&gt;</span></span><br><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ConcurrentSafePtr</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">ControlBlock</span> &#123;<br>        T* ptr;<br>        std::atomic&lt;<span class="hljs-type">int</span>&gt; shared_count;<br>        std::atomic&lt;<span class="hljs-type">int</span>&gt; weak_count;<br>        <br>        <span class="hljs-built_in">ControlBlock</span>(T* p) : <span class="hljs-built_in">ptr</span>(p), <span class="hljs-built_in">shared_count</span>(<span class="hljs-number">1</span>), <span class="hljs-built_in">weak_count</span>(<span class="hljs-number">0</span>) &#123;&#125;<br>        <br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_ref_shared</span><span class="hljs-params">()</span> </span>&#123;<br>            shared_count.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed);<br>        &#125;<br>        <br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release_shared</span><span class="hljs-params">()</span> </span>&#123;<br>            <span class="hljs-comment">// 使用memory_order_acq_rel确保正确的同步</span><br>            <span class="hljs-keyword">if</span> (shared_count.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>, std::memory_order_acq_rel) == <span class="hljs-number">1</span>) &#123;<br>                <span class="hljs-comment">// 最后一个shared_ptr，销毁对象</span><br>                <span class="hljs-keyword">delete</span> ptr;<br>                ptr = <span class="hljs-literal">nullptr</span>;<br>                <br>                <span class="hljs-comment">// 如果也没有weak_ptr，销毁控制块</span><br>                <span class="hljs-built_in">release_weak</span>();<br>            &#125;<br>        &#125;<br>        <br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">add_ref_weak</span><span class="hljs-params">()</span> </span>&#123;<br>            weak_count.<span class="hljs-built_in">fetch_add</span>(<span class="hljs-number">1</span>, std::memory_order_relaxed);<br>        &#125;<br>        <br>        <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release_weak</span><span class="hljs-params">()</span> </span>&#123;<br>            <span class="hljs-keyword">if</span> (weak_count.<span class="hljs-built_in">fetch_sub</span>(<span class="hljs-number">1</span>, std::memory_order_acq_rel) == <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-comment">// 需要检查是否还有shared引用</span><br>                <span class="hljs-keyword">if</span> (shared_count.<span class="hljs-built_in">load</span>(std::memory_order_acquire) == <span class="hljs-number">0</span>) &#123;<br>                    <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>;<br>                &#125;<br>            &#125;<br>        &#125;<br>    &#125;;<br>    <br>    ControlBlock* cb;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">ConcurrentSafePtr</span><span class="hljs-params">(T* ptr)</span> : cb(new ControlBlock(ptr)) &#123;</span>&#125;<br>    <br>    <span class="hljs-built_in">ConcurrentSafePtr</span>(<span class="hljs-type">const</span> ConcurrentSafePtr&amp; other) : <span class="hljs-built_in">cb</span>(other.cb) &#123;<br>        cb-&gt;<span class="hljs-built_in">add_ref_shared</span>();<br>    &#125;<br>    <br>    ~<span class="hljs-built_in">ConcurrentSafePtr</span>() &#123;<br>        <span class="hljs-keyword">if</span> (cb) &#123;<br>            cb-&gt;<span class="hljs-built_in">release_shared</span>();<br>        &#125;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 移动构造等其他必要函数...</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="内存池"><a href="#内存池" class="headerlink" title="内存池"></a>内存池</h3><h4 id="不必要的内存分配"><a href="#不必要的内存分配" class="headerlink" title="不必要的内存分配"></a>不必要的内存分配</h4><p>使用RAII类来管理内存释放，明确进行内存分配和释放，分配操作通常隐藏在管理自己内存的对象中，</p>
+<h5 id="并发程序的内存管理"><a href="#并发程序的内存管理" class="headerlink" title="并发程序的内存管理"></a>并发程序的内存管理</h5><h5 id="避免内存碎片"><a href="#避免内存碎片" class="headerlink" title="避免内存碎片"></a>避免内存碎片</h5><h2 id="条件执行的优化"><a href="#条件执行的优化" class="headerlink" title="条件执行的优化"></a>条件执行的优化</h2><h3 id="核心概念：CPU流水线"><a href="#核心概念：CPU流水线" class="headerlink" title="核心概念：CPU流水线"></a>核心概念：CPU流水线</h3><p>一个汽车装配流水线，它被分成多个阶段（安装发动机、安装车门、喷漆等）。当第一辆车在喷漆时，第二辆车已经在安装车门，第三辆车在安装发动机。这样<strong>同时处理多辆车</strong>，大大提高了效率。</p>
+<p>CPU流水线也是类似的原理：</p>
+<p><strong>取指</strong> -&gt; <strong>译码</strong> -&gt; <strong>执行</strong> -&gt; <strong>访存</strong> -&gt; <strong>写回</strong>.当第N条指令在执行时，第N+1条指令在译码，第N+2条指令在取指。理想情况下，每个时钟周期都能完成一条指令。</p>
+<p>问题就出在 <strong>“条件”</strong> 上。看看这个简单例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (x &gt; <span class="hljs-number">0</span>) &#123;<br>    y = x * <span class="hljs-number">2</span>;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    y = x + <span class="hljs-number">10</span>;<br>&#125;<br><span class="hljs-comment">// 后续代码...</span><br></code></pre></td></tr></table></figure>
+
+<p>CPU遇到<code>if</code>语句时面临一个困境：</p>
+<p>为了保持流水线充满，它需要<strong>提前</strong>把后续指令加载到流水线中但<code>x &gt; 0</code>的结果还没计算出来！CPU只能<strong>猜测</strong>哪个分支会被执行</p>
+<h4 id="两种猜测结果："><a href="#两种猜测结果：" class="headerlink" title="两种猜测结果："></a>两种猜测结果：</h4><ol>
+<li><strong>预测正确</strong>：流水线继续顺畅执行，性能很好</li>
+<li><strong>预测错误</strong>：灾难发生了！</li>
+</ol>
+<h4 id="预测错误时的惩罚："><a href="#预测错误时的惩罚：" class="headerlink" title="预测错误时的惩罚："></a>预测错误时的惩罚：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 假设CPU预测 x &gt; 0 为真，开始预加载 y = x * 2 的指令</span><br><span class="hljs-keyword">if</span> (x &gt; <span class="hljs-number">0</span>) &#123;           <span class="hljs-comment">// ← 到这里才发现预测错了！</span><br>    y = x * <span class="hljs-number">2</span>;         <span class="hljs-comment">// 已经加载的错误指令</span><br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    y = x + <span class="hljs-number">10</span>;        <span class="hljs-comment">// 正确的指令，但还没在流水线中</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>后果</strong>：清空整个流水线（像把装配线上的半成品全部扔掉）从正确分支重新开始加载指令通常浪费 <strong>10-20个时钟周期</strong>，这就是所谓的 **”分支预测惩罚”**。</p>
+<h3 id="C-中的优化技巧"><a href="#C-中的优化技巧" class="headerlink" title="C++中的优化技巧"></a>C++中的优化技巧</h3><h4 id="1-避免小函数中的条件分支"><a href="#1-避免小函数中的条件分支" class="headerlink" title="1. 避免小函数中的条件分支"></a>1. 避免小函数中的条件分支</h4><p><strong>优化前</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">max</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (a &gt; b)<br>        <span class="hljs-keyword">return</span> a;<br>    <span class="hljs-keyword">else</span><br>        <span class="hljs-keyword">return</span> b;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优化后（无分支版本）</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">max</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> </span>&#123;<br>    <span class="hljs-comment">// 利用布尔值在算术运算中的特性（0或1）</span><br>    <span class="hljs-keyword">return</span> a * (a &gt; b) + b * (b &gt;= a);<br>    <span class="hljs-comment">// 或者使用位运算（在某些架构上更快）</span><br>    <span class="hljs-comment">// return a ^ ((a ^ b) &amp; -(a &lt; b));</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-优化热点循环中的条件判断"><a href="#2-优化热点循环中的条件判断" class="headerlink" title="2. 优化热点循环中的条件判断"></a>2. 优化热点循环中的条件判断</h4><p><strong>优化前</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 对数组中的正数求和</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">sum_positive</span><span class="hljs-params">(<span class="hljs-type">const</span> std::vector&lt;<span class="hljs-type">int</span>&gt;&amp; data)</span> </span>&#123;<br>    <span class="hljs-type">int</span> sum = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> value : data) &#123;<br>        <span class="hljs-keyword">if</span> (value &gt; <span class="hljs-number">0</span>) &#123;           <span class="hljs-comment">// ← 50%错误预测率！</span><br>            sum += value;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> sum;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优化后（减少分支）</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">sum_positive</span><span class="hljs-params">(<span class="hljs-type">const</span> std::vector&lt;<span class="hljs-type">int</span>&gt;&amp; data)</span> </span>&#123;<br>    <span class="hljs-type">int</span> sum = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> value : data) &#123;<br>        <span class="hljs-comment">// 利用布尔运算避免分支</span><br>        sum += value &amp; ~(value &gt;&gt; <span class="hljs-number">31</span>);  <span class="hljs-comment">// 对于32位有符号整数</span><br>        <span class="hljs-comment">// 或者更可读的版本：</span><br>        <span class="hljs-comment">// sum += (value &gt; 0) * value;</span><br>    &#125;<br>    <span class="hljs-keyword">return</span> sum;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-数据布局优化"><a href="#3-数据布局优化" class="headerlink" title="3. 数据布局优化"></a>3. 数据布局优化</h4><p><strong>优化前</strong>（分支难以预测）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Data</span> &#123;<br>    <span class="hljs-type">int</span> value;<br>    <span class="hljs-type">bool</span> is_positive;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">process_data</span><span class="hljs-params">(<span class="hljs-type">const</span> std::vector&lt;Data&gt;&amp; items)</span> </span>&#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; item : items) &#123;<br>        <span class="hljs-keyword">if</span> (item.is_positive) &#123;    <span class="hljs-comment">// ← 随机分布，预测困难</span><br>            <span class="hljs-built_in">process_positive</span>(item.value);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-built_in">process_negative</span>(item.value);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优化后</strong>（数据分组）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 将正数和负数分开处理</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">process_data</span><span class="hljs-params">(std::vector&lt;Data&gt;&amp; items)</span> </span>&#123;<br>    <span class="hljs-comment">// 先排序或分区（可能的一次性开销）</span><br>    std::<span class="hljs-built_in">partition</span>(items.<span class="hljs-built_in">begin</span>(), items.<span class="hljs-built_in">end</span>(), <br>                  [](<span class="hljs-type">const</span> Data&amp; d) &#123; <span class="hljs-keyword">return</span> d.is_positive; &#125;);<br>    <br>    <span class="hljs-comment">// 现在所有正数在一起，所有负数在一起</span><br>    <span class="hljs-keyword">auto</span> it = items.<span class="hljs-built_in">begin</span>();<br>    <span class="hljs-keyword">for</span> (; it != items.<span class="hljs-built_in">end</span>() &amp;&amp; it-&gt;is_positive; ++it) &#123;<br>        <span class="hljs-built_in">process_positive</span>(it-&gt;value);  <span class="hljs-comment">// ← 连续预测正确！</span><br>    &#125;<br>    <span class="hljs-keyword">for</span> (; it != items.<span class="hljs-built_in">end</span>(); ++it) &#123;<br>        <span class="hljs-built_in">process_negative</span>(it-&gt;value);  <span class="hljs-comment">// ← 连续预测正确！</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="4-使用条件移动指令"><a href="#4-使用条件移动指令" class="headerlink" title="4. 使用条件移动指令"></a>4. 使用条件移动指令</h4><p>现代CPU支持条件移动（CMOV），编译器在适当时候会自动使用：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 编译器可能将其优化为条件移动</span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">conditional_multiply</span><span class="hljs-params">(<span class="hljs-type">int</span> x, <span class="hljs-type">int</span> y, <span class="hljs-type">bool</span> flag)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> flag ? x * y : x;<br>&#125;<br><span class="hljs-comment">// 生成类似：test flag; cmovne result, (x*y)</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="5-循环展开与分支优化"><a href="#5-循环展开与分支优化" class="headerlink" title="5. 循环展开与分支优化"></a>5. 循环展开与分支优化</h4><p><strong>优化前</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; n; ++i) &#123;<br>    <span class="hljs-keyword">if</span> (data[i] &gt; threshold) &#123;  <span class="hljs-comment">// ← 每次迭代都有分支</span><br>        count++;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>优化后</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 手动展开，减少分支次数</span><br><span class="hljs-type">int</span> count = <span class="hljs-number">0</span>;<br><span class="hljs-type">int</span> i = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">for</span> (; i + <span class="hljs-number">3</span> &lt; n; i += <span class="hljs-number">4</span>) &#123;<br>    count += (data[i] &gt; threshold);<br>    count += (data[i+<span class="hljs-number">1</span>] &gt; threshold); <br>    count += (data[i+<span class="hljs-number">2</span>] &gt; threshold);<br>    count += (data[i+<span class="hljs-number">3</span>] &gt; threshold);<br>&#125;<br><span class="hljs-comment">// 处理剩余元素...</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="编译器优化"><a href="#编译器优化" class="headerlink" title="编译器优化"></a>编译器优化</h1><h2 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h2><p>虚函数可能造成性能损失</p>
+<ul>
+<li>构造函数必须初始化Vptr</li>
+<li>虚函数是通过指针间接调用的，所以必须先得到指向虚函数表的指针，然后再获得正确的函数偏移量</li>
+<li>内联是编译时决定的，编译器不可能把运行时才解析的虚函数设置为内联</li>
+</ul>
+<blockquote>
+<p>无法内联函数造成的损失</p>
+</blockquote>
+<p>必须允许编译器在编译期间就解析函数的绑定。通过对类选择硬编码或者将它作为模板参数来传递，可以避免使用动态绑定。(模板把解析的步骤从运行期间提到编译期间)</p>
+<h3 id="模板与继承"><a href="#模板与继承" class="headerlink" title="模板与继承"></a>模板与继承</h3><p>这是一种基于编译期决议的替代方案，主要通过<strong>CRTP</strong>模式实现。</p>
+<p>工作原理</p>
+<ul>
+<li>使用模板基类，派生类作为模板参数传入。</li>
+<li>通过<strong>静态转换</strong>将<code>this</code>指针转换为派生类指针。</li>
+<li>所有函数调用在<strong>编译时</strong>就确定，没有运行时查找。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><br><span class="hljs-comment">// 模板基类</span><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> Derived&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Shape</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 非虚接口！</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        <span class="hljs-comment">// 静态转换，在编译时确定</span><br>        <span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">const</span> Derived*&gt;(<span class="hljs-keyword">this</span>)-&gt;<span class="hljs-built_in">draw_impl</span>();<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// 派生类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Circle</span> : <span class="hljs-keyword">public</span> Shape&lt;Circle&gt; &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw_impl</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Drawing a Circle\n&quot;</span>;<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> : <span class="hljs-keyword">public</span> Shape&lt;Rectangle&gt; &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw_impl</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Drawing a Rectangle\n&quot;</span>;<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// 处理同质集合的函数模板</span><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> ShapeType&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">drawAll</span><span class="hljs-params">(<span class="hljs-type">const</span> std::vector&lt;ShapeType&gt;&amp; shapes)</span> </span>&#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> <span class="hljs-keyword">auto</span>&amp; shape : shapes) &#123;<br>        shape.<span class="hljs-built_in">draw</span>(); <span class="hljs-comment">// 编译时确定调用，可能被内联！</span><br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    std::vector&lt;Circle&gt; circles = &#123;<span class="hljs-built_in">Circle</span>(), <span class="hljs-built_in">Circle</span>()&#125;;<br>    std::vector&lt;Rectangle&gt; rectangles = &#123;<span class="hljs-built_in">Rectangle</span>(), <span class="hljs-built_in">Rectangle</span>()&#125;;<br>    <br>    <span class="hljs-built_in">drawAll</span>(circles);     <span class="hljs-comment">// 实例化 drawAll&lt;Circle&gt;</span><br>    <span class="hljs-built_in">drawAll</span>(rectangles);  <span class="hljs-comment">// 实例化 drawAll&lt;Rectangle&gt;</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>零运行时开销</strong>：没有vptr&#x2F;vtable查找。函数调用在编译时直接绑定。</li>
+<li><strong>可内联性</strong>：编译器能看到具体的函数实现，可以轻松内联。对于小型函数，这能带来巨大性能提升。</li>
+<li><strong>缓存友好</strong>：处理同质集合（如<code>vector&lt;Circle&gt;</code>），数据在内存中连续分布。更好的数据局部性，更高的缓存命中率。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">继承（动态多态）</th>
+<th align="left">模板（静态多态）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>决议时间</strong></td>
+<td align="left">运行时</td>
+<td align="left">编译时</td>
+</tr>
+<tr>
+<td align="left"><strong>性能开销</strong></td>
+<td align="left">有（虚函数调用）</td>
+<td align="left">无（直接调用）</td>
+</tr>
+<tr>
+<td align="left"><strong>内联可能</strong></td>
+<td align="left">几乎不可能</td>
+<td align="left">很可能</td>
+</tr>
+<tr>
+<td align="left"><strong>内存布局</strong></td>
+<td align="left">异构，不连续</td>
+<td align="left">同质，连续</td>
+</tr>
+<tr>
+<td align="left"><strong>二进制大小</strong></td>
+<td align="left">较小</td>
+<td align="left">较大（模板实例化）</td>
+</tr>
+<tr>
+<td align="left"><strong>灵活性</strong></td>
+<td align="left">高（运行时切换）</td>
+<td align="left">低（编译时确定）</td>
+</tr>
+<tr>
+<td align="left"><strong>调试难度</strong></td>
+<td align="left">相对容易</td>
+<td align="left">相对困难</td>
+</tr>
+</tbody></table>
+<p>在实际项目中，两种技术经常结合使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 动态多态接口，静态多态实现</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">IDrawable</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">IDrawable</span>() = <span class="hljs-keyword">default</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>= <span class="hljs-number">0</span>;<br>&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DrawableImpl</span> : <span class="hljs-keyword">public</span> IDrawable &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> <span class="hljs-keyword">final</span> </span>&#123;<br>        <span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">const</span> T*&gt;(<span class="hljs-keyword">this</span>)-&gt;<span class="hljs-built_in">draw_impl</span>();<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Circle</span> : <span class="hljs-keyword">public</span> DrawableImpl&lt;Circle&gt; &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">draw_impl</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-comment">/* 具体实现 */</span> &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="临时对象"><a href="#临时对象" class="headerlink" title="临时对象"></a>临时对象</h2><h3 id="临时对象通常在哪些情况下产生？"><a href="#临时对象通常在哪些情况下产生？" class="headerlink" title="临时对象通常在哪些情况下产生？"></a>临时对象通常在哪些情况下产生？</h3><h4 id="函数按值传递或返回对象"><a href="#函数按值传递或返回对象" class="headerlink" title="函数按值传递或返回对象"></a>函数按值传递或返回对象</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printString</span><span class="hljs-params">(std::string str)</span> </span>&#123;<br>    std::cout &lt;&lt; str &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 函数需要一个 std::string，但我们传了一个 const char*</span><br>    <span class="hljs-built_in">printString</span>(<span class="hljs-string">&quot;Hello World&quot;</span>); <br>    <span class="hljs-comment">// 这里会发生什么？</span><br>    <span class="hljs-comment">// 编译器会用 &quot;Hello World&quot; 这个字符串字面量，</span><br>    <span class="hljs-comment">// 隐式地调用 std::string 的构造函数，创建一个临时对象。</span><br>    <span class="hljs-comment">// 这个临时对象被传递给 `printString` 函数。</span><br>    <span class="hljs-comment">// 函数调用结束后，这个临时对象就被销毁。</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">std::string <span class="hljs-title">getGreeting</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Hello from function!&quot;</span>; <span class="hljs-comment">// 这里创建一个临时的 std::string 对象并返回</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// getGreeting() 的返回值是一个临时对象</span><br>    std::cout &lt;&lt; <span class="hljs-built_in">getGreeting</span>() &lt;&lt; std::endl; <br>    <span class="hljs-comment">// 在上面的语句执行完后，那个返回的临时对象就被销毁了。</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h4 id="类型转换"><a href="#类型转换" class="headerlink" title="类型转换"></a>类型转换</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Fraction</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Fraction</span>(<span class="hljs-type">int</span> numerator, <span class="hljs-type">int</span> denominator = <span class="hljs-number">1</span>) <br>      : <span class="hljs-built_in">m_numerator</span>(numerator), <span class="hljs-built_in">m_denominator</span>(denominator) &#123;&#125;<br>    <span class="hljs-comment">// ... 其他成员 ...</span><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> m_numerator;<br>    <span class="hljs-type">int</span> m_denominator;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printFraction</span><span class="hljs-params">(<span class="hljs-type">const</span> Fraction&amp; f)</span> </span>&#123;<br>    <span class="hljs-comment">// ... 打印分数 ...</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">printFraction</span>(<span class="hljs-number">5</span>); <span class="hljs-comment">// 这里会发生什么？</span><br>    <span class="hljs-comment">// 函数需要一个 Fraction，但我们传了一个 int。</span><br>    <span class="hljs-comment">// 编译器发现 Fraction 有一个构造函数可以接受一个 int。</span><br>    <span class="hljs-comment">// 于是，它用整数 5 隐式地创建了一个 Fraction 临时对象（相当于 Fraction(5, 1)）。</span><br>    <span class="hljs-comment">// 这个临时对象被绑定到常量引用 `f` 上。</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h4 id="运算过程中"><a href="#运算过程中" class="headerlink" title="运算过程中"></a>运算过程中</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++">std::string a = <span class="hljs-string">&quot;Hello, &quot;</span>;<br>std::string b = <span class="hljs-string">&quot;World!&quot;</span>;<br>std::string c = <span class="hljs-string">&quot; How are you?&quot;</span>;<br><br><span class="hljs-comment">// 在执行 a + b 时，会产生一个临时的 std::string 对象来存储结果。</span><br><span class="hljs-comment">// 然后这个临时对象再与 c 相加，产生另一个临时对象。</span><br><span class="hljs-comment">// 最后，这个最终的临时对象被用来初始化 c。</span><br>std::string result = a + b + c;<br></code></pre></td></tr></table></figure>
+
+<h3 id="临时对象的生命周期"><a href="#临时对象的生命周期" class="headerlink" title="临时对象的生命周期"></a>临时对象的生命周期</h3><p><strong>基本规则</strong>：临时对象的生命周期<strong>持续到包含它的那个完整表达式结束时为止</strong>。</p>
+<ul>
+<li><strong>完整表达式</strong>：通常不是一个子表达式。例如，在 <code>int x = f1() + f2() * f3();</code> 中，整个初始化语句是一个完整表达式。当分号 <code>;</code> 出现时，所有在这个语句中创建的临时对象（除了被绑定到引用上的，见下文）都会被销毁。</li>
+</ul>
+<p>重要的特例：绑定到常量引用&#x2F;右值引用</p>
+<p>当将一个临时对象绑定到一个<strong>常量左值引用</strong> 或 <strong>右值引用</strong> 上时，它的生命周期会被<strong>延长</strong>，变得与这个引用的生命周期相同。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 场景一：绑定到 const &amp;</span><br><span class="hljs-type">const</span> std::string&amp; str_ref = std::<span class="hljs-built_in">string</span>(<span class="hljs-string">&quot;Temporary&quot;</span>);<br><span class="hljs-comment">// 这个临时字符串的生命周期被延长到与 str_ref 相同（例如，直到 main 函数结束）</span><br>std::cout &lt;&lt; str_ref &lt;&lt; std::endl; <span class="hljs-comment">// 安全</span><br><br><span class="hljs-comment">// 场景二：绑定到 &amp;&amp; (右值引用，C++11引入)</span><br>std::string&amp;&amp; str_rref = std::<span class="hljs-built_in">string</span>(<span class="hljs-string">&quot;Temporary&quot;</span>);<br><span class="hljs-comment">// 同样，生命周期被延长</span><br>std::cout &lt;&lt; str_rref &lt;&lt; std::endl; <span class="hljs-comment">// 安全</span><br><br><span class="hljs-comment">// 错误示例：绑定到非const左值引用</span><br><span class="hljs-comment">// std::string&amp; bad_ref = std::string(&quot;Temporary&quot;); // 编译错误！</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>为什么不能绑定到非const左值引用？</strong><br>因为从逻辑上讲，如果能修改一个临时对象（通过非const引用），但这个对象马上就会被销毁，那么你的修改就毫无意义，这很容易导致程序员犯错。所以C++语言标准禁止这样做。</p>
+</blockquote>
+<p>临时对象的产生和销毁（调用构造函数和析构函数）是有成本的。在性能敏感的代码中（如循环、数值计算），大量的临时对象会严重影响效率。</p>
+<p><strong>现代C++的解决方案：移动语义</strong></p>
+<p>C++11引入的<strong>移动语义</strong> 极大地优化了临时对象的使用。因为临时对象是“将亡值”，它的资源可以被“转移”而不是“拷贝”。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function">std::vector&lt;<span class="hljs-type">int</span>&gt; <span class="hljs-title">createLargeVector</span><span class="hljs-params">()</span> </span>&#123;<br>    std::vector&lt;<span class="hljs-type">int</span>&gt; vec = &#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, ... , <span class="hljs-number">1000000</span>&#125;;<br>    <span class="hljs-keyword">return</span> vec; <br>    <span class="hljs-comment">// 在C++11之前，这里可能会发生拷贝（返回值优化除外）。</span><br>    <span class="hljs-comment">// 在C++11及以后，由于 `vec` 是局部变量，即将消亡，</span><br>    <span class="hljs-comment">// 编译器会优先选择“移动构造函数”来传递返回值，成本极低（只拷贝几个指针）。</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    std::vector&lt;<span class="hljs-type">int</span>&gt; myVec = <span class="hljs-built_in">createLargeVector</span>(); <span class="hljs-comment">// 高效，可能无拷贝或只有廉价的移动</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="内联"><a href="#内联" class="headerlink" title="内联"></a>内联</h2><p>内联方法的调用方式和普通方法相同，但是编译过程却相差甚远，内联代码必须内联展开，这就要求调用内联方法的代码段必须有权访问该内联方法的定义，而内联方法定义需要整合到其调用方法中，这就引起所有调用该方法模块的重新编译。</p>
+<h3 id="方法调用的代价"><a href="#方法调用的代价" class="headerlink" title="方法调用的代价"></a>方法调用的代价</h3><h3 id="内联详述"><a href="#内联详述" class="headerlink" title="内联详述"></a>内联详述</h3><h3 id="虚方法的内联"><a href="#虚方法的内联" class="headerlink" title="虚方法的内联"></a>虚方法的内联</h3><h3 id="调用间优化"><a href="#调用间优化" class="headerlink" title="调用间优化"></a>调用间优化</h3><h3 id="何时避免内联"><a href="#何时避免内联" class="headerlink" title="何时避免内联"></a>何时避免内联</h3><h3 id="内联规则"><a href="#内联规则" class="headerlink" title="内联规则"></a>内联规则</h3><h3 id="内联技巧"><a href="#内联技巧" class="headerlink" title="内联技巧"></a>内联技巧</h3><h1 id="构造-析构-赋值"><a href="#构造-析构-赋值" class="headerlink" title="构造&#x2F;析构&#x2F;赋值"></a>构造&#x2F;析构&#x2F;赋值</h1><h2 id="C-编译器自动生成的函数"><a href="#C-编译器自动生成的函数" class="headerlink" title="C++编译器自动生成的函数"></a>C++编译器自动生成的函数</h2><p><strong>关键要点</strong>：</p>
+<ol>
+<li>了解默认生成规则避免意外行为</li>
+<li>资源管理类通常需要自定义这些函数</li>
+<li>使用<code>= default</code>和<code>= delete</code>让意图更明确</li>
+<li>移动操作在C++11中很重要，但生成条件更严格</li>
+</ol>
+<h3 id="六大特殊成员函数"><a href="#六大特殊成员函数" class="headerlink" title="六大特殊成员函数"></a>六大特殊成员函数</h3><table>
+<thead>
+<tr>
+<th>函数</th>
+<th>自动生成条件</th>
+<th>默认行为</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>默认构造函数</strong><br><code>ClassName()</code></td>
+<td>没有<strong>任何</strong>用户声明的构造函数时</td>
+<td>调用成员变量的默认构造函数<br>（内置类型不初始化）</td>
+<td>一旦声明任何构造函数，默认构造函数就不再自动生成</td>
+</tr>
+<tr>
+<td><strong>拷贝构造函数</strong><br><code>ClassName(const ClassName&amp;)</code></td>
+<td>没有用户声明的拷贝构造函数时</td>
+<td>对每个成员执行<strong>成员级浅拷贝</strong></td>
+<td>如果类包含原始指针，可能导致双重释放</td>
+</tr>
+<tr>
+<td><strong>拷贝赋值运算符</strong><br><code>ClassName&amp; operator=(const ClassName&amp;)</code></td>
+<td>没有用户声明的拷贝赋值运算符时</td>
+<td>对每个成员执行<strong>成员级浅拷贝</strong></td>
+<td>返回<code>*this</code>的引用</td>
+</tr>
+<tr>
+<td><strong>析构函数</strong><br><code>~ClassName()</code></td>
+<td>没有用户声明的析构函数时</td>
+<td>调用成员变量的析构函数</td>
+<td>默认为<code>noexcept</code></td>
+</tr>
+<tr>
+<td><strong>移动构造函数</strong><br><code>ClassName(ClassName&amp;&amp;)</code><br>（C++11）</td>
+<td>没有用户声明的<strong>拷贝构造、拷贝赋值、移动构造、移动赋值、析构函数</strong>时</td>
+<td>对每个成员执行<strong>移动构造</strong></td>
+<td>自定义析构函数会抑制移动操作的生成</td>
+</tr>
+<tr>
+<td><strong>移动赋值运算符</strong><br><code>ClassName&amp; operator=(ClassName&amp;&amp;)</code><br>（C++11）</td>
+<td>同上</td>
+<td>对每个成员执行<strong>移动赋值</strong></td>
+<td>返回<code>*this</code>的引用</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="生成规则的相互影响"><a href="#生成规则的相互影响" class="headerlink" title="生成规则的相互影响"></a>生成规则的相互影响</h3><h4 id="声明特定函数对其他函数生成的影响"><a href="#声明特定函数对其他函数生成的影响" class="headerlink" title="声明特定函数对其他函数生成的影响"></a>声明特定函数对其他函数生成的影响</h4><table>
+<thead>
+<tr>
+<th>如果你声明了：</th>
+<th>编译器不再自动生成：</th>
+<th>依然自动生成：</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>任何构造函数</strong></td>
+<td>默认构造函数</td>
+<td>拷贝构造、拷贝赋值、析构、移动操作（如果条件满足）</td>
+</tr>
+<tr>
+<td><strong>拷贝构造函数</strong></td>
+<td>移动构造函数、移动赋值运算符</td>
+<td>默认构造（如果可能）、拷贝赋值、析构</td>
+</tr>
+<tr>
+<td><strong>拷贝赋值运算符</strong></td>
+<td>移动构造函数、移动赋值运算符</td>
+<td>默认构造（如果可能）、拷贝构造、析构</td>
+</tr>
+<tr>
+<td><strong>移动构造函数</strong></td>
+<td>拷贝构造函数、拷贝赋值运算符</td>
+<td>默认构造（如果可能）、移动赋值、析构</td>
+</tr>
+<tr>
+<td><strong>移动赋值运算符</strong></td>
+<td>拷贝构造函数、拷贝赋值运算符</td>
+<td>默认构造（如果可能）、移动构造、析构</td>
+</tr>
+<tr>
+<td><strong>析构函数</strong></td>
+<td>移动构造函数、移动赋值运算符</td>
+<td>默认构造（如果可能）、拷贝构造、拷贝赋值</td>
+</tr>
+</tbody></table>
+<h3 id="特殊情况的处理"><a href="#特殊情况的处理" class="headerlink" title="特殊情况的处理"></a>特殊情况的处理</h3><h4 id="问题成员对自动生成的影响"><a href="#问题成员对自动生成的影响" class="headerlink" title="问题成员对自动生成的影响"></a>问题成员对自动生成的影响</h4><table>
+<thead>
+<tr>
+<th>成员类型</th>
+<th>对默认构造函数</th>
+<th>对拷贝构造</th>
+<th>对拷贝赋值</th>
+<th>对移动操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>引用成员</strong><br><code>int&amp; ref</code></td>
+<td>必须显式初始化</td>
+<td>正常生成</td>
+<td><strong>无法生成</strong></td>
+<td>正常生成（如果条件满足）</td>
+</tr>
+<tr>
+<td><strong>const成员</strong><br><code>const int value</code></td>
+<td>必须显式初始化</td>
+<td>正常生成</td>
+<td><strong>无法生成</strong></td>
+<td>正常生成（如果条件满足）</td>
+</tr>
+<tr>
+<td><strong>仅有移动类型的成员</strong><br><code>std::unique_ptr&lt;T&gt;</code></td>
+<td>正常生成</td>
+<td><strong>无法生成</strong></td>
+<td><strong>无法生成</strong></td>
+<td>正常生成</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="最佳实践控制"><a href="#最佳实践控制" class="headerlink" title="最佳实践控制"></a>最佳实践控制</h3><h4 id="使用-default和-delete显式控制"><a href="#使用-default和-delete显式控制" class="headerlink" title="使用= default和= delete显式控制"></a>使用<code>= default</code>和<code>= delete</code>显式控制</h4><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐写法</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>需要默认行为</strong></td>
+<td><code>ClassName() = default;</code></td>
+<td>明确要求编译器生成默认实现</td>
+</tr>
+<tr>
+<td><strong>禁止拷贝</strong></td>
+<td><code>ClassName(const ClassName&amp;) = delete;</code><br><code>ClassName&amp; operator=(const ClassName&amp;) = delete;</code></td>
+<td>防止对象被拷贝</td>
+</tr>
+<tr>
+<td><strong>仅允许移动</strong></td>
+<td>如上禁止拷贝，移动操作<code>= default</code></td>
+<td>创建只移动类型（如<code>std::unique_ptr</code>）</td>
+</tr>
+<tr>
+<td><strong>单例模式</strong></td>
+<td>所有拷贝和移动操作<code>= delete</code></td>
+<td>确保唯一实例</td>
+</tr>
+</tbody></table>
+<h2 id="别让异常逃离析构函数"><a href="#别让异常逃离析构函数" class="headerlink" title="别让异常逃离析构函数"></a>别让异常逃离析构函数</h2><p>在析构函数中，如果有可能抛出异常，必须要在析构函数内部捕获并处理它，绝不能让它传播到析构函数外部。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>适用场景</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>吞掉异常</strong></td>
+<td><code>try-catch</code>在析构函数内部</td>
+<td>非关键操作</td>
+<td>简单，保证程序继续</td>
+<td>可能隐藏重要错误</td>
+</tr>
+<tr>
+<td><strong>显式释放方法</strong></td>
+<td>提供<code>close()</code>等方法</td>
+<td>需要错误处理的资源</td>
+<td>用户可处理异常，更灵活</td>
+<td>依赖用户正确调用</td>
+</tr>
+<tr>
+<td><strong>终止程序</strong></td>
+<td>调用<code>std::abort()</code></td>
+<td>关键资源失败意味着程序状态不可信</td>
+<td>明确失败，避免数据损坏</td>
+<td>用户体验差</td>
+</tr>
+<tr>
+<td><strong>自定义删除器</strong></td>
+<td>与智能指针结合</td>
+<td>现代C++资源管理</td>
+<td>类型安全，自动管理</td>
+<td>稍复杂</td>
+</tr>
+</tbody></table>
+<p>核心原则：</p>
+<ol>
+<li><strong>析构函数绝不能让异常传播到外部</strong></li>
+<li><strong>在栈展开期间（处理异常时），析构函数抛异常会导致<code>std::terminate()</code></strong></li>
+<li><strong>优先提供显式释放方法，让用户有机会处理异常</strong></li>
+<li><strong>析构函数中必须捕获所有可能的异常</strong></li>
+<li><strong>使用<code>noexcept</code>标记析构函数，明确承诺不抛异常</strong></li>
+</ol>
+<p>记住：<strong>析构函数应该专注于资源释放，而不是错误处理。把错误处理的机会留给调用者。</strong></p>
+<h2 id="复制对象时勿忘记其每一个成分"><a href="#复制对象时勿忘记其每一个成分" class="headerlink" title="复制对象时勿忘记其每一个成分"></a>复制对象时勿忘记其每一个成分</h2><p><strong>“复制对象时勿忘记其每一个成分”</strong> 指的是：当你自定义拷贝构造函数或拷贝赋值运算符时，必须确保复制<strong>所有</strong>的数据成员，包括基类部分和新增的成员变量。</p>
+<p>当我们自定义拷贝操作时，编译器不再自动生成默认的拷贝行为，需要我们手动管理所有成员的复制。如果遗漏了某些成员，就会导致<strong>部分拷贝</strong>的bug。</p>
+<p>示例1：忘记新增成员：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Customer</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string name;<br>    <span class="hljs-type">int</span> customerId;<br>    <span class="hljs-comment">// 后来新增的成员...</span><br>    std::string lastTransactionDate;  <span class="hljs-comment">// 新增字段</span><br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Customer</span>(<span class="hljs-type">const</span> std::string&amp; n, <span class="hljs-type">int</span> id) <br>        : <span class="hljs-built_in">name</span>(n), <span class="hljs-built_in">customerId</span>(id), <span class="hljs-built_in">lastTransactionDate</span>(<span class="hljs-string">&quot;2024-01-01&quot;</span>) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 自定义拷贝构造函数（忘记复制新成员）</span><br>    <span class="hljs-built_in">Customer</span>(<span class="hljs-type">const</span> Customer&amp; other)<br>        : <span class="hljs-built_in">name</span>(other.name), <span class="hljs-built_in">customerId</span>(other.customerId) <br>        <span class="hljs-comment">// 忘记了：lastTransactionDate ！！！</span><br>    &#123;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 自定义拷贝赋值运算符（也忘记新成员）</span><br>    Customer&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Customer&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            name = other.name;<br>            customerId = other.customerId;<br>            <span class="hljs-comment">// 忘记了：lastTransactionDate ！！！</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">print</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Name: &quot;</span> &lt;&lt; name &lt;&lt; <span class="hljs-string">&quot;, ID: &quot;</span> &lt;&lt; customerId <br>                  &lt;&lt; <span class="hljs-string">&quot;, LastTx: &quot;</span> &lt;&lt; lastTransactionDate &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">demonstrate_problem</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-function">Customer <span class="hljs-title">original</span><span class="hljs-params">(<span class="hljs-string">&quot;Alice&quot;</span>, <span class="hljs-number">123</span>)</span></span>;<br>    Customer copy = original;  <span class="hljs-comment">// 拷贝构造</span><br>    <br>    original.<span class="hljs-built_in">print</span>();  <span class="hljs-comment">// 输出：Name: Alice, ID: 123, LastTx: 2024-01-01</span><br>    copy.<span class="hljs-built_in">print</span>();      <span class="hljs-comment">// 输出：Name: Alice, ID: 123, LastTx:  ← 空字符串！</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>示例2：忘记基类部分：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">protected</span>:<br>    <span class="hljs-type">int</span> baseValue;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Base</span>(<span class="hljs-type">int</span> val) : <span class="hljs-built_in">baseValue</span>(val) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 基类拷贝操作</span><br>    <span class="hljs-built_in">Base</span>(<span class="hljs-type">const</span> Base&amp; other) : <span class="hljs-built_in">baseValue</span>(other.baseValue) &#123;&#125;<br>    Base&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Base&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            baseValue = other.baseValue;<br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span> : <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string derivedData;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Derived</span>(<span class="hljs-type">int</span> baseVal, <span class="hljs-type">const</span> std::string&amp; data) <br>        : <span class="hljs-built_in">Base</span>(baseVal), <span class="hljs-built_in">derivedData</span>(data) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 错误的拷贝构造函数：忘记调用基类拷贝构造</span><br>    <span class="hljs-built_in">Derived</span>(<span class="hljs-type">const</span> Derived&amp; other)<br>        : <span class="hljs-built_in">derivedData</span>(other.derivedData) <br>        <span class="hljs-comment">// 忘记了：Base(other) ！！！</span><br>    &#123;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 错误的拷贝赋值：忘记复制基类部分</span><br>    Derived&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Derived&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            derivedData = other.derivedData;<br>            <span class="hljs-comment">// 忘记了：Base::operator=(other) ！！！</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">print</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Base: &quot;</span> &lt;&lt; baseValue &lt;&lt; <span class="hljs-string">&quot;, Derived: &quot;</span> &lt;&lt; derivedData &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">test_inheritance</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-function">Derived <span class="hljs-title">d1</span><span class="hljs-params">(<span class="hljs-number">100</span>, <span class="hljs-string">&quot;Hello&quot;</span>)</span></span>;<br>    Derived d2 = d1;  <span class="hljs-comment">// 拷贝构造</span><br>    <br>    d1.<span class="hljs-built_in">print</span>();  <span class="hljs-comment">// 输出：Base: 100, Derived: Hello</span><br>    d2.<span class="hljs-built_in">print</span>();  <span class="hljs-comment">// 输出：Base: 0, Derived: Hello  ← baseValue丢失！</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><h4 id="让编译器生成（推荐）"><a href="#让编译器生成（推荐）" class="headerlink" title="让编译器生成（推荐）"></a>让编译器生成（推荐）</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Customer</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string name;<br>    <span class="hljs-type">int</span> customerId;<br>    std::string lastTransactionDate;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Customer</span>(<span class="hljs-type">const</span> std::string&amp; n, <span class="hljs-type">int</span> id) <br>        : <span class="hljs-built_in">name</span>(n), <span class="hljs-built_in">customerId</span>(id), <span class="hljs-built_in">lastTransactionDate</span>(<span class="hljs-string">&quot;2024-01-01&quot;</span>) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 让编译器生成正确的拷贝操作</span><br>    <span class="hljs-built_in">Customer</span>(<span class="hljs-type">const</span> Customer&amp;) = <span class="hljs-keyword">default</span>;<br>    Customer&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Customer&amp;) = <span class="hljs-keyword">default</span>;<br>    <br>    <span class="hljs-comment">// 或者干脆不声明，让编译器自动生成</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="手动正确实现"><a href="#手动正确实现" class="headerlink" title="手动正确实现"></a>手动正确实现</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Customer</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string name;<br>    <span class="hljs-type">int</span> customerId;<br>    std::string lastTransactionDate;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Customer</span>(<span class="hljs-type">const</span> std::string&amp; n, <span class="hljs-type">int</span> id) <br>        : <span class="hljs-built_in">name</span>(n), <span class="hljs-built_in">customerId</span>(id), <span class="hljs-built_in">lastTransactionDate</span>(<span class="hljs-string">&quot;2024-01-01&quot;</span>) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 正确的拷贝构造函数</span><br>    <span class="hljs-built_in">Customer</span>(<span class="hljs-type">const</span> Customer&amp; other)<br>        : <span class="hljs-built_in">name</span>(other.name),<br>          <span class="hljs-built_in">customerId</span>(other.customerId),<br>          <span class="hljs-built_in">lastTransactionDate</span>(other.lastTransactionDate)  <span class="hljs-comment">// 记得所有成员！</span><br>    &#123;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 正确的拷贝赋值运算符</span><br>    Customer&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Customer&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            name = other.name;<br>            customerId = other.customerId;<br>            lastTransactionDate = other.lastTransactionDate;  <span class="hljs-comment">// 记得所有成员！</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="正确处理继承"><a href="#正确处理继承" class="headerlink" title="正确处理继承"></a>正确处理继承</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span> : <span class="hljs-keyword">public</span> Base &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string derivedData;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Derived</span>(<span class="hljs-type">int</span> baseVal, <span class="hljs-type">const</span> std::string&amp; data) <br>        : <span class="hljs-built_in">Base</span>(baseVal), <span class="hljs-built_in">derivedData</span>(data) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 正确的拷贝构造函数：调用基类拷贝构造</span><br>    <span class="hljs-built_in">Derived</span>(<span class="hljs-type">const</span> Derived&amp; other)<br>        : <span class="hljs-built_in">Base</span>(other),  <span class="hljs-comment">// ← 关键！调用基类拷贝构造函数</span><br>          <span class="hljs-built_in">derivedData</span>(other.derivedData)<br>    &#123;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 正确的拷贝赋值：调用基类拷贝赋值</span><br>    Derived&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Derived&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            Base::<span class="hljs-keyword">operator</span>=(other);  <span class="hljs-comment">// ← 关键！复制基类部分</span><br>            derivedData = other.derivedData;<br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3><h4 id="使用-default"><a href="#使用-default" class="headerlink" title="使用= default"></a>使用<code>= default</code></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">ModernCustomer</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string name;<br>    <span class="hljs-type">int</span> customerId;<br>    std::vector&lt;std::string&gt; transactionHistory;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">ModernCustomer</span>(<span class="hljs-type">const</span> std::string&amp; n, <span class="hljs-type">int</span> id) : <span class="hljs-built_in">name</span>(n), <span class="hljs-built_in">customerId</span>(id) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 明确使用默认实现</span><br>    <span class="hljs-built_in">ModernCustomer</span>(<span class="hljs-type">const</span> ModernCustomer&amp;) = <span class="hljs-keyword">default</span>;<br>    ModernCustomer&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> ModernCustomer&amp;) = <span class="hljs-keyword">default</span>;<br>    <br>    <span class="hljs-comment">// 移动操作也默认</span><br>    <span class="hljs-built_in">ModernCustomer</span>(ModernCustomer&amp;&amp;) = <span class="hljs-keyword">default</span>;<br>    ModernCustomer&amp; <span class="hljs-keyword">operator</span>=(ModernCustomer&amp;&amp;) = <span class="hljs-keyword">default</span>;<br>    <br>    ~<span class="hljs-built_in">ModernCustomer</span>() = <span class="hljs-keyword">default</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="遵循”五大件”规则"><a href="#遵循”五大件”规则" class="headerlink" title="遵循”五大件”规则"></a>遵循”五大件”规则</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RuleOfFive</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::unique_ptr&lt;<span class="hljs-type">int</span>[]&gt; data;<br>    <span class="hljs-type">size_t</span> size;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 需要自定义资源管理时，显式定义所有五个函数</span><br>    <span class="hljs-built_in">RuleOfFive</span>(<span class="hljs-type">size_t</span> s) : <span class="hljs-built_in">data</span>(<span class="hljs-keyword">new</span> <span class="hljs-type">int</span>[s]), <span class="hljs-built_in">size</span>(s) &#123;&#125;<br>    <br>    <span class="hljs-comment">// 1. 拷贝构造函数</span><br>    <span class="hljs-built_in">RuleOfFive</span>(<span class="hljs-type">const</span> RuleOfFive&amp; other) <br>        : <span class="hljs-built_in">data</span>(<span class="hljs-keyword">new</span> <span class="hljs-type">int</span>[other.size]), <span class="hljs-built_in">size</span>(other.size) <br>    &#123;<br>        std::<span class="hljs-built_in">copy</span>(other.data.<span class="hljs-built_in">get</span>(), other.data.<span class="hljs-built_in">get</span>() + size, data.<span class="hljs-built_in">get</span>());<br>    &#125;<br>    <br>    <span class="hljs-comment">// 2. 拷贝赋值运算符</span><br>    RuleOfFive&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> RuleOfFive&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            <span class="hljs-keyword">auto</span> newData = std::<span class="hljs-built_in">make_unique</span>&lt;<span class="hljs-type">int</span>[]&gt;(other.size);<br>            std::<span class="hljs-built_in">copy</span>(other.data.<span class="hljs-built_in">get</span>(), other.data.<span class="hljs-built_in">get</span>() + other.size, newData.<span class="hljs-built_in">get</span>());<br>            data = std::<span class="hljs-built_in">move</span>(newData);<br>            size = other.size;<br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 3. 移动构造函数</span><br>    <span class="hljs-built_in">RuleOfFive</span>(RuleOfFive&amp;&amp; other) <span class="hljs-keyword">noexcept</span><br>        : <span class="hljs-built_in">data</span>(std::<span class="hljs-built_in">move</span>(other.data)), <span class="hljs-built_in">size</span>(other.size) <br>    &#123;<br>        other.size = <span class="hljs-number">0</span>;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 4. 移动赋值运算符  </span><br>    RuleOfFive&amp; <span class="hljs-keyword">operator</span>=(RuleOfFive&amp;&amp; other) <span class="hljs-keyword">noexcept</span> &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            data = std::<span class="hljs-built_in">move</span>(other.data);<br>            size = other.size;<br>            other.size = <span class="hljs-number">0</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 5. 析构函数（unique_ptr自动处理，但这里显式声明）</span><br>    ~<span class="hljs-built_in">RuleOfFive</span>() = <span class="hljs-keyword">default</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="避免代码重复的拷贝实现"><a href="#避免代码重复的拷贝实现" class="headerlink" title="避免代码重复的拷贝实现"></a>避免代码重复的拷贝实现</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">CopySafe</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    std::string data;<br>    <span class="hljs-type">int</span> value;<br>    std::vector&lt;<span class="hljs-type">double</span>&gt; items;<br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 统一的复制函数</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">copyFrom</span><span class="hljs-params">(<span class="hljs-type">const</span> CopySafe&amp; other)</span> </span>&#123;<br>        data = other.data;<br>        value = other.value;<br>        items = other.items;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 拷贝构造函数</span><br>    <span class="hljs-built_in">CopySafe</span>(<span class="hljs-type">const</span> CopySafe&amp; other) &#123;<br>        <span class="hljs-built_in">copyFrom</span>(other);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 拷贝赋值运算符</span><br>    CopySafe&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> CopySafe&amp; other) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;other) &#123;<br>            <span class="hljs-built_in">copyFrom</span>(other);<br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>当自定义拷贝操作时，问自己：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>错误做法</th>
+<th>正确做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>新增成员变量</strong></td>
+<td>忘记在新成员复制</td>
+<td>更新所有拷贝操作，复制新成员</td>
+</tr>
+<tr>
+<td><strong>继承体系</strong></td>
+<td>只复制派生类成员</td>
+<td>调用基类拷贝操作<code>Base(other)</code>或<code>Base::operator=(other)</code></td>
+</tr>
+<tr>
+<td><strong>动态资源</strong></td>
+<td>浅拷贝指针</td>
+<td>深拷贝或使用智能指针</td>
+</tr>
+<tr>
+<td><strong>维护不变量</strong></td>
+<td>只复制部分相关成员</td>
+<td>复制所有维持不变性需要的成员</td>
+</tr>
+</tbody></table>
+<p>检查清单：</p>
+<ol>
+<li><strong>是否复制了所有非静态数据成员？</strong></li>
+<li><strong>在继承体系中，是否正确处理了基类部分？</strong></li>
+<li><strong>是否检查了自赋值情况？（拷贝赋值中）</strong></li>
+<li><strong>异常安全是否得到保证？</strong></li>
+<li><strong>是否真的需要自定义拷贝操作？能否用<code>= default</code>？</strong></li>
+</ol>
+<p><strong>要么完全不自定义拷贝操作（让编译器生成），要么确保完全正确地复制所有成分。</strong> 任何部分拷贝都会导致对象状态不一致，这是很难调试的bug来源。记住：<strong>编译器生成的拷贝操作总是正确的，因为它知道类的完整结构。当你接管这个责任时，你必须同样正确。</strong></p>
+<h1 id="继承和面对对象设计"><a href="#继承和面对对象设计" class="headerlink" title="继承和面对对象设计"></a>继承和面对对象设计</h1><h2 id="区分接口继承和实现继承"><a href="#区分接口继承和实现继承" class="headerlink" title="区分接口继承和实现继承"></a>区分<strong>接口继承</strong>和<strong>实现继承</strong></h2><ul>
+<li>接口继承：定义”<strong>做什么</strong>“（What）的契约，关注<strong>行为规范</strong>，不关心具体实现，在C++中通过<strong>纯虚函数</strong>实现</li>
+<li>实现继承：提供”<strong>怎么做</strong>“（How）的具体代码，关注<strong>代码复用</strong>和具体实现，在C++中通过<strong>非虚函数</strong>和<strong>普通虚函数</strong>实现</li>
+</ul>
+<h2 id="is-a-和-has-a"><a href="#is-a-和-has-a" class="headerlink" title="is-a 和 has-a"></a><strong>is-a</strong> 和 <strong>has-a</strong></h2><p>is-a 关系（继承）表示”<strong>是一个</strong>“的关系，用于<strong>分类</strong>和<strong>特化</strong>，在C++中通过<strong>公有继承</strong>实现，is-a 关系描述的是<strong>类型之间的层次关系</strong>，派生类是基类的一种特殊形式。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 基类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Vehicle</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> <span class="hljs-type">void</span> <span class="hljs-title">startEngine</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Vehicle engine started&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>    <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">Vehicle</span>() = <span class="hljs-keyword">default</span>;<br>&#125;;<br><br><span class="hljs-comment">// is-a 关系：Car 是一种 Vehicle</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Car</span> : <span class="hljs-keyword">public</span> Vehicle &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">startEngine</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Car engine started with key&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">openTrunk</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Car trunk opened&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// is-a 关系：Motorcycle 也是一种 Vehicle  </span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Motorcycle</span> : <span class="hljs-keyword">public</span> Vehicle &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">startEngine</span><span class="hljs-params">()</span> <span class="hljs-keyword">override</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Motorcycle engine kicked&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doWheelie</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Doing a wheelie!&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">use_vehicles</span><span class="hljs-params">()</span> </span>&#123;<br>    Vehicle* garage[<span class="hljs-number">2</span>];<br>    garage[<span class="hljs-number">0</span>] = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Car</span>();<br>    garage[<span class="hljs-number">1</span>] = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Motorcycle</span>();<br>    <br>    <span class="hljs-keyword">for</span> (Vehicle* v : garage) &#123;<br>        v-&gt;<span class="hljs-built_in">startEngine</span>();  <span class="hljs-comment">// 多态调用</span><br>    &#125;<br>    <br>    <span class="hljs-comment">// 可以安全向下转换</span><br>    Car* myCar = <span class="hljs-built_in">dynamic_cast</span>&lt;Car*&gt;(garage[<span class="hljs-number">0</span>]);<br>    <span class="hljs-keyword">if</span> (myCar) &#123;<br>        myCar-&gt;<span class="hljs-built_in">openTrunk</span>();  <span class="hljs-comment">// 调用Car特有方法</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>has-a 关系（组合）表示”<strong>有一个</strong>“的关系，用于<strong>包含</strong>和<strong>组合</strong>，在C++中通过<strong>成员变量</strong>实现，has-a 关系描述的是<strong>整体与部分</strong>的关系，一个对象包含另一个对象作为其组成部分。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 组件类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Engine</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">start</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Engine roaring to life&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Wheel</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">int</span> pressure;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Wheel</span>(<span class="hljs-type">int</span> psi) : <span class="hljs-built_in">pressure</span>(psi) &#123;&#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">rotate</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Wheel rotating at pressure &quot;</span> &lt;&lt; pressure &lt;&lt; <span class="hljs-string">&quot; PSI&quot;</span> &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">GPS</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">navigateTo</span><span class="hljs-params">(<span class="hljs-type">const</span> std::string&amp; destination)</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Navigating to &quot;</span> &lt;&lt; destination &lt;&lt; std::endl;<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// has-a 关系：Car 有 Engine, Wheel, GPS</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Car</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">// 组合：Car 包含这些对象</span><br>    Engine engine;           <span class="hljs-comment">// 按值包含</span><br>    std::vector&lt;Wheel&gt; wheels; <span class="hljs-comment">// 包含多个对象</span><br>    std::unique_ptr&lt;GPS&gt; gps;  <span class="hljs-comment">// 按指针包含（可选）</span><br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Car</span>() &#123;<br>        <span class="hljs-comment">// 初始化4个轮子</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">4</span>; ++i) &#123;<br>            wheels.<span class="hljs-built_in">emplace_back</span>(<span class="hljs-number">32</span>);  <span class="hljs-comment">// 每个轮子32PSI</span><br>        &#125;<br>        gps = std::<span class="hljs-built_in">make_unique</span>&lt;GPS&gt;();<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">drive</span><span class="hljs-params">()</span> </span>&#123;<br>        engine.<span class="hljs-built_in">start</span>();<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; wheel : wheels) &#123;<br>            wheel.<span class="hljs-built_in">rotate</span>();<br>        &#125;<br>        gps-&gt;<span class="hljs-built_in">navigateTo</span>(<span class="hljs-string">&quot;Home&quot;</span>);<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">replaceWheel</span><span class="hljs-params">(<span class="hljs-type">int</span> index, <span class="hljs-type">int</span> newPressure)</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (index &gt;= <span class="hljs-number">0</span> &amp;&amp; index &lt; wheels.<span class="hljs-built_in">size</span>()) &#123;<br>            wheels[index] = <span class="hljs-built_in">Wheel</span>(newPressure);<br>        &#125;<br>    &#125;<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">use_car</span><span class="hljs-params">()</span> </span>&#123;<br>    Car myCar;<br>    myCar.<span class="hljs-built_in">drive</span>();<br>    <span class="hljs-comment">// Car 有 Engine, 有 Wheels, 有 GPS</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/" class="category-chain-item">逆向与开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" class="category-chain-item">编程语言</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C/" class="category-chain-item">C++</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C/%E9%AB%98%E6%95%88%E7%BC%96%E7%A8%8B%E6%8A%80%E5%B7%A7/" class="category-chain-item">高效编程技巧</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++高性能编程</div>
+      <div>https://hermes37.vercel.app/2025/10/22/逆向与开发/软件工程/编程语言/C++高性能编程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/11/07/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%BD%91%E7%BB%9C/%E7%90%86%E8%A7%A3TCP%E8%BF%9E%E6%8E%A5%E5%BB%BA%E7%AB%8B/" title="理解TCP连接建立">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">理解TCP连接建立</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/20/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E6%8A%93%E5%8C%85%E6%94%BB%E9%98%B2/%E5%8F%8C%E5%90%91%E6%A0%A1%E9%AA%8C%E6%8A%93%E5%8C%85%E6%94%BB%E9%98%B2/" title="双向校验抓包攻防">
+                        <span class="hidden-mobile">双向校验抓包攻防</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
