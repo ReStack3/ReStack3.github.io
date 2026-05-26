@@ -1,0 +1,1014 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文主要以x64架构为解析对象(x32功能实现相似)，使用C++编写ELF解析器，实现readel大多数功能。建议读者阅读前浏览官方ELF64文档： ELF-64 Object File Format 初次借着学习elf结构进行编写，如有纰漏请多指正  从源代码编写到最终生成可执行文件 编译器原理：  汇编器原理： 汇编器将汇编代码作为输入并将其转换为可重定位的机器代码。汇编器检查每条指令的正确">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELF文件格式解析">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/ELF%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="本文主要以x64架构为解析对象(x32功能实现相似)，使用C++编写ELF解析器，实现readel大多数功能。建议读者阅读前浏览官方ELF64文档： ELF-64 Object File Format 初次借着学习elf结构进行编写，如有纰漏请多指正  从源代码编写到最终生成可执行文件 编译器原理：  汇编器原理： 汇编器将汇编代码作为输入并将其转换为可重定位的机器代码。汇编器检查每条指令的正确">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/16/OnRbL8FDeEiHs9f.jpg">
+<meta property="og:image" content="https://s2.loli.net/2024/12/16/KIi5EDF7JPkjyB9.jpg">
+<meta property="og:image" content="https://s2.loli.net/2024/12/16/PafYKlsAFJ8OWro.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/16/ct3oTXChOJZeDq2.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/16/X5WAjmOb8e1fkls.png">
+<meta property="og:image" content="https://s2.loli.net/2024/11/28/jNrA5GCPpEOymML.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/iptQJ2Z4duKga5c.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/lRgI7oCc9qTdDxh.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/KY7pl9Ln6ruy1fv.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/kz4UueFKX9SCaD3.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/2K6AaGHtlMyXIRo.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/Hkc5sdLWTNfeb3E.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/ILUkq2hCuRD5aAt.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/bv1kTzN6wXH2UeF.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/22/hXzbduwpFji7Vrs.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.571Z">
+<meta property="article:modified_time" content="2026-05-26T06:37:03.466Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/16/OnRbL8FDeEiHs9f.jpg">
+  
+  
+  
+  <title>ELF文件格式解析 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ELF文件格式解析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          62 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ELF文件格式解析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本文主要以x64架构为解析对象(x32功能实现相似)，使用C++编写ELF解析器，实现readel大多数功能。建议读者阅读前浏览官方ELF64文档：</p>
+<p><a target="_blank" rel="noopener" href="https://uclibc.org/docs/elf-64-gen.pdf">ELF-64 Object File Format</a></p>
+<p>初次借着学习elf结构进行编写，如有纰漏请多指正</p>
+</blockquote>
+<h1 id="从源代码编写到最终生成可执行文件"><a href="#从源代码编写到最终生成可执行文件" class="headerlink" title="从源代码编写到最终生成可执行文件"></a>从源代码编写到最终生成可执行文件</h1><p><img src="https://s2.loli.net/2024/12/16/OnRbL8FDeEiHs9f.jpg" srcset="/img/loading.gif" lazyload alt="1"></p>
+<p>编译器原理：</p>
+<p><img src="https://s2.loli.net/2024/12/16/KIi5EDF7JPkjyB9.jpg" srcset="/img/loading.gif" lazyload alt="2"></p>
+<p>汇编器原理：</p>
+<p>汇编器将汇编代码作为输入并将其转换为可重定位的机器代码。汇编器检查每条指令的正确性并生成诊断消息。</p>
+<p><img src="https://s2.loli.net/2024/12/16/PafYKlsAFJ8OWro.png" srcset="/img/loading.gif" lazyload alt="image-20241216142318994"></p>
+<h1 id="ELF文件格式"><a href="#ELF文件格式" class="headerlink" title="ELF文件格式"></a>ELF文件格式</h1><h2 id="ELF整体结构"><a href="#ELF整体结构" class="headerlink" title="ELF整体结构"></a>ELF整体结构</h2><p>如下图所示:</p>
+<p><img src="https://s2.loli.net/2024/12/16/ct3oTXChOJZeDq2.png" srcset="/img/loading.gif" lazyload alt="ELF文件格式"></p>
+<p>更详细一点：</p>
+<p><img src="https://s2.loli.net/2024/12/16/X5WAjmOb8e1fkls.png" srcset="/img/loading.gif" lazyload alt="ELF文件格式"></p>
+<p>注意：可执行文件或者共享目标文件的程序头部是一个结构数组，每个结构描述了一个段 或者系统准备程序执行所必需的其它信息。程序头表描述了ELF文件中Segment在文件中的布局，描述了OS该如何装载可执行文件到内存</p>
+<p>ELF 文件的基本结构由以下几个主要部分组成：</p>
+<ol>
+<li><strong>ELF Header（ELF 文件头）</strong></li>
+<li><strong>Program Header Table（程序头表）</strong></li>
+<li><strong>Section Header Table（节头表）</strong></li>
+<li><strong>Data Sections（数据节）</strong></li>
+<li><strong>Dynamic Section（动态节，针对共享库或动态加载的情况）</strong></li>
+<li><strong>String Table（字符串表，通常存储符号名称、节名称等）</strong></li>
+</ol>
+<p>其中，<strong>Program Header Table</strong> 和 <strong>Section Header Table</strong> 是两种不同的表格，它们分别用于描述不同类型的信息：<code>Program Header</code> 用于描述文件加载到内存时的映射，而 <code>Section Header</code> 用于描述文件内部的具体内容（如代码段、数据段等）。</p>
+<h3 id="1-ELF-Header（ELF-文件头）"><a href="#1-ELF-Header（ELF-文件头）" class="headerlink" title="1. ELF Header（ELF 文件头）"></a>1. ELF Header（ELF 文件头）</h3><p>ELF 文件的开头是一个固定大小的 ELF 文件头，它包含了文件格式和该文件结构的基本信息。主要字段有：</p>
+<ul>
+<li>**e_ident[16]**：一个 16 字节的数组，用于标识 ELF 文件的类型和版本信息。<ul>
+<li><code>e_ident[0]</code> 和 <code>e_ident[1]</code> 为魔数，值为 <code>0x7f &#39;E&#39; &#39;L&#39; &#39;F&#39;</code>，用于标识 ELF 文件。</li>
+<li><code>e_ident[4]</code> 为目标架构，值通常是 <code>ELF32</code> 或 <code>ELF64</code>。</li>
+<li><code>e_ident[5]</code> 表示数据编码格式（如小端或大端）。</li>
+<li><code>e_ident[6]</code> 为 ELF 版本号，通常为 1。</li>
+<li><code>e_ident[7]</code> 为操作系统版本（通常是 0）。</li>
+</ul>
+</li>
+<li><strong>e_type</strong>：表示 ELF 文件的类型，常见值有：<ul>
+<li><code>ET_EXEC</code>：可执行文件（Executable File）。</li>
+<li><code>ET_DYN</code>：共享库（Shared Object）。</li>
+<li><code>ET_REL</code>：重定位文件（Relocatable File）。</li>
+</ul>
+</li>
+<li><strong>e_machine</strong>：指定该 ELF 文件运行的目标架构，如 <code>EM_386</code> 表示 x86，<code>EM_X86_64</code> 表示 x86-64。</li>
+<li><strong>e_version</strong>：文件版本号，通常是 1。</li>
+<li><strong>e_entry</strong>：程序入口地址，指示程序执行开始的位置。</li>
+<li><strong>e_phoff</strong>：程序头表的偏移量，指示程序头在文件中的位置。</li>
+<li><strong>e_shoff</strong>：节头表的偏移量，指示节头表在文件中的位置。</li>
+<li><strong>e_flags</strong>：架构相关的标志（例如，x86 处理器的标志）。</li>
+<li><strong>e_ehsize</strong>：ELF 文件头的大小。</li>
+<li><strong>e_phentsize</strong>：程序头表中每个条目的大小。</li>
+<li><strong>e_phnum</strong>：程序头表的条目数量。</li>
+<li><strong>e_shentsize</strong>：节头表中每个条目的大小。</li>
+<li><strong>e_shnum</strong>：节头表的条目数量。</li>
+<li><strong>e_shstrndx</strong>：节头表中字符串表的位置索引。</li>
+</ul>
+<h3 id="2-Program-Header-Table（程序头表）"><a href="#2-Program-Header-Table（程序头表）" class="headerlink" title="2. Program Header Table（程序头表）"></a>2. Program Header Table（程序头表）</h3><p>程序头表是 ELF 文件中的一个重要部分，描述了文件中每个可加载段的信息。每个条目包含以下信息：</p>
+<ul>
+<li><strong>p_type</strong>：段的类型，如 <code>PT_LOAD</code>（可加载段），<code>PT_DYNAMIC</code>（动态段），<code>PT_INTERP</code>（解释器段）等。</li>
+<li><strong>p_offset</strong>：该段在 ELF 文件中的偏移量。</li>
+<li><strong>p_vaddr</strong>：段在内存中的虚拟地址。</li>
+<li><strong>p_paddr</strong>：段的物理地址（在大多数现代系统中为 0）。</li>
+<li><strong>p_filesz</strong>：段在文件中的大小。</li>
+<li><strong>p_memsz</strong>：段在内存中的大小。</li>
+<li><strong>p_flags</strong>：段的访问权限标志，如可读（<code>PF_R</code>），可写（<code>PF_W</code>），可执行（<code>PF_X</code>）等。</li>
+<li><strong>p_align</strong>：段在内存中的对齐要求。</li>
+</ul>
+<h3 id="3-Section-Header-Table（节头表）"><a href="#3-Section-Header-Table（节头表）" class="headerlink" title="3. Section Header Table（节头表）"></a>3. Section Header Table（节头表）</h3><p>节头表是一个包含 ELF 文件中各个节（Section）描述的表。每个节是 ELF 文件的一个独立部分，包含程序的代码、数据、符号表、调试信息等。每个节由一个节头描述，字段包括：</p>
+<ul>
+<li><p><strong>sh_name</strong>：节名称的字符串表索引。</p>
+</li>
+<li><p>sh_type</p>
+<p>：节的类型，常见的类型包括：</p>
+<ul>
+<li><code>SHT_PROGBITS</code>：包含程序数据。</li>
+<li><code>SHT_SYMTAB</code>：符号表。</li>
+<li><code>SHT_STRTAB</code>：字符串表。</li>
+<li><code>SHT_RELA</code>：重定位表。</li>
+<li><code>SHT_DYNAMIC</code>：动态链接信息。</li>
+</ul>
+</li>
+<li><p><strong>sh_flags</strong>：节的标志，如 <code>SHF_ALLOC</code>（该节需要在内存中加载），<code>SHF_EXECINSTR</code>（该节包含可执行代码）等。</p>
+</li>
+<li><p><strong>sh_addr</strong>：节在内存中的虚拟地址（如果该节需要加载到内存）。</p>
+</li>
+<li><p><strong>sh_offset</strong>：节在文件中的偏移量。</p>
+</li>
+<li><p><strong>sh_size</strong>：节的大小。</p>
+</li>
+<li><p><strong>sh_link</strong>：与该节相关联的其他节的索引（例如符号表和字符串表之间的关联）。</p>
+</li>
+<li><p><strong>sh_info</strong>：该字段的具体含义依赖于节的类型。</p>
+</li>
+<li><p><strong>sh_addralign</strong>：节的对齐要求。</p>
+</li>
+<li><p><strong>sh_entsize</strong>：节中每个条目的大小（如果适用）。</p>
+</li>
+</ul>
+<h3 id="4-数据节（Data-Sections）"><a href="#4-数据节（Data-Sections）" class="headerlink" title="4. 数据节（Data Sections）"></a>4. 数据节（Data Sections）</h3><p>数据节包含 ELF 文件中各种数据和信息。例如：</p>
+<ul>
+<li><strong>.text</strong>：通常包含程序的可执行代码。</li>
+<li><strong>.data</strong>：包含已初始化的全局变量和静态变量。</li>
+<li><strong>.bss</strong>：包含未初始化的全局变量和静态变量（程序启动时会清零）。</li>
+<li><strong>.rodata</strong>：只读数据，如常量字符串。</li>
+<li><strong>.dynamic</strong>：动态链接信息（动态库相关的符号和重定位信息）。</li>
+<li><strong>.symtab</strong>：符号表，用于存储符号名称和地址等信息。</li>
+<li><strong>.strtab</strong>：字符串表，存储字符串数据，如符号表中符号的名称。</li>
+</ul>
+<h3 id="5-动态节（Dynamic-Section）"><a href="#5-动态节（Dynamic-Section）" class="headerlink" title="5. 动态节（Dynamic Section）"></a>5. 动态节（Dynamic Section）</h3><p>动态节在动态链接程序中非常重要，它存储与程序在运行时加载和链接相关的信息。常见字段有：</p>
+<ul>
+<li><strong>DT_NEEDED</strong>：需要的共享库。</li>
+<li><strong>DT_SONAME</strong>：共享库的名称。</li>
+<li><strong>DT_SYMBOLIC</strong>：指定共享库的符号是否应该全局可见。</li>
+</ul>
+<h3 id="6-字符串表（String-Table）"><a href="#6-字符串表（String-Table）" class="headerlink" title="6. 字符串表（String Table）"></a>6. 字符串表（String Table）</h3><p>ELF 文件使用字符串表存储符号、节、程序头等各种名称信息。它通常存储在一个 <code>.strtab</code> 节中。</p>
+<h3 id="7-重定位信息"><a href="#7-重定位信息" class="headerlink" title="7. 重定位信息"></a>7. 重定位信息</h3><p>ELF 文件中的重定位节（如 <code>.rela</code> 或 <code>.rel</code> 节）用于动态链接时解决符号地址。重定位项包含了一个符号的地址，并指示程序在加载时如何进行修改。</p>
+<p><img src="https://s2.loli.net/2024/11/28/jNrA5GCPpEOymML.png" srcset="/img/loading.gif" lazyload alt="2052730-20220612221409797-515360683"></p>
+<h2 id="ELF具体结构"><a href="#ELF具体结构" class="headerlink" title="ELF具体结构"></a>ELF具体结构</h2><h3 id="ELF头-ELF-Header"><a href="#ELF头-ELF-Header" class="headerlink" title="ELF头(ELF Header)"></a>ELF头(ELF Header)</h3><p><strong>概述文件结构和基本信息</strong>：ELF 文件头是 ELF 文件的入口，它包含描述文件布局和格式的关键信息。提取文件总体信息，指导后续程序头表、节头表等解析工作。</p>
+<h4 id="数据结构："><a href="#数据结构：" class="headerlink" title="数据结构："></a>数据结构：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">elf64_hdr</span> &#123;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> e_indet[EI_NIDENT];<span class="hljs-comment">//ELF文件的描述，是一个16字节的标识，表明当前文件的数据格式，位数等[16B]</span><br>    Elf64_Half e_type;<span class="hljs-comment">//文件的标识字段标识文件的类型；比如可执行文件，共享目标文件[2B]</span><br>    Elf64_Half e_machine;<span class="hljs-comment">//目标文件的体系结构(处理器架构)[2B]</span><br>    Elf64_Half e_version;<span class="hljs-comment">//当前文件的版本[2B]</span><br><br>    Elf64_Addr e_entry;<span class="hljs-comment">//程序的虚拟入口地址[8B]</span><br>    Elf64_Off  e_phoff;<span class="hljs-comment">//程序头表的偏移地址[8B]</span><br>    Elf64_Off  e_shoff;<span class="hljs-comment">//段表/节表的偏移[8B]</span><br><br>    Elf64_Word e_flags; <span class="hljs-comment">//处理器相关的标志位[4B]</span><br>    Elf64_Half e_ehsize; <span class="hljs-comment">//ELF文件头的大小[2B]</span><br><br>    Elf64_Half e_phentsize;<span class="hljs-comment">//程序头表的单项大小[2B]</span><br>    Elf64_Half e_phnum;<span class="hljs-comment">//程序头表的单项数目[2B]</span><br><br>    Elf64_Half e_shentsize;<span class="hljs-comment">//节表中单项的大小[2B]</span><br>    Elf64_Half e_shnum;<span class="hljs-comment">//节表中单项的数目[2B]</span><br>    Elf64_Half e_shstrndx;<span class="hljs-comment">//节表中节名的索引[2B]------- 存储节名称，它包含所有节头的名字，如 .text, .data, .bss, 等等。</span><br>&#125;Elf64_hdr;<br></code></pre></td></tr></table></figure>
+
+<h4 id="解析代码："><a href="#解析代码：" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">ElfHeaderParse</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">fseek</span>(fp, <span class="hljs-number">0</span>, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(elf64_hdr, <span class="hljs-built_in">sizeof</span>(Elf64_hdr), <span class="hljs-number">1</span>, fp);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Magic:\t\t\t&quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; EI_NIDENT; i++) <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%02x &quot;</span>, elf64_hdr-&gt;e_indet[i]);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;文件格式:\t\t&quot;</span>);<br>    <span class="hljs-keyword">switch</span> (elf64_hdr-&gt;e_type)<br>    &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;未知的文件格式\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;重定向文件\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;可执行文件\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;共享文件\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Core转储文件\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0xff00</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;特定处理器的文件\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0xffff</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;特定处理器的文件\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;处理器体系结构:\t\t&quot;</span>);<br>    <span class="hljs-keyword">switch</span> (elf64_hdr-&gt;e_machine)<br>    &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;未知体系结构\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;AT&amp;T WE 32100\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SPARC\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Intel Architecture\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Motorola 68000\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Motorola 88000\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Intel 80860\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">8</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;MIPS RS3000 Big-Endian\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">10</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;MIPS RS4000 Big-Endian\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">62</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;AMD x86-64 architecture\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">183</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;AArch64 architecture\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;version:\t\t&quot;</span>);<br>    <span class="hljs-keyword">switch</span> (elf64_hdr-&gt;e_version) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;0\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;1\n&quot;</span>); <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;程序入口虚拟地址:\t0x%016x\n&quot;</span>, elf64_hdr-&gt;e_entry);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;程序头表的偏移地址:\t0x%08x\n&quot;</span>, elf64_hdr-&gt;e_phoff);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;段表/节表的编译地址：\t0x%08x\n&quot;</span>, elf64_hdr-&gt;e_shoff);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;处理器标志位:\t\t%x\n&quot;</span>, elf64_hdr-&gt;e_flags);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;ELF文件头大小:\t\t%u bytes\n&quot;</span>, elf64_hdr-&gt;e_ehsize);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;程序头表的单项大小:\t%u bytes\n&quot;</span>, elf64_hdr-&gt;e_phentsize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;程序头表的单项数量:\t%u\n&quot;</span>, elf64_hdr-&gt;e_phnum);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;节表的单项大小:\t%u bytes\n&quot;</span>, elf64_hdr-&gt;e_shentsize);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;节表的单项数量:\t%u\n&quot;</span>, elf64_hdr-&gt;e_shnum);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;字符串表在节头表中索引:\t%u\n&quot;</span>, elf64_hdr-&gt;e_shstrndx);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/iptQJ2Z4duKga5c.png" srcset="/img/loading.gif" lazyload alt="image-20241222095101754"></p>
+<h3 id="程序头表-Program-Header-Table"><a href="#程序头表-Program-Header-Table" class="headerlink" title="程序头表(Program Header Table)"></a>程序头表(Program Header Table)</h3><p><strong>描述程序的内存映射方式</strong>：用于运行时加载 ELF 文件的指令，告诉加载器哪些部分需要映射到内存。处理与加载相关的段，例如 <code>.text</code>（代码段）、<code>.data</code>（数据段）、<code>.dynamic</code>（动态段）等。用于动态链接器加载共享库或可执行文件。</p>
+<h4 id="数据结构：-1"><a href="#数据结构：-1" class="headerlink" title="数据结构："></a>数据结构：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">elf64_phdr</span> &#123;<br>    Elf64_Word p_type;<span class="hljs-comment">//当前Segment的类型[4B]</span><br>    Elf64_Word p_flags;<span class="hljs-comment">//段相关的标志[4B]</span><br>    Elf32_Off  p_offset;<span class="hljs-comment">//当前段相对于文件起始位置的偏移量;[4B]</span><br>    Elf64_Addr      p_vaddr;<span class="hljs-comment">//段的第一个字节将被映射到到内存中的虚拟地址[8B]</span><br>    Elf64_Addr      p_paddr;<span class="hljs-comment">//此成员仅用于与物理地址相关的系统中。因为 System V 忽略所有应用程序的物理地址信息，此字段对与可执行文件和共享目标文件而言具体内容是指定的；[8B]</span><br>    Elf64_Xword     p_filesz;<span class="hljs-comment">//段在文件映像中所占的字节数[8B]</span><br>    Elf64_Xword     p_memsz;<span class="hljs-comment">//段在内存映像中占用的字节数</span><br>    Elf64_Xword     p_align;<span class="hljs-comment">//段在文件中和内存中如何对齐</span><br>&#125;Elf64_Phdr;<br></code></pre></td></tr></table></figure>
+
+<h4 id="解析代码：-1"><a href="#解析代码：-1" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">ElfProgramHeaderTableParse</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span></span><br><span class="hljs-function"></span>&#123;<br>    Elf64_Phdr phdr[<span class="hljs-number">99</span>];<br>    <span class="hljs-built_in">fseek</span>(fp, elf64_hdr-&gt;e_phoff, SEEK_SET);<br>    <span class="hljs-type">int</span> count = elf64_hdr-&gt;e_phnum;<br>    <span class="hljs-built_in">fread</span>(phdr, <span class="hljs-built_in">sizeof</span>(Elf64_Phdr), count, fp);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;There are %d program headers, starting at offset 0x%04x:\n\n&quot;</span>, count, elf64_hdr-&gt;e_phoff);<br>    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;程序头表:&quot;</span>);<br>    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;类型\t\t属性\t偏移量\t\t虚拟地址\t\t物理地址\t\t文件大小\t镜像大小\t对齐长度&quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; count;i++ )<br>    &#123;<br>        <span class="hljs-keyword">switch</span> (phdr[i].p_type) &#123;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_NULL\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//当前项未使用，项中的成员是未定义的，需要忽略当前项；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_LOAD\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//当前Segment是一个可装载的Segment，即可以被装载映射到内存中，其大小由p_filesz和p_memsz描述。如果p_memsz&gt;p_filesz则剩余的字节被置零，但是p_filesz&gt;p_memsz是非法的。动态库一般包含两个该类型的段：代码段和数据段；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_DYNAMIC\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//动态段，动态库特有的段，包含了动态链接必须的一些信息，比如需要链接的共享库列表、GOT等等</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_INTERP\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//当前段用于存储一段以NULL为结尾的字符串，该字符串表明了程序解释器的位置。且当前段仅仅对于可执行文件有实际意义</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_NOTE\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//用于保存与特定供应商或者系统相关的附加信息以便于兼容性、一致性检查，但是实际上只保存了操作系统的规范信息；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_SHLIB\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//保留段；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_PHDR\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//保存程序头表本身的位置和大小，当前段不能在文件中出现一次以上，且仅仅当程序表头为内存映像的一部分时起作用，它必须在所有加载项目之前；</span><br>            <span class="hljs-comment">/*[PT_LPROC(0x70000000),PT_HIPROC(0x7fffffff)]：该范围内的值用作预留*/</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x6474e550</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;GNU_EH_FRAME\t&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x6474e551</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;GNU_STACK\t&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x6474e552</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;GNU_RELRO\t&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x70000000</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_LOPROC\t&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x7fffffff</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;PT_HIPROC\t&quot;</span>); <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27;\t&#x27;</span>);<br>        <span class="hljs-keyword">switch</span> (phdr[i].p_flags) &#123;<span class="hljs-comment">//段相关的标志(权限)；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;none&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;x&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;w&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;wx&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;r&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;rx&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;rw&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;rwx&quot;</span>); <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t0x%08x&quot;</span>, phdr[i].p_offset);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t0x%016x&quot;</span>, phdr[i].p_vaddr);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t0x%016x&quot;</span>, phdr[i].p_paddr);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%6u bytes&quot;</span>, phdr[i].p_filesz);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%6u bytes&quot;</span>, phdr[i].p_memsz);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t0x%08x&quot;</span>, phdr[i].p_align);<br>        <span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27;\n&#x27;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果：-1"><a href="#结果：-1" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/lRgI7oCc9qTdDxh.png" srcset="/img/loading.gif" lazyload alt="image-20241222095134236"></p>
+<h3 id="节区头表-Section-Header-Table"><a href="#节区头表-Section-Header-Table" class="headerlink" title="节区头表(Section Header Table)"></a>节区头表(Section Header Table)</h3><p><strong>描述 ELF 文件的逻辑组织</strong>：包含每个节（如 <code>.text</code>、<code>.data</code>、<code>.bss</code>、<code>.symtab</code> 等）的信息。确定各个节的位置及内容，如符号表 <code>.symtab</code>、重定位表 <code>.rel</code> 等。提供调试和符号信息。</p>
+<h4 id="数据结构：-2"><a href="#数据结构：-2" class="headerlink" title="数据结构："></a>数据结构：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">elf64_shrd</span> &#123;<br>    Elf64_Word sh_name;<span class="hljs-comment">//节名称在字符串表中的索引</span><br>    Elf64_Word sh_type;<span class="hljs-comment">//节的类型和语义</span><br>    Elf64_Xword sh_flags;<span class="hljs-comment">//1bit位的标志位</span><br><br>    Elf64_Addr sh_addr;<span class="hljs-comment">//如果当前节需要被装载到内存，则当前项存储当前节映射到内存的首地址，否则应该为0；[8B]</span><br>    Elf64_Off  sh_offset;<span class="hljs-comment">//当前节的首地址相对于文件的偏移；[8B]</span><br>    Elf64_Xword sh_size;<span class="hljs-comment">//节的大小[8B]</span><br><br>    Elf64_Word sh_link;<span class="hljs-comment">//[4B]符号表（.symtab 或 .dynsym）</span><br>    <span class="hljs-comment">//用途：sh_link 表示符号表关联的字符串表的节头表索引。</span><br>    <span class="hljs-comment">//原因：符号表中的每个符号名存储在字符串表中，而 sh_link 指向该字符串表的节。</span><br>    Elf64_Word sh_info;<span class="hljs-comment">//节的附加信息。对于特定的节有特定的含义，其他为0；[4B]</span><br>    Elf64_Xword sh_addralign;<span class="hljs-comment">//地址约束对齐，值应该为0或者2的幂次方，0和1表示未进行对齐；[8B]</span><br>    Elf64_Xword sh_entsize;<span class="hljs-comment">//如果该节包含一个表格（例如符号表、重定位表等），sh_entsize 表示表中每个条目的大小（以字节为单位）。</span><br>    <span class="hljs-comment">//如果该节不是一个表格（例如.text 节），sh_entsize 通常设置为 0，因为这些节不分条目，所有数据都连续存放。</span><br><br>&#125;Elf64_Shdr;<br><br></code></pre></td></tr></table></figure>
+
+<h4 id="解析代码：-2"><a href="#解析代码：-2" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">ElfSectionHeaderTableParse</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span> </span>&#123;<br>    <span class="hljs-type">char</span> strtable[<span class="hljs-number">9999</span>];<br>    Elf64_Shdr shdr[<span class="hljs-number">99</span>];<br>    <span class="hljs-built_in">fseek</span>(fp, elf64_hdr-&gt;e_shoff, SEEK_SET);<br>    <span class="hljs-type">int</span> count = elf64_hdr-&gt;e_shnum;<br>    <span class="hljs-built_in">fread</span>(shdr, <span class="hljs-built_in">sizeof</span>(Elf64_Shdr), count, fp);<br><br>    <span class="hljs-built_in">fseek</span>(fp, shdr[elf64_hdr-&gt;e_shstrndx].sh_offset, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(strtable, <span class="hljs-number">1</span>, shdr[elf64_hdr-&gt;e_shstrndx].sh_size, fp);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;There are %d section headers, starting at offset 0x%04x:\n\n&quot;</span>, count, elf64_hdr-&gt;e_shoff);<br>    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;节头表:&quot;</span>);<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[编号]\t名称\t\t\  类型\t\t属性\t虚拟地址\t\t偏移量\t\t大小\t\t索引值\t信息\t对齐长度\t表项大小\n&quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; count; i++)<br>    &#123;<br>        <span class="hljs-comment">//&amp;strtable[shdr[i].sh_name] 表示获取该字符的地址，这实际上是偏移量对应的字符串在数组中的起始地址。</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[%02d]\t%s&quot;</span>, i, &amp;strtable[shdr[i].sh_name]);<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">20</span> - <span class="hljs-built_in">strlen</span>(&amp;strtable[shdr[i].sh_name]); ++j) &#123;<br>            <span class="hljs-built_in">putchar</span>(<span class="hljs-string">&#x27; &#x27;</span>);<br>        &#125;<br>        <span class="hljs-keyword">switch</span> (shdr[i].sh_type)<br>        &#123;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_NULL\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//当前节是非活跃的，没有一个对应的具体的节内存；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_PROGBITS\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//包含了程序的指令信息、数据等程序运行相关的信息；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_SYMTAB\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//保存了符号信息，用于重定位；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_STRTAB\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//一个字符串表，保存了每个节的节名称；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_RELA\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//存储可重定位表项，可能会有附加内容，目标文件可能有多个可重定位表项；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_HASH\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//存储符号哈希表，所有参与动态链接的目标只能包含一个哈希表，一个目标文件只能包含一个哈希表；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_DYAMIC\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//存储包含动态链接的信息，一个目标文件只能包含一个；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_NOTE\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//存储以某种形式标记文件的信息；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">8</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_NOBITS\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//这种类型的节不占据文件空间，但是成员sh_offset依然会包含对应的偏移；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">9</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_REL\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//包含可重定位表项，无附加内容，目标文件可能有多个可重定位表项；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">10</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_SHLIB\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//：保留区，包含此节的程序与ABI不兼容</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">11</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_DYNSYM\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//保存共享库导入动态符号信息；</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">12</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">13</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">14</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">15</span>:<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t&quot;</span>); <span class="hljs-keyword">break</span>;<span class="hljs-comment">//</span><br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x70000000</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_LOPROC&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x7fffffff</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_HIPROC&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x80000000</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_LOUSER&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0xffffffff</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_HIUSER&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x6ffffff6</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_GNU_HASH&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x6fffffff</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_GNU_versym&quot;</span>); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">0x6ffffffe</span>: <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHT_GNU_verneed&quot;</span>); <span class="hljs-keyword">break</span>;<br>        &#125;<br>        <br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;0x%016x\t&quot;</span>, shdr[i].sh_addr);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;0x%08x\t&quot;</span>, shdr[i].sh_offset);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%4lu bytes\t&quot;</span>, shdr[i].sh_size);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%u\t&quot;</span>, shdr[i].sh_link);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%u\t&quot;</span>, shdr[i].sh_info);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%2lu bytes\t&quot;</span>, shdr[i].sh_entsize);<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%4x\n&quot;</span>, shdr[i].sh_addralign);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果：-2"><a href="#结果：-2" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/KY7pl9Ln6ruy1fv.png" srcset="/img/loading.gif" lazyload alt="image-20241222095159256"></p>
+<h4 id="特殊的节"><a href="#特殊的节" class="headerlink" title="特殊的节"></a>特殊的节</h4><p>ELF 文件中有一些特定的节是预定义好的，其内容是指令代码或者控制信息</p>
+<p>这些节专门为操作系统使用，对于不同的操作系统，这些节的类型和属性有所不同</p>
+<table>
+<thead>
+<tr>
+<th align="left">节名</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>.text</strong></td>
+<td align="left"><strong>代码段</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>.data</strong></td>
+<td align="left"><strong>保存已经初始化的全局变量和局部静态变量</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>.bss</strong></td>
+<td align="left"><strong>保存未初始化的全局变量和局部静态变量</strong></td>
+</tr>
+<tr>
+<td align="left">.rodata</td>
+<td align="left">存放只读数据, 例如常量字符串</td>
+</tr>
+<tr>
+<td align="left">.comment</td>
+<td align="left">编译器版本信息</td>
+</tr>
+<tr>
+<td align="left">.debug</td>
+<td align="left">调试信息</td>
+</tr>
+<tr>
+<td align="left"><strong>.dynamic</strong></td>
+<td align="left"><strong>动态链接信息</strong>, linker解析该段以加载elf文件</td>
+</tr>
+<tr>
+<td align="left">.hash</td>
+<td align="left">符号哈希表 (可查导入和导出符号)</td>
+</tr>
+<tr>
+<td align="left">.gnu.hash</td>
+<td align="left">GNU哈希表 (只可查导出符号,导出表)</td>
+</tr>
+<tr>
+<td align="left">.line</td>
+<td align="left">调试行号表 即源代码行号与编译后指令的对应表</td>
+</tr>
+<tr>
+<td align="left">.note</td>
+<td align="left">额外的编译器信息 例如公司名,版本号</td>
+</tr>
+<tr>
+<td align="left">.rel.dyn</td>
+<td align="left">动态链接重定位表 存放全局变量重定位项</td>
+</tr>
+<tr>
+<td align="left">.rel.plt</td>
+<td align="left">动态链接函数跳转重定位表 存放plt重定位项</td>
+</tr>
+<tr>
+<td align="left">.symtab</td>
+<td align="left">符号表</td>
+</tr>
+<tr>
+<td align="left">.dynsym</td>
+<td align="left">动态链接符号表</td>
+</tr>
+<tr>
+<td align="left">.strtab</td>
+<td align="left">字符串表</td>
+</tr>
+<tr>
+<td align="left">.shstrtab</td>
+<td align="left">节名表</td>
+</tr>
+<tr>
+<td align="left">.dynstr</td>
+<td align="left">动态链接字符串表</td>
+</tr>
+<tr>
+<td align="left">.plt</td>
+<td align="left">动态链接跳转表</td>
+</tr>
+<tr>
+<td align="left">.got</td>
+<td align="left">动态链接全局偏移表</td>
+</tr>
+<tr>
+<td align="left">.init</td>
+<td align="left">程序初始化代码段(节)</td>
+</tr>
+<tr>
+<td align="left">.fini</td>
+<td align="left">程序结束代码段(节)</td>
+</tr>
+</tbody></table>
+<h3 id="字符串表-String-Table"><a href="#字符串表-String-Table" class="headerlink" title="字符串表(String Table)"></a>字符串表(String Table)</h3><p><strong>存储字符串信息</strong>：供节头表、符号表等引用的字符串。解析 ELF 文件中字符串索引值，获取节名称、符号名称等人类可读的信息。</p>
+<h4 id="数据结构：-3"><a href="#数据结构：-3" class="headerlink" title="数据结构："></a>数据结构：</h4><p>ELF文件中有很多字符串,例如段名,变量名等, 由于字符串长度往往不固定,所以使用固定结构描述比较困难，常见做法是将字符串集中起来存放到一张字符串表,然后通过索引查表来引用字符串</p>
+<p>常见的有:</p>
+<ol>
+<li><p>.strtab(字符串表,保存普通字符串)</p>
+<p>遍历section header, 查找type&#x3D;&#x3D;SHT_STRTAB的即为字符串表 (包括段表字符串表)</p>
+</li>
+<li><p>.shstrtab(段表字符串表,保存段表用到的字符串)</p>
+<p>获取该表可以通过ELF Header的e_shstrndx成员做索引,查找ELF Section Header Table</p>
+<p>即p_shstrtab&#x3D;ELFSectionHeaderTable[ELFHeader.e_shstrndx]</p>
+</li>
+</ol>
+<h4 id="解析代码：-3"><a href="#解析代码：-3" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">StringTableParse</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span> </span>&#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;this is stringtable \n&quot;</span>);<br>    <span class="hljs-type">char</span> strtable[<span class="hljs-number">9999</span>];<br>    Elf64_Shdr shdr[<span class="hljs-number">99</span>];<br>    <span class="hljs-type">uint8_t</span> stringBuffer[<span class="hljs-number">9999</span>]; <span class="hljs-comment">// 用于保存单个字符串表</span><br>    <span class="hljs-built_in">fseek</span>(fp, elf64_hdr-&gt;e_shoff, SEEK_SET);<br>    <span class="hljs-type">int</span> count = elf64_hdr-&gt;e_shnum;<br>    <span class="hljs-built_in">fread</span>(shdr, <span class="hljs-built_in">sizeof</span>(Elf64_Shdr), count, fp);<br><br>    <span class="hljs-built_in">fseek</span>(fp, shdr[elf64_hdr-&gt;e_shstrndx].sh_offset, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(strtable, <span class="hljs-number">1</span>, shdr[elf64_hdr-&gt;e_shstrndx].sh_size, fp);<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; count; i++) &#123;<br>        <span class="hljs-keyword">if</span> (shdr[i].sh_type == <span class="hljs-number">3</span>) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t==========String Table %s==========\n&quot;</span>, &amp;strtable[shdr[i].sh_name]);<br>            <span class="hljs-built_in">fseek</span>(fp, shdr[i].sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(stringBuffer, <span class="hljs-number">1</span>, shdr[i].sh_size, fp);<br>            <span class="hljs-type">uint32_t</span> pos = <span class="hljs-number">0</span>;<br>            <span class="hljs-keyword">while</span> (pos &lt; shdr[i].sh_size) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%s\n&quot;</span>, stringBuffer + pos);<br>                pos += <span class="hljs-built_in">strlen</span>((<span class="hljs-type">char</span>*)(stringBuffer + pos)) + <span class="hljs-number">1</span>; <span class="hljs-comment">// 跳过当前字符串（加上末尾 &#x27;\0&#x27;）</span><br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;ELF String Table End\n&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果：-3"><a href="#结果：-3" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/kz4UueFKX9SCaD3.png" srcset="/img/loading.gif" lazyload alt="image-20241222095217758"></p>
+<h3 id="符号表信息-Symbol-Table"><a href="#符号表信息-Symbol-Table" class="headerlink" title="符号表信息(Symbol Table)"></a>符号表信息(Symbol Table)</h3><p><strong>存储符号信息</strong>：符号表保存了 ELF 文件中的全局和局部符号（如函数名、变量名）。为调试、链接提供符号信息。动态链接时，解析符号依赖（如函数地址的重定位）。符号表的作用是描述导入和导出符号,这里的符号可以是全局变量,函数,外部引用等，通过符号表和对应的字符串表可以得到符号名,符号大小,符号地址等信息</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs txt">.dynsym //动态链接符号表<br>.symtab //符号表<br><br>.dynstr //动态链接符号表的字符串表<br>.strtab //符号表的字符串表<br></code></pre></td></tr></table></figure>
+
+<h4 id="数据结构：-4"><a href="#数据结构：-4" class="headerlink" title="数据结构："></a>数据结构：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span><br>&#123;<br>    Elf64_Word st_name; <span class="hljs-comment">/* Symbol name */</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> st_info; <span class="hljs-comment">/* Type and Binding attributes */</span><span class="hljs-comment">//符号的类型和属性, 高4bit标识了符号绑定(symbol binding), 低4bit标识了符号类型(symbol type), 组成符号信息(symbol information)</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> st_other; <span class="hljs-comment">/* Reserved */</span><br>    Elf64_Half st_shndx; <span class="hljs-comment">/* Section table index用于表示符号所在的段（Section）索引 */</span><br>    Elf64_Addr st_value; <span class="hljs-comment">/* Symbol value */</span><br>    Elf64_Xword st_size; <span class="hljs-comment">/* Size of object (e.g., common) */</span><br>&#125; Elf64_Sym;<br></code></pre></td></tr></table></figure>
+
+<p>注意：st_info</p>
+<p>符号的类型和属性,高4bit标识了符号绑定(symbol binding), 低4bit标识了符号类型(symbol type),组成符号信息(symbol information)</p>
+<p>有3个宏分别读取这三个属性值</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">define</span> ELF32_ST_BIND(val)      (((unsigned char) (val)) &gt;&gt; 4)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> ELF32_ST_TYPE(val)      ((val) &amp; 0xf)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> ELF32_ST_INFO(bind, type)   (((bind) &lt;&lt; 4) + ((type) &amp; 0xf))</span><br></code></pre></td></tr></table></figure>
+
+<p>具体类型值:</p>
+<p><img src="https://s2.loli.net/2024/12/22/2K6AaGHtlMyXIRo.png" srcset="/img/loading.gif" lazyload alt="image-20241222093256869"></p>
+<p><img src="https://s2.loli.net/2024/12/22/Hkc5sdLWTNfeb3E.png" srcset="/img/loading.gif" lazyload alt="image-20241222093313451"></p>
+<h4 id="解析代码：-4"><a href="#解析代码：-4" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title">getSymbolBindingString</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> symbolBinding)</span> </span>&#123;<br>    <span class="hljs-keyword">switch</span> (symbolBinding) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;LOCAL&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:       <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GLOBAL&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:         <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;WEAK&quot;</span>;<br>    <span class="hljs-comment">/*case STB_NUM:          return &quot;STB_NUM&quot;;</span><br><span class="hljs-comment">    case STB_GNU_UNIQUE:   return &quot;GNU_UNIQUE&quot;;*/</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">12</span>:         <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;STB_HIOS&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">13</span>:       <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;STB_LOPROC&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">15</span>:       <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;STB_HIPROC&quot;</span>;<br>    <span class="hljs-keyword">default</span>:               <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;UNKNOWN&quot;</span>;<br>    &#125;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title">getSymbolTypeString</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> symbolType)</span> </span>&#123;<br>    <span class="hljs-keyword">switch</span> (symbolType) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;NOTYPE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;OBJECT&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:      <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FUNC&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:   <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SECTION&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>:      <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FILE&quot;</span>;<br>    <span class="hljs-comment">//case STT_COMMON:    return &quot;COMMON&quot;;</span><br>    <span class="hljs-comment">//case STT_TLS:       return &quot;TLS&quot;;</span><br>    <span class="hljs-comment">//case STT_NUM:       return &quot;STT_NUM&quot;;</span><br>    <span class="hljs-comment">//case STT_GNU_IFUNC: return &quot;GNU_IFUNC&quot;;</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">10</span>:      <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;LOOS&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">12</span>:      <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;HIOS&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">13</span>:    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;LOPROC&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">15</span>:    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;HIPROC&quot;</span>;<br>    <span class="hljs-keyword">default</span>:            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;UNKNOWN&quot;</span>;<br>    &#125;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title">getSymbolVisibility</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> st_other)</span> </span>&#123;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> visibility = st_other &amp; <span class="hljs-number">0x03</span>;<br>    <span class="hljs-keyword">switch</span> (visibility) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;DEFAULT&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;INTERNAL&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;HIDDEN&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;PROTECTED&quot;</span>;<br>    <span class="hljs-keyword">default</span>:           <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;UNKNOWN&quot;</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">SymbolTableParse</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span> </span>&#123;<br>    <span class="hljs-type">char</span> strtable[<span class="hljs-number">9999</span>];<br>    <span class="hljs-type">char</span> str_table[<span class="hljs-number">9999</span>];<br>    Elf64_Shdr shdr[<span class="hljs-number">99</span>];<br>    <span class="hljs-built_in">fseek</span>(fp, elf64_hdr-&gt;e_shoff, SEEK_SET);<br>    <span class="hljs-type">int</span> count = elf64_hdr-&gt;e_shnum;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">fread</span>(shdr, <span class="hljs-built_in">sizeof</span>(Elf64_Shdr), count, fp) != count) &#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Failed to read section headers&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">fseek</span>(fp, shdr[elf64_hdr-&gt;e_shstrndx].sh_offset, SEEK_SET);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">fread</span>(str_table, <span class="hljs-number">1</span>, shdr[elf64_hdr-&gt;e_shstrndx].sh_size, fp) != shdr[elf64_hdr-&gt;e_shstrndx].sh_size) &#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Failed to read string table&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">fseek</span>(fp, shdr[elf64_hdr-&gt;e_shstrndx].sh_offset, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(strtable, <span class="hljs-number">1</span>, shdr[elf64_hdr-&gt;e_shstrndx].sh_size, fp);<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; count; i++) &#123;<br>        <span class="hljs-keyword">if</span> (shdr[i].sh_type == <span class="hljs-number">2</span> || shdr[i].sh_type == <span class="hljs-number">11</span>) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t==========symbol Table %s==========\n&quot;</span>, &amp;strtable[shdr[i].sh_name]);<br>            <span class="hljs-keyword">if</span> (shdr[i].sh_entsize == <span class="hljs-number">0</span>) <span class="hljs-keyword">continue</span>;<br>            Elf64_Xword symbolnum = shdr[i].sh_size / shdr[i].sh_entsize;<br><br>            <span class="hljs-comment">// 加载符号表段</span><br>            Elf64_Sym* pSymbolTable = (Elf64_Sym*)<span class="hljs-built_in">malloc</span>(shdr[i].sh_size);<br>            <span class="hljs-built_in">fseek</span>(fp, shdr[i].sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(pSymbolTable, <span class="hljs-number">1</span>, shdr[i].sh_size, fp);<br><br>            <span class="hljs-comment">// 加载关联的字符串表</span><br>            <span class="hljs-type">char</span>* str_table = (<span class="hljs-type">char</span>*)<span class="hljs-built_in">malloc</span>(shdr[shdr[i].sh_link].sh_size);<br>            <span class="hljs-built_in">fseek</span>(fp, shdr[shdr[i].sh_link].sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(str_table, <span class="hljs-number">1</span>, shdr[shdr[i].sh_link].sh_size, fp);<br><br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\tNum \tValue\t\tSize\t\tIndex\t\tName\n&quot;</span>);<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; symbolnum; j++) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%04d&quot;</span>, j);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx&quot;</span>, pSymbolTable[j].st_value);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx&quot;</span>, pSymbolTable[j].st_size);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%04x&quot;</span>, pSymbolTable[j].st_shndx);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%s\n&quot;</span>, str_table + pSymbolTable[j].st_name);<br>            &#125;<br><br>            <span class="hljs-built_in">free</span>(pSymbolTable);<br>            <span class="hljs-built_in">free</span>(str_table);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果：-4"><a href="#结果：-4" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/ILUkq2hCuRD5aAt.png" srcset="/img/loading.gif" lazyload alt="image-20241222095255525"></p>
+<h3 id="重定位表信息-Relocation-Table"><a href="#重定位表信息-Relocation-Table" class="headerlink" title="重定位表信息(Relocation Table)"></a>重定位表信息(Relocation Table)</h3><p><strong>处理动态链接和地址调整</strong>：用于修改可执行代码和数据的地址（例如修正指针或调用目标地址）。修正动态库或共享库的符号引用地址。实现位置无关代码（PIC）。</p>
+<p>一般有两张重定位表:</p>
+<ol>
+<li><strong>.rel.plt</strong> 修复外部函数地址</li>
+<li><strong>.rel.dyn</strong> 修复全局变量地址</li>
+</ol>
+<p>重定位表有SHT_REL, SHT_RELA, SHT_RELR三种类型。</p>
+<h4 id="数据结构：-5"><a href="#数据结构：-5" class="headerlink" title="数据结构："></a>数据结构：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span><br>&#123;<br>    Elf64_Addr r_offset; <span class="hljs-comment">/* 引用地址（需要重定位的位置） */</span><br>    Elf64_Xword r_info;  <span class="hljs-comment">/* 符号索引和重定位类型（编码信息） */</span><br>&#125;Elf64_Rel;<br><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span><br>&#123;<br>    Elf64_Addr r_offset;     <span class="hljs-comment">/* 引用地址（需要重定位的位置） */</span><br>    Elf64_Xword r_info;      <span class="hljs-comment">/* 符号索引和重定位类型（编码信息） */</span><br>    Elf64_Sxword r_addend;   <span class="hljs-comment">/* 表达式中的常量部分 */</span><br>&#125;Elf64_Rela;<br></code></pre></td></tr></table></figure>
+
+<h4 id="解析代码：-5"><a href="#解析代码：-5" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title">getRelocationTypeString64</span><span class="hljs-params">(Elf64_Word value)</span> </span>&#123;<br>    <span class="hljs-keyword">switch</span> (value) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_NONE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_PC32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_GOT32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_PLT32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_COPY&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_GLOB_DAT&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_JMP_SLOT&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">8</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_RELATIVE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">9</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_GOTOFF&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">10</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_GOTPC&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">11</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_32PLT&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">14</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_TPOFF&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">15</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_IE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">16</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GOTIE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">17</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">18</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GD&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">19</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LDM&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">20</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_16&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">21</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_PC16&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">22</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_8&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">23</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_PC8&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">24</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GD_32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">25</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GD_PUSH&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">26</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GD_CALL&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">27</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GD_POP&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">28</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LDM_32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">29</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LDM_PUSH&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">30</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LDM_CALL&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">31</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LDM_POP&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">32</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LDO_32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">33</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_IE_32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">34</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_LE_32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">35</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_DTPMOD32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">36</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_DTPOFF32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">37</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_TPOFF32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">38</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_SIZE32&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">39</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_GOTDESC&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">40</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_DESC_CALL&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">41</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_TLS_DESC&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">42</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_IRELATIVE&quot;</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">43</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;R_386_GOT32X&quot;</span>;<br>    <span class="hljs-keyword">default</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Unknown relocation type&quot;</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">RelocationTableParse</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span> </span>&#123;<br>    <span class="hljs-type">int</span> sectionNum = elf64_hdr-&gt;e_shnum;<br>    Elf64_Shdr shdr[<span class="hljs-number">99</span>];<br>    <span class="hljs-built_in">fseek</span>(fp, elf64_hdr-&gt;e_shoff, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(shdr, <span class="hljs-built_in">sizeof</span>(Elf64_Shdr), sectionNum, fp);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Relocation Tables:\n&quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; sectionNum; i++) &#123;<br>        <span class="hljs-keyword">if</span> (shdr[i].sh_type == <span class="hljs-number">4</span>) &#123; <span class="hljs-comment">// 检查是否为重定位表</span><br>            Elf64_Shdr* pRelocationTableHeader = &amp;shdr[i];<br>            Elf64_Rel* pRelocationTable = (Elf64_Rel*)<span class="hljs-built_in">malloc</span>(pRelocationTableHeader-&gt;sh_size);<br>            <span class="hljs-built_in">fseek</span>(fp, pRelocationTableHeader-&gt;sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(pRelocationTable, pRelocationTableHeader-&gt;sh_size, <span class="hljs-number">1</span>, fp);<br><br>            Elf64_Word relocItemNum = pRelocationTableHeader-&gt;sh_size / pRelocationTableHeader-&gt;sh_entsize;<br><br>            <span class="hljs-comment">// 符号表头部</span><br>            Elf64_Shdr* pSymbolTableHeader = &amp;shdr[pRelocationTableHeader-&gt;sh_link];<br>            Elf64_Sym* pSymbolTable = (Elf64_Sym*)<span class="hljs-built_in">malloc</span>(pSymbolTableHeader-&gt;sh_size);<br>            <span class="hljs-built_in">fseek</span>(fp, pSymbolTableHeader-&gt;sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(pSymbolTable, pSymbolTableHeader-&gt;sh_size, <span class="hljs-number">1</span>, fp);<br><br>            <span class="hljs-comment">// 符号表的字符串表</span><br>            <span class="hljs-type">char</span>* pSymbolTableStringTable = (<span class="hljs-type">char</span>*)<span class="hljs-built_in">malloc</span>(shdr[pSymbolTableHeader-&gt;sh_link].sh_size);<br>            <span class="hljs-built_in">fseek</span>(fp, shdr[pSymbolTableHeader-&gt;sh_link].sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(pSymbolTableStringTable, shdr[pSymbolTableHeader-&gt;sh_link].sh_size, <span class="hljs-number">1</span>, fp);<br><br>            <span class="hljs-comment">// 段名字符串表</span><br>            <span class="hljs-type">char</span> strtable[<span class="hljs-number">9999</span>];<br>            <span class="hljs-built_in">fseek</span>(fp, shdr[elf64_hdr-&gt;e_shstrndx].sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(strtable, <span class="hljs-number">1</span>, shdr[elf64_hdr-&gt;e_shstrndx].sh_size, fp);<br><br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Relocation Section &#x27;%s&#x27; at offset contains %d entries\n&quot;</span>, (<span class="hljs-type">char</span>*)strtable + shdr[i].sh_name, relocItemNum);<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\tOffset\t\tInfo\t\tType\t\t\t\tSym.value\t\tSym.name\n&quot;</span>);<br><br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; relocItemNum; j++) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx&quot;</span>, pRelocationTable[j].r_offset);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx&quot;</span>, pRelocationTable[j].r_info);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%s\t&quot;</span>, <span class="hljs-built_in">getRelocationTypeString32</span>(<span class="hljs-built_in">ELF64_R_TYPE</span>(pRelocationTable[j].r_info)));<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx\t&quot;</span>, pSymbolTable[<span class="hljs-built_in">ELF64_R_SYM</span>(pRelocationTable[j].r_info)].st_value);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%s\n&quot;</span>, &amp;pSymbolTableStringTable[pSymbolTable[<span class="hljs-built_in">ELF64_R_SYM</span>(pRelocationTable[j].r_info)].st_name]);<br>            &#125;<br><br>            <span class="hljs-comment">// 释放动态内存</span><br>            <span class="hljs-built_in">free</span>(pRelocationTable);<br>            <span class="hljs-built_in">free</span>(pSymbolTable);<br>            <span class="hljs-built_in">free</span>(pSymbolTableStringTable);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果：-5"><a href="#结果：-5" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/bv1kTzN6wXH2UeF.png" srcset="/img/loading.gif" lazyload alt="image-20241222095355945"></p>
+<h3 id="动态段-Dynamic-Segment"><a href="#动态段-Dynamic-Segment" class="headerlink" title="动态段(Dynamic Segment)"></a><strong>动态段(Dynamic Segment)</strong></h3><p>如果目标文件参与动态链接,必定包含一个类型为 PT_DYNAMIC 的Program表项, 对应节名为 .dynamic (type&#x3D;SHT_DYNAMIC)</p>
+<p>动态段的作用是提供动态链接器所需要的信息,比如依赖哪些共享库文件,动态链接符号表的位置,动态链接重定位表的位置等</p>
+<h4 id="数据结构：-6"><a href="#数据结构：-6" class="headerlink" title="数据结构："></a>数据结构：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><br><span class="hljs-comment">//提供动态链接器所需要的信息,</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span><br>&#123;<br>    Elf64_Sxword d_tag;<br>    <span class="hljs-keyword">union</span> &#123;<br>        Elf64_Xword d_val;<br>        Elf64_Addr d_ptr;<br>    &#125; d_un;<br>&#125; Elf64_Dyn;<br><span class="hljs-keyword">extern</span> Elf64_Dyn _DYNAMIC[];<br></code></pre></td></tr></table></figure>
+
+<h4 id="解析代码：-6"><a href="#解析代码：-6" class="headerlink" title="解析代码："></a>解析代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">define</span> DT_VAL 0</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> DT_PTR 1</span><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span>* <span class="hljs-title">getDynamicType</span><span class="hljs-params">(Elf64_Xword value)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (value &gt;= <span class="hljs-number">0x60000000</span> &amp;&amp; value &lt;= <span class="hljs-number">0x6fffffff</span>) <span class="hljs-comment">// DT_LOOS 和 DT_HIOS 的范围</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;OS-Specific&quot;</span>;<br>    <span class="hljs-keyword">if</span> (value &gt;= <span class="hljs-number">0x70000000</span> &amp;&amp; value &lt;= <span class="hljs-number">0x7fffffff</span>) <span class="hljs-comment">// DT_LOPROC 和 DT_HIPROC 的范围</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Processor-Specific&quot;</span>;<br>    <span class="hljs-keyword">switch</span> (value) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;NULL&quot;</span>;  <span class="hljs-comment">// DT_NULL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;NEEDED&quot;</span>;  <span class="hljs-comment">// DT_NEEDED</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;PLTRELSZ&quot;</span>;  <span class="hljs-comment">// DT_PLTRELSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;PLTGOT&quot;</span>;  <span class="hljs-comment">// DT_PLTGOT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;HASH&quot;</span>;  <span class="hljs-comment">// DT_HASH</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;STRTAB&quot;</span>;  <span class="hljs-comment">// DT_STRTAB</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMTAB&quot;</span>;  <span class="hljs-comment">// DT_SYMTAB</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELA&quot;</span>;  <span class="hljs-comment">// DT_RELA</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">8</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELASZ&quot;</span>;  <span class="hljs-comment">// DT_RELASZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">9</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELAENT&quot;</span>;  <span class="hljs-comment">// DT_RELAENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">10</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;STRSZ&quot;</span>;  <span class="hljs-comment">// DT_STRSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">11</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMENT&quot;</span>;  <span class="hljs-comment">// DT_SYMENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">12</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;INIT&quot;</span>;  <span class="hljs-comment">// DT_INIT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">13</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FINI&quot;</span>;  <span class="hljs-comment">// DT_FINI</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">14</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SONAME&quot;</span>;  <span class="hljs-comment">// DT_SONAME</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">15</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RPATH&quot;</span>;  <span class="hljs-comment">// DT_RPATH</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">16</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMBOLIC&quot;</span>;  <span class="hljs-comment">// DT_SYMBOLIC</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">17</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;REL&quot;</span>;  <span class="hljs-comment">// DT_REL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">18</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELSZ&quot;</span>;  <span class="hljs-comment">// DT_RELSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">19</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELENT&quot;</span>;  <span class="hljs-comment">// DT_RELENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">20</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;PLTREL&quot;</span>;  <span class="hljs-comment">// DT_PLTREL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">21</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;DEBUG&quot;</span>;  <span class="hljs-comment">// DT_DEBUG</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">22</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;TEXTREL&quot;</span>;  <span class="hljs-comment">// DT_TEXTREL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">23</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;JMPREL&quot;</span>;  <span class="hljs-comment">// DT_JMPREL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">24</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;BIND_NOW&quot;</span>;  <span class="hljs-comment">// DT_BIND_NOW</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">25</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;INIT_ARRAY&quot;</span>;  <span class="hljs-comment">// DT_INIT_ARRAY</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">26</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FINI_ARRAY&quot;</span>;  <span class="hljs-comment">// DT_FINI_ARRAY</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">27</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;INIT_ARRAYSZ&quot;</span>;  <span class="hljs-comment">// DT_INIT_ARRAYSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">28</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FINI_ARRAYSZ&quot;</span>;  <span class="hljs-comment">// DT_FINI_ARRAYSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">29</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RUNPATH&quot;</span>;  <span class="hljs-comment">// DT_RUNPATH</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">30</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FLAGS&quot;</span>;  <span class="hljs-comment">// DT_FLAGS</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">31</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;ENCODING&quot;</span>;  <span class="hljs-comment">// DT_ENCODING</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">32</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMTAB_SHNDX&quot;</span>;  <span class="hljs-comment">// DT_SYMTAB_SHNDX</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">33</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELRSZ&quot;</span>;  <span class="hljs-comment">// DT_RELRSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">34</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELR&quot;</span>;  <span class="hljs-comment">// DT_RELR</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">35</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELRENT&quot;</span>;  <span class="hljs-comment">// DT_RELRENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">36</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;NUM&quot;</span>;  <span class="hljs-comment">// DT_NUM</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">37</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;VALRNGLO&quot;</span>;  <span class="hljs-comment">// DT_VALRNGLO</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">38</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GNU_PRELINKED&quot;</span>;  <span class="hljs-comment">// DT_GNU_PRELINKED</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">39</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GNU_CONFLICTSZ&quot;</span>;  <span class="hljs-comment">// DT_GNU_CONFLICTSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">40</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GNU_LIBLISTSZ&quot;</span>;  <span class="hljs-comment">// DT_GNU_LIBLISTSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">41</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;CHECKSUM&quot;</span>;  <span class="hljs-comment">// DT_CHECKSUM</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">42</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;PLTPADSZ&quot;</span>;  <span class="hljs-comment">// DT_PLTPADSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">43</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;MOVEENT&quot;</span>;  <span class="hljs-comment">// DT_MOVEENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">44</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;MOVESZ&quot;</span>;  <span class="hljs-comment">// DT_MOVESZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">45</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FEATURE_1&quot;</span>;  <span class="hljs-comment">// DT_FEATURE_1</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">46</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;POSFLAG_1&quot;</span>;  <span class="hljs-comment">// DT_POSFLAG_1</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">47</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMINSZ&quot;</span>;  <span class="hljs-comment">// DT_SYMINSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">48</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMINENT&quot;</span>;  <span class="hljs-comment">// DT_SYMINENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">49</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;ADDRRNGLO&quot;</span>;  <span class="hljs-comment">// DT_ADDRRNGLO</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">50</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GNU_HASH&quot;</span>;  <span class="hljs-comment">// DT_GNU_HASH</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">51</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;TLSDESC_PLT&quot;</span>;  <span class="hljs-comment">// DT_TLSDESC_PLT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">52</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;TLSDESC_GOT&quot;</span>;  <span class="hljs-comment">// DT_TLSDESC_GOT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">53</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GNU_CONFLICT&quot;</span>;  <span class="hljs-comment">// DT_GNU_CONFLICT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">54</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;GNU_LIBLIST&quot;</span>;  <span class="hljs-comment">// DT_GNU_LIBLIST</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">55</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;CONFIG&quot;</span>;  <span class="hljs-comment">// DT_CONFIG</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">56</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;DEPAUDIT&quot;</span>;  <span class="hljs-comment">// DT_DEPAUDIT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">57</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;AUDIT&quot;</span>;  <span class="hljs-comment">// DT_AUDIT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">58</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;PLTPAD&quot;</span>;  <span class="hljs-comment">// DT_PLTPAD</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">59</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;MOVETAB&quot;</span>;  <span class="hljs-comment">// DT_MOVETAB</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">60</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;SYMINFO&quot;</span>;  <span class="hljs-comment">// DT_SYMINFO</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">61</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;VERSYM&quot;</span>;  <span class="hljs-comment">// DT_VERSYM</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">62</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELACOUNT&quot;</span>;  <span class="hljs-comment">// DT_RELACOUNT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">63</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;RELCOUNT&quot;</span>;  <span class="hljs-comment">// DT_RELCOUNT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">64</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FLAGS_1&quot;</span>;  <span class="hljs-comment">// DT_FLAGS_1</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">65</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;VERDEF&quot;</span>;  <span class="hljs-comment">// DT_VERDEF</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">66</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;VERDEFNUM&quot;</span>;  <span class="hljs-comment">// DT_VERDEFNUM</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">67</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;VERNEED&quot;</span>;  <span class="hljs-comment">// DT_VERNEED</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">68</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;VERNEEDNUM&quot;</span>;  <span class="hljs-comment">// DT_VERNEEDNUM</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">69</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;AUXILIARY&quot;</span>;  <span class="hljs-comment">// DT_AUXILIARY</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">70</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;FILTER&quot;</span>;  <span class="hljs-comment">// DT_FILTER</span><br>    <span class="hljs-keyword">default</span>: <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Unknown Type&quot;</span>;  <span class="hljs-comment">// Unknown DT type</span><br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">uint32_t</span> <span class="hljs-title">getDynamicDunType</span><span class="hljs-params">(Elf64_Xword value)</span> </span>&#123;<br>    <span class="hljs-keyword">switch</span> (value) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0</span>: <span class="hljs-comment">// DT_NULL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-comment">// DT_NEEDED</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>: <span class="hljs-comment">// DT_PLTRELSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">8</span>: <span class="hljs-comment">// DT_RELASZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">9</span>: <span class="hljs-comment">// DT_RELAENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">10</span>: <span class="hljs-comment">// DT_STRSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">11</span>: <span class="hljs-comment">// DT_SYMENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">14</span>: <span class="hljs-comment">// DT_SONAME</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">15</span>: <span class="hljs-comment">// DT_RPATH</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">16</span>: <span class="hljs-comment">// DT_SYMBOLIC</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">18</span>: <span class="hljs-comment">// DT_RELSZ</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">19</span>: <span class="hljs-comment">// DT_RELENT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">20</span>: <span class="hljs-comment">// DT_PLTREL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">21</span>: <span class="hljs-comment">// DT_TEXTREL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">24</span>: <span class="hljs-comment">// DT_BIND_NOW</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0x70000000</span>: <span class="hljs-comment">// DT_LOPROC</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">0x7fffffff</span>: <span class="hljs-comment">// DT_HIPROC</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// DT_VAL</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>: <span class="hljs-comment">// DT_PLTGOT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>: <span class="hljs-comment">// DT_HASH</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>: <span class="hljs-comment">// DT_STRTAB</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>: <span class="hljs-comment">// DT_SYMTAB</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>: <span class="hljs-comment">// DT_RELA</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">12</span>: <span class="hljs-comment">// DT_INIT</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">13</span>: <span class="hljs-comment">// DT_FINI</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">23</span>: <span class="hljs-comment">// DT_JMPREL</span><br>    <span class="hljs-comment">//case 21: // DT_DEBUG</span><br>    <span class="hljs-keyword">case</span> <span class="hljs-number">17</span>: <span class="hljs-comment">// DT_REL</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>; <span class="hljs-comment">// DT_PTR</span><br>    <span class="hljs-keyword">default</span>:<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// DT_VAL</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">printDynamicSegment64</span><span class="hljs-params">(FILE* fp, Elf64_hdr* elf64_hdr)</span> </span>&#123;<br>    <span class="hljs-comment">// 获取 ELF 文件中的节头表信息</span><br>    Elf64_Shdr* pSectionHeader = (Elf64_Shdr*)<span class="hljs-built_in">malloc</span>(elf64_hdr-&gt;e_shnum * <span class="hljs-built_in">sizeof</span>(Elf64_Shdr));<br>    <span class="hljs-keyword">if</span> (!pSectionHeader) &#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Memory allocation for section header failed&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">fseek</span>(fp, elf64_hdr-&gt;e_shoff, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(pSectionHeader, <span class="hljs-built_in">sizeof</span>(Elf64_Shdr), elf64_hdr-&gt;e_shnum, fp);<br><br>    <span class="hljs-comment">// 获取节头字符串表</span><br>    <span class="hljs-type">char</span>* pSectionHeaderStringTable = (<span class="hljs-type">char</span>*)<span class="hljs-built_in">malloc</span>(pSectionHeader[elf64_hdr-&gt;e_shstrndx].sh_size);<br>    <span class="hljs-keyword">if</span> (!pSectionHeaderStringTable) &#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Memory allocation for section header string table failed&quot;</span>);<br>        <span class="hljs-built_in">free</span>(pSectionHeader);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">fseek</span>(fp, pSectionHeader[elf64_hdr-&gt;e_shstrndx].sh_offset, SEEK_SET);<br>    <span class="hljs-built_in">fread</span>(pSectionHeaderStringTable, <span class="hljs-number">1</span>, pSectionHeader[elf64_hdr-&gt;e_shstrndx].sh_size, fp);<br><br>    <span class="hljs-comment">// 处理动态节</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; elf64_hdr-&gt;e_shnum; i++) &#123;<br>        <span class="hljs-keyword">if</span> (pSectionHeader[i].sh_type == <span class="hljs-number">6</span>) &#123;  <span class="hljs-comment">// SHT_DYNAMIC == 6</span><br>            Elf64_Shdr* pDynamicSection = &amp;pSectionHeader[i];<br>            Elf64_Word dynamicItemNum = pDynamicSection-&gt;sh_size / pDynamicSection-&gt;sh_entsize;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Dynamic Section At File Offset %#lx Contains %d Entries:\n&quot;</span>, pDynamicSection-&gt;sh_offset, dynamicItemNum);<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\tTag \t\tType\t\t\t\tName/Value\n&quot;</span>);<br><br>            <span class="hljs-comment">// 动态段表项</span><br>            Elf64_Dyn* pDynamicTable = (Elf64_Dyn*)<span class="hljs-built_in">malloc</span>(pDynamicSection-&gt;sh_size);<br>            <span class="hljs-keyword">if</span> (!pDynamicTable) &#123;<br>                <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Memory allocation for dynamic table failed&quot;</span>);<br>                <span class="hljs-built_in">free</span>(pSectionHeader);<br>                <span class="hljs-built_in">free</span>(pSectionHeaderStringTable);<br>                <span class="hljs-keyword">return</span>;<br>            &#125;<br><br>            <span class="hljs-comment">// 获取动态字符串表</span><br>            Elf64_Shdr* pDynamicStringTableHeader = &amp;pSectionHeader[pDynamicSection-&gt;sh_link];<br>            <span class="hljs-type">char</span>* pDynamicStringTable = (<span class="hljs-type">char</span>*)<span class="hljs-built_in">malloc</span>(pDynamicStringTableHeader-&gt;sh_size);<br>            <span class="hljs-keyword">if</span> (!pDynamicStringTable) &#123;<br>                <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;Memory allocation for dynamic string table failed&quot;</span>);<br>                <span class="hljs-built_in">free</span>(pSectionHeader);<br>                <span class="hljs-built_in">free</span>(pSectionHeaderStringTable);<br>                <span class="hljs-built_in">free</span>(pDynamicTable);<br>                <span class="hljs-keyword">return</span>;<br>            &#125;<br><br>            <span class="hljs-comment">// 读取动态表项和字符串表数据</span><br>            <span class="hljs-built_in">fseek</span>(fp, pDynamicSection-&gt;sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(pDynamicTable, <span class="hljs-built_in">sizeof</span>(Elf64_Dyn), dynamicItemNum, fp);<br><br>            <span class="hljs-built_in">fseek</span>(fp, pDynamicStringTableHeader-&gt;sh_offset, SEEK_SET);<br>            <span class="hljs-built_in">fread</span>(pDynamicStringTable, <span class="hljs-number">1</span>, pDynamicStringTableHeader-&gt;sh_size, fp);<br><br>            <span class="hljs-comment">// 打印动态表项</span><br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j = <span class="hljs-number">0</span>; j &lt; dynamicItemNum; j++) &#123;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx&quot;</span>, pDynamicTable[j].d_tag);<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%-16s&quot;</span>, <span class="hljs-built_in">getDynamicType</span>(pDynamicTable[j].d_tag));<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\t%08lx\t&quot;</span>, pDynamicTable[j].d_un.d_val);<br><br>                <span class="hljs-comment">// 判断指针类型并输出特殊处理</span><br>                <span class="hljs-keyword">if</span> (<span class="hljs-built_in">getDynamicDunType</span>(pDynamicTable[j].d_tag) == DT_PTR) &#123;<br>                    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;(PTR)&quot;</span>);<br>                &#125;<br><br>                <span class="hljs-comment">// 如果是共享库路径或者 soname，则输出字符串</span><br>                <span class="hljs-keyword">switch</span> (pDynamicTable[j].d_tag) &#123;<br>                <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>: <span class="hljs-comment">// DT_NEEDED</span><br>                <span class="hljs-keyword">case</span> <span class="hljs-number">14</span>: <span class="hljs-comment">// DT_SONAME</span><br>                    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[%s]&quot;</span>, pDynamicStringTable + pDynamicTable[j].d_un.d_val);<br>                    <span class="hljs-keyword">break</span>;<br>                <span class="hljs-keyword">default</span>:<br>                    <span class="hljs-keyword">break</span>;<br>                &#125;<br>                <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>            &#125;<br><br>            <span class="hljs-comment">// 释放动态表和字符串表内存</span><br>            <span class="hljs-built_in">free</span>(pDynamicTable);<br>            <span class="hljs-built_in">free</span>(pDynamicStringTable);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 释放节头表和节头字符串表内存</span><br>    <span class="hljs-built_in">free</span>(pSectionHeader);<br>    <span class="hljs-built_in">free</span>(pSectionHeaderStringTable);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="结果：-6"><a href="#结果：-6" class="headerlink" title="结果："></a>结果：</h4><p><img src="https://s2.loli.net/2024/12/22/hXzbduwpFji7Vrs.png" srcset="/img/loading.gif" lazyload alt="image-20241222095317517"></p>
+<p>完整代码放在github上：<a target="_blank" rel="noopener" href="https://github.com/wangxiaobai08/ELFReader.git">https://github.com/wangxiaobai08/ELFReader.git</a></p>
+<h1 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h1><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/SpiritiualWander/p/17903141.html">《程序员的自我修养——链接、装载与库》（作者：俞子甲）读书笔记 - 逝玄 - 博客园 (cnblogs.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/GrayOnDream/article/details/124564129">ELF文件格式简介_elf文件格式详解-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_45896211/article/details/138139225">可执行文件格式：ELF_elf文件-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1985443-1-1.html#51841344_symbol-table">ELF文件结构浅析-解析器和加载器实现 - 吾爱破解 - 52pojie.cn</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ELF文件格式解析</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机技术/操作系统/Andorid内核原理/装载链接运行/ELF文件格式解析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/So%E5%8A%A0%E8%BD%BD%E5%92%8C%E9%93%BE%E6%8E%A5(linker)/" title="So加载和链接(linker)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">So加载和链接(linker)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/DEX%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/" title="DEX文件格式解析">
+                        <span class="hidden-mobile">DEX文件格式解析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

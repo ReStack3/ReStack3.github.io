@@ -1,0 +1,902 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="系统调用3环进0环部分在应用和内核层分别定义了一个_KUSER_SHARED_DATA结构体，用于应用和内核间的一些数据共享。它们使用的是固定的地址值映射，该结构区域在用户和内核层的地址分别为：0x7FFE0000、0xFFDF0000。从地址来看，它们不是一个线性地址，但本质上指向的都是同一个物理页，在用户层对该物理页有只读权限，但在内核层有读、写权限。 12345678910111213141">
+<meta property="og:type" content="article">
+<meta property="og:title" content="系统调用与驱动开发">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/25/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E4%B8%8E%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="系统调用3环进0环部分在应用和内核层分别定义了一个_KUSER_SHARED_DATA结构体，用于应用和内核间的一些数据共享。它们使用的是固定的地址值映射，该结构区域在用户和内核层的地址分别为：0x7FFE0000、0xFFDF0000。从地址来看，它们不是一个线性地址，但本质上指向的都是同一个物理页，在用户层对该物理页有只读权限，但在内核层有读、写权限。 12345678910111213141">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/06/27/YtnpPacuDN3hvqO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/27/dEHF9P8JXl7W6RI.png">
+<meta property="article:published_time" content="2025-06-25T02:10:36.593Z">
+<meta property="article:modified_time" content="2026-05-26T06:37:03.564Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/06/27/YtnpPacuDN3hvqO.png">
+  
+  
+  
+  <title>系统调用与驱动开发 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="系统调用与驱动开发"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          29 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">系统调用与驱动开发</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h1><h2 id="3环进0环部分"><a href="#3环进0环部分" class="headerlink" title="3环进0环部分"></a>3环进0环部分</h2><p>在应用和内核层分别定义了一个_KUSER_SHARED_DATA结构体，用于应用和内核间的一些数据共享。它们使用的是固定的地址值映射，该结构区域在用户和内核层的地址分别为：0x7FFE0000、0xFFDF0000。从地址来看，<strong>它们不是一个线性地址，但本质上指向的都是同一个物理页</strong>，在用户层对该物理页有只读权限，但在内核层有读、写权限。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-number">1</span>: kd&gt; dt _KUSER_SHARED_DATA<br>ntdll!_KUSER_SHARED_DATA<br>   +<span class="hljs-number">0x000</span> TickCountLowDeprecated : Uint4B<br>   +<span class="hljs-number">0x004</span> TickCountMultiplier : Uint4B<br>   +<span class="hljs-number">0x008</span> InterruptTime    : _KSYSTEM_TIME<br>   +<span class="hljs-number">0x014</span> SystemTime       : _KSYSTEM_TIME<br>   +<span class="hljs-number">0x020</span> TimeZoneBias     : _KSYSTEM_TIME<br>   +<span class="hljs-number">0x02c</span> ImageNumberLow   : Uint2B<br>   +<span class="hljs-number">0x02e</span> ImageNumberHigh  : Uint2B<br>   +<span class="hljs-number">0x030</span> NtSystemRoot     : [<span class="hljs-number">260</span>] Wchar<br>   +<span class="hljs-number">0x238</span> MaxStackTraceDepth : Uint4B<br>   +<span class="hljs-number">0x23c</span> CryptoExponent   : Uint4B<br>   +<span class="hljs-number">0x240</span> TimeZoneId       : Uint4B<br>   +<span class="hljs-number">0x244</span> LargePageMinimum : Uint4B<br>   +<span class="hljs-number">0x248</span> AitSamplingValue : Uint4B<br>   +<span class="hljs-number">0x24c</span> AppCompatFlag    : Uint4B<br>   +<span class="hljs-number">0x250</span> RNGSeedVersion   : Uint8B<br>   +<span class="hljs-number">0x258</span> GlobalValidationRunlevel : Uint4B<br>   +<span class="hljs-number">0x25c</span> TimeZoneBiasStamp : Int4B<br>   +<span class="hljs-number">0x260</span> NtBuildNumber    : Uint4B<br>   +<span class="hljs-number">0x264</span> NtProductType    : _NT_PRODUCT_TYPE<br>   +<span class="hljs-number">0x268</span> ProductTypeIsValid : UChar<br>   +<span class="hljs-number">0x269</span> Reserved0        : [<span class="hljs-number">1</span>] UChar<br>   +<span class="hljs-number">0x26a</span> NativeProcessorArchitecture : Uint2B<br>   +<span class="hljs-number">0x26c</span> NtMajorVersion   : Uint4B<br>   +<span class="hljs-number">0x270</span> NtMinorVersion   : Uint4B<br>   +<span class="hljs-number">0x274</span> ProcessorFeatures : [<span class="hljs-number">64</span>] UChar<br>   +<span class="hljs-number">0x2b4</span> Reserved1        : Uint4B<br>   +<span class="hljs-number">0x2b8</span> Reserved3        : Uint4B<br>   +<span class="hljs-number">0x2bc</span> TimeSlip         : Uint4B<br>   +<span class="hljs-number">0x2c0</span> AlternativeArchitecture : _ALTERNATIVE_ARCHITECTURE_TYPE<br>   +<span class="hljs-number">0x2c4</span> BootId           : Uint4B<br>   +<span class="hljs-number">0x2c8</span> SystemExpirationDate : _LARGE_INTEGER<br>   +<span class="hljs-number">0x2d0</span> SuiteMask        : Uint4B<br>   +<span class="hljs-number">0x2d4</span> KdDebuggerEnabled : UChar<br>   +<span class="hljs-number">0x2d5</span> MitigationPolicies : UChar<br>   +<span class="hljs-number">0x2d5</span> NXSupportPolicy  : Pos <span class="hljs-number">0</span>, <span class="hljs-number">2</span> Bits<br>   +<span class="hljs-number">0x2d5</span> SEHValidationPolicy : Pos <span class="hljs-number">2</span>, <span class="hljs-number">2</span> Bits<br>   +<span class="hljs-number">0x2d5</span> CurDirDevicesSkippedForDlls : Pos <span class="hljs-number">4</span>, <span class="hljs-number">2</span> Bits<br>   +<span class="hljs-number">0x2d5</span> Reserved         : Pos <span class="hljs-number">6</span>, <span class="hljs-number">2</span> Bits<br>   +<span class="hljs-number">0x2d6</span> CyclesPerYield   : Uint2B<br>   +<span class="hljs-number">0x2d8</span> ActiveConsoleId  : Uint4B<br>   +<span class="hljs-number">0x2dc</span> DismountCount    : Uint4B<br>   +<span class="hljs-number">0x2e0</span> ComPlusPackage   : Uint4B<br>   +<span class="hljs-number">0x2e4</span> LastSystemRITEventTickCount : Uint4B<br>   +<span class="hljs-number">0x2e8</span> NumberOfPhysicalPages : Uint4B<br>   +<span class="hljs-number">0x2ec</span> SafeBootMode     : UChar<br>   +<span class="hljs-number">0x2ed</span> VirtualizationFlags : UChar<br>   +<span class="hljs-number">0x2ee</span> Reserved12       : [<span class="hljs-number">2</span>] UChar<br>   +<span class="hljs-number">0x2f0</span> SharedDataFlags  : Uint4B<br>   +<span class="hljs-number">0x2f0</span> DbgErrorPortPresent : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgElevationEnabled : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgVirtEnabled   : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgInstallerDetectEnabled : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgLkgEnabled    : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgDynProcessorEnabled : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgConsoleBrokerEnabled : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgSecureBootEnabled : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgMultiSessionSku : Pos <span class="hljs-number">8</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgMultiUsersInSessionSku : Pos <span class="hljs-number">9</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> DbgStateSeparationEnabled : Pos <span class="hljs-number">10</span>, <span class="hljs-number">1</span> Bit<br>   +<span class="hljs-number">0x2f0</span> SpareBits        : Pos <span class="hljs-number">11</span>, <span class="hljs-number">21</span> Bits<br>   +<span class="hljs-number">0x2f4</span> DataFlagsPad     : [<span class="hljs-number">1</span>] Uint4B<br>   +<span class="hljs-number">0x2f8</span> TestRetInstruction : Uint8B<br>   +<span class="hljs-number">0x300</span> QpcFrequency     : Int8B<br>   +<span class="hljs-number">0x308</span> SystemCall       : Uint4B<br>   +<span class="hljs-number">0x30c</span> Reserved2        : Uint4B<br>   +<span class="hljs-number">0x310</span> SystemCallPad    : [<span class="hljs-number">2</span>] Uint8B<br>   +<span class="hljs-number">0x320</span> TickCount        : _KSYSTEM_TIME<br>   +<span class="hljs-number">0x320</span> TickCountQuad    : Uint8B<br>   +<span class="hljs-number">0x320</span> ReservedTickCountOverlay : [<span class="hljs-number">3</span>] Uint4B<br>   +<span class="hljs-number">0x32c</span> TickCountPad     : [<span class="hljs-number">1</span>] Uint4B<br>   +<span class="hljs-number">0x330</span> Cookie           : Uint4B<br>   +<span class="hljs-number">0x334</span> CookiePad        : [<span class="hljs-number">1</span>] Uint4B<br>   +<span class="hljs-number">0x338</span> ConsoleSessionForegroundProcessId : Int8B<br>   +<span class="hljs-number">0x340</span> TimeUpdateLock   : Uint8B<br>   +<span class="hljs-number">0x348</span> BaselineSystemTimeQpc : Uint8B<br>   +<span class="hljs-number">0x350</span> BaselineInterruptTimeQpc : Uint8B<br>   +<span class="hljs-number">0x358</span> QpcSystemTimeIncrement : Uint8B<br>   +<span class="hljs-number">0x360</span> QpcInterruptTimeIncrement : Uint8B<br>   +<span class="hljs-number">0x368</span> QpcSystemTimeIncrementShift : UChar<br>   +<span class="hljs-number">0x369</span> QpcInterruptTimeIncrementShift : UChar<br>   +<span class="hljs-number">0x36a</span> UnparkedProcessorCount : Uint2B<br>   +<span class="hljs-number">0x36c</span> EnclaveFeatureMask : [<span class="hljs-number">4</span>] Uint4B<br>   +<span class="hljs-number">0x37c</span> TelemetryCoverageRound : Uint4B<br>   +<span class="hljs-number">0x380</span> UserModeGlobalLogger : [<span class="hljs-number">16</span>] Uint2B<br>   +<span class="hljs-number">0x3a0</span> ImageFileExecutionOptions : Uint4B<br>   +<span class="hljs-number">0x3a4</span> LangGenerationCount : Uint4B<br>   +<span class="hljs-number">0x3a8</span> Reserved4        : Uint8B<br>   +<span class="hljs-number">0x3b0</span> InterruptTimeBias : Uint8B<br>   +<span class="hljs-number">0x3b8</span> QpcBias          : Uint8B<br>   +<span class="hljs-number">0x3c0</span> ActiveProcessorCount : Uint4B<br>   +<span class="hljs-number">0x3c4</span> ActiveGroupCount : UChar<br>   +<span class="hljs-number">0x3c5</span> Reserved9        : UChar<br>   +<span class="hljs-number">0x3c6</span> QpcData          : Uint2B<br>   +<span class="hljs-number">0x3c6</span> QpcBypassEnabled : UChar<br>   +<span class="hljs-number">0x3c7</span> QpcShift         : UChar<br>   +<span class="hljs-number">0x3c8</span> TimeZoneBiasEffectiveStart : _LARGE_INTEGER<br>   +<span class="hljs-number">0x3d0</span> TimeZoneBiasEffectiveEnd : _LARGE_INTEGER<br>   +<span class="hljs-number">0x3d8</span> XState           : _XSTATE_CONFIGURATION<br>   +<span class="hljs-number">0x710</span> FeatureConfigurationChangeStamp : _KSYSTEM_TIME<br>   +<span class="hljs-number">0x71c</span> Spare            : Uint4B<br></code></pre></td></tr></table></figure>
+
+<h3 id="SystemCall"><a href="#SystemCall" class="headerlink" title="SystemCall"></a>SystemCall</h3><p>它的作用就是进入0环，而具体进入0环的方式则由CPU决定，<strong>当CPU支持SYSENTER、SYSEXIT指令则使用的是ntdll!KiFastSystemCall方式，否则则是ntdll!KiIntSystemCall方式</strong>。</p>
+<p>如果我们自己想要判断是什么方式，可以选择使用CPUID指令，当EAX&#x3D;1时指向CPUID指令，处理器的特征信息就会存放在ECX和EDX寄存器中，其中EDX包含了一个SEP位（第11位），<strong>该位为1则表示CPU支持SYSENTER、SYSEXIT指令，为0则表示不支持</strong></p>
+<h3 id="进入0环的方式"><a href="#进入0环的方式" class="headerlink" title="进入0环的方式"></a>进入0环的方式</h3><p>在之前各种“门”的学习后，我们知道当进行权限切换时（3环进0环），CS、SS、ESP、EIP寄存器都会发生变化。有了这些前置的知识了解，我们来看一下KiIntSystemCall和KiFastSystemCall这两个进入0环的方式。</p>
+<h2 id="保存现场"><a href="#保存现场" class="headerlink" title="保存现场"></a>保存现场</h2><p>API进入0环之前是需要将在3环时的寄存器值保存，这样在0环执行切换到新的寄存器执行完成后回到3环时才能恢复原先的寄存器还原现场，那么3环寄存器的值是保存在哪里的。</p>
+<h3 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-number">1</span>: kd&gt; dt _KTrap_Frame<br>ntdll!_KTRAP_FRAME<br>   +<span class="hljs-number">0x000</span> P1Home           : Uint8B<br>   +<span class="hljs-number">0x008</span> P2Home           : Uint8B<br>   +<span class="hljs-number">0x010</span> P3Home           : Uint8B<br>   +<span class="hljs-number">0x018</span> P4Home           : Uint8B<br>   +<span class="hljs-number">0x020</span> P5               : Uint8B<br>   +<span class="hljs-number">0x028</span> PreviousMode     : Char<br>   +<span class="hljs-number">0x028</span> InterruptRetpolineState : UChar<br>   +<span class="hljs-number">0x029</span> PreviousIrql     : UChar<br>   +<span class="hljs-number">0x02a</span> FaultIndicator   : UChar<br>   +<span class="hljs-number">0x02a</span> NmiMsrIbrs       : UChar<br>   +<span class="hljs-number">0x02b</span> ExceptionActive  : UChar<br>   +<span class="hljs-number">0x02c</span> MxCsr            : Uint4B<br>   +<span class="hljs-number">0x030</span> Rax              : Uint8B<br>   +<span class="hljs-number">0x038</span> Rcx              : Uint8B<br>   +<span class="hljs-number">0x040</span> Rdx              : Uint8B<br>   +<span class="hljs-number">0x048</span> R8               : Uint8B<br>   +<span class="hljs-number">0x050</span> R9               : Uint8B<br>   +<span class="hljs-number">0x058</span> R10              : Uint8B<br>   +<span class="hljs-number">0x060</span> R11              : Uint8B<br>   +<span class="hljs-number">0x068</span> GsBase           : Uint8B<br>   +<span class="hljs-number">0x068</span> GsSwap           : Uint8B<br>   +<span class="hljs-number">0x070</span> Xmm0             : _M128A<br>   +<span class="hljs-number">0x080</span> Xmm1             : _M128A<br>   +<span class="hljs-number">0x090</span> Xmm2             : _M128A<br>   +<span class="hljs-number">0x0a0</span> Xmm3             : _M128A<br>   +<span class="hljs-number">0x0b0</span> Xmm4             : _M128A<br>   +<span class="hljs-number">0x0c0</span> Xmm5             : _M128A<br>   +<span class="hljs-number">0x0d0</span> FaultAddress     : Uint8B<br>   +<span class="hljs-number">0x0d0</span> ContextRecord    : Uint8B<br>   +<span class="hljs-number">0x0d8</span> Dr0              : Uint8B<br>   +<span class="hljs-number">0x0e0</span> Dr1              : Uint8B<br>   +<span class="hljs-number">0x0e8</span> Dr2              : Uint8B<br>   +<span class="hljs-number">0x0f0</span> Dr3              : Uint8B<br>   +<span class="hljs-number">0x0f8</span> Dr6              : Uint8B<br>   +<span class="hljs-number">0x100</span> Dr7              : Uint8B<br>   +<span class="hljs-number">0x108</span> DebugControl     : Uint8B<br>   +<span class="hljs-number">0x110</span> LastBranchToRip  : Uint8B<br>   +<span class="hljs-number">0x118</span> LastBranchFromRip : Uint8B<br>   +<span class="hljs-number">0x120</span> LastExceptionToRip : Uint8B<br>   +<span class="hljs-number">0x128</span> LastExceptionFromRip : Uint8B<br>   +<span class="hljs-number">0x130</span> SegDs            : Uint2B<br>   +<span class="hljs-number">0x132</span> SegEs            : Uint2B<br>   +<span class="hljs-number">0x134</span> SegFs            : Uint2B<br>   +<span class="hljs-number">0x136</span> SegGs            : Uint2B<br>   +<span class="hljs-number">0x138</span> TrapFrame        : Uint8B<br>   +<span class="hljs-number">0x140</span> NmiPreviousSpecCtrl : Uint4B<br>   +<span class="hljs-number">0x144</span> NmiPreviousSpecCtrlPad : Uint4B<br>   +<span class="hljs-number">0x140</span> Rbx              : Uint8B<br>   +<span class="hljs-number">0x148</span> Rdi              : Uint8B<br>   +<span class="hljs-number">0x150</span> Rsi              : Uint8B<br>   +<span class="hljs-number">0x158</span> Rbp              : Uint8B<br>   +<span class="hljs-number">0x160</span> ErrorCode        : Uint8B<br>   +<span class="hljs-number">0x160</span> ExceptionFrame   : Uint8B<br>   +<span class="hljs-number">0x168</span> Rip              : Uint8B<br>   +<span class="hljs-number">0x170</span> SegCs            : Uint2B<br>   +<span class="hljs-number">0x172</span> Fill0            : UChar<br>   +<span class="hljs-number">0x173</span> Logging          : UChar<br>   +<span class="hljs-number">0x174</span> Fill1            : [<span class="hljs-number">2</span>] Uint2B<br>   +<span class="hljs-number">0x178</span> EFlags           : Uint4B<br>   +<span class="hljs-number">0x17c</span> Fill2            : Uint4B<br>   +<span class="hljs-number">0x180</span> Rsp              : Uint8B<br>   +<span class="hljs-number">0x188</span> SegSs            : Uint2B<br>   +<span class="hljs-number">0x18a</span> Fill3            : Uint2B<br>   +<span class="hljs-number">0x18c</span> Fill4            : Uint4B<br></code></pre></td></tr></table></figure>
+
+<h3 id="KiSystemService保存现场"><a href="#KiSystemService保存现场" class="headerlink" title="KiSystemService保存现场"></a>KiSystemService保存现场</h3><h2 id="系统服务表【SystemServiceTable】"><a href="#系统服务表【SystemServiceTable】" class="headerlink" title="系统服务表【SystemServiceTable】"></a>系统服务表【SystemServiceTable】</h2><p>我们知道3环API的本质就是调用0环的函数，那么操作系统是如何根据系统调用号找到要执行的内核函数的，这就需要我们来了解一下系统服务表。</p>
+<p>如下图是系统服务表的结构，它有四个成员分别是ServiceTable、Count、ServiceLimit、ArgmentTable。ServiceTable里存储的是一个指针，指向了一张函数地址表，<strong>表内存储的是函数地址，表内的每个成员大小为4字节</strong>；Count里存储的是当前系统服务表被调用的次数；ServiceLimit里存储这当前系统服务表内存储函数的个数；ArgmentTablee里存储的是一个指针，指向了函数参数表，表内存储的是函数参数的个数，<strong>它的单位是字节，表内的每个成员大小为1字节</strong>。</p>
+<p>在函数地址表内存储的并不是所有的内核函数，而是在3环经常使用的内核函数，<strong>函数地址表和函数参数表是对应关系，即函数地址表成员1的参数个数就是函数参数表成员1</strong>。</p>
+<p>在Windows XP系统中，系统服务表有两张，下图中绿色、黄色表即体现。它们的结构都是一样的，只是存储的函数、参数不一样，<strong>前者存储的是常用的内核函数（Ntoskrl.exe），后者存储的是与图像显示用户界面相关的函数（Win32k.sys）</strong>。</p>
+<p><img src="https://s2.loli.net/2025/06/27/YtnpPacuDN3hvqO.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="系统调用号查找函数"><a href="#系统调用号查找函数" class="headerlink" title="系统调用号查找函数"></a>系统调用号查找函数</h3><p>3环的API调用就是根据系统调用号找到函数再去使用，<strong>虽然系统调用号有32位（4字节）但是真正使用的只有低13位</strong>，这13位也分成两部分：<strong>第12位值为0则为第一张表（Ntoskrl.exe），值为1则为第二张表（Win32k.sys）</strong>；<strong>低12位（第0至第11位）就是对应的函数地址、参数表索引</strong>。</p>
+<p><img src="https://s2.loli.net/2025/06/27/dEHF9P8JXl7W6RI.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="SSDT"><a href="#SSDT" class="headerlink" title="SSDT"></a>SSDT</h2><p>在上面的学习中我们知道可以通过_KTHREAD结构体的0xE0偏移来会找到系统服务表，除了这个方式以外我们还可以通过另外一种方式来访问，那就是SSDT（System Service Descriptor Table，系统服务描述符表）。</p>
+<p>SSDT也有两张表：KeServiceDescriptorTable、KeServiceDescriptorTableShadow。KeServiceDescriptorTable是内核文件导出的</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/iBinary/p/15757208.html">x64下读取SSDT表,并且获取SSDT表函数. - iBinary - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.daliu.net/posts/20250121/">获取windows10下的SSDT及函数表（一） | 大刘 简单说说</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2363890">6.1 Windows驱动开发：内核枚举SSDT表基址-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<h1 id="驱动开发"><a href="#驱动开发" class="headerlink" title="驱动开发"></a>驱动开发</h1><h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="内核API的使用"><a href="#内核API的使用" class="headerlink" title="内核API的使用"></a>内核API的使用</h3><p>在应用层编程时我们可以通过包含Windows.h这个头文件来使用Windows提供的API，但是在内核编程时我们不可以使用应用层的API，而要使用内核专用的API，所以我们需要包含的头文件就变成了ntddk.h（需要安装好WDK）。</p>
+<h3 id="未导出函数的使用"><a href="#未导出函数的使用" class="headerlink" title="未导出函数的使用"></a>未导出函数的使用</h3><p>WDK文档里只包含了导出的函数信息，对于未导出的函数是查阅不到相关资料的（我们也可以将其称之为未文档化函数）。如果我们想使用未导出的函数，需要定义一个函数指针，并且为函数指针提供正确的函数地址就可以使用了。未导出函数的地址可以通过<strong>特征码搜索、解析内核的PDB文件</strong>来找到。</p>
+<h3 id="基本数据类型的使用"><a href="#基本数据类型的使用" class="headerlink" title="基本数据类型的使用"></a>基本数据类型的使用</h3><p>在内核编程的时候，必须要遵守WDK的编码习惯，例如无符号类型不要在类型前加上关键词unsigned，而是要遵循WDK自己的类型：</p>
+<table>
+<thead>
+<tr>
+<th>WDK的写法</th>
+<th>表达的意思</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ULONG</td>
+<td>unsigned long</td>
+</tr>
+<tr>
+<td>UCHAR</td>
+<td>unsigned char</td>
+</tr>
+<tr>
+<td>UINT</td>
+<td>unsigned int</td>
+</tr>
+<tr>
+<td>VOID</td>
+<td>void</td>
+</tr>
+<tr>
+<td>PULONG</td>
+<td>unsigned long *</td>
+</tr>
+<tr>
+<td>PUCHAR</td>
+<td>unsigned char *</td>
+</tr>
+<tr>
+<td>PUNIT</td>
+<td>unsigned int *</td>
+</tr>
+<tr>
+<td>PVOID</td>
+<td>void *</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>如果你按后者去写，<strong>在不同的平台上移植代码可能会导致数据宽度不同</strong>，要修改到相同宽度就需要修改代码，而按WDK的写法就可以减少这种不必要的情况。</p>
+</blockquote>
+<h3 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h3><p>大部分内核函数的返回值都是NTSTATUS类型，它本质是一个宏，里面包含的类型有很多，如下三个就是常见的返回值：</p>
+<table>
+<thead>
+<tr>
+<th>宏名称</th>
+<th>实际值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>STATUS_SUCCESS</td>
+<td>0x00000000</td>
+<td>成功</td>
+</tr>
+<tr>
+<td>STATUS_INVALID_PARAMETER</td>
+<td>0xC000000D</td>
+<td>参数无效</td>
+</tr>
+<tr>
+<td>STATUS_BUFFER_OVERFLOW</td>
+<td>0x80000005</td>
+<td>缓冲区长度不够</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>当你调用的内核函数返回结果不是STATUS_SUCCESS，那就说明函数在执行时遇到了问题，具体的问题可以根据返回值在ntstatus.h头文件中去寻找：</p>
+</blockquote>
+<h3 id="内核中的异常处理"><a href="#内核中的异常处理" class="headerlink" title="内核中的异常处理"></a>内核中的异常处理</h3><p>在内核中一个小小的错误就可能导致蓝屏，例如我们去读写一个无效的内存地址。为了让自己的内核程序更加健壮，在编写内核程序时要使用到异常处理。</p>
+<p>在Windows下提供了结构化异常处理机制，编译器普遍都支持，如下就是代码使用方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c">__try<br>&#123;<br>    <span class="hljs-comment">// 填入可能要出错的代码</span><br>&#125;<br>__except (filter_value)<br>&#123;<br>    <span class="hljs-comment">// 填入出错后要执行的代码</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>如上示例中的filter_value，就是当内核程序出现异常时决定程序如何执行的，一般有这三种情况：</p>
+<table>
+<thead>
+<tr>
+<th>宏名称</th>
+<th>实际值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EXCEPTION_EXECUTE_HANDLER</td>
+<td>1</td>
+<td>进入except代码块执行</td>
+</tr>
+<tr>
+<td>EXCEPTION_CONTINUE_SEARCH</td>
+<td>0</td>
+<td>不处理异常，由上一层调用函数处理</td>
+</tr>
+<tr>
+<td>EXCEPTION_CONTINUE_EXECUTION</td>
+<td>-1</td>
+<td>继续执行错误处的代码</td>
+</tr>
+</tbody></table>
+<h3 id="常用的内核内存函数"><a href="#常用的内核内存函数" class="headerlink" title="常用的内核内存函数"></a>常用的内核内存函数</h3><p>编写内核程序是无法避免去操作内存的，对内存的使用主要就是申请、设置、拷贝、释放，常用的内核函数如下（应用层与内核层的对比）：</p>
+<table>
+<thead>
+<tr>
+<th>应用</th>
+<th>内核</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>malloc</td>
+<td>ExAllocatePool</td>
+</tr>
+<tr>
+<td>memset</td>
+<td>RtlFillMemory</td>
+</tr>
+<tr>
+<td>memcpy</td>
+<td>RtlMoveMemory</td>
+</tr>
+<tr>
+<td>free</td>
+<td>ExFreePool</td>
+</tr>
+</tbody></table>
+<h3 id="内核字符串种类"><a href="#内核字符串种类" class="headerlink" title="内核字符串种类"></a>内核字符串种类</h3><p>在内核中我们的字符串种类变多了，有CHAR、WCHAR、ANSI_STRING、UNICODE_STRING。前两个就是char和wchar_t在内核的写法，但是一般不建议使用这种写法而使用后两个（后两个即前两个的升级版），因为在内核中使用内存是要非常小心的，如果使用前两个类型字符串是没有控制长度的，即字符串到0x0或两个0x0就截止，但如果读写字符串时没有遵循这个规则读取越界了就会导致蓝屏。</p>
+<p>ANSI_STRING字符串的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">STRING</span> &#123;</span><br>    USHORT Length;<br>    USHORT MaximumLength;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> MIDL_PASS</span><br>    [size_is(MaximumLength), length_is(Length) ]<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> ``<span class="hljs-comment">// MIDL_PASS</span></span><br>    _Field_size_bytes_part_opt_(MaximumLength, Length) PCHAR Buffer;<br>&#125; STRING;<br><br><span class="hljs-keyword">typedef</span> STRING ANSI_STRING;<br></code></pre></td></tr></table></figure>
+
+<p>UNICODE_STRING字符串的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">UNICODE_STRING</span> &#123;</span><br>    USHORT Length;<br>    USHORT MaximumLength;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> MIDL_PASS</span><br>    [size_is(MaximumLength / ``<span class="hljs-number">2</span>``), length_is((Length) / ``<span class="hljs-number">2</span>``) ] USHORT * Buffer;<br>#``<span class="hljs-keyword">else</span>`` ``<span class="hljs-comment">// MIDL_PASS</span><br>    _Field_size_bytes_part_opt_(MaximumLength, Length) PWCH   Buffer;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span> ``<span class="hljs-comment">// MIDL_PASS</span></span><br>&#125; UNICODE_STRING;<br></code></pre></td></tr></table></figure>
+
+<p>我们从这两个结构体的定义就可以看到他们的结构是一样的，我们去读写字符串时就可以根据Buffer+Length这两个成员精确的读取字符串，避免出现读取越界导致蓝屏的问题。</p>
+<h3 id="内核字符串常用函数"><a href="#内核字符串常用函数" class="headerlink" title="内核字符串常用函数"></a>内核字符串常用函数</h3><p>字符串的操作就是创建、复制、比较、转换，但由于编码问题在内核中也有不同的函数表达：</p>
+<table>
+<thead>
+<tr>
+<th>ANSI_STRING字符串</th>
+<th>UNICODE_STRING字符串</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RtlInitAnsiString</td>
+<td>RtlInitUnicodeString</td>
+<td>创建字符串</td>
+</tr>
+<tr>
+<td>RtlCopyString</td>
+<td>RtlCopyUnicodeString</td>
+<td>字符串复制</td>
+</tr>
+<tr>
+<td>RtlCompareString</td>
+<td>RtlCompareUnicoodeString</td>
+<td>字符串比较</td>
+</tr>
+<tr>
+<td>RtlAnsiStringToUnicodeString</td>
+<td>RtlUnicodeStringToAnsiString</td>
+<td>编码转换</td>
+</tr>
+</tbody></table>
+<h3 id="内核空间与模块"><a href="#内核空间与模块" class="headerlink" title="内核空间与模块"></a>内核空间与模块</h3><h4 id="内核空间"><a href="#内核空间" class="headerlink" title="内核空间"></a>内核空间</h4><p>在之前的学习中我们反复提到一个进程有4GB大小的内存空间，低2G是程序自己的，高2G是共享的，也就是内核空间。</p>
+<h2 id="内核模块"><a href="#内核模块" class="headerlink" title="内核模块"></a>内核模块</h2><p>由于硬件的种类很多，导致系统内核无法完全兼容所有的迎接，所以微软提供了接口，让开发人员按规定格式编写驱动程序来支持自己的硬件；<strong>这些驱动程序每一个我们都可以当作是一个模块，也就可以称之为内核模块</strong>，它们遵循PE结构，并且可以加载到内核中。我们之前编写驱动程序的时候必须要写好两个函数，一个是入口函数，一个是卸载函数。在入口函数中，有两个形参，分别是PDRIVER_OBJECT、PUNICODE_STRING。</p>
+<p>我们来看一下_DRIVER_OBJECT，它是一个结构体，我们称之为驱动对象:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-number">1</span>: kd&gt; dt _DRIVER_OBJECT<br>ntdll!_DRIVER_OBJECT<br>   +<span class="hljs-number">0x000</span> Type             : Int2B<br>   +<span class="hljs-number">0x002</span> Size             : Int2B<br>   +<span class="hljs-number">0x008</span> DeviceObject     : Ptr64 _DEVICE_OBJECT<br>   +<span class="hljs-number">0x010</span> Flags            : Uint4B<br>   +<span class="hljs-number">0x018</span> DriverStart      : Ptr64 Void<br>   +<span class="hljs-number">0x020</span> DriverSize       : Uint4B<br>   +<span class="hljs-number">0x028</span> DriverSection    : Ptr64 Void<br>   +<span class="hljs-number">0x030</span> DriverExtension  : Ptr64 _DRIVER_EXTENSION<br>   +<span class="hljs-number">0x038</span> DriverName       : _UNICODE_STRING<br>   +<span class="hljs-number">0x048</span> HardwareDatabase : Ptr64 _UNICODE_STRING<br>   +<span class="hljs-number">0x050</span> FastIoDispatch   : Ptr64 _FAST_IO_DISPATCH<br>   +<span class="hljs-number">0x058</span> DriverInit       : Ptr64     <span class="hljs-type">long</span> <br>   +<span class="hljs-number">0x060</span> DriverStartIo    : Ptr64     <span class="hljs-type">void</span> <br>   +<span class="hljs-number">0x068</span> DriverUnload     : Ptr64     <span class="hljs-type">void</span> <br>   +<span class="hljs-number">0x070</span> MajorFunction    : [<span class="hljs-number">28</span>] Ptr64     <span class="hljs-type">long</span> <br></code></pre></td></tr></table></figure>
+
+<p>这个结构体里主要包含驱动程序的一些基础信息，具体的可以看如下代码注释：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">DRIVER_OBJECT</span> &#123;</span><br>    CSHORT Type;<br>    CSHORT Size;<br>    PDEVICE_OBJECT DeviceObject;<br>    ULONG Flags;<br>    PVOID DriverStart; <span class="hljs-comment">// 结构体对应的驱动程序在内核空间的位置</span><br>    ULONG DriverSize; <span class="hljs-comment">// 结构体对应的驱动程序的大小</span><br>    PVOID DriverSection; <span class="hljs-comment">// 指针，指向_LDR_DATA_TABLE_ENTRY结构体</span><br>    PDRIVER_EXTENSION DriverExtension;<br>    UNICODE_STRING DriverName; <span class="hljs-comment">// 结构体对应的驱动程序的名字</span><br>    PUNICODE_STRING HardwareDatabase;<br>    PFAST_IO_DISPATCH FastIoDispatch;<br>    PDRIVER_INITIALIZE DriverInit;<br>    PDRIVER_STARTIO DriverStartIo;<br>    PDRIVER_UNLOAD DriverUnload; <span class="hljs-comment">// 定义驱动程序卸载函数的地址</span><br>    PDRIVER_DISPATCH MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + <span class="hljs-number">1</span>];<br> <br>&#125; DRIVER_OBJECT;<br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">DRIVER_OBJECT</span> *<span class="hljs-title">PDRIVER_OBJECT</span>;</span> <br></code></pre></td></tr></table></figure>
+
+<h2 id="应用与驱动通信"><a href="#应用与驱动通信" class="headerlink" title="应用与驱动通信"></a>应用与驱动通信</h2><h3 id="设备对象"><a href="#设备对象" class="headerlink" title="设备对象"></a>设备对象</h3><h3 id="通信实现"><a href="#通信实现" class="headerlink" title="通信实现"></a>通信实现</h3><h2 id="Hook技术"><a href="#Hook技术" class="headerlink" title="Hook技术"></a>Hook技术</h2><h3 id="SSDT-Hook"><a href="#SSDT-Hook" class="headerlink" title="SSDT Hook"></a>SSDT Hook</h3><p>SSDT Hook就是根据SSDT（即KeServiceDescriptorTable、KeServiceDescriptorTableShadow）找到系统服务表，并且修改系统服务表的函数地址表的某个函数地址，来达到Hook指定函数的目的。（关于SSDT的内容我们已经在系统调用的学习中了解了）</p>
+<h3 id="Inline-Hook"><a href="#Inline-Hook" class="headerlink" title="Inline Hook"></a>Inline Hook</h3><p>SSDT Hook的方式是基于系统服务表的，这种方式很容易被发现并且我们只能取Hook系统服务表内的函数，因此我们可以使用Inline Hook的方式来弥补这些缺陷。Inline Hook可以在3环、0环下使用，它的原理就是改变程序的执行流程，例如你可以在某个函数的第一行位置开始替换为JMP指令，跳转到自己的函数地址。<strong>除了使用JMP指令改变执行流程，我们还可以使用CALL指令以及PUSH、RET指令的组合。JMP、CALL指令至少占用5个字节，PUSH、RET指令的组合则需要6个字节。</strong></p>
+<p>使用Inline Hook时需要注意避免替换全局变量相关的硬编码，并且需要先将通用寄存器压栈保存，然后将被替换的指令加入到自己的指令中以保证程序可以完整执行，最终再JMP回被替换指令所在行的下一行地址。</p>
+<p>我们可以使用SSDT Hook的代码来找到要Hook函数的地址，例如此处我想Hook函数NtOpenProcess来监控它的参数，我们不再需要声明函数指针然后写自定义函数，直接写一个自定的函数即可，但也因此我们需要通过其他的方式来获取参数值，我们可以来看一下该函数的实现，似乎并没有用到寄存器，也就表示在这里不是通过寄存器传参，而是通过栈传参，那我们就可以使用EBP寻址来获取参数。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Windows内核原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>系统调用与驱动开发</div>
+      <div>https://hermes37.vercel.app/2025/06/25/工科知识库/计算机技术/操作系统/Windows内核原理/系统调用与驱动开发/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/27/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="内存管理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">内存管理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/25/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6/" title="消息机制">
+                        <span class="hidden-mobile">消息机制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

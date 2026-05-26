@@ -1,0 +1,768 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="异常异常产生后，首先是要记录异常信息（异常的类型、异常发生的位置等），然后要寻找异常的处理函数，我们称为异常的分发，最后找到异常处理函数并调用，我们称为异常处理。我们后续的学习，也是围绕异常的、分发、处理。 异常记录异常可以简单分为2类，即CPU产生的异常和软件模拟产生的异常 CPU的异常记录EXCEPTION_RECORD (winnt.h) - Win32 apps | Microsoft L">
+<meta property="og:type" content="article">
+<meta property="og:title" content="软件调试与异常">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/25/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%BD%AF%E4%BB%B6%E8%B0%83%E8%AF%95%E4%B8%8E%E5%BC%82%E5%B8%B8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="异常异常产生后，首先是要记录异常信息（异常的类型、异常发生的位置等），然后要寻找异常的处理函数，我们称为异常的分发，最后找到异常处理函数并调用，我们称为异常处理。我们后续的学习，也是围绕异常的、分发、处理。 异常记录异常可以简单分为2类，即CPU产生的异常和软件模拟产生的异常 CPU的异常记录EXCEPTION_RECORD (winnt.h) - Win32 apps | Microsoft L">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/06/28/fiOuwVrzAcSkaoF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/28/2SpNlMb6Tca8PfZ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/28/lFwQakMGfnLYiv9.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/28/8S952PW6Y3OLcE1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/28/h4tlwEkmDv3JsxR.png">
+<meta property="article:published_time" content="2025-06-25T02:10:00.344Z">
+<meta property="article:modified_time" content="2026-05-26T06:37:03.564Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/06/28/fiOuwVrzAcSkaoF.png">
+  
+  
+  
+  <title>软件调试与异常 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="软件调试与异常"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">软件调试与异常</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h1><p>异常产生后，首先是要记录异常信息（异常的类型、异常发生的位置等），然后要寻找异常的处理函数，我们称为异常的分发，最后找到异常处理函数并调用，我们称为异常处理。我们后续的学习，也是围绕异常的、分发、处理。</p>
+<h2 id="异常记录"><a href="#异常记录" class="headerlink" title="异常记录"></a>异常记录</h2><p>异常可以简单分为2类，即<strong>CPU产生的异常</strong>和<strong>软件模拟产生的异常</strong></p>
+<h3 id="CPU的异常记录"><a href="#CPU的异常记录" class="headerlink" title="CPU的异常记录"></a>CPU的异常记录</h3><p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/api/winnt/ns-winnt-exception_record">EXCEPTION_RECORD (winnt.h) - Win32 apps | Microsoft Learn</a></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">EXCEPTION_RECORD</span> &#123;</span><br>    DWORD ExceptionCode; <span class="hljs-comment">// 异常状态码，在Windows中每一种状态（包括异常）都有一个状态码</span><br>    DWORD ExceptionFlags; <span class="hljs-comment">// 异常状态，0表示CPU异常，1表示软件模拟异常，8表示堆栈异常</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">EXCEPTION_RECORD</span> *<span class="hljs-title">ExceptionRecord</span>;</span> <span class="hljs-comment">// 通常情况下该值为空，如果发生嵌套异常（即处理异常时又出现了异常）则指向下一个异常【指向关联的 EXCEPTION_RECORD 结构的指针。 异常记录可以链接在一起，以在发生嵌套异常时提供其他信息。】</span><br>    PVOID ExceptionAddress; <span class="hljs-comment">// 异常发生地址，表示异常发生时的位置</span><br>    DWORD NumberParameters; <span class="hljs-comment">// 附加参数个数</span><br>    ULONG_PTR ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS]; <span class="hljs-comment">// 附加参数指针</span><br>&#125; EXCEPTION_RECORD, *PEXCEPTION_RECORD;<br></code></pre></td></tr></table></figure>
+
+<p>Windows状态码及其对应含义可以查阅：[<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55">MS-ERREF]: NTSTATUS Values | Microsoft Learn</a></p>
+<p><img src="https://s2.loli.net/2025/06/28/fiOuwVrzAcSkaoF.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="软件模拟的异常记录"><a href="#软件模拟的异常记录" class="headerlink" title="软件模拟的异常记录"></a>软件模拟的异常记录</h3><h2 id="异常分发与处理"><a href="#异常分发与处理" class="headerlink" title="异常分发与处理"></a>异常分发与处理</h2><p>异常可以发生在用户空间，也可以发生在内核空间。无论是CPU异常还是模拟异常，无论是用户空间异常还是内核空间异常，<strong>最终都要通过KiDispatchException函数进行分发</strong>，理解这个函数是学好异常的关键，这个函数比较复杂，我们以内核、用户两个角度来分析学习。</p>
+<h3 id="内核异常"><a href="#内核异常" class="headerlink" title="内核异常"></a>内核异常</h3><h3 id="用户异常"><a href="#用户异常" class="headerlink" title="用户异常"></a>用户异常</h3><h2 id="扩展补充"><a href="#扩展补充" class="headerlink" title="扩展补充"></a>扩展补充</h2><h3 id="编译器扩展SEH"><a href="#编译器扩展SEH" class="headerlink" title="编译器扩展SEH"></a>编译器扩展SEH</h3><h1 id="软件调试"><a href="#软件调试" class="headerlink" title="软件调试"></a>软件调试</h1><p><img src="https://s2.loli.net/2025/06/28/2SpNlMb6Tca8PfZ.png" srcset="/img/loading.gif" lazyload></p>
+<p>_ZwCreateDebugObject函数其实什么也没干，就是通过系统调用号进入0环执行对应的0环函数来做具体的事情，根据函数的命名，我们可以推断，<strong>这个函数的作用是用于创建调试对象_DEBUG_OBJECT（以下简称为调试对象）</strong>。<strong>调试对象充当了我们之前提到的媒介</strong>，目前调试器与调试对象已经关联起来了。</p>
+<p>因此，这意味着该函数的返回结果即为调试对象，它不会直接返回调试对象在0环的地址。<strong>所以在3环_TEB.DbgSSReserved[1]中存储了该调试对象的句柄。</strong>这个句柄用于在3环中引用和操作调试对象。</p>
+<p><img src="https://s2.loli.net/2025/06/28/lFwQakMGfnLYiv9.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="调试对象"><a href="#调试对象" class="headerlink" title="调试对象"></a>调试对象</h2><h2 id="调试事件的采集"><a href="#调试事件的采集" class="headerlink" title="调试事件的采集"></a>调试事件的采集</h2><h2 id="调试事件的处理"><a href="#调试事件的处理" class="headerlink" title="调试事件的处理"></a>调试事件的处理</h2><h2 id="三大断点"><a href="#三大断点" class="headerlink" title="三大断点"></a>三大断点</h2><h3 id="软件断点"><a href="#软件断点" class="headerlink" title="软件断点"></a>软件断点</h3><p>软件断点就是我们所熟悉的INT 3指令，软件断点的实现就是将下断点的地址处硬编码指令修改为0xCC。</p>
+<h3 id="内存断点"><a href="#内存断点" class="headerlink" title="内存断点"></a>内存断点</h3><p>软件断点修改的是指令，内存断点修改的是物理页的属性。例如当某一地址，下了内存断点，当该地址被读取、写入时都会断下来。调试器进程通过调用VirtualProtectEx函数来跨进程对被调试进程物理页属性进行修改。</p>
+<p>VirtualProtectEx函数的语法格式如下，其中需要关注的是flNewProtect参数，该参数取决定了修改的物理页的新属性：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs lasso">BOOL VirtualProtectEx(<br>    <span class="hljs-keyword">HANDLE</span> hProcess,            <span class="hljs-string">``</span><span class="hljs-comment">// 要修改内存的进程句柄</span><br>    LPVOID lpAddress,           <span class="hljs-string">``</span><span class="hljs-comment">// 要修改内存的起始地址</span><br>    SIZE_T dwSize,              <span class="hljs-string">``</span><span class="hljs-comment">// 页区域大小</span><br>    DWORD flNewProtect,         <span class="hljs-string">``</span><span class="hljs-comment">// 新物理页属性</span><br>    PDWORD lpflOldProtect       <span class="hljs-string">``</span><span class="hljs-comment">// 原物理页属性，用于保存改变前的属性</span><br>)<br></code></pre></td></tr></table></figure>
+
+<p>这边我们需要注意的是，由于VirtualProtectEx函数修改的并不是某一地址的属性，而是地址所在物理页的属性，<strong>因此在对应物理页内的地址都有可能出现异常，所以就需要调试器去判断接收到的调试事件中的对应地址是否是下内存断点的地址，如果不是的话就应该放行</strong>。</p>
+<h4 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h4><p>下完内存断点后，当被调试进程试图访问或写入被修改属性后的物理页时，就会触发页异常。然后就进行了异常的处理流程：</p>
+<ol>
+<li>CPU访问或写入访问或写入被修改属性后的物理页，触发页异常；</li>
+<li>查IDT表找到对应的中断处理函数（这里页异常是0x0E号中断）；</li>
+<li>调用CommonDispatchException函数；</li>
+<li>调用KiDispatchException函数；</li>
+<li>进入DbgkForwardException函数，收集调试事件并发送给调试对象；</li>
+<li>最后交给调试器来处理。</li>
+</ol>
+<p>这个流程其实跟软件断点的流程差不多，因此就不必再重复的去跟进代码了。</p>
+<h3 id="硬件断点"><a href="#硬件断点" class="headerlink" title="硬件断点"></a>硬件断点</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yilang/p/12179305.html">硬件断点的原理与实现 - 活着的虫子 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-208940-1-1.html">硬件断点的原理 - OD各种断点的原理 - 吾爱破解 - 52pojie.cn</a></p>
+<p>对于软件断点，可以使用CRC校验来进行检测；对于内存断点，可以创建一个线程来不断刷新PTE的属性，以防止其被修改。<strong>而本篇要介绍的硬件断点比较难以防范，因为其不依赖于修改被调试进程的数据</strong></p>
+<p>硬件断点的实现需要使用调试寄存器DR0到DR7，它们的结构如下：</p>
+<p>Dr0-3用于设置硬件断点，也就是存储对应的线性地址，由于只有4个断点寄存器，所以最多只能设置4个硬件调试断点。Dr4-5是保留的，我们可以不用看。</p>
+<p>Dr7是最重要的寄存器，它控制着断点的各类属性，有很多个位，每位的意思如下（<strong>0-3都是与Dr0-3为****对应关系，如Dr0对应L0、G0、LEN0、R&#x2F;W0</strong>）：</p>
+<ol>
+<li>L0&#x2F;G0 - L3&#x2F;G3：控制Dr0-3寄存器是否有效，确定是局部（Lx）还是全局（Gx）断点。每次异常触发后，Lx都被清零，Gx不清零。当你向Dr0-3存储线性地址后，Lx或Gx必须有一个为1，才会触发。</li>
+<li>断点长度（LENx）：00（1字节），01（2字节），11（4字节）。</li>
+<li>断点类型（R&#x2F;Wx）：00（执行断点），01（写入断点），11（访问断点）。</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/06/28/8S952PW6Y3OLcE1.png" srcset="/img/loading.gif" lazyload></p>
+<p>硬件调试断点产生的异常是STATUS_SINGLE_STEP（单步异常）。除了硬件断点外，当Eflags的TF标志位置为1时，也会产生单步异常。Dr6寄存器的作用是<strong>确定产生的是哪种类型的单步异常。</strong>当B0-3中有值时，可以确定是某个硬件断点触发了单步异常。<strong>如果B0-3的值都为空，那么说明是由Eflags的TF标志位为1引起的单步异常。</strong></p>
+<p>在设置断点时，我们需要将要断点的线性地址写入Dr0-3中的任意一个寄存器。当CPU执行到该线性地址时，如果发现与调试寄存器中的值相同，就会触发断点异常，进而暂停执行。需要注意的是，设置断点是修改当前线程Context中记录的调试寄存器的值，不同线程之间是相互隔离的，因此设置硬件断点不会影响其他线程的执行。</p>
+<h3 id="执行流程-1"><a href="#执行流程-1" class="headerlink" title="执行流程"></a>执行流程</h3><p>下完硬件断点后，当CPU检测调试寄存器（Dr0-3）到执行到对应的线性地址，就会触发单步异常。然后就进行了异常的处理流程：</p>
+<ol>
+<li>CPU检测调试寄存器（Dr0-3）到执行到对应的线性地址，就会触发单步异常；</li>
+<li>查IDT表找到对应的中断处理函数（这里是0x01号中断）；</li>
+<li>调用CommonDispatchException函数；</li>
+<li>调用KiDispatchException函数；</li>
+<li>进入DbgkForwardException函数，收集调试事件并发送给调试对象；</li>
+<li>最后交给调试器来处理。</li>
+</ol>
+<p>这个流程其实跟软件断点的流程差不多，因此就不必再重复的去跟进代码了。</p>
+<h2 id="单步步入和步过"><a href="#单步步入和步过" class="headerlink" title="单步步入和步过"></a>单步步入和步过</h2><blockquote>
+<p>所谓单步步入和步过，实际上就是OD调试器的快捷键F7和F8，单步步入是可以每一行指令进行单步执行，单步步过也是如此，不同的是<strong>单步步过不会进入调用函数的内部（CALL指令）</strong>。</p>
+</blockquote>
+<h3 id="步入"><a href="#步入" class="headerlink" title="步入"></a>步入</h3><p>想要实现单步步入有很多种方式，例如我们可以将每一行要执行的指令下一地址的指令中设为INT 3，然后单步执行后就恢复再以此类推去设置。但是这样的方式很笨拙。</p>
+<p><strong>因此Intel在设计CPU时考虑到了调试程序的必要性，就在EFlags寄存器中设置了一个TF位</strong>。TF位我们可以称之为单步标志，<strong>当TF位被置1时，每执行完一行指令就会产生一个异常</strong>。</p>
+<p><img src="https://s2.loli.net/2025/06/28/h4tlwEkmDv3JsxR.png" srcset="/img/loading.gif" lazyload></p>
+<p>单步异常的处理流程与硬件断点一致，都是CPU检测到异常后通过IDT表找到0x01号中断函数进行处理等等，因此此处就不再赘述。</p>
+<h4 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h4><p>单步步入（异常）的断点实现也很简单，就是获取线程上下文，就得到了相关的寄存器，接着将EFlags寄存器的TF位置1，然后再将上下文设置回去。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c">VOID <span class="hljs-title function_">SetSingleStep</span><span class="hljs-params">()</span><br>&#123;<br>    CONTEXT Context;<br>    Context.ContextFlags = CONTEXT_DEBUG_REGISTERS;<br>    GetThreadContext(hDebugeeThread, &amp;Context);<br>    ``<span class="hljs-comment">// 将EFlags寄存器的TF位置1</span><br>    Context.EFlags |= ``<span class="hljs-number">0x100</span>``;<br>    SetThreadContext(hDebugeeThread, &amp;Context);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>由于单步步入与硬件断点触发的异常都属于单步异常，<strong>因此这两种异常可以使用同一个处理函数，只需对Dr6的值进行判断即可区分</strong>，这部分代码与硬件断点的实现代码一致，所以也不再赘述。</p>
+<h3 id="步过"><a href="#步过" class="headerlink" title="步过"></a>步过</h3><p>想要实现单步步过，可以通过两种方式：硬件断点、软件断点。实现的原理是在遇到CALL指令（包括多种类型）后，计算当前指令的长度，并在当前EIP+当前指令长度的位置设置断点，即CALL指令的下一行，然后继续执行，从而实现单步步过的效果。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Windows内核原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>软件调试与异常</div>
+      <div>https://hermes37.vercel.app/2025/06/25/工科知识库/计算机技术/操作系统/Windows内核原理/软件调试与异常/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/25/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%9D%E6%8A%A4/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="内存管理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">内存管理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/21/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%9D%E6%8A%A4/%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F/" title="保护模式">
+                        <span class="hidden-mobile">保护模式</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
