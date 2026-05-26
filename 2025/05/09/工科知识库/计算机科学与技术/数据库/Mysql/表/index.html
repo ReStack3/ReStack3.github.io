@@ -1,0 +1,886 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="InnoDB逻辑存储结构 页 关于页的存储及在查找中的过程可以参考 MySQL 页完全指南——浅入深出页的原理 - 知乎 一文理解 MySQL 中的 page 页-腾讯云开发者社区-腾讯云 这篇文章，这两位前辈已经总结的很到位了，我就不再赘述  区通过页其实已经形成了完整的功能。 B+树的每一层中的页都会形成一个双向链表，如果是以页为单位 来分配存储空间的话，双向链表相邻的两个页之间的 物理位置可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="表">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Mysql/%E8%A1%A8/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="InnoDB逻辑存储结构 页 关于页的存储及在查找中的过程可以参考 MySQL 页完全指南——浅入深出页的原理 - 知乎 一文理解 MySQL 中的 page 页-腾讯云开发者社区-腾讯云 这篇文章，这两位前辈已经总结的很到位了，我就不再赘述  区通过页其实已经形成了完整的功能。 B+树的每一层中的页都会形成一个双向链表，如果是以页为单位 来分配存储空间的话，双向链表相邻的两个页之间的 物理位置可">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/y9DfaelpWu8LV5Z.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/qwH4pS9BC7PeZTn.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/c6GnyJrh2OVRWTo.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/YTdrFCvW8sGEfVg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/81ufetNkM3QZ2wp.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101214708887.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/ZD1abqeSwmJsXFi.png">
+<meta property="og:image" content="c:/Users/11252/Desktop%E6%A1%8C%E9%9D%A2/2254995-20220521171053794-1771626332.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101215636939.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101220358081.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101220416458.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/uRwTAHfxjSrch7k.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/01/RIhNTom2ZvibtWL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/02/JPsOqfB6MHGyuK5.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.271Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.007Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/01/01/y9DfaelpWu8LV5Z.png">
+  
+  
+  
+  <title>表 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="表"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">表</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="InnoDB逻辑存储结构"><a href="#InnoDB逻辑存储结构" class="headerlink" title="InnoDB逻辑存储结构"></a>InnoDB逻辑存储结构</h1><p><img src="https://s2.loli.net/2025/01/01/y9DfaelpWu8LV5Z.png" srcset="/img/loading.gif" lazyload alt="image-20250101203832500"></p>
+<h1 id="页"><a href="#页" class="headerlink" title="页"></a>页</h1><p><img src="https://s2.loli.net/2025/01/01/qwH4pS9BC7PeZTn.jpg" srcset="/img/loading.gif" lazyload alt="81c1d2533296a7ccfcb45655fdbfdab07b238c"></p>
+<p>关于页的存储及在查找中的过程可以参考</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/382375842">MySQL 页完全指南——浅入深出页的原理 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1818381">一文理解 MySQL 中的 page 页-腾讯云开发者社区-腾讯云</a></p>
+<p>这篇文章，这两位前辈已经总结的很到位了，我就不再赘述</p>
+<p><img src="https://s2.loli.net/2025/01/01/c6GnyJrh2OVRWTo.png" srcset="/img/loading.gif" lazyload alt="5bd62da36a3b41d2a96db199002fb505"></p>
+<h1 id="区"><a href="#区" class="headerlink" title="区"></a>区</h1><p>通过页其实已经形成了完整的功能。</p>
+<p>B+树的每一层中的页都会形成一个双向链表，如果是以页为单位 来分配存储空间的话，双向链表相邻的两个页之间的 物理位置可能离得非常远。我们介绍B+树索引的适用场景的时候特别提到范围查询只需要定位到最左边的记录和最右边的记录，然后沿着双向链表一直扫描就可以了，而如果链表中相邻的两个页物理位置离得非常远就是所谓的 随机I&#x2F;O。再一次强调，磁盘的速度和内存的速度差了好几个数量级，随机I&#x2F;O是非常慢 的，所以我们应该尽量让链表中相邻的页的物理位置也相邻，这样进行范围查询的时候才可以使用所谓的 顺序I&#x2F;O。</p>
+<p>引入区的概念，一个区就是在物理位置上连续的64个页。因为innoDB 中的页大小默认是 16KB，所以一个区的大小是 64*16KB&#x3D; 1MB 。在表中 数据量大的时候，为某个索引分配空间的时候就不再按照页为单位分配了，而是按照 区为单位分配，甚至在表中的数据特别多的时候，可以一次性分配多个连续的区。虽然可能造成 一点点空间的浪费(数据不足以填充满整个区)，但是从性能角度看，可以消除很多的随机IO，功大于过!区是属于某一个段的（或者是混合）</p>
+<h2 id="段"><a href="#段" class="headerlink" title="段"></a>段</h2><p>对于范围查询，其实是对B+树叶子节点中的记录进行顺序扫描，而如果不区分叶子节点和非叶子节点，统统把节点代表的页面放到申请到的区中的话，进行范围扫描的效果就大打折扣了。所以innoDB 对 B+ 树的叶节点和叶子节点进行了区别对待，也就是说叶子节点有自己独有的区，非叶子节点也有自己独有的区。存放叶子节点的区的集合就算是一个段( segment )，存放非叶子节点的区的集合也算是一个段。也就是说一个索引会生成2个段，一个 叶子节点段，一个非叶子节点段。</p>
+<p> 除了索引的叶子节点段和非叶子节点段之外，InnoDB中还有为存储一些特殊的数据而定义的段，比如回滚段。所以，常见的段有数据段、索引段、 回滚段。数据段即为B+树的叶子节点，索引段即为B+树的非叶子节点。<br>在innoDB存储引擎中，对段的管理都是由引擎自身所完成，DBA不能也没有必要对其进行控制。这从一定程度上简化了DBA对于段的管理。<br>段其实不对应表空间中某一个连续的物理区域，而是一个逻辑上的概念，由若干个零散的页面以及一些完整的区组成。</p>
+<p>段由多个区组成，段的入口记录在 <code>FSP_HDR</code> 和 <code>Inode Page</code> 中。</p>
+<h2 id="碎片区"><a href="#碎片区" class="headerlink" title="碎片区"></a>碎片区</h2><p>默认情况下，假如我们新建一个索引就会生成两个段（叶子节点段和非叶子节点段），而一个段中至少包含一个区，也就是需要2MB的空间，假如我们这个表压根没有多少数据，那么一次就要申请2MB的空间明显是浪费的。为了解决这个问题，设计者提出了碎片区的概念，碎片区中的页可能属于不同的段，也可以用于不同的目的，至于如何控制应不应该给一个段申请专属的区，会进行以下控制：</p>
+<ol>
+<li><p>刚开始向表插入数据，都是从某一个碎片区以页为单位来分配存储空间。</p>
+</li>
+<li><p>当一个段占用的空间达到了32个碎片区的页之后，就会开始给这个段申请专属的区。</p>
+</li>
+</ol>
+<p>当段中存储的区小于32时，是会利用隶属于表空间的碎片区进行存储的。</p>
+<p>流程：</p>
+<ul>
+<li>新插入的页寻找空闲区进行存储，如何快速寻找到表空间的空闲碎片区呢？<ul>
+<li>表空间会维护一个FREE状态的链表和FREE_FREG状态的链表以及FULL_FRAG状态的链表。</li>
+<li>如果空闲的碎片区还存在就会找出链表中取出一个插入，如果满了就改变其状态将其放入FULL_FRAG的链表中。</li>
+<li>如果没有空闲的碎片区，就会从FREE中取出一个来将其转变为空闲碎片区状态放入FREE_FREG状态的链表中。</li>
+</ul>
+</li>
+</ul>
+<h2 id="区分类"><a href="#区分类" class="headerlink" title="区分类"></a>区分类</h2><p>我们现在知道表空间是由若干个区组成的，这些区可以分成以下的4中类型：</p>
+<ol>
+<li>FREE：没有用到这个区的任何一个页面。</li>
+<li>FREE_FRAG：有剩余空闲页的碎片区。</li>
+<li>FULL_FRAG：没有剩余空闲页的碎片区。</li>
+<li>FSEG：专属某一个段的区。</li>
+</ol>
+<h2 id="XDES-Entry"><a href="#XDES-Entry" class="headerlink" title="XDES Entry"></a>XDES Entry</h2><p>为了管理各种各样的区，设计者提成了一个XDES Entry结构。</p>
+<p><img src="https://s2.loli.net/2025/01/01/YTdrFCvW8sGEfVg.png" srcset="/img/loading.gif" lazyload alt="image-20250101213814204"></p>
+<ul>
+<li><p>Segment ID：每一个段都有自己的编号，如果一个XDES Entry属于一个段，就是所在段的编号，如果是碎片区，则这个属性没有意义。</p>
+</li>
+<li><p>State：四种类型的标识。</p>
+</li>
+<li><p>Page State Bitmap：16字节，128位，每两位对应一个区中的页。第一位标识是否空闲，第二位没有用到。</p>
+</li>
+<li><p>List Node：若干个XDES Entry形成链表。</p>
+</li>
+</ul>
+<h3 id="XDES-Entry链表"><a href="#XDES-Entry链表" class="headerlink" title="XDES Entry链表"></a>XDES Entry链表</h3><p>当我们需要某一个类型的XDES Entry时候，如何快速的拿到，这就跟XDES Entry形成的链表有关了，对于属于表的三种类型 FREE，FREE_FRAG，FULL_FRAG，会生成三个链表：</p>
+<ol>
+<li><p>当我们插入一条新记录时，如果FREE_FRAG链表不为空，在FREE_FRAG链表中拿到一个XDES Entry并取得一个页添加数据。如果FREE_FRAG链表为空，在FREE链表拿到一个XDES Entry并取得一个页添加数据，之后把XDES Entry移动到FREE_FRAG链表里。</p>
+</li>
+<li><p>如果使用FREE_FRAG链表中的XDES Entry是发现满了，就把XDES Entry移动到FULL_FRAG链表里。</p>
+</li>
+</ol>
+<h3 id="FSEG区"><a href="#FSEG区" class="headerlink" title="FSEG区"></a>FSEG区</h3><p>我们前面说了FREE，FREE_FRAG，FULL_FRAG三种类型的链表，这三种类型是针对碎片区的，而对于段专属的区类型FSEG，也会形成三种类型的链表，这三个链表属于段，存在段结构中。</p>
+<ul>
+<li><p>FREE：属于同一个段的空闲FSEG区会形成这个链表。</p>
+</li>
+<li><p>NOT_FULL：属于同一个段的还有空闲页的FSEG区会形成这个链表。</p>
+</li>
+<li><p>FULL：属于同一个段的没有空闲页的FSEG区会形成这个链表。</p>
+</li>
+</ul>
+<h1 id="再谈段结构"><a href="#再谈段结构" class="headerlink" title="再谈段结构"></a>再谈段结构</h1><blockquote>
+<p>在区章节里我们简单介绍了段的由来，这这里续上。</p>
+</blockquote>
+<p>段不是一个物理上连续的空间，而是一个逻辑上的概念，一个段包含若干零散的页面还有自己专属的FSEG区，这些FSEG区形成FREE, NOT_FULL, FULL三种链表保存在段上，像XDES Entry一样，设计者也给段定义了一个结构INODE Entry。</p>
+<p><img src="https://s2.loli.net/2025/01/01/81ufetNkM3QZ2wp.png" srcset="/img/loading.gif" lazyload alt="image-20250101214259591"></p>
+<ul>
+<li><p>Segment ID：该段（INODE Entry结构）的编号ID。</p>
+</li>
+<li><p>NOT_FULL_N_USED：NOT_FULL链表中使用了多少个页面。</p>
+</li>
+<li><p>List Base Node：是INODE Entry给FSEG链表定义的一个结构，通过这个结构可以直接找到链头，链尾。</p>
+</li>
+<li><p>Magic Number：表示这个INODE Entry是否已经被初始化。</p>
+</li>
+<li><p>Fragment Array Entry：前面说过只有使用了32个碎片区的页之后，才会开始申请专属的FSEG区，而32个碎片页就是靠这个属性来定位的。</p>
+</li>
+</ul>
+<p><strong>由此看来：段是一些零散页和完整区的结合。</strong><br>在段中，碎片区的引用是在最底下，而专属区的引用是在链表中链着的。</p>
+<h1 id="表空间"><a href="#表空间" class="headerlink" title="表空间"></a>表空间</h1><h2 id="组"><a href="#组" class="headerlink" title="组"></a>组</h2><p>在 InnoDB 中，<strong>组</strong> 是一组连续的区（Extent）的集合。一个组由 <strong>256 个区</strong> 组成。每个区的大小是 <strong>1MB</strong>，因此一个组的大小为 <strong>256MB</strong>（256 * 1MB）。每个组管理着一部分表空间中的数据区域。表空间本身并不直接管理区，而是通过组来组织和管理。</p>
+<h4 id="组和区的关系："><a href="#组和区的关系：" class="headerlink" title="组和区的关系："></a><strong>组和区的关系：</strong></h4><ul>
+<li><strong>1 个组 &#x3D; 256 个区（Extents） &#x3D; 256MB</strong></li>
+<li>表空间是由多个组组成的。</li>
+<li>每个区都被分配给一个组，区内存储的是实际的数据或索引。</li>
+</ul>
+<h4 id="组的管理结构"><a href="#组的管理结构" class="headerlink" title="组的管理结构"></a><strong>组的管理结构</strong></h4><ul>
+<li><strong>组的管理结构</strong> 用于管理该组内所有区的元数据。每个组会有一个专门的管理区域，用来存储与该组相关的 <strong>XDES Entry</strong> 和其他元数据。</li>
+<li>这些元数据包括：区的分配状态、是否被使用、是否属于数据段、是否属于索引段等信息。</li>
+<li>这种设计确保了 InnoDB 在处理数据时能够快速定位每个区的元数据，而不需要遍历每个区。</li>
+</ul>
+<h2 id="区的存储"><a href="#区的存储" class="headerlink" title="区的存储"></a>区的存储</h2><p>XDES Entry保存了有关区的消息，大小为40字节，而我们说一个区大小是1MB，由64个页组成，16KB * 64 &#x3D; 1024KB 刚好1MB，也就是没有额外的40字节来存储XDES Entry了，<strong>那这些XDES Entry到底是存放在哪的？</strong><br>前面我们有说过组的概念，组由256个区组成。表空间由组组成，组中包含了XDES Entry等信息。<br><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101214708887.png" srcset="/img/loading.gif" lazyload alt="image-20250101214708887"></p>
+<p>以上我们可以理解为一个表空间的组成，有组1，组2，我们之前所说的各种信息，都会保存在每一组的第一个区中的前面几个页里面。而作为表空间的第一个组，则要另外保存与表相关的信息。</p>
+<blockquote>
+<p>表空间第一个组第一个区：第一页FSP_HDR页，第二页IBUF_BITMAP页，第三页INODE页<br>其他组第一个区：第一页XDES页，第二页IBUF_BITMAP页</p>
+</blockquote>
+<h3 id="FSP-HDR"><a href="#FSP-HDR" class="headerlink" title="FSP_HDR"></a>FSP_HDR</h3><p><img src="https://s2.loli.net/2025/01/01/ZD1abqeSwmJsXFi.png" srcset="/img/loading.gif" lazyload alt="image-20250101214850816"></p>
+<ul>
+<li>File Space Header：存储表相关的信息，比如我们之前说的属于表的三个链表（FREE，FREE_FRAG，FULL_FRAG）就会存储在这个区域。</li>
+<li>XDES Entry 0 - XDES Entry 255：该组下的256个XDES Entry结构。</li>
+</ul>
+<h2 id="File-Space-Header"><a href="#File-Space-Header" class="headerlink" title="File Space Header"></a>File Space Header</h2><p><img src="C:/Users/11252/Desktop%E6%A1%8C%E9%9D%A2/2254995-20220521171053794-1771626332.png" srcset="/img/loading.gif" lazyload alt="2254995-20220521171053794-1771626332"></p>
+<ul>
+<li>Space ID 表示表空间的ID</li>
+<li>Size 表空间页的大小</li>
+<li>Free Limit 就是当前已经使用的页到多少了，下次直接从这个地址开始分配页面</li>
+<li>FRAG_N_USED 表示碎片区已经使用的页</li>
+<li>接下来的for FREE List 和for FREE_FRAG List和for FULL_FRAG List 表示表空间维护的三个有关碎片区的链表</li>
+<li>Next Unuser Segment ID 表示下一个未分配的段ID，方便分配一个新的段ID</li>
+<li>for SEG_INODES_FULL 和 for SEG_INODES_FREE 表示已经放满了INODE Entry 的INODE节点和空闲的INODE节点。（记住是存放INODE Entry也就是段结构的INODE节点）</li>
+</ul>
+<h3 id="XDES"><a href="#XDES" class="headerlink" title="XDES"></a>XDES</h3><p>与FSP_HDR页一样，只是没有File Space Header。</p>
+<h3 id="IBUF-BITMAP"><a href="#IBUF-BITMAP" class="headerlink" title="IBUF_BITMAP"></a>IBUF_BITMAP</h3><p>当发生记录的增删改时，聚餐索引会发生相应的变化，如果也二级索引的B+树也要发生相应的调整，而这些对应的页往往都不在内存中，如果要修改必须发生磁盘IO，把对应的二级索引页也给读到内存中进行修改，这样就增加了IO的次数，影响性能。<br>IBUF_BITMAP页的作用就是缓存这些操作，等到下一次MySQL刚好把这些要修改的页读取到内存的时候，顺便修改。</p>
+<h3 id="INODE"><a href="#INODE" class="headerlink" title="INODE"></a>INODE</h3><p>一个索引有两个段，一个段会对应INODE Entry结构，这个页就是用来保存这个表空间所有的INODE Entry结构的。<br><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101215636939.png" srcset="/img/loading.gif" lazyload alt="image-20250101215636939"></p>
+<p>INODE类型结构就是为了存储INODE Entry节点的，最多存储85个段。</p>
+<p>结构中List Node for INODE Page List 就是指向上一个INODE节点和下一个INODE节点。我们就是在这个INODE中存储段的INODE Entry节点的。</p>
+<p>如果该页存储满了，就会在上面提到的List Base Node for SEG_INODES_FREE 就是空闲INODE页的基节点的链表引用，取出一个，空的话从碎片区中申请一个页来存放。</p>
+<h1 id="怎么找到索引的页？"><a href="#怎么找到索引的页？" class="headerlink" title="怎么找到索引的页？"></a>怎么找到索引的页？</h1><p>在数据页是有两个引用，在页结构的Page Header中有如下两个结构</p>
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101220358081.png" srcset="/img/loading.gif" lazyload alt="image-20250101220358081"></p>
+<p>这两个结构就是Segment Header这个结构</p>
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250101220416458.png" srcset="/img/loading.gif" lazyload alt="image-20250101220416458"></p>
+<ul>
+<li>Space ID of the INODE Entry 就是INODE对应的表空间</li>
+<li>Page Number of the INODE Entry 就是INODE对应的表空间下对应的页号</li>
+<li>Byte Offset of the INODE Entry 就是INODE对应的页中对应段的偏移量。</li>
+</ul>
+<p>我们就可以通过在索引的ROOT节点存储一个这样的结构，可以找到对应的段。包括叶子段和非叶子段，就是两个这个结构，然后去表空间中找到这两个段的地址即可。</p>
+<h2 id="系统表空间"><a href="#系统表空间" class="headerlink" title="系统表空间"></a>系统表空间</h2><p>数据字典即系统表空间中存放了一些固定的数据，以及数据库中的表，表名，列，列属于那个表等等基本信息。还有一些已经用了的最大的表ID，最大的索引ID，最大的表空间ID，就是方便下次创建表啊索引啊这一些更方便一点，直接将值进行增加等操作进行赋值即可。</p>
+<h3 id="InnoDB数据字典"><a href="#InnoDB数据字典" class="headerlink" title="InnoDB数据字典"></a>InnoDB数据字典</h3><p>每当我们向一个表中插入一条记录的时候，MySQL校验过程 如下<br>先要校验一下插入语句对应的表存不存在，插入的列和表中的列是否符合，如果语法没有问题的话，还需要知道该表的聚簇索引和所有二级索引对应的根页面是哪个表空间的哪个页面，然后把记录插入对应索引的B+树中。所以说，MySQL除了保存着我们插入的用户数据之外，还需要保存许多额外的信息，比方说:</p>
+<ul>
+<li><p>某个表属于哪个表空间，表里边有多少列</p>
+</li>
+<li><p>表对应的每一个列的类型是什么</p>
+</li>
+<li><p>该表有多少索引，每个索引对应哪几个字段，该索引对应的根页面在哪个表空间的哪个页面</p>
+</li>
+<li><p>该表有哪些外键，外键对应哪个表的哪些列</p>
+</li>
+<li><p>某个表空间对应文件系统上文件路径是什么</p>
+</li>
+<li><p>……………..</p>
+</li>
+</ul>
+<p>上述这些数据并不是我们使用 INSERT 语句插入的用户数据，实际上是为了更好的管理我们这些用户数据而不得已引入的一些额外数据，这些数据也称为 <strong>元数据</strong>。lnnoDB存储引擎特意定义了一些列的 **内部系统表 (internalsystem table)**来记录这些这些元数据:</p>
+<p><img src="https://s2.loli.net/2025/01/01/uRwTAHfxjSrch7k.png" srcset="/img/loading.gif" lazyload alt="image-20250101205220066"></p>
+<p>这些系统表也被称为 数据字典，它们都是以 B+ 树的形式保存在系统表空间的某些页面中，其中 SYS_TABLES   SYS_COLUMNS </p>
+<p>SYS_INDEXES   SYS_FIELDS 这四个表尤其重要，称之为基本系统表 (basic system tables)。</p>
+<blockquote>
+<p>注意:用户是不能直接访问 innoDB的这些内部系统表，除非你直接去解析系统表空间对应文件系统上的文件。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/01/01/RIhNTom2ZvibtWL.png" srcset="/img/loading.gif" lazyload alt="2254995-20220521171005098-123864628"></p>
+<h1 id="行"><a href="#行" class="headerlink" title="行"></a>行</h1><p>页里保存的是一行一行的数据，我们自然要看看行的存储格式：</p>
+<blockquote>
+<p>具体参考：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/266060894">MySQL之InnoDB存储引擎：Row Format行格式 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/mysql/base/row_format.html#mysql-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AD%98%E6%94%BE%E5%9C%A8%E5%93%AA%E4%B8%AA%E6%96%87%E4%BB%B6">MySQL 一行记录是怎么存储的？ | 小林coding</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42435377/article/details/124951046">【MySql进阶】行格式详解：COMPACT、Dynamic_mysql dynamic-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wilburxu/p/9435818.html">MySQL InnoDB 行记录格式（ROW_FORMAT） - WilburXu - 博客园</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/01/02/JPsOqfB6MHGyuK5.png" srcset="/img/loading.gif" lazyload alt="image-20250102091119367"></p>
+<hr>
+<h1 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Alex_cf/article/details/128409529">Mysql ——区、段、表空间 、碎片区_mysql 段-CSDN博客</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="category-chain-item">数据库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Mysql/" class="category-chain-item">Mysql</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="print-no-link">#数据库</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>表</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机科学与技术/数据库/Mysql/表/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Mysql/%E9%94%81/" title="锁">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">锁</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E5%BA%93/Mysql/%E7%B4%A2%E5%BC%95%E4%B8%8E%E7%AE%97%E6%B3%95/" title="索引与算法">
+                        <span class="hidden-mobile">索引与算法</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

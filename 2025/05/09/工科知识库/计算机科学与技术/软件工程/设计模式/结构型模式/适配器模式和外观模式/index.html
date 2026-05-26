@@ -1,0 +1,952 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="适配器模式反例背景假设我们有一个旧的电源接口（Adaptee）提供一个方法 specificRequest()，而客户端需要的是 request() 方法。如果我们不使用适配器模式，客户端必须直接调用 specificRequest()，并且它需要知道如何操作这个特定的旧接口。这样，客户端和 Adaptee 的耦合度非常高，而且也不利于后期的扩展。 不使用适配器模式的代码实现被适配类（Adapte">
+<meta property="og:type" content="article">
+<meta property="og:title" content="适配器模式和外观模式">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E7%BB%93%E6%9E%84%E5%9E%8B%E6%A8%A1%E5%BC%8F/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F%E5%92%8C%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="适配器模式反例背景假设我们有一个旧的电源接口（Adaptee）提供一个方法 specificRequest()，而客户端需要的是 request() 方法。如果我们不使用适配器模式，客户端必须直接调用 specificRequest()，并且它需要知道如何操作这个特定的旧接口。这样，客户端和 Adaptee 的耦合度非常高，而且也不利于后期的扩展。 不使用适配器模式的代码实现被适配类（Adapte">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/01/25/bYsrAMGi2yh6Rvk.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/25/bAr4oTBuGaJ631n.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/25/quXTgp3MyObW8AF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/25/bo6NMwhnA32kC5U.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.422Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.202Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="基础知识">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/01/25/bYsrAMGi2yh6Rvk.png">
+  
+  
+  
+  <title>适配器模式和外观模式 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="适配器模式和外观模式"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          30 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">适配器模式和外观模式</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="适配器模式"><a href="#适配器模式" class="headerlink" title="适配器模式"></a>适配器模式</h1><h2 id="反例"><a href="#反例" class="headerlink" title="反例"></a>反例</h2><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a><strong>背景</strong></h4><p>假设我们有一个旧的电源接口（<code>Adaptee</code>）提供一个方法 <code>specificRequest()</code>，而客户端需要的是 <code>request()</code> 方法。如果我们不使用适配器模式，客户端必须直接调用 <code>specificRequest()</code>，并且它需要知道如何操作这个特定的旧接口。这样，客户端和 <code>Adaptee</code> 的耦合度非常高，而且也不利于后期的扩展。</p>
+<h4 id="不使用适配器模式的代码实现"><a href="#不使用适配器模式的代码实现" class="headerlink" title="不使用适配器模式的代码实现"></a><strong>不使用适配器模式的代码实现</strong></h4><h5 id="被适配类（Adaptee）"><a href="#被适配类（Adaptee）" class="headerlink" title="被适配类（Adaptee）"></a><strong>被适配类（Adaptee）</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 旧电源接口，已经过时，提供了 specificRequest() 方法</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Adaptee</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">specificRequest</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Adaptee: Specific Request&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="客户端代码（没有适配器模式）"><a href="#客户端代码（没有适配器模式）" class="headerlink" title="客户端代码（没有适配器模式）"></a><strong>客户端代码（没有适配器模式）</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 客户端需要调用 Adaptee 类的方法，直接依赖于 specificRequest()</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 客户端直接与被适配类打交道</span><br>        <span class="hljs-type">Adaptee</span> <span class="hljs-variable">adaptee</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Adaptee</span>();<br>        adaptee.specificRequest(); <span class="hljs-comment">// 直接调用 specificRequest() 方法</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a><strong>问题分析</strong></h4><ol>
+<li><strong>高耦合度</strong>：客户端直接调用 <code>Adaptee</code> 类的 <code>specificRequest()</code> 方法。这样，客户端就被强制依赖于 <code>Adaptee</code> 的具体实现。如果以后需要更换成新的电源接口（比如提供不同方法的接口），客户端代码需要修改，这违反了<strong>开闭原则</strong>。</li>
+<li><strong>不易扩展</strong>：如果未来需要支持多个不同类型的电源接口，客户端需要为每种接口编写单独的代码，这样不仅代码重复，维护起来也非常麻烦。</li>
+<li><strong>代码不具备灵活性</strong>：如果不使用适配器模式，客户端代码和 <code>Adaptee</code> 紧密耦合，每次替换被适配类时，都需要修改客户端代码。这样的方式不具备灵活性，不能很方便地适配新接口。</li>
+</ol>
+<h2 id="适配器模式的定义"><a href="#适配器模式的定义" class="headerlink" title="适配器模式的定义"></a>适配器模式的定义</h2><p>适配器模式（Adapter Pattern）是结构型设计模式之一，主要用于将一个类的接口转换成客户端期望的另一种接口。它的核心目的是<strong>使得原本接口不兼容的类可以合作</strong>。适配器模式通过提供一个适配器类，来封装原有接口，使其能够与客户端的接口兼容，从而达到接口适配的目的。</p>
+<p>适配器模式涉及的角色：</p>
+<ol>
+<li><strong>目标接口（Target Interface）</strong>：客户端所期望的接口。</li>
+<li><strong>源接口（Adaptee）</strong>：已有的接口或类，是客户端需要适配的接口。</li>
+<li><strong>适配器（Adapter）</strong>：用于连接目标接口和源接口的适配器类，通过实现目标接口来转换源接口的调用。</li>
+</ol>
+<h2 id="适配器模式优缺点"><a href="#适配器模式优缺点" class="headerlink" title="适配器模式优缺点"></a>适配器模式优缺点</h2><table>
+<thead>
+<tr>
+<th><strong>优点</strong></th>
+<th><strong>缺点</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 解耦系统和类</strong>：适配器模式能够将客户端和源接口解耦，使得客户端不需要关心源接口的实现细节。</td>
+<td><strong>1. 增加类的数量</strong>：适配器模式会引入额外的适配器类，增加系统的复杂性。</td>
+</tr>
+<tr>
+<td><strong>2. 提高系统的灵活性和可扩展性</strong>：使用适配器模式后，原本不兼容的类可以通过适配器进行适配，轻松扩展系统的功能。</td>
+<td><strong>2. 适配器责任过多</strong>：如果一个适配器类需要适配多个接口，可能会导致适配器类职责过重，代码复杂。</td>
+</tr>
+<tr>
+<td><strong>3. 客户端代码不需要修改</strong>：在使用适配器模式时，客户端代码可以继续使用统一的接口，不需要修改现有代码。</td>
+<td><strong>3. 性能开销</strong>：通过适配器引入额外的中间层，可能会带来一定的性能开销，尤其在大规模调用的场景中。</td>
+</tr>
+<tr>
+<td><strong>4. 易于维护和修改</strong>：适配器模式将接口转换的逻辑封装在适配器类中，修改时只需要改动适配器类，避免了修改大量客户端代码。</td>
+<td><strong>4. 增加系统复杂性</strong>：虽然适配器可以解耦系统，但在某些简单场景中，使用适配器模式可能会显得过于复杂。</td>
+</tr>
+</tbody></table>
+<h2 id="适配器模式实现"><a href="#适配器模式实现" class="headerlink" title="适配器模式实现"></a>适配器模式实现</h2><p>适配器模式分为类结构型模式和对象结构型模式两种：在类适配器模式中，适配器与适配者之间是<strong>继承（或实现）关系</strong>；在对象适配器模式中，适配器与适配者之间是<strong>关联关系</strong>。前者类之间的耦合度比后者高，且要求程序员了解现有组件库中的相关组件的内部结构，所以应用相对较少些。</p>
+<hr>
+<h3 id="1-类适配器"><a href="#1-类适配器" class="headerlink" title="1. 类适配器"></a><strong>1. 类适配器</strong></h3><p>类适配器模式的结构图如图所示（<strong>继承或实现关系</strong>）：</p>
+<p><img src="https://s2.loli.net/2025/01/25/bYsrAMGi2yh6Rvk.png" srcset="/img/loading.gif" lazyload alt="image-20250125150930298"></p>
+<p>通过继承实现适配，适配器继承目标接口和被适配类。</p>
+<ul>
+<li><strong>优点</strong>：直接继承，性能较高。</li>
+<li><strong>缺点</strong>：只能适配一个被适配类，不支持多继承。</li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">目标接口（Target）       被适配类（Adaptee）<br>        ▲                          ▲<br>        │                          │<br>        └──────继承────────┐<br>                          │<br>                      适配器（Adapter）<br></code></pre></td></tr></table></figure>
+
+<h5 id="对象适配器结构"><a href="#对象适配器结构" class="headerlink" title="对象适配器结构"></a><strong>对象适配器结构</strong></h5><h3 id="2-对象适配器"><a href="#2-对象适配器" class="headerlink" title="2. 对象适配器"></a><strong>2. 对象适配器</strong></h3><p>对象适配器模式的结构图如图所示（<strong>关联关系</strong>）：</p>
+<p><img src="https://s2.loli.net/2025/01/25/bAr4oTBuGaJ631n.png" srcset="/img/loading.gif" lazyload alt="image-20250125151017654"></p>
+<h5 id="对象适配器结构-1"><a href="#对象适配器结构-1" class="headerlink" title="对象适配器结构"></a><strong>对象适配器结构</strong></h5><p>通过组合实现适配，适配器持有被适配类的实例。</p>
+<ul>
+<li><strong>优点</strong>：可以适配多个类，灵活性更强。</li>
+<li><strong>缺点</strong>：多了一层间接调用，性能略低。</li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">目标接口（Target）       被适配类（Adaptee）<br>        ▲                          ▲<br>        │                          │<br>        └──────关联────────┐<br>                          │<br>                      适配器（Adapter）<br></code></pre></td></tr></table></figure>
+
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><h4 id="被适配类（Adaptee）-1"><a href="#被适配类（Adaptee）-1" class="headerlink" title="被适配类（Adaptee）"></a><strong>被适配类（Adaptee）</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 被适配类：旧接口</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Adaptee</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">specificRequest</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Adaptee: Specific Request&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="目标接口（Target）"><a href="#目标接口（Target）" class="headerlink" title="目标接口（Target）"></a><strong>目标接口（Target）</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 目标接口：客户端期望的接口</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Target</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">request</span><span class="hljs-params">()</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="类适配器"><a href="#类适配器" class="headerlink" title="类适配器"></a><strong>类适配器</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 适配器类：通过继承适配</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ClassAdapter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Adaptee</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Target</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">request</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 调用被适配类的方法</span><br>        specificRequest();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="对象适配器"><a href="#对象适配器" class="headerlink" title="对象适配器"></a><strong>对象适配器</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 适配器类：通过组合适配</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ObjectAdapter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Target</span> &#123;<br>    <span class="hljs-keyword">private</span> Adaptee adaptee;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">ObjectAdapter</span><span class="hljs-params">(Adaptee adaptee)</span> &#123;<br>        <span class="hljs-built_in">this</span>.adaptee = adaptee;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">request</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 调用被适配类的方法</span><br>        adaptee.specificRequest();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a><strong>客户端</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 客户端</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 类适配器</span><br>        <span class="hljs-type">Target</span> <span class="hljs-variable">classAdapter</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ClassAdapter</span>();<br>        classAdapter.request(); <span class="hljs-comment">// 输出: Adaptee: Specific Request</span><br><br>        <span class="hljs-comment">// 对象适配器</span><br>        <span class="hljs-type">Adaptee</span> <span class="hljs-variable">adaptee</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Adaptee</span>();<br>        <span class="hljs-type">Target</span> <span class="hljs-variable">objectAdapter</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ObjectAdapter</span>(adaptee);<br>        objectAdapter.request(); <span class="hljs-comment">// 输出: Adaptee: Specific Request</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="类适配器与对象适配器对比"><a href="#类适配器与对象适配器对比" class="headerlink" title="类适配器与对象适配器对比"></a><strong>类适配器与对象适配器对比</strong></h3><table>
+<thead>
+<tr>
+<th><strong>对比维度</strong></th>
+<th><strong>类适配器</strong></th>
+<th><strong>对象适配器</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>实现方式</strong></td>
+<td>通过继承实现，适配器继承被适配类。</td>
+<td>通过组合实现，适配器持有被适配类的实例。</td>
+</tr>
+<tr>
+<td><strong>灵活性</strong></td>
+<td>不支持适配多个被适配类，因 Java 不支持多继承。</td>
+<td>支持适配多个被适配类，通过不同实例组合实现。</td>
+</tr>
+<tr>
+<td><strong>耦合性</strong></td>
+<td>与被适配类的耦合较高，继承绑定较紧密。</td>
+<td>与被适配类解耦，组合方式更灵活。</td>
+</tr>
+<tr>
+<td><strong>实现复杂度</strong></td>
+<td>实现简单，直接继承和重写方法。</td>
+<td>实现稍复杂，需要在适配器中管理被适配类实例。</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>被适配类功能较稳定，且无需适配多个类。</td>
+<td>被适配类功能经常变化，或需要同时适配多个被适配类时。</td>
+</tr>
+</tbody></table>
+<h2 id="适配器模式适用场景"><a href="#适配器模式适用场景" class="headerlink" title="适配器模式适用场景"></a>适配器模式适用场景</h2><table>
+<thead>
+<tr>
+<th><strong>适用场景</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 接口不兼容的类需要协作</strong></td>
+<td>需要将两个接口不兼容的类结合在一起工作。适配器模式可以使得它们能够共同工作。</td>
+<td>需要将旧版接口的功能与新系统的标准接口对接。</td>
+</tr>
+<tr>
+<td><strong>2. 无法修改的类需要集成到新的系统中</strong></td>
+<td>不能直接修改已有的类或接口，但需要将其集成到当前系统中，且需要它们实现一个特定的接口。</td>
+<td>第三方库的接口无法修改，但需要集成到系统中，且要求统一接口。</td>
+</tr>
+<tr>
+<td><strong>3. 通过统一接口调用不同的类</strong></td>
+<td>多个类提供不同的接口和功能，需要统一通过一个接口来调用它们。</td>
+<td>开发多格式音频播放器，统一接口播放不同格式的音频文件。</td>
+</tr>
+<tr>
+<td><strong>4. 接口的变动导致与现有系统不兼容</strong></td>
+<td>外部库或系统的接口发生变化时，使用适配器模式避免修改现有系统，提供一个过渡层，保持兼容性。</td>
+<td>第三方库接口更新，使用适配器模式连接新的接口与旧系统。</td>
+</tr>
+<tr>
+<td><strong>5. 实现类的变化频繁，且需要解耦</strong></td>
+<td>在动态变化的系统中，可能有多个实现类且经常变化，通过适配器模式可以避免修改客户端代码。</td>
+<td>支付系统需要适配多个支付渠道接口，客户端无需关注具体支付方式。</td>
+</tr>
+<tr>
+<td><strong>6. 实现多种功能的组合，减少重复代码</strong></td>
+<td>多个类具有不同功能，且客户端需要多种功能的组合。通过适配器模式可以将这些功能组合成一个统一接口，简化客户端使用。</td>
+<td>文件输入输出与网络通信功能的组合，客户端只需与统一的接口交互。</td>
+</tr>
+</tbody></table>
+<h1 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h1><h2 id="定义和UML类图"><a href="#定义和UML类图" class="headerlink" title="定义和UML类图"></a>定义和UML类图</h2><p>外观模式是一种结构型设计模式，它通过为子系统中的一组接口提供一个统一的高层接口，使得子系统更易使用。外观模式为复杂的子系统提供了一个简化的接口，客户端无需了解子系统的复杂性，只需通过外观类与系统进行交互。</p>
+<p>外观（Facade）模式的结构比较简单，主要是定义了一个高层接口。它包含了对各个子系统的引用，客户端可以通过它访问各个子系统的功能。现在来分析其基本结构和实现方法。</p>
+<p>　　外观（Facade）模式包含以下主要角色。</p>
+<ul>
+<li>外观（Facade）角色：为多个子系统对外提供一个共同的接口。</li>
+<li>子系统（Sub System）角色：实现系统的部分功能，客户可以通过外观角色访问它。</li>
+<li>客户（Client）角色：通过一个外观角色访问各个子系统的功能。</li>
+</ul>
+<p>其结构图如图所示：</p>
+<p><img src="https://s2.loli.net/2025/01/25/quXTgp3MyObW8AF.png" srcset="/img/loading.gif" lazyload alt="image-20250125160346650"></p>
+<h2 id="真实世界类比"><a href="#真实世界类比" class="headerlink" title="真实世界类比"></a>真实世界类比</h2><p><img src="https://s2.loli.net/2025/01/25/bo6NMwhnA32kC5U.png" srcset="/img/loading.gif" lazyload alt="image-20250125160744857"></p>
+<p>当你通过电话给商店下达订单时， 接线员就是该商店的所有服务和部门的外观。 接线员为你提供了一个同购物系统、 支付网关和各种送货服务进行互动的简单语音接口。</p>
+<h2 id="反例："><a href="#反例：" class="headerlink" title="反例："></a><strong>反例：</strong></h2><h3 id="背景-1"><a href="#背景-1" class="headerlink" title="背景"></a><strong>背景</strong></h3><p>假设我们有一个复杂的子系统，包含多个类，每个类都提供不同的功能，客户端需要调用多个类的接口来完成一个功能。这种做法使得客户端需要了解多个类的具体实现，导致代码的耦合度高、难以维护和理解。</p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a><strong>代码实现</strong></h3><h4 id="子系统类1"><a href="#子系统类1" class="headerlink" title="子系统类1"></a><strong>子系统类1</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Subsystem1</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operation1</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Subsystem1: Operation 1&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="子系统类2"><a href="#子系统类2" class="headerlink" title="子系统类2"></a><strong>子系统类2</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Subsystem2</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operation2</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Subsystem2: Operation 2&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="子系统类3"><a href="#子系统类3" class="headerlink" title="子系统类3"></a><strong>子系统类3</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Subsystem3</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operation3</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Subsystem3: Operation 3&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="客户端代码"><a href="#客户端代码" class="headerlink" title="客户端代码"></a><strong>客户端代码</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-type">Subsystem1</span> <span class="hljs-variable">subsystem1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Subsystem1</span>();<br>        <span class="hljs-type">Subsystem2</span> <span class="hljs-variable">subsystem2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Subsystem2</span>();<br>        <span class="hljs-type">Subsystem3</span> <span class="hljs-variable">subsystem3</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Subsystem3</span>();<br><br>        <span class="hljs-comment">// 客户端需要调用多个子系统的接口</span><br>        subsystem1.operation1();<br>        subsystem2.operation2();<br>        subsystem3.operation3();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="问题分析-1"><a href="#问题分析-1" class="headerlink" title="问题分析"></a><strong>问题分析</strong></h3><ol>
+<li><strong>高耦合</strong>：客户端代码直接与多个子系统类交互，客户端需要了解子系统的所有实现细节，增加了系统的耦合度。</li>
+<li><strong>复杂性高</strong>：子系统类的操作可能很多，客户端必须调用多个方法来完成一个任务，这使得代码更加复杂且难以维护。</li>
+<li><strong>不易扩展</strong>：如果需要对某个子系统进行扩展或更换，客户端代码可能需要进行大量修改。</li>
+</ol>
+<hr>
+<h2 id="正例：使用外观模式"><a href="#正例：使用外观模式" class="headerlink" title="正例：使用外观模式"></a><strong>正例：使用外观模式</strong></h2><h4 id="背景-2"><a href="#背景-2" class="headerlink" title="背景"></a><strong>背景</strong></h4><p>为了简化子系统的使用，我们可以引入外观模式，将多个子系统的操作封装到一个外观类中，客户端只需要与外观类交互，而不需要了解子系统的具体实现。这样，客户端代码就变得更加简洁和易于维护。</p>
+<h4 id="代码实现（使用外观模式）"><a href="#代码实现（使用外观模式）" class="headerlink" title="代码实现（使用外观模式）"></a><strong>代码实现（使用外观模式）</strong></h4><h5 id="外观类（Facade）"><a href="#外观类（Facade）" class="headerlink" title="外观类（Facade）"></a><strong>外观类（Facade）</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Facade</span> &#123;<br>    <span class="hljs-keyword">private</span> Subsystem1 subsystem1;<br>    <span class="hljs-keyword">private</span> Subsystem2 subsystem2;<br>    <span class="hljs-keyword">private</span> Subsystem3 subsystem3;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Facade</span><span class="hljs-params">()</span> &#123;<br>        subsystem1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Subsystem1</span>();<br>        subsystem2 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Subsystem2</span>();<br>        subsystem3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Subsystem3</span>();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">simplifiedOperation</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 外观类提供一个简化的操作，客户端只需要调用这个方法</span><br>        subsystem1.operation1();<br>        subsystem2.operation2();<br>        subsystem3.operation3();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="子系统类（与反例中的相同）"><a href="#子系统类（与反例中的相同）" class="headerlink" title="子系统类（与反例中的相同）"></a><strong>子系统类（与反例中的相同）</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Subsystem1</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operation1</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Subsystem1: Operation 1&quot;</span>);<br>    &#125;<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Subsystem2</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operation2</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Subsystem2: Operation 2&quot;</span>);<br>    &#125;<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Subsystem3</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operation3</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Subsystem3: Operation 3&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="客户端代码（使用外观模式）"><a href="#客户端代码（使用外观模式）" class="headerlink" title="客户端代码（使用外观模式）"></a><strong>客户端代码（使用外观模式）</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 客户端只需要与外观类交互</span><br>        <span class="hljs-type">Facade</span> <span class="hljs-variable">facade</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Facade</span>();<br>        facade.simplifiedOperation();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="外观模式和适配器模式的关系"><a href="#外观模式和适配器模式的关系" class="headerlink" title="外观模式和适配器模式的关系"></a>外观模式和适配器模式的关系</h1><table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>外观模式</strong></th>
+<th><strong>适配器模式</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>意图</strong></td>
+<td>提供一个统一的接口来简化对多个接口的访问，隐藏复杂性。</td>
+<td>转换一个类的接口为客户端期望的另一个接口，解决接口不兼容问题。</td>
+</tr>
+<tr>
+<td><strong>目标</strong></td>
+<td>提供一个简化的、高层次的接口，减少系统与子系统的耦合。</td>
+<td>使不兼容的接口能够协同工作，解决接口之间的冲突。</td>
+</tr>
+<tr>
+<td><strong>应用场景</strong></td>
+<td>客户端与多个复杂子系统交互，需要一个简化的接口来减少依赖。</td>
+<td>需要将不兼容的接口通过适配连接在一起。</td>
+</tr>
+<tr>
+<td><strong>关注点</strong></td>
+<td>聚焦于系统简化和封装。</td>
+<td>聚焦于接口转换与兼容性。</td>
+</tr>
+<tr>
+<td><strong>结构</strong></td>
+<td>外观类与多个子系统类之间有关系。</td>
+<td>适配器类与目标接口和被适配类之间有关系。</td>
+</tr>
+<tr>
+<td><strong>类型</strong></td>
+<td>聚焦于将多个接口封装成一个接口。</td>
+<td>聚焦于将一个接口适配为另一个接口。</td>
+</tr>
+<tr>
+<td><strong>客户端与子系统关系</strong></td>
+<td>客户端与外观类交互，外观类与子系统内部复杂类交互。</td>
+<td>客户端与适配器交互，适配器与被适配类交互。</td>
+</tr>
+<tr>
+<td><strong>变化适应性</strong></td>
+<td>外观类通常是静态的，随着系统的复杂度增加，需要增加更多功能。</td>
+<td>适配器模式更灵活，可以适应不同接口间的转换。</td>
+</tr>
+<tr>
+<td><strong>具体类与接口关系</strong></td>
+<td>不关心具体实现，只暴露简单接口。</td>
+<td>解决不兼容接口的转换问题。</td>
+</tr>
+</tbody></table>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="category-chain-item">设计模式</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E7%BB%93%E6%9E%84%E5%9E%8B%E6%A8%A1%E5%BC%8F/" class="category-chain-item">结构型模式</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" class="print-no-link">#基础知识</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>适配器模式和外观模式</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机科学与技术/软件工程/设计模式/结构型模式/适配器模式和外观模式/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%A1%8C%E4%B8%BA%E6%A8%A1%E5%BC%8F/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" title="命令模式">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">命令模式</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E7%BB%93%E6%9E%84%E5%9E%8B%E6%A8%A1%E5%BC%8F/%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="装饰器模式">
+                        <span class="hidden-mobile">装饰器模式</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

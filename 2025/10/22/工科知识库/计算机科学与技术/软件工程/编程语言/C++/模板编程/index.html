@@ -1,0 +1,997 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="深入了解模板模板实例化模板的特化和重载模板和设计特征的实现如果模板参数太多怎么办”，其本质问题是：如何在不增加模板参数复杂度的前提下，实现高度可定制、可扩展、可维护的模板组件？即如何把“变化点”从模板参数列表里“挪走”？ 模板参数爆炸的问题本质直接参数化的极限模板天然支持“参数化”，但存在三个现实问题：  参数一多 → 使用成本陡增 所有参数都暴露 → 接口不稳定 外部代码被迫理解内部实现细节">
+<meta property="og:type" content="article">
+<meta property="og:title" content="模板编程">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/10/22/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C++/%E6%A8%A1%E6%9D%BF%E7%BC%96%E7%A8%8B/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="深入了解模板模板实例化模板的特化和重载模板和设计特征的实现如果模板参数太多怎么办”，其本质问题是：如何在不增加模板参数复杂度的前提下，实现高度可定制、可扩展、可维护的模板组件？即如何把“变化点”从模板参数列表里“挪走”？ 模板参数爆炸的问题本质直接参数化的极限模板天然支持“参数化”，但存在三个现实问题：  参数一多 → 使用成本陡增 所有参数都暴露 → 接口不稳定 外部代码被迫理解内部实现细节">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/11/13/cW6lPbY9my4HKqE.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/13/24FBRsdG6apIx3V.png">
+<meta property="article:published_time" content="2025-10-22T07:14:24.887Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.136Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/11/13/cW6lPbY9my4HKqE.png">
+  
+  
+  
+  <title>模板编程 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="模板编程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">模板编程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="深入了解模板"><a href="#深入了解模板" class="headerlink" title="深入了解模板"></a>深入了解模板</h1><h2 id="模板实例化"><a href="#模板实例化" class="headerlink" title="模板实例化"></a>模板实例化</h2><h2 id="模板的特化和重载"><a href="#模板的特化和重载" class="headerlink" title="模板的特化和重载"></a>模板的特化和重载</h2><h1 id="模板和设计"><a href="#模板和设计" class="headerlink" title="模板和设计"></a>模板和设计</h1><h2 id="特征的实现"><a href="#特征的实现" class="headerlink" title="特征的实现"></a>特征的实现</h2><p>如果模板参数太多怎么办”，其<strong>本质问题是</strong>：<strong>如何在不增加模板参数复杂度的前提下，实现高度可定制、可扩展、可维护的模板组件？</strong>即<strong>如何把“变化点”从模板参数列表里“挪走”？</strong></p>
+<h3 id="模板参数爆炸的问题本质"><a href="#模板参数爆炸的问题本质" class="headerlink" title="模板参数爆炸的问题本质"></a>模板参数爆炸的问题本质</h3><h4 id="直接参数化的极限"><a href="#直接参数化的极限" class="headerlink" title="直接参数化的极限"></a>直接参数化的极限</h4><p>模板天然支持“参数化”，但存在三个现实问题：</p>
+<ul>
+<li>参数一多 → <strong>使用成本陡增</strong></li>
+<li>所有参数都暴露 → <strong>接口不稳定</strong></li>
+<li>外部代码被迫理解内部实现细节</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<br>    <span class="hljs-keyword">typename</span> T,<br>    <span class="hljs-type">bool</span> IsThreadSafe,<br>    <span class="hljs-type">int</span> BlockSize,<br>    <span class="hljs-keyword">typename</span> Allocator,<br>    <span class="hljs-type">bool</span> UseSIMD,<br>    ...<br>&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Container</span>;<br></code></pre></td></tr></table></figure>
+
+<h4 id="默认参数并不能解决根本问题"><a href="#默认参数并不能解决根本问题" class="headerlink" title="默认参数并不能解决根本问题"></a>默认参数并不能解决根本问题</h4><p>虽然可以：给参数设默认值，让部分参数依赖主参数</p>
+<p>但仍然存在：<strong>逻辑上独立，但形式上被绑在一起的参数</strong>，偶尔必须覆写默认值，接口变得脆弱</p>
+<hr>
+<h3 id="特征（Traits）的核心抽象"><a href="#特征（Traits）的核心抽象" class="headerlink" title="特征（Traits）的核心抽象"></a>特征（Traits）的核心抽象</h3><p><strong>Traits 是把“类型相关的策略与属性”，从模板参数列表中抽离出来的“类型级配置对象”。</strong></p>
+<p>它的作用不是“算东西”，而是：</p>
+<ul>
+<li>描述能力</li>
+<li>描述策略</li>
+<li>描述约束</li>
+</ul>
+<h4 id="设计上的关键转移"><a href="#设计上的关键转移" class="headerlink" title="设计上的关键转移"></a>设计上的关键转移</h4><p>从：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-type">bool</span> IsPOD, <span class="hljs-type">bool</span> IsSigned&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Algo</span>;<br></code></pre></td></tr></table></figure>
+
+<p>转为：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Algo</span> &#123;<br>    <span class="hljs-keyword">using</span> traits = Traits&lt;T&gt;;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p> <strong>参数数量从 N → 1</strong>， <strong>扩展点从“模板参数” → “特征特化”</strong></p>
+<hr>
+<h3 id="Traits-的典型结构模式"><a href="#Traits-的典型结构模式" class="headerlink" title="Traits 的典型结构模式"></a>Traits 的典型结构模式</h3><h4 id="最经典的形式"><a href="#最经典的形式" class="headerlink" title="最经典的形式"></a>最经典的形式</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">TypeTraits</span> &#123;<br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_trivial = <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">using</span> value_type = T;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>针对特定类型做特化：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">TypeTraits</span>&lt;<span class="hljs-type">int</span>&gt; &#123;<br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> is_trivial = <span class="hljs-literal">true</span>;<br>    <span class="hljs-keyword">using</span> value_type = <span class="hljs-type">int</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="Traits-充当“编译期配置表”"><a href="#Traits-充当“编译期配置表”" class="headerlink" title="Traits 充当“编译期配置表”"></a>Traits 充当“编译期配置表”</h4><p>可以把 Traits 理解成：<strong>以类型为 key 的编译期 map</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Traits&lt;T&gt;::is_lock_free<br>Traits&lt;T&gt;::allocator_type<br>Traits&lt;T&gt;::preferred_algorithm<br></code></pre></td></tr></table></figure>
+
+<p><strong>Traits 为什么适合工业级模板设计？</strong></p>
+<p>解耦模板接口与实现策略</p>
+<ul>
+<li>外部代码只关心 <strong>主参数</strong></li>
+<li>内部通过 Traits 决策细节</li>
+</ul>
+<p> <strong>实现可以演化，接口不变</strong></p>
+<p>支持“后期扩展”，而无需改模板本身，<strong>符合开闭原则</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Traits</span>&lt;MySpecialType&gt; &#123;<br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">bool</span> use_fast_path = <span class="hljs-literal">true</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>与 SFINAE &#x2F; concepts 自然融合</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">requires</span> Traits&lt;T&gt;::<span class="hljs-function">is_serializable</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">serialize</span><span class="hljs-params">(<span class="hljs-type">const</span> T&amp;)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>Traits 成为：<strong>编译期能力描述语言</strong></p>
+<h2 id="类型属性上的重载"><a href="#类型属性上的重载" class="headerlink" title="类型属性上的重载"></a>类型属性上的重载</h2><h2 id="模板的多态性"><a href="#模板的多态性" class="headerlink" title="模板的多态性"></a>模板的多态性</h2><blockquote>
+<p>多态性也是面向对象泛型编程的基础， C++ 中通过类继承和虚函数来支持多态。因为这些机制(至少部分) 在运行时处理，所以这里讨论动态多态性。通常所说的多态性，指的就是动态多态性。然而，模板还允许将不同的特定行为与单个泛型表示关联起来，但这种关联通常在编译时进行处理，称之为静态多态性。</p>
+</blockquote>
+<h3 id="动态多态性与静态多态性"><a href="#动态多态性与静态多态性" class="headerlink" title="动态多态性与静态多态性"></a>动态多态性与静态多态性</h3><p>先对这两种形式的多态性进行分类和比较。</p>
+<ul>
+<li>通过继承实现的多态是有界和动态的: 有界意味着参与多态行为的类型的接口，是由公共基类的设计预先确定的 ，<strong>动态意味着接口的绑定在运行时 (动态) 完成。</strong></li>
+<li>通过模板实现的多态性是无界和静态的: 无界意味着参与多态行为的类型接口不是预先确定的，<strong>静态意味着接口的绑定在编译时完成 (静态)。</strong></li>
+</ul>
+<p>严格地说，在 C++ 语言中，动态多态性和静态多态性是有界动态多态性和无界静态多态性的快捷方式。其他语言中，也存在其他组合 。在 C++ 的上下文中，动态多态和静态多态这两个术语不会引起混淆。</p>
+<h4 id="优势与不足"><a href="#优势与不足" class="headerlink" title="优势与不足"></a>优势与不足</h4><p>C++中的动态多态性展示了以下优点: </p>
+<ul>
+<li>以优雅地处理异构集合。</li>
+<li>可执行代码的体积更小 (只需要一个多态函数，而必须生成不同的模板实例来处理不同的类型)。</li>
+<li>代码可以完全编译; 因此不需要发布实现源 (发布模板库通常需要发布模板实现的源代码)。</li>
+</ul>
+<p>C++ 中的静态多态有这些优点: </p>
+<ul>
+<li>内置类型的集合很容易实现，接口通用性不需要通过公共基类来表示。</li>
+<li>生成的代码可能更快 (因为不需要指针，而且可以更频繁地内联非虚函数)。</li>
+<li>若应用程序只执行了部分接口，仍然可以使用只提供部分接口的具体类型。</li>
+</ul>
+<p><strong>静态多态性通常认为比动态多态性更类型安全，因为所有绑定都在编译时检查</strong>。例如，模板实例化的容器中插入错误类型的对象没有危险。然而，需要指向公共基类的指针的容器中，这些指针有可能无意中指向不同类型的对象。</p>
+<p>实践中，不同的语义假设隐藏在相同的接口后面时，模板实例化也会造成一些麻烦。当假定关联加法操作符的模板实例化了一个与该操作符无关的类型时，可能会发生意外。这种语义不匹配在基于继承的层次结构中很少发生，可能是因为更明确地指定了接口规范。</p>
+<p>两种形式结合当然，可以结合这两种形式的多态性。例如，可以从公共基类派生不同种类的几何对象，以便能够处理几何对象的异构集合。但仍然可以使用模板，为特定类型的几何对象编写代码。这样过程注意涉及**如何将成员函数的虚态参数化，以及如何使用基于继承的奇异递归模板模式 (CRTP)**，为静态多态性提供灵活性。</p>
+<h4 id="动态多态性"><a href="#动态多态性" class="headerlink" title="动态多态性"></a>动态多态性</h4><p>因为历史原因， C++ 一开始只通过结合使用继承和虚函数来支持多态  。<strong>也就是说，多态基类子对象的编码包括一些 (大部分是隐藏的) 支持运行时分配。</strong>  </p>
+<p><img src="https://s2.loli.net/2025/11/13/cW6lPbY9my4HKqE.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="静态多态性"><a href="#静态多态性" class="headerlink" title="静态多态性"></a>静态多态性</h4><p>模板还可以用来实现多态性，但不依赖基类中常见行为。相反，其共通性隐含在不同“图形”必须支持使用公共语法的操作 (即，相关函数必须具有相同的名称)。具体类是彼此独立定义的 (参见图 18.2)。当模板用具体的类实例化时，多态功能就启用了。  </p>
+<p><img src="https://s2.loli.net/2025/11/13/24FBRsdG6apIx3V.png" srcset="/img/loading.gif" lazyload></p>
+<h5 id="使用concept"><a href="#使用concept" class="headerlink" title="使用concept"></a>使用concept</h5><h3 id="设计模式的新形式"><a href="#设计模式的新形式" class="headerlink" title="设计模式的新形式"></a>设计模式的新形式</h3><h3 id="泛型编程"><a href="#泛型编程" class="headerlink" title="泛型编程"></a>泛型编程</h3><h2 id="模板和继承"><a href="#模板和继承" class="headerlink" title="模板和继承"></a>模板和继承</h2><h3 id="空基类优化-EBCO"><a href="#空基类优化-EBCO" class="headerlink" title="空基类优化 (EBCO)"></a>空基类优化 (EBCO)</h3><p>当一个基类没有任何非静态成员变量、虚函数（会引入虚表指针）和虚基类时，它就是”空”的。在这种情况下，编译器可以将基类的存储与派生类或其他成员合并，从而优化内存布局。EBCO的核心优势：</p>
+<ul>
+<li><strong>节省内存</strong>：消除空基类的存储开销</li>
+<li><strong>提高缓存效率</strong>：更紧凑的对象布局</li>
+<li><strong>模板元编程</strong>：携带类型信息而不增加运行时开销</li>
+<li><strong>标准库优化</strong>：使<code>tuple</code>、<code>function</code>等能高效处理空类型</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 空基类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Empty</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span> </span>&#123;&#125;  <span class="hljs-comment">// 只有成员函数，没有数据成员</span><br>&#125;;<br><br><span class="hljs-comment">// 未使用EBCO的情况</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">NoOptimization</span> &#123;<br>    Empty e;        <span class="hljs-comment">// 作为成员变量</span><br>    <span class="hljs-type">int</span> data;<br>    <span class="hljs-comment">// 通常大小为：Empty(1字节填充) + int(4字节) = 8字节</span><br>&#125;;<br><br><span class="hljs-comment">// 使用EBCO的情况</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">WithOptimization</span> : <span class="hljs-keyword">public</span> Empty &#123;  <span class="hljs-comment">// 作为基类</span><br>    <span class="hljs-type">int</span> data;<br>    <span class="hljs-comment">// 大小为：int(4字节) = 4字节（Empty被优化掉）</span><br>&#125;;<br><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;sizeof(Empty): &quot;</span> &lt;&lt; <span class="hljs-built_in">sizeof</span>(Empty) &lt;&lt; std::endl;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;sizeof(NoOptimization): &quot;</span> &lt;&lt; <span class="hljs-built_in">sizeof</span>(NoOptimization) &lt;&lt; std::endl;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;sizeof(WithOptimization): &quot;</span> &lt;&lt; <span class="hljs-built_in">sizeof</span>(WithOptimization) &lt;&lt; std::endl;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-built_in">sizeof</span>(Empty): <span class="hljs-number">1</span>          <span class="hljs-comment">// 空类最小为1字节（为了区分不同对象）</span><br><span class="hljs-built_in">sizeof</span>(NoOptimization): <span class="hljs-number">8</span> <span class="hljs-comment">// 包含填充</span><br><span class="hljs-built_in">sizeof</span>(WithOptimization): <span class="hljs-number">4</span> <span class="hljs-comment">// EBCO优化生效</span><br></code></pre></td></tr></table></figure>
+
+<p>EBCO在模板元编程中特别有用，可以用来存储类型信息而不占用额外空间：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 标签类，用于携带类型信息</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">TypeTag</span> &#123;&#125;;<br><br><span class="hljs-comment">// 使用EBCO继承标签，不增加存储开销</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyContainer</span> : <span class="hljs-keyword">private</span> TypeTag&lt;T&gt; &#123;<br>    <span class="hljs-comment">// TypeTag&lt;T&gt;不会占用额外空间</span><br>    <span class="hljs-comment">// ... 容器实现</span><br>&#125;;<br><br><span class="hljs-comment">// 更复杂的例子：存储多个标签</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span>... Tags&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TaggedObject</span> : <span class="hljs-keyword">private</span> Tags... &#123;  <span class="hljs-comment">// 多重继承空基类</span><br>    <span class="hljs-type">int</span> value;<br>    <span class="hljs-comment">// 所有Tags都被优化掉，只占用int的大小</span><br>&#125;;<br><br><span class="hljs-comment">// 使用</span><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Tag1</span> &#123;&#125;;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Tag2</span> &#123;&#125;;<br>TaggedObject&lt;Tag1, Tag2&gt; obj;  <span class="hljs-comment">// sizeof(obj) == sizeof(int)</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="奇异递归模板模式-CRTP"><a href="#奇异递归模板模式-CRTP" class="headerlink" title="奇异递归模板模式 (CRTP)"></a>奇异递归模板模式 (CRTP)</h3><p>一种C++模板编程技巧，通过让一个类继承自以自身为模板参数的模板基类，实现静态多态和编译时多态。</p>
+<p>通过模板参数将派生类向下传递给基类，基类可以自定义派生类的行为，而不需要使用虚函数。</p>
+<p>这使得 CRTP 可以分解出只能是成员函数 (例如，构造函数、析构函数和下标操作符) 或依赖于派生类标识的实现。</p>
+<p>CRTP 的简单应用包括跟踪创建了多少特定类类型的对象，这很容易通过在每个构造函数中递增一个整型静态数据成员，并在析构函数中递减来实现。但必须在每个类中提供这样的代码就很烦，并且通过单个 (非 CRTP) 基类实现此功能会混淆不同派生类的对象计数。  </p>
+<p>CRTP是一种强大的C++元编程技术，主要优势在于：</p>
+<ul>
+<li>提供编译时多态，避免虚函数开销</li>
+<li>实现代码复用和功能混合</li>
+<li>创建可扩展的框架和库</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 模板基类</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> Derived&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Base</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">interface</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-comment">// 静态向下转换，调用派生类实现</span><br>        <span class="hljs-built_in">static_cast</span>&lt;Derived*&gt;(<span class="hljs-keyword">this</span>)-&gt;<span class="hljs-built_in">implementation</span>();<br>    &#125;<br>    <br>    <span class="hljs-comment">// 可以调用派生类的其他方法</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-built_in">static_cast</span>&lt;Derived*&gt;(<span class="hljs-keyword">this</span>)-&gt;<span class="hljs-built_in">bar</span>();<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// 派生类：以自身作为模板参数传递给基类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Derived</span> : <span class="hljs-keyword">public</span> Base&lt;Derived&gt; &#123;  <span class="hljs-comment">// 关键：继承自Base&lt;Derived&gt;</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">implementation</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Derived implementation\n&quot;</span>;<br>    &#125;<br>    <br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">bar</span><span class="hljs-params">()</span> </span>&#123;<br>        std::cout &lt;&lt; <span class="hljs-string">&quot;Derived bar\n&quot;</span>;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="混合类"><a href="#混合类" class="headerlink" title="混合类"></a>混合类</h3><h3 id="命名模板参数"><a href="#命名模板参数" class="headerlink" title="命名模板参数"></a>命名模板参数</h3><h2 id="桥接静态和动态多态性"><a href="#桥接静态和动态多态性" class="headerlink" title="桥接静态和动态多态性"></a>桥接静态和动态多态性</h2><h2 id="元编程"><a href="#元编程" class="headerlink" title="元编程"></a>元编程</h2><p>元编程由“程序编程”构成，也就是我们编写编程系统执行的代码，以生成实现真正想要的功能的新代码。通常，术语元编程意味着一种自反属性: 元编程组件是程序的一部分，其可生成一段代码 (即，程序的另一段或不同的代码)。  </p>
+<blockquote>
+<p><strong>为什么使用元编程?</strong> 与大多数其他编程技术一样，目标是用更少的工作实现更多的功能，其中的工作可以通过代码大小、维护成本等来衡量。元编程的特点是在转换时产生一些用户定义的计算。潜在的动机通常是性能 (转换时计算的东西通常可以优化掉) 或接口简单 (元程序通常比它扩展的要短) 或两者兼有。  </p>
+</blockquote>
+<p><strong>C++ 元编程不是“有没有能力”，而是“在哪个维度付出代价”</strong></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>现状</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>计算</td>
+<td>已解决</td>
+<td>可读性 &#x2F; 编译期</td>
+</tr>
+<tr>
+<td>反射</td>
+<td>严重不足</td>
+<td>表达能力</td>
+</tr>
+<tr>
+<td>生成</td>
+<td>可行但昂贵</td>
+<td>编译器资源</td>
+</tr>
+</tbody></table>
+<p>现有的模板系统虽然强大，但在反射和生成方面有局限，constexpr提供了更自然的计算方式，未来C++需要更好的反射原语来支持高级元编程，三者的平衡决定了元编程解决方案的实用性和效率</p>
+<h3 id="值元编程"><a href="#值元编程" class="headerlink" title="值元编程"></a>值元编程</h3><p>简单来说：</p>
+<ol>
+<li><strong>早期C++98&#x2F;03</strong>：编译时计算非常麻烦，需要用<strong>模板递归实例化</strong>（如书中之前用模板计算平方根的复杂例子）。</li>
+<li><strong>C++11</strong>：引入<code>constexpr</code>函数，可以在编译时计算，但限制较多（比如不能用循环，必须用递归）。</li>
+<li><strong>C++14</strong>：放宽<code>constexpr</code>限制，允许循环、局部变量等，让编译时编程更接近“普通代码”。</li>
+</ol>
+<p>比如：给出的 <code>sqrt</code> 函数是一个<strong>编译时和运行时均可用的平方根计算函数</strong>，使用<strong>二分查找法</strong>。</p>
+<blockquote>
+<p>用 <code>constexpr</code> 修饰，意味着它可以在编译期运行。算法逻辑与运行时无异，但会被编译器在编译期求值。既可用于 <code>static_assert</code>、数组大小等编译期上下文，也可在运行时调用。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function"><span class="hljs-keyword">constexpr</span> T <span class="hljs-title">sqrt</span><span class="hljs-params">(T x)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (x &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> x;           <span class="hljs-comment">// 处理 0 和 1 的情况</span><br>    T lo = <span class="hljs-number">0</span>, hi = x;<br>    <span class="hljs-keyword">for</span> (;;) &#123;<br>        T mid = (hi + lo) / <span class="hljs-number">2</span>;      <span class="hljs-comment">// 取中点</span><br>        T midSquared = mid * mid;<br>        <br>        <span class="hljs-comment">// 如果区间足够小或正好命中</span><br>        <span class="hljs-keyword">if</span> (lo + <span class="hljs-number">1</span> &gt;= hi || midSquared == x) &#123;<br>            <span class="hljs-keyword">return</span> mid;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 继续在左半或右半区间查找</span><br>        <span class="hljs-keyword">if</span> (midSquared &lt; x) &#123;<br>            lo = mid;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            hi = mid;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>使用示例:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">static_assert</span>(<span class="hljs-built_in">sqrt</span>(<span class="hljs-number">25</span>) == <span class="hljs-number">5</span>, <span class="hljs-string">&quot;&quot;</span>);  <span class="hljs-comment">// 编译时计算，验证</span><br>std::array&lt;<span class="hljs-type">int</span>, sqrt(40)+1&gt; arr;   <span class="hljs-comment">// 数组大小为7，编译期确定</span><br><span class="hljs-type">long</span> <span class="hljs-type">long</span> l = <span class="hljs-number">53478</span>;<br>std::cout &lt;&lt; <span class="hljs-built_in">sqrt</span>(l);              <span class="hljs-comment">// 运行时计算</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="类型元编程"><a href="#类型元编程" class="headerlink" title="类型元编程"></a>类型元编程</h3><p>以<strong>类型作为输入</strong>，通过模板计算产生<strong>新类型</strong>。类似于值元编程，但操作对象是类型而非值。用于在编译时进行类型转换、类型特征提取等。</p>
+<p>下面这个模板的作用是<strong>移除类型中的所有数组维度</strong>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 主模板：一般情况下直接返回原类型</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">RemoveAllExtentsT</span> &#123;<br>    <span class="hljs-keyword">using</span> Type = T;<br>&#125;;<br><br><span class="hljs-comment">// 偏特化1：有界数组 T[SZ]</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, std::<span class="hljs-type">size_t</span> SZ&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">RemoveAllExtentsT</span>&lt;T[SZ]&gt; &#123;<br>    <span class="hljs-keyword">using</span> Type = <span class="hljs-keyword">typename</span> RemoveAllExtentsT&lt;T&gt;::Type;  <span class="hljs-comment">// 递归移除内层数组</span><br>&#125;;<br><br><span class="hljs-comment">// 偏特化2：无界数组 T[]</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">RemoveAllExtentsT</span>&lt;T[]&gt; &#123;<br>    <span class="hljs-keyword">using</span> Type = <span class="hljs-keyword">typename</span> RemoveAllExtentsT&lt;T&gt;::Type;  <span class="hljs-comment">// 递归移除内层数组</span><br>&#125;;<br><br><span class="hljs-comment">// 别名模板，简化使用</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">using</span> RemoveAllExtents = <span class="hljs-keyword">typename</span> RemoveAllExtentsT&lt;T&gt;::Type;<br></code></pre></td></tr></table></figure>
+
+<p>工作原理：<strong>递归模板实例化</strong>。这是类型元编程的核心技术，当输入是数组类型时，匹配偏特化版本，偏特化中递归调用自身，处理内层类型，最终到达非数组类型，匹配主模板结束递归</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c++">RemoveAllExtents&lt;<span class="hljs-type">int</span>[]&gt;          <span class="hljs-comment">// → int</span><br>RemoveAllExtents&lt;<span class="hljs-type">int</span>[<span class="hljs-number">5</span>][<span class="hljs-number">10</span>]&gt;     <span class="hljs-comment">// → int（移除两层）</span><br>RemoveAllExtents&lt;<span class="hljs-type">int</span>[][<span class="hljs-number">10</span>]&gt;      <span class="hljs-comment">// → int（移除两层）</span><br>RemoveAllExtents&lt;<span class="hljs-built_in">int</span>(*)[<span class="hljs-number">5</span>]&gt;      <span class="hljs-comment">// → int(*)[5]（指针不是数组，保持不变）</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="混合元编程"><a href="#混合元编程" class="headerlink" title="混合元编程"></a>混合元编程</h3><ul>
+<li><strong>混合</strong>：同时使用编译时计算（类型&#x2F;值）和运行时计算</li>
+<li><strong>目标</strong>：在编译时生成代码结构，在运行时执行具体操作</li>
+</ul>
+<h5 id="示例：点积计算的两种实现"><a href="#示例：点积计算的两种实现" class="headerlink" title="示例：点积计算的两种实现"></a>示例：点积计算的两种实现</h5><h6 id="传统实现（纯运行时）"><a href="#传统实现（纯运行时）" class="headerlink" title="传统实现（纯运行时）"></a>传统实现（纯运行时）</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, std::<span class="hljs-type">size_t</span> N&gt;</span><br><span class="hljs-function"><span class="hljs-keyword">auto</span> <span class="hljs-title">dotProduct</span><span class="hljs-params">(std::array&lt;T, N&gt; <span class="hljs-type">const</span>&amp; x, std::array&lt;T, N&gt; <span class="hljs-type">const</span>&amp; y)</span></span><br><span class="hljs-function"></span>&#123;<br>    T result&#123;&#125;;<br>    <span class="hljs-keyword">for</span> (std::<span class="hljs-type">size_t</span> k = <span class="hljs-number">0</span>; k &lt; N; ++k) &#123;<br>        result += x[k] * y[k];<br>    &#125;<br>    <span class="hljs-keyword">return</span> result;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>特点</strong>：</p>
+<ul>
+<li>运行时循环</li>
+<li>可能有分支开销</li>
+<li>编译器可能优化为展开循环</li>
+</ul>
+<h6 id="混合元编程实现（编译时展开）"><a href="#混合元编程实现（编译时展开）" class="headerlink" title="混合元编程实现（编译时展开）"></a>混合元编程实现（编译时展开）</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 主模板：递归计算</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, std::<span class="hljs-type">size_t</span> N&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DotProductT</span> &#123;<br>    <span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> T <span class="hljs-title">result</span><span class="hljs-params">(T* a, T* b)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> *a * *b + DotProductT&lt;T, N<span class="hljs-number">-1</span>&gt;::<span class="hljs-built_in">result</span>(a+<span class="hljs-number">1</span>, b+<span class="hljs-number">1</span>);<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// 偏特化：终止条件</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">DotProductT</span>&lt;T, <span class="hljs-number">0</span>&gt; &#123;<br>    <span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-keyword">inline</span> T <span class="hljs-title">result</span><span class="hljs-params">(T*, T*)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> T&#123;&#125;;<br>    &#125;<br>&#125;;<br><br><span class="hljs-comment">// 包装函数</span><br><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, std::<span class="hljs-type">size_t</span> N&gt;</span><br><span class="hljs-function"><span class="hljs-keyword">auto</span> <span class="hljs-title">dotProduct</span><span class="hljs-params">(std::array&lt;T, N&gt; <span class="hljs-type">const</span>&amp; x,</span></span><br><span class="hljs-params"><span class="hljs-function">                std::array&lt;T, N&gt; <span class="hljs-type">const</span>&amp; y)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> DotProductT&lt;T, N&gt;::<span class="hljs-built_in">result</span>(x.<span class="hljs-built_in">begin</span>(), y.<span class="hljs-built_in">begin</span>());<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>工作原理</strong>：</p>
+<ol>
+<li><strong>编译时递归</strong>：<code>DotProductT&lt;T, N&gt;</code> 实例化 <code>DotProductT&lt;T, N-1&gt;</code>，直到 <code>N=0</code></li>
+<li><strong>代码生成</strong>：每个实例生成一个 <code>result</code> 方法</li>
+<li><strong>运行时执行</strong>：调用链在运行时计算，但循环已展开</li>
+</ol>
+<p><strong>展开后的代码</strong>（对于 <code>N=4</code>）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 相当于编译时生成：</span><br><span class="hljs-keyword">return</span> x[<span class="hljs-number">0</span>]*y[<span class="hljs-number">0</span>] + x[<span class="hljs-number">1</span>]*y[<span class="hljs-number">1</span>] + x[<span class="hljs-number">2</span>]*y[<span class="hljs-number">2</span>] + x[<span class="hljs-number">3</span>]*y[<span class="hljs-number">3</span>];<br></code></pre></td></tr></table></figure>
+
+
+
+<h5 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h5><h6 id="编译时优化："><a href="#编译时优化：" class="headerlink" title="编译时优化："></a>编译时优化：</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 传统方式</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; ++i) &#123;<br>    <span class="hljs-comment">// 每次迭代都要检查条件</span><br>&#125;<br><br><span class="hljs-comment">// 混合方式（展开）</span><br><span class="hljs-comment">// 编译器生成100个连续的操作，无分支</span><br></code></pre></td></tr></table></figure>
+
+<h6 id="类型安全的代码生成："><a href="#类型安全的代码生成：" class="headerlink" title="类型安全的代码生成："></a>类型安全的代码生成：</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span>... Ts&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Processor</span> &#123;<br>    <span class="hljs-comment">// 为每个类型生成特定代码</span><br>    <span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">process</span><span class="hljs-params">(std::tuple&lt;Ts...&gt;&amp; t)</span> </span>&#123;<br>        <span class="hljs-comment">// 编译时生成处理每个元素的方法</span><br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h5 id="单元类型的混合元编程"><a href="#单元类型的混合元编程" class="headerlink" title="单元类型的混合元编程"></a>单元类型的混合元编程</h5><p><strong>单位系统设计目标</strong></p>
+<ul>
+<li><strong>类型安全</strong>：防止单位不匹配的错误（如秒+米）</li>
+<li><strong>编译时计算</strong>：单位转换在编译期完成</li>
+<li><strong>运行时效率</strong>：生成优化的数值计算代码</li>
+</ul>
+<p>基础构建块：<code>Ratio</code> 类型</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-type">unsigned</span> N, <span class="hljs-type">unsigned</span> D = <span class="hljs-number">1</span>&gt;<br><span class="hljs-keyword">struct</span> Ratio &#123;<br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">unsigned</span> num = N;  <span class="hljs-comment">// 分子</span><br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">unsigned</span> den = D;  <span class="hljs-comment">// 分母</span><br>    <span class="hljs-keyword">using</span> Type = Ratio&lt;num, den&gt;;       <span class="hljs-comment">// 类型别名</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>示例</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">using</span> Millisecond = Ratio&lt;<span class="hljs-number">1</span>, <span class="hljs-number">1000</span>&gt;;  <span class="hljs-comment">// 1/1000秒</span><br><span class="hljs-keyword">using</span> Minute = Ratio&lt;<span class="hljs-number">60</span>, <span class="hljs-number">1</span>&gt;;         <span class="hljs-comment">// 60秒</span><br></code></pre></td></tr></table></figure>
+
+<p>编译时单位计算：<code>RatioAdd</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 实现两个比率的加法</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> R1, <span class="hljs-keyword">typename</span> R2&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">RatioAddImpl</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">// 计算通分后的分母</span><br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">unsigned</span> den = R1::den * R2::den;<br>    <span class="hljs-comment">// 计算通分后的分子和</span><br>    <span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">unsigned</span> num = R1::num * R2::den + R2::num * R1::den;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">typedef</span> Ratio&lt;num, den&gt; Type;  <span class="hljs-comment">// 结果类型</span><br>&#125;;<br><br><span class="hljs-comment">// 简化使用的别名模板</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> R1, <span class="hljs-keyword">typename</span> R2&gt;<br><span class="hljs-keyword">using</span> RatioAdd = <span class="hljs-keyword">typename</span> RatioAddImpl&lt;R1, R2&gt;::Type;<br></code></pre></td></tr></table></figure>
+
+<p><strong>示例计算</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">using</span> R1 = Ratio&lt;<span class="hljs-number">1</span>, <span class="hljs-number">1000</span>&gt;;           <span class="hljs-comment">// 1/1000</span><br><span class="hljs-keyword">using</span> R2 = Ratio&lt;<span class="hljs-number">2</span>, <span class="hljs-number">3</span>&gt;;              <span class="hljs-comment">// 2/3</span><br><span class="hljs-keyword">using</span> RS = RatioAdd&lt;R1, R2&gt;;         <span class="hljs-comment">// (1*3 + 2*1000)/(1000*3) = 2003/3000</span><br><br>std::cout &lt;&lt; RS::num &lt;&lt; <span class="hljs-string">&#x27;/&#x27;</span> &lt;&lt; RS::den &lt;&lt; <span class="hljs-string">&#x27;\n&#x27;</span>;  <span class="hljs-comment">// 输出 2003/3000</span><br></code></pre></td></tr></table></figure>
+
+<p>持续时间类型：<code>Duration</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T, <span class="hljs-keyword">typename</span> U = Ratio&lt;<span class="hljs-number">1</span>&gt;&gt;<br><span class="hljs-keyword">class</span> Duration &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">using</span> ValueType = T;              <span class="hljs-comment">// 数值类型（int, double等）</span><br>    <span class="hljs-keyword">using</span> UnitType = <span class="hljs-keyword">typename</span> U::Type;<span class="hljs-comment">// 单位类型（Ratio）</span><br>    <br><span class="hljs-keyword">private</span>:<br>    ValueType val;                    <span class="hljs-comment">// 实际值</span><br>    <br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">constexpr</span> <span class="hljs-title">Duration</span><span class="hljs-params">(ValueType v = <span class="hljs-number">0</span>)</span> : val(v) &#123;</span>&#125;<br>    <span class="hljs-function"><span class="hljs-keyword">constexpr</span> ValueType <span class="hljs-title">value</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123; <span class="hljs-keyword">return</span> val; &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>示例</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Duration&lt;<span class="hljs-type">int</span>, Ratio&lt;<span class="hljs-number">1</span>,<span class="hljs-number">1000</span>&gt;&gt; <span class="hljs-built_in">ms</span>(<span class="hljs-number">42</span>);    <span class="hljs-comment">// 42毫秒</span><br>Duration&lt;<span class="hljs-type">double</span>, Ratio&lt;<span class="hljs-number">60</span>,<span class="hljs-number">1</span>&gt;&gt; <span class="hljs-built_in">min</span>(<span class="hljs-number">1.5</span>); <span class="hljs-comment">// 1.5分钟</span><br></code></pre></td></tr></table></figure>
+
+<p>混合计算的核心：单位加法操作符</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T1, <span class="hljs-keyword">typename</span> U1, <span class="hljs-keyword">typename</span> T2, <span class="hljs-keyword">typename</span> U2&gt;<br><span class="hljs-keyword">auto</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-keyword">operator</span>+(Duration&lt;T1, U1&gt; <span class="hljs-type">const</span>&amp; lhs,<br>                         Duration&lt;T2, U2&gt; <span class="hljs-type">const</span>&amp; rhs)<br>&#123;<br>    <span class="hljs-comment">// 1. 编译时：计算结果单位类型</span><br>    <span class="hljs-keyword">using</span> VT = Ratio&lt;<span class="hljs-number">1</span>, RatioAdd&lt;U1, U2&gt;::den&gt;;<br>    <br>    <span class="hljs-comment">// 2. 运行时：计算转换后的数值</span><br>    <span class="hljs-keyword">auto</span> val = lhs.<span class="hljs-built_in">value</span>() * VT::den / U1::den * U1::num +<br>               rhs.<span class="hljs-built_in">value</span>() * VT::den / U2::den * U2::num;<br>    <br>    <span class="hljs-comment">// 3. 返回新Duration对象</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Duration</span>&lt;<span class="hljs-keyword">decltype</span>(val), VT&gt;(val);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h6 id="混合计算分解"><a href="#混合计算分解" class="headerlink" title="混合计算分解"></a>混合计算分解</h6><p>对于 <code>a + b</code>（其中a&#x3D;42毫秒，b&#x3D;77个2&#x2F;3秒）：</p>
+<p>编译时计算：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// U1 = Ratio&lt;1,1000&gt; (毫秒)</span><br><span class="hljs-comment">// U2 = Ratio&lt;2,3&gt;    (2/3秒)</span><br><br><span class="hljs-comment">// 1. 计算通分分母</span><br>RatioAdd&lt;U1, U2&gt;::den = <span class="hljs-number">1000</span> * <span class="hljs-number">3</span> = <span class="hljs-number">3000</span><br><br><span class="hljs-comment">// 2. 结果单位</span><br>VT = Ratio&lt;<span class="hljs-number">1</span>,<span class="hljs-number">3000</span>&gt;  <span class="hljs-comment">// 1/3000秒</span><br></code></pre></td></tr></table></figure>
+
+<p>运行时生成代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 值转换计算</span><br><span class="hljs-type">int</span> val = a.<span class="hljs-built_in">value</span>() * <span class="hljs-number">3000</span> / <span class="hljs-number">1000</span> * <span class="hljs-number">1</span> + <br>          b.<span class="hljs-built_in">value</span>() * <span class="hljs-number">3000</span> / <span class="hljs-number">3</span> * <span class="hljs-number">2</span>;<br><br><span class="hljs-comment">// 简化：</span><br><span class="hljs-type">int</span> val = a.<span class="hljs-built_in">value</span>() * <span class="hljs-number">3</span> + b.<span class="hljs-built_in">value</span>() * <span class="hljs-number">2000</span>;<br></code></pre></td></tr></table></figure>
+
+<h6 id="支持异构值类型"><a href="#支持异构值类型" class="headerlink" title="支持异构值类型"></a>支持异构值类型</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> d = Duration&lt;<span class="hljs-type">double</span>, Ratio&lt;<span class="hljs-number">1</span>,<span class="hljs-number">3</span>&gt;&gt;(<span class="hljs-number">7.5</span>);  <span class="hljs-comment">// 7.5个1/3秒</span><br><span class="hljs-keyword">auto</span> e = Duration&lt;<span class="hljs-type">int</span>, Ratio&lt;<span class="hljs-number">1</span>&gt;&gt;(<span class="hljs-number">4</span>);         <span class="hljs-comment">// 4秒</span><br><br><span class="hljs-keyword">auto</span> f = d + e;  <span class="hljs-comment">// 结果类型：Duration&lt;double, Ratio&lt;1,3&gt;&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>生成的代码</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">double</span> val = d.<span class="hljs-built_in">value</span>() * <span class="hljs-number">1</span> + e.<span class="hljs-built_in">value</span>() * <span class="hljs-number">3</span>;<br><span class="hljs-comment">// 7.5 + 12 = 19.5</span><br></code></pre></td></tr></table></figure>
+
+<h6 id="编译时数值计算（constexpr）"><a href="#编译时数值计算（constexpr）" class="headerlink" title="编译时数值计算（constexpr）"></a>编译时数值计算（constexpr）</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">constexpr</span> <span class="hljs-keyword">auto</span> duration1 = Duration&lt;<span class="hljs-type">int</span>, Ratio&lt;<span class="hljs-number">1</span>,<span class="hljs-number">1000</span>&gt;&gt;(<span class="hljs-number">100</span>);  <span class="hljs-comment">// 100毫秒</span><br><span class="hljs-keyword">constexpr</span> <span class="hljs-keyword">auto</span> duration2 = Duration&lt;<span class="hljs-type">int</span>, Ratio&lt;<span class="hljs-number">1</span>&gt;&gt;(<span class="hljs-number">2</span>);         <span class="hljs-comment">// 2秒</span><br><span class="hljs-keyword">constexpr</span> <span class="hljs-keyword">auto</span> total = duration1 + duration2;                 <span class="hljs-comment">// 编译时计算</span><br><br><span class="hljs-built_in">static_assert</span>(total.<span class="hljs-built_in">value</span>() == <span class="hljs-number">2100</span>, <span class="hljs-string">&quot;&quot;</span>);  <span class="hljs-comment">// 验证：2100毫秒</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="表达式模板"><a href="#表达式模板" class="headerlink" title="表达式模板"></a>表达式模板</h2><h3 id="表达式模板解决的“根问题”"><a href="#表达式模板解决的“根问题”" class="headerlink" title="表达式模板解决的“根问题”"></a>表达式模板解决的“根问题”</h3><p>先看这句代码：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">x</span> = <span class="hljs-number">1.2</span> * x + x * y<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>语义上</strong>期望的是：对每个下标 <code>i</code>，一次性计算<code>x[i] = 1.2 * x[i] + x[i] * y[i]</code></p>
+<p>但<strong>朴素实现</strong>会变成：</p>
+<ol>
+<li>计算 <code>1.2 * x</code> → 生成一个临时数组 A</li>
+<li>计算 <code>x * y</code> → 生成一个临时数组 B</li>
+<li>计算 <code>A + B</code> → 再生成一个临时数组 C</li>
+<li>把 C 拷贝给 x</li>
+</ol>
+<p><strong>大量临时对象 + 多次遍历 + 内存带宽浪费</strong>，而<strong>表达式模板的本质目标只有一句话：保留“像标量一样写代码的语法，但生成“像手写循环一样高效”的代码</strong></p>
+<h3 id="核心思想（抽象级别）"><a href="#核心思想（抽象级别）" class="headerlink" title="核心思想（抽象级别）"></a>核心思想（抽象级别）</h3><p>不“算表达式”，而是“描述表达式”，表达式模板不是在 <code>operator+</code> 里立刻计算，而是：</p>
+<p>用 <strong>类型系统</strong> 把表达式“记录”下来，构造一棵 <strong>编译期的表达式树</strong></p>
+<p>例如：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-number">1.2</span> * <span class="hljs-keyword">x</span> + <span class="hljs-keyword">x</span> * y<br></code></pre></td></tr></table></figure>
+
+<p>在编译期会被表示成类似：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs swift"><span class="hljs-type">Add</span>&lt;<br>    <span class="hljs-type">Mul</span>&lt;<span class="hljs-type">Scalar</span>&lt;1.2&gt;, <span class="hljs-type">ArrayRef</span>&lt;x&gt;&gt;,<br>    <span class="hljs-type">Mul</span>&lt;<span class="hljs-type">ArrayRef</span>&lt;x&gt;, <span class="hljs-type">ArrayRef</span>&lt;y&gt;&gt;<br>&gt;<br></code></pre></td></tr></table></figure>
+
+<p>其中 <strong>没有任何数组被创建</strong>， <strong>没有任何循环被执行</strong></p>
+<p>而 真正的计算发生在“赋值点”，关键在这一句：</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf"><span class="hljs-attribute">x</span> <span class="hljs-operator">=</span> 表达式<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p>此时：编译器知道：</p>
+<ul>
+<li>左边是一个数组</li>
+<li>右边是一个表达式树</li>
+</ul>
+<p>于是生成一个 <strong>单一循环</strong>：</p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs inform7">for (i = 0; i &lt; N; ++i)<br>    x<span class="hljs-comment">[i]</span> = 1.2 * x<span class="hljs-comment">[i]</span> + x<span class="hljs-comment">[i]</span> * y<span class="hljs-comment">[i]</span>;<br></code></pre></td></tr></table></figure>
+
+<p>其中<strong>零临时对象</strong>、，可以<strong>一次遍历</strong>，并且<strong>与手写循环等价</strong></p>
+<table>
+<thead>
+<tr>
+<th>表达式模板</th>
+<th>模板元编程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>深度嵌套类型</td>
+<td>递归模板实例化</td>
+</tr>
+<tr>
+<td>类型携带信息</td>
+<td>类型即程序</td>
+</tr>
+<tr>
+<td>编译期构造结构</td>
+<td>编译期计算</td>
+</tr>
+</tbody></table>
+<p>但二者<strong>目的不同</strong>：</p>
+<ul>
+<li>模板元编程 → <strong>算一个值 &#x2F; 一个类型</strong></li>
+<li>表达式模板 → <strong>生成一段高效的运行时代码</strong></li>
+</ul>
+<p>可以理解为：<em>表达式模板 &#x3D; 以类型系统为 IR 的代码生成技术</em>*</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" class="category-chain-item">编程语言</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C/" class="category-chain-item">C++</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>模板编程</div>
+      <div>https://hermes37.vercel.app/2025/10/22/工科知识库/计算机科学与技术/软件工程/编程语言/C++/模板编程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/22/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C++/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" title="并发编程">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">并发编程</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/22/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/C++/%E9%AB%98%E6%95%88%E7%BC%96%E7%A8%8B%E6%8A%80%E5%B7%A7/C++%E9%AB%98%E6%80%A7%E8%83%BD%E7%BC%96%E7%A8%8B/" title="C++高性能编程">
+                        <span class="hidden-mobile">C++高性能编程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,1199 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="虚拟文件系统Linux使用与其他Unix变体相同的方式设法支持多种文件系统类型。 虚拟文件系统所隐含的思想是把表示很多不同种类文件系统的共同信息放入内核；其中一个字段或函数来支持Linux所支持的所有实际文件系统所提供的任何操作。对所调用的每个读、写或其他函数，内核都能把它们替换成支持本地Linux文件系统、NTFS文件系统，或者文件所在的任何其他文件系统的实际函数。  VFS的数据结构 超级块">
+<meta property="og:type" content="article">
+<meta property="og:title" content="磁盘管理">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/07/01/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="虚拟文件系统Linux使用与其他Unix变体相同的方式设法支持多种文件系统类型。 虚拟文件系统所隐含的思想是把表示很多不同种类文件系统的共同信息放入内核；其中一个字段或函数来支持Linux所支持的所有实际文件系统所提供的任何操作。对所调用的每个读、写或其他函数，内核都能把它们替换成支持本地Linux文件系统、NTFS文件系统，或者文件所在的任何其他文件系统的实际函数。  VFS的数据结构 超级块">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/11/07/bXaf2vNCypKJYlS.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/ObHKI78xGzkR6Fe.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/3epOUNLMYFCrivB.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/xeIf6Kz5Z2wodOr.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/JXiRSYGU9zDcs82.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/yF5SNitDPGRx2Q1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/1BvY4OsoVPUlfRJ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/6VObaFx4hYDcUIm.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/D5OTAJRydlrtpbW.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/3WwYh8xHKlSqcXf.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/sZTPg2lDpUnNJRK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/b7DG2dKnkSeYUJ3.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/tEb1OIzmSilhULM.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/QKyjdapJCmYEUnx.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/lmDNg2IvZF5r6ha.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/wL2SpEYog8kyq6X.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/QocLJuURBdxEnF6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/gleFBj4muAQIbfx.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/Jt32qkr5cIi7MGZ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/Cuf8mzoA3ZED2wU.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/lOgZRK3uTEpPfiv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/T4OhjJzXuaIyUA3.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/ARwoB4S5CF1ecJD.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/DCURN8aVcGyQA2E.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/GVAB3U6ZIhJqSKv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/ILXUKtd6QErZq7D.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/02/UTs4RDVMJcv9CnF.png">
+<meta property="article:published_time" content="2025-07-01T03:05:16.812Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:23.925Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/11/07/bXaf2vNCypKJYlS.png">
+  
+  
+  
+  <title>磁盘管理 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="磁盘管理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          54 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">磁盘管理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/11/07/bXaf2vNCypKJYlS.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="虚拟文件系统"><a href="#虚拟文件系统" class="headerlink" title="虚拟文件系统"></a>虚拟文件系统</h1><p>Linux使用与其他Unix变体相同的方式设法支持多种文件系统类型。</p>
+<p>虚拟文件系统所隐含的思想是把表示很多不同种类文件系统的共同信息放入内核；其中一个字段或函数来支持Linux所支持的所有实际文件系统所提供的任何操作。对所调用的每个读、写或其他函数，内核都能把它们替换成支持本地Linux文件系统、NTFS文件系统，或者文件所在的任何其他文件系统的实际函数。</p>
+<p><img src="https://s2.loli.net/2025/07/02/ObHKI78xGzkR6Fe.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="VFS的数据结构"><a href="#VFS的数据结构" class="headerlink" title="VFS的数据结构"></a>VFS的数据结构</h2><p><img src="https://s2.loli.net/2025/07/02/3epOUNLMYFCrivB.png" srcset="/img/loading.gif" lazyload alt="进程与VFS对象之间的交互"></p>
+<h3 id="超级块对象"><a href="#超级块对象" class="headerlink" title="超级块对象"></a>超级块对象</h3><p><img src="https://s2.loli.net/2025/07/02/xeIf6Kz5Z2wodOr.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/JXiRSYGU9zDcs82.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="索引节点对象"><a href="#索引节点对象" class="headerlink" title="索引节点对象"></a>索引节点对象</h3><p><img src="https://s2.loli.net/2025/07/02/yF5SNitDPGRx2Q1.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/1BvY4OsoVPUlfRJ.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/6VObaFx4hYDcUIm.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="文件对象"><a href="#文件对象" class="headerlink" title="文件对象"></a>文件对象</h3><p><img src="https://s2.loli.net/2025/07/02/D5OTAJRydlrtpbW.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="目录项对象"><a href="#目录项对象" class="headerlink" title="目录项对象"></a>目录项对象</h3><p><img src="https://s2.loli.net/2025/07/02/3WwYh8xHKlSqcXf.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/sZTPg2lDpUnNJRK.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="与进程相关结构"><a href="#与进程相关结构" class="headerlink" title="与进程相关结构"></a>与进程相关结构</h3><h2 id="文件系统类型"><a href="#文件系统类型" class="headerlink" title="文件系统类型"></a>文件系统类型</h2><h3 id="特殊文件系统"><a href="#特殊文件系统" class="headerlink" title="特殊文件系统"></a>特殊文件系统</h3><p>当网络和磁盘文件系统能够使用户处理存放在内核之外的信息时，特殊文件系统可以为系统程序员和管理员提供一种容易的方式来操作内核的数据结构并实现操作系统的特殊特征。列出了Linux中所用的最常用的特殊文件系统对于其中的每个文件系统，表中给出了它的安装点和简短描述。</p>
+<p><img src="https://s2.loli.net/2025/07/02/b7DG2dKnkSeYUJ3.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="文件系统类型注册"><a href="#文件系统类型注册" class="headerlink" title="文件系统类型注册"></a>文件系统类型注册</h3><p>通常，用户在为自己的系统编译内核时可以把Linux配置为能够识别所有需要的文件系统。但是，文件系统的源代码实际上要么包含在内核映像中，要么作为一个模块被动装入。VFS必须对代码目前已在内核中的所有文件系统的类型进行跟踪。这就是通过进行文件系统类型注册来实现的。</p>
+<p>每个注册的文件系统都用一个类型为file_systemtype的对象来表示：</p>
+<p><img src="https://s2.loli.net/2025/07/02/tEb1OIzmSilhULM.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="文件系统处理"><a href="#文件系统处理" class="headerlink" title="文件系统处理"></a>文件系统处理</h2><h3 id="路径名查找"><a href="#路径名查找" class="headerlink" title="路径名查找"></a>路径名查找</h3><p>在 Linux 内核中，<strong>路径名查找（Pathname Lookup）</strong> 是将用户提供的文件路径（如 <code>/home/user/file.txt</code>）转换为对应的 <strong>索引节点（inode）</strong> 的过程。</p>
+<blockquote>
+<p><strong>关键函数</strong>：</p>
+<ul>
+<li>**<code>path_lookup()</code>**：入口函数，初始化查找上下文。</li>
+<li>**<code>link_path_walk()</code>**：核心逻辑，逐级解析路径分量。</li>
+<li>**<code>walk_component()</code>**：处理单个路径分量（如 <code>home</code>、<code>user</code>、<code>file.txt</code>）。</li>
+</ul>
+</blockquote>
+<p><strong>(1) <code>path_lookup()</code> 初始化</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">path_lookup</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> flags, <span class="hljs-keyword">struct</span> nameidata *nd)</span> &#123;<br>    nd-&gt;last_type = LAST_ROOT;      <span class="hljs-comment">// 初始化为根目录类型</span><br>    nd-&gt;flags = flags;<br>    nd-&gt;depth = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">// 获取起始目录（根目录或当前目录）</span><br>    <span class="hljs-keyword">if</span> (*name == <span class="hljs-string">&#x27;/&#x27;</span>) &#123;<br>        read_lock(¤t-&gt;fs-&gt;lock);<br>        nd-&gt;dentry = current-&gt;fs-&gt;root;<br>        nd-&gt;mnt = current-&gt;fs-&gt;rootmnt;<br>        path_get(&amp;nd-&gt;path);<br>        read_unlock(¤t-&gt;fs-&gt;lock);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 类似处理当前目录...</span><br>    &#125;<br><br>    <span class="hljs-keyword">return</span> link_path_walk(name, nd); <span class="hljs-comment">// 进入核心解析逻辑</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>(2) <code>link_path_walk()</code> 处理路径分量</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">link_path_walk</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *name, <span class="hljs-keyword">struct</span> nameidata *nd)</span> &#123;<br>    <span class="hljs-keyword">while</span> (*name == <span class="hljs-string">&#x27;/&#x27;</span>) name++; <span class="hljs-comment">// 跳过连续的 &#x27;/&#x27;</span><br>    <span class="hljs-keyword">for</span> (;;) &#123;<br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">dentry</span> *<span class="hljs-title">dentry</span>;</span><br>        <span class="hljs-type">int</span> err;<br><br>        <span class="hljs-comment">// 获取下一个路径分量（如 &quot;home&quot;）</span><br>        name = extract_name(name, &amp;nd-&gt;last);<br>        <span class="hljs-keyword">if</span> (IS_ERR(name)) <span class="hljs-keyword">return</span> PTR_ERR(name);<br><br>        <span class="hljs-comment">// 处理分量（如查找 &quot;home&quot;）</span><br>        err = walk_component(nd, &amp;dentry);<br>        <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> err;<br><br>        <span class="hljs-comment">// 若为最后一个分量，终止</span><br>        <span class="hljs-keyword">if</span> (!*name) <span class="hljs-keyword">break</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>(3) <code>walk_component()</code> 解析单个分量</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">walk_component</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> nameidata *nd, <span class="hljs-keyword">struct</span> dentry **dentry)</span> &#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">inode</span> *<span class="hljs-title">inode</span> =</span> nd-&gt;dentry-&gt;d_inode;<br><br>    <span class="hljs-comment">// 检查目录权限</span><br>    <span class="hljs-keyword">if</span> (unlikely(!permission(inode, MAY_EXEC))) <br>        <span class="hljs-keyword">return</span> -EACCES;<br><br>    <span class="hljs-comment">// 在 dentry 缓存中查找</span><br>    *dentry = d_lookup(nd-&gt;dentry, &amp;nd-&gt;last);<br>    <span class="hljs-keyword">if</span> (!*dentry) &#123;<br>        <span class="hljs-comment">// 缓存未命中，调用文件系统的 lookup 方法</span><br>        *dentry = inode-&gt;i_op-&gt;lookup(inode, *dentry, nd-&gt;flags);<br>    &#125;<br><br>    <span class="hljs-comment">// 处理符号链接或挂载点</span><br>    <span class="hljs-keyword">if</span> (d_is_symlink(*dentry)) &#123;<br>        <span class="hljs-keyword">return</span> follow_link(nd, *dentry); <span class="hljs-comment">// 递归解析链接</span><br>    &#125;<br>    <span class="hljs-keyword">if</span> (d_mountpoint(*dentry)) &#123;<br>        <span class="hljs-keyword">return</span> follow_mount(nd, *dentry); <span class="hljs-comment">// 跳转到挂载点</span><br>    &#125;<br><br>    nd-&gt;dentry = *dentry; <span class="hljs-comment">// 更新当前 dentry</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="父路径名查找"><a href="#父路径名查找" class="headerlink" title="父路径名查找"></a>父路径名查找</h4><p>在 Linux 内核的路径名查找机制中，<strong>父路径名查找（Parent Pathname Lookup）</strong> 是一种特殊场景，其核心目标是 <strong>获取路径名中最后一个分量之前的目录</strong>，而非最终的文件或目录本身。这种模式通过 <code>LOOKUP_PARENT</code> 标志触发，常见于以下操作：</p>
+<ul>
+<li><strong>文件创建</strong>（如 <code>open(O_CREAT)</code>）：需要确定新文件所在的父目录。</li>
+<li><strong>目录删除</strong>（如 <code>rmdir</code>）：需访问待删除目录的父目录。</li>
+<li><strong>重命名</strong>（如 <code>rename</code>）：需分别解析源路径和目标路径的父目录。</li>
+</ul>
+<h5 id="父路径查找的核心逻辑"><a href="#父路径查找的核心逻辑" class="headerlink" title="父路径查找的核心逻辑"></a><strong>父路径查找的核心逻辑</strong></h5><p>当设置 <code>LOOKUP_PARENT</code> 时，<code>link_path_walk()</code> 会：</p>
+<ol>
+<li><strong>正常解析路径</strong>，直到倒数第二个分量（父目录）。</li>
+<li><strong>不尝试访问最后一个分量</strong>（可能不存在或无需访问）。</li>
+<li>在 <code>nameidata</code> 结构中记录：<ul>
+<li><code>last</code>：最后一个分量的名称（如 <code>&quot;file.txt&quot;</code>）。</li>
+<li><code>last_type</code>：最后一个分量的类型（如普通文件、<code>.</code>、<code>..</code> 等）。</li>
+</ul>
+</li>
+</ol>
+<p> <code>last_type</code> 的可能取值</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>值</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>LAST_NORM</code></td>
+<td align="left">最后一个分量是普通文件名（如 <code>/home/user/file.txt</code> 中的 <code>file.txt</code>）。</td>
+</tr>
+<tr>
+<td align="left"><code>LAST_ROOT</code></td>
+<td align="left">路径仅为 <code>/</code>（根目录）。</td>
+</tr>
+<tr>
+<td align="left"><code>LAST_DOT</code></td>
+<td align="left">最后一个分量是 <code>.</code>（当前目录）。</td>
+</tr>
+<tr>
+<td align="left"><code>LAST_DOTDOT</code></td>
+<td align="left">最后一个分量是 <code>..</code>（父目录）。</td>
+</tr>
+<tr>
+<td align="left"><code>LAST_BIND</code></td>
+<td align="left">最后一个分量是绑定挂载（Bind Mount）的符号链接。</td>
+</tr>
+</tbody></table>
+<h4 id="符号链接查找"><a href="#符号链接查找" class="headerlink" title="符号链接查找"></a>符号链接查找</h4><p>在 Linux 内核中，<strong>符号链接（Symbolic Link）的查找</strong> 是路径名解析中最复杂的场景之一。它需要递归处理链接指向的路径，同时防止恶意或错误的无限递归。</p>
+<h5 id="符号链接查找的核心流程"><a href="#符号链接查找的核心流程" class="headerlink" title="符号链接查找的核心流程"></a><strong>符号链接查找的核心流程</strong></h5><p>假设路径为 <code>/foo/bar/file</code>，其中 <code>/foo/bar</code> 是指向 <code>./dir</code> 的符号链接：</p>
+<ol>
+<li><strong>第一次查找</strong>：解析 <code>/foo/bar</code>，发现 <code>bar</code> 是符号链接。</li>
+<li><strong>递归查找</strong>：<ul>
+<li>读取 <code>bar</code> 的内容（<code>./dir</code>）。</li>
+<li>从 <code>/foo</code> 开始解析新路径 <code>./dir</code>，得到目录 <code>/foo/dir</code>。</li>
+</ul>
+</li>
+<li><strong>恢复原路径</strong>：继续从 <code>/foo/dir</code> 解析剩余分量 <code>file</code>。</li>
+</ol>
+<h5 id="递归控制与安全性"><a href="#递归控制与安全性" class="headerlink" title="递归控制与安全性"></a><strong>递归控制与安全性</strong></h5><h6 id="防止无限递归"><a href="#防止无限递归" class="headerlink" title="防止无限递归"></a><strong>防止无限递归</strong></h6><p>**<code>link_count</code>**（进程描述符中的计数器）：每进入一层符号链接递归，<code>link_count</code> 加 1。若 <code>link_count ≥ 6</code>（默认最大嵌套深度 5），返回 <code>-ELOOP</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> (unlikely(++current-&gt;link_count &gt; MAX_NESTED_LINKS)) &#123;<br>    path_put(&amp;nd-&gt;path);<br>    <span class="hljs-keyword">return</span> -ELOOP;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>**<code>total_link_count</code>**（进程描述符中的总计数器）：统计单次查找中所有符号链接的解析次数（包括非嵌套的）。若 <code>total_link_count ≥ 40</code>，返回 <code>-ELOOP</code>（防止恶意路径耗尽资源）。</p>
+<p> 递归终止条件:成功解析符号链接指向的最终目标。达到最大递归深度或总链接数。遇到无效路径（如权限不足、文件不存在）。</p>
+<h3 id="VFS系统调用的实现"><a href="#VFS系统调用的实现" class="headerlink" title="VFS系统调用的实现"></a>VFS系统调用的实现</h3><h4 id="Open"><a href="#Open" class="headerlink" title="Open"></a>Open</h4><p>打开（或创建）一个文件，返回文件描述符（<code>fd</code>）。其调用sys_open()函数。</p>
+<p><img src="https://s2.loli.net/2025/07/02/QKyjdapJCmYEUnx.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/lmDNg2IvZF5r6ha.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="Read-Write"><a href="#Read-Write" class="headerlink" title="Read&#x2F;Write"></a>Read&#x2F;Write</h4><p>都需要三个参数：</p>
+<ul>
+<li><code>fd</code>：文件描述符。</li>
+<li><code>buf</code>：用户态缓冲区。</li>
+<li><code>count</code>：要读取的字节数。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/07/02/wL2SpEYog8kyq6X.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="Close"><a href="#Close" class="headerlink" title="Close"></a>Close</h4><p><img src="https://s2.loli.net/2025/07/02/QocLJuURBdxEnF6.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="文件加锁"><a href="#文件加锁" class="headerlink" title="文件加锁"></a>文件加锁</h3><p>Linux 内核的 <strong>文件加锁机制</strong> 用于协调多个进程或线程对同一文件的并发访问，防止数据竞争和保证数据一致性。它支持多种锁类型和范围，适用于不同场景。以下是其核心机制和实现细节：</p>
+<hr>
+<h4 id="锁的类型"><a href="#锁的类型" class="headerlink" title="锁的类型"></a><strong>锁的类型</strong></h4><p>Linux 文件锁主要分为两类：</p>
+<h5 id="1-劝告锁"><a href="#1-劝告锁" class="headerlink" title="(1) 劝告锁"></a><strong>(1) 劝告锁</strong></h5><p>依赖进程主动检查锁状态，<strong>不强制阻止访问</strong>。只有遵守锁规则的进程才会受约束，恶意进程可忽略锁。<strong>适用场景</strong>：合作进程间的协调（如多进程读写同一配置文件）。</p>
+<h5 id="2-强制锁"><a href="#2-强制锁" class="headerlink" title="(2) 强制锁"></a><strong>(2) 强制锁</strong></h5><p>内核强制阻止违反锁规则的访问（如读已加写锁的文件）。需同时满足：</p>
+<ol>
+<li>文件系统挂载时启用 <code>mand</code> 选项（如 <code>mount -o mand /dev/sda1 /mnt</code>）。</li>
+<li>文件设置 <code>setgid</code> 权限且关闭组执行位（如 <code>chmod g+s,g-x file</code>）。</li>
+</ol>
+<p><strong>适用场景</strong>：严格保证数据完整性（但较少使用，因性能开销大）。</p>
+<h4 id="锁的范围"><a href="#锁的范围" class="headerlink" title="锁的范围"></a><strong>锁的范围</strong></h4><h5 id="1-文件级锁（flock）"><a href="#1-文件级锁（flock）" class="headerlink" title="(1) 文件级锁（flock）"></a><strong>(1) 文件级锁（flock）</strong></h5><p><img src="https://s2.loli.net/2025/07/02/gleFBj4muAQIbfx.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>锁定整个文件</strong>，通过 <code>flock()</code> 系统调用实现。但仅支持劝告锁。并且锁与文件描述符绑定，<strong>进程退出或文件描述符关闭时自动释放</strong>。支持共享锁（读锁）和独占锁（写锁）。<strong>示例</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> fd = open(<span class="hljs-string">&quot;file.txt&quot;</span>, O_RDWR);<br>flock(fd, LOCK_SH); <span class="hljs-comment">// 加共享锁</span><br>flock(fd, LOCK_EX); <span class="hljs-comment">// 加独占锁</span><br>flock(fd, LOCK_UN); <span class="hljs-comment">// 解锁</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="2-记录锁（fcntl）"><a href="#2-记录锁（fcntl）" class="headerlink" title="(2) 记录锁（fcntl）"></a><strong>(2) 记录锁（fcntl）</strong></h5><p><strong>锁定文件的某一部分（字节范围）</strong>，通过 <code>fcntl()</code> 系统调用实现。支持劝告锁和强制锁（依赖文件系统配置）。锁与进程绑定，<strong>fork 的子进程继承锁，但 exec 后不继承</strong>。支持共享锁、独占锁和阻塞&#x2F;非阻塞模式。<strong>示例</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">flock</span> <span class="hljs-title">fl</span>;</span><br>fl.l_type = F_WRLCK;  <span class="hljs-comment">// 写锁</span><br>fl.l_whence = SEEK_SET;<br>fl.l_start = <span class="hljs-number">0</span>;       <span class="hljs-comment">// 从文件开头</span><br>fl.l_len = <span class="hljs-number">100</span>;       <span class="hljs-comment">// 锁定 100 字节</span><br>fcntl(fd, F_SETLK, &amp;fl); <span class="hljs-comment">// 非阻塞加锁</span><br>fcntl(fd, F_SETLKW, &amp;fl); <span class="hljs-comment">// 阻塞加锁</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="3-租借锁（Lease）"><a href="#3-租借锁（Lease）" class="headerlink" title="(3) 租借锁（Lease）"></a><strong>(3) 租借锁（Lease）</strong></h5><p>通过 <code>fcntl(F_SETLEASE)</code> 设置，允许进程监控文件是否被其他进程访问。当其他进程尝试打开或修改文件时，持有租借锁的进程会收到信号（<code>SIGIO</code>）。常用于缓存一致性（如 NFS 客户端）。<strong>示例</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">fcntl(fd, F_SETLEASE, F_WRLCK); <span class="hljs-comment">// 设置写租借锁</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="内核实现机制"><a href="#内核实现机制" class="headerlink" title="内核实现机制"></a><strong>内核实现机制</strong></h4><h5 id="1-数据结构"><a href="#1-数据结构" class="headerlink" title="(1) 数据结构"></a><strong>(1) 数据结构</strong></h5><p>**<code>struct file_lock</code>**：描述一个锁的详细信息，包括：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">file_lock</span> &#123;</span><br>    <span class="hljs-type">fl_owner_t</span> fl_owner;  <span class="hljs-comment">// 锁持有者（进程或文件描述符）</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> fl_type; <span class="hljs-comment">// 锁类型（F_RDLCK/F_WRLCK/F_UNLCK）</span><br>    <span class="hljs-type">loff_t</span> fl_start;      <span class="hljs-comment">// 起始偏移</span><br>    <span class="hljs-type">loff_t</span> fl_end;        <span class="hljs-comment">// 结束偏移</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">file</span> *<span class="hljs-title">fl_file</span>;</span> <span class="hljs-comment">// 关联的文件对象</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-锁的管理"><a href="#2-锁的管理" class="headerlink" title="(2) 锁的管理"></a><strong>(2) 锁的管理</strong></h5><ul>
+<li><strong>全局锁列表</strong>：内核维护所有文件锁的链表，存储在 <code>file_lock_manager</code> 中。</li>
+<li><strong>冲突检测</strong>：加锁时，内核检查请求的字节范围是否与现有锁冲突。冲突规则：<ul>
+<li>共享锁（读锁）之间不冲突。</li>
+<li>共享锁与独占锁（写锁）冲突。</li>
+<li>独占锁之间冲突。</li>
+</ul>
+</li>
+</ul>
+<h5 id="3-强制锁的实现"><a href="#3-强制锁的实现" class="headerlink" title="(3) 强制锁的实现"></a><strong>(3) 强制锁的实现</strong></h5><p>在文件访问路径（如 <code>read()</code>&#x2F;<code>write()</code>）中，内核检查 <code>inode-&gt;i_flags</code> 是否设置 <code>S_MANDLOCK</code> 标志，并验证是否有冲突的强制锁。</p>
+<p>应用场景：</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>场景</strong></th>
+<th align="left"><strong>锁类型</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>多进程读文件</strong></td>
+<td align="left"><code>flock(LOCK_SH)</code></td>
+<td align="left">允许多进程同时读，阻塞写操作。</td>
+</tr>
+<tr>
+<td align="left"><strong>单进程写文件</strong></td>
+<td align="left"><code>flock(LOCK_EX)</code></td>
+<td align="left">独占写入，阻止其他进程读写。</td>
+</tr>
+<tr>
+<td align="left"><strong>数据库事务</strong></td>
+<td align="left"><code>fcntl</code> 记录锁</td>
+<td align="left">锁定表中特定行（字节范围）。</td>
+</tr>
+<tr>
+<td align="left"><strong>配置文件更新</strong></td>
+<td align="left">劝告锁 + 超时机制</td>
+<td align="left">避免编辑冲突，超时自动放弃锁。</td>
+</tr>
+</tbody></table>
+<p> <strong>注意事项</strong>：</p>
+<ol>
+<li><strong>死锁风险</strong>：若进程 A 持有锁 1 并请求锁 2，而进程 B 持有锁 2 并请求锁 1，会导致死锁。需设计超时或按顺序加锁。</li>
+<li><strong>NFS 限制</strong>：网络文件系统（NFS）的锁行为可能因实现而异，需额外配置（如 <code>rpc.statd</code>）。</li>
+<li><strong>性能开销</strong>：频繁加锁可能降低并发性，应尽量缩小锁范围（如使用记录锁而非文件锁）。</li>
+</ol>
+<h1 id="页高速缓存"><a href="#页高速缓存" class="headerlink" title="页高速缓存"></a>页高速缓存</h1><p><strong>磁盘高速缓存（Disk Cache）</strong> 是提升 I&#x2F;O 性能的核心机制，通过将磁盘数据缓存在 RAM 中，减少对慢速存储设备的直接访问。其核心组件包括 <strong>页高速缓存（Page Cache）</strong>、<strong>目录项缓存（dentry Cache）</strong> 和 <strong>索引节点缓存（inode Cache）</strong>。</p>
+<p>其核心作用在于：</p>
+<ul>
+<li><strong>缓存磁盘数据</strong>：以内存页（通常 4KB）为单位缓存文件内容，加速重复访问。</li>
+<li><strong>减少磁盘 I&#x2F;O</strong>：对同一文件的多次读写操作直接命中缓存，避免物理磁盘访问。</li>
+<li><strong>延迟写回（Write-Back）</strong>：脏页（被修改的页）异步回写磁盘，合并多次写操作。</li>
+</ul>
+<p>在绝大多数情况下，内核在读写磁盘时都引用<strong>页高速缓存</strong>。新页被加到页高速缓存以满足用户态进程的读请求。如果页不在高速缓存中，新页就被加到高速缓存中，然后用从磁盘读出的数据填充它。如果内存有足够的空闲空间，就让该页在高速缓存中长期保留，使其他进程再使用该页时不再访问磁盘。</p>
+<p>同样，在把一页数据写到块设备之前，内核首先检查对应的页是否已经在高速缓存中，如果不在，就要先在其中增加一个新项，并要写到磁盘中的数据填充该项。I&#x2F;O数的传送并不是马上开始，而是要延退几秒之后才对磁盘进行更新，从而使进程有机会又要写人磁盘的数据做进一步的修改（换句话说，就是内核执行延退的写操作）。</p>
+<p>内核的代码和内核数据结构不必从磁盘读，也不必写人磁盘，因此，页高速缓存中的页可能是下面的类型：</p>
+<ul>
+<li>含有普通文件数据的页。</li>
+<li>含有目录的页。</li>
+<li>含有直接从块设备文件（跳过文件系统层）读出的数据的页。内核处理这种页与处理含有普通文件的页使用相同的函数集合。</li>
+<li>含有用户态进程数据的页，但页中的数据已经被交换到磁盘，内核可能会强行在页高速缓存中保留一些页面，而这些页面中的数据已经写到交换区（可能是普通文件或磁盘分区）</li>
+<li>属于特殊文件系统文件的页，如共享内存的进程间通信所使用的特殊文件系统shm</li>
+</ul>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a><strong>数据结构</strong></h2><h3 id="address-space"><a href="#address-space" class="headerlink" title="address_space"></a>address_space</h3><p>每个文件（或块设备）通过 <code>address_space</code> 管理其页缓存：</p>
+<p><img src="https://s2.loli.net/2025/07/02/Jt32qkr5cIi7MGZ.png" srcset="/img/loading.gif" lazyload></p>
+<p>字段a_ops的方法：</p>
+<p><img src="https://s2.loli.net/2025/07/02/Cuf8mzoA3ZED2wU.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/lOgZRK3uTEpPfiv.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="基树"><a href="#基树" class="headerlink" title="基树"></a>基树</h3><p><strong>基数树（Radix Tree）</strong> 是页高速缓存（Page Cache）高效管理大规模文件（如 TB 级文件）的核心数据结构。它通过多层级索引快速定位缓存页，解决了线性扫描低效的问题。</p>
+<p><strong>树根（<code>radix_tree_root</code>）</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">radix_tree_root</span> &#123;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> height;      <span class="hljs-comment">// 树的高度（不包含叶子层）</span><br>    <span class="hljs-type">gfp_t</span> gfp_mask;          <span class="hljs-comment">// 内存分配标志</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">radix_tree_node</span> *<span class="hljs-title">rnode</span>;</span> <span class="hljs-comment">// 根节点指针</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>节点（<code>radix_tree_node</code>）</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">radix_tree_node</span> &#123;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> count;      <span class="hljs-comment">// 非空子节点数</span><br>    <span class="hljs-type">void</span> *slots[<span class="hljs-number">64</span>];         <span class="hljs-comment">// 指针数组（指向子节点或页描述符）</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> tags[<span class="hljs-number">2</span>][RADIX_TREE_TAG_LONGS]; <span class="hljs-comment">// 标记位（如脏页标记）</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>键值映射</strong></p>
+<ul>
+<li><p><strong>页索引（<code>pgoff_t</code>）</strong>：文件偏移量按页大小（如 4KB）对齐后计算的页号（<code>index = offset / PAGE_SIZE</code>）。</p>
+</li>
+<li><p><strong>基数树路径计算</strong>：将页索引拆分为 6 位一组（<code>2^6 = 64</code>），每层对应一组，形成树路径。<br><strong>示例</strong>：假设 <code>height=3</code>，页索引 <code>0x123456</code> 的路径为：</p>
+<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs gcode">层<span class="hljs-number">1</span>: <span class="hljs-number">0</span>x<span class="hljs-number">12</span> <span class="hljs-comment">(第1个6位)</span><br>层<span class="hljs-number">2</span>: <span class="hljs-number">0</span>x<span class="hljs-number">34</span> <span class="hljs-comment">(第2个6位)</span><br>层<span class="hljs-number">3</span>: <span class="hljs-number">0</span>x<span class="hljs-number">56</span> <span class="hljs-comment">(第3个6位)</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>场景</strong></th>
+<th align="left"><strong>传统链表&#x2F;哈希表</strong></th>
+<th align="left"><strong>基数树</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TB 级文件缓存查找</strong></td>
+<td align="left">O(n) 扫描，性能极差。</td>
+<td align="left">O(4) 层级跳转，高效稳定。</td>
+</tr>
+<tr>
+<td align="left"><strong>脏页批量收集</strong></td>
+<td align="left">需遍历所有页。</td>
+<td align="left">通过 <code>tag</code> 快速定位脏页。</td>
+</tr>
+<tr>
+<td align="left"><strong>内存占用</strong></td>
+<td align="left">预分配固定大小，可能浪费。</td>
+<td align="left">动态扩展，按需分配节点。</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2025/07/02/T4OhjJzXuaIyUA3.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="相关处理函数"><a href="#相关处理函数" class="headerlink" title="相关处理函数"></a>相关处理函数</h2><h2 id="把块放在页高速缓存中"><a href="#把块放在页高速缓存中" class="headerlink" title="把块放在页高速缓存中"></a>把块放在页高速缓存中</h2><p>在 Linux 内核中，<strong>缓冲区首部（<code>buffer_head</code>）</strong> 是块设备 I&#x2F;O 操作的关键数据结构，用于描述内存中的块缓冲区与磁盘块之间的映射关系。尽管现代内核已不再使用独立的 <strong>缓冲区高速缓存（Buffer Cache）</strong>，但 <code>buffer_head</code> 仍在某些场景（如文件系统元数据操作）中发挥重要作用。</p>
+<h3 id="缓冲区首部-buffer-head"><a href="#缓冲区首部-buffer-head" class="headerlink" title="缓冲区首部(buffer_head)"></a><strong>缓冲区首部(buffer_head)</strong></h3><h4 id="1-数据结构定义"><a href="#1-数据结构定义" class="headerlink" title="(1) 数据结构定义"></a><strong>(1) 数据结构定义</strong></h4><p><img src="https://s2.loli.net/2025/07/02/ARwoB4S5CF1ecJD.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/07/02/DCURN8aVcGyQA2E.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="2-核心功能"><a href="#2-核心功能" class="headerlink" title="(2) 核心功能"></a><strong>(2) 核心功能</strong></h4><ul>
+<li><strong>块映射</strong>：记录内存缓冲区（<code>b_data</code>）与磁盘块（<code>b_blocknr</code>）的对应关系。</li>
+<li><strong>状态管理</strong>：通过 <code>b_state</code> 跟踪块状态（如脏块需回写、锁定状态）。</li>
+<li><strong>页关联</strong>：将多个块缓冲区（如 4KB 页中的 8 个 512B 块）组织到同一内存页。</li>
+</ul>
+<hr>
+<p><strong>缓冲区高速缓存的演变</strong></p>
+<p><strong>(1) 旧版本（Linux 2.4 之前）</strong></p>
+<p><strong>独立的缓冲区高速缓存</strong>：缓存文件系统的块（如 inode、目录项），与页高速缓存分离。</p>
+<p><strong>问题</strong>：同一数据可能同时存在于两个缓存中，导致一致性问题和高内存开销。</p>
+<p><strong>(2) 现代内核（2.4.10 及以后）</strong></p>
+<p><strong>统一到页高速缓存</strong>：块缓冲区作为 <strong>“缓冲区页”</strong> 嵌入页高速缓存，通过 <code>buffer_head</code> 描述块级信息。文件数据直接通过页缓存管理，元数据（如 ext4 的 inode 表）仍使用 <code>buffer_head</code>。</p>
+<p><img src="https://s2.loli.net/2025/07/02/GVAB3U6ZIhJqSKv.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="把脏页写入磁盘"><a href="#把脏页写入磁盘" class="headerlink" title="把脏页写入磁盘"></a>把脏页写入磁盘</h2><hr>
+<h3 id="1-脏页标记体系"><a href="#1-脏页标记体系" class="headerlink" title="1. 脏页标记体系"></a><strong>1. 脏页标记体系</strong></h3><h4 id="（1）内存页状态标识"><a href="#（1）内存页状态标识" class="headerlink" title="（1）内存页状态标识"></a>（1）内存页状态标识</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">page</span> &#123;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> flags;  <span class="hljs-comment">// 包含PG_dirty位</span><br>    <span class="hljs-comment">// ...</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>PG_dirty</strong>：表示页内容已被修改但未同步到磁盘</li>
+<li><strong>PG_writeback</strong>：表示页正在被写入磁盘</li>
+</ul>
+<h4 id="（2）缓冲区页的特殊处理"><a href="#（2）缓冲区页的特殊处理" class="headerlink" title="（2）缓冲区页的特殊处理"></a>（2）缓冲区页的特殊处理</h4><p>对于缓冲区页（含多个块）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">buffer_head</span> &#123;</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> b_state;  <span class="hljs-comment">// 包含BH_Dirty位</span><br>    <span class="hljs-comment">// ...</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>当<strong>任意buffer_head</strong>的<code>BH_Dirty</code>置位时，其所属页的<code>PG_dirty</code>必须置位, 回写时仅写入<code>BH_Dirty</code>的特定块，非整个页</p>
+<hr>
+<h3 id="2-回写触发条件"><a href="#2-回写触发条件" class="headerlink" title="2. 回写触发条件"></a><strong>2. 回写触发条件</strong></h3><h4 id="（1）核心触发场景"><a href="#（1）核心触发场景" class="headerlink" title="（1）核心触发场景"></a>（1）核心触发场景</h4><table>
+<thead>
+<tr>
+<th>触发条件</th>
+<th>内核行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内存压力（脏页过多）</td>
+<td>调用<code>balance_dirty_pages()</code>，根据<code>dirty_ratio</code>&#x2F;<code>dirty_bytes</code>阈值触发回写</td>
+</tr>
+<tr>
+<td>定时到期（默认5秒）</td>
+<td><code>wb_timer</code>超时后启动<code>wb_workfn</code>工作队列</td>
+</tr>
+<tr>
+<td>显式同步请求</td>
+<td>通过<code>sync()</code>&#x2F;<code>fsync()</code>等系统调用直接触发</td>
+</tr>
+<tr>
+<td>块设备卸载</td>
+<td>在<code>__blkdev_put()</code>中强制回写所有关联脏页</td>
+</tr>
+</tbody></table>
+<h4 id="（2）阈值控制参数"><a href="#（2）阈值控制参数" class="headerlink" title="（2）阈值控制参数"></a>（2）阈值控制参数</h4><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs awk"><span class="hljs-comment"># 查看当前系统设置</span><br>cat <span class="hljs-regexp">/proc/</span>sys<span class="hljs-regexp">/vm/</span>dirty_ratio      <span class="hljs-comment"># 最大内存占比阈值（默认20%）</span><br>cat <span class="hljs-regexp">/proc/</span>sys<span class="hljs-regexp">/vm/</span>dirty_expire_centisecs  <span class="hljs-comment"># 脏页过期时间（默认3000cs=30s）</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-回写执行机制"><a href="#3-回写执行机制" class="headerlink" title="3. 回写执行机制"></a><strong>3. 回写执行机制</strong></h3><h4 id="（1）pdflush线程进化史"><a href="#（1）pdflush线程进化史" class="headerlink" title="（1）pdflush线程进化史"></a>（1）pdflush线程进化史</h4><ul>
+<li><strong>Linux 2.4</strong>：<code>bdflush</code> + <code>kupdated</code></li>
+<li><strong>Linux 2.6</strong>：统一为<code>pdflush</code>线程池</li>
+<li><strong>现代内核</strong>：每个块设备对应<strong>per-bdi flush线程</strong>（如<code>kworker/u4:1+flush-8:16</code>）</li>
+</ul>
+<h4 id="（2）回写流程代码级解析"><a href="#（2）回写流程代码级解析" class="headerlink" title="（2）回写流程代码级解析"></a>（2）回写流程代码级解析</h4><figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs scss"><span class="hljs-comment">// 主要回写函数调用链</span><br><span class="hljs-built_in">writeback_sb_inodes</span>()<br>    └─<span class="hljs-built_in">__writeback_single_inode</span>()<br>        └─<span class="hljs-built_in">do_writepages</span>()<br>            └─mapping-&gt;a_ops-&gt;<span class="hljs-built_in">writepages</span>()  <span class="hljs-comment">// 文件系统具体实现</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>EXT4文件系统示例</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">address_space_operations</span> <span class="hljs-title">ext4_aops</span> =</span> &#123;<br>    .writepages = ext4_writepages,<br>    <span class="hljs-comment">// ...</span><br>&#125;;<br><br><span class="hljs-comment">// 实际写回操作</span><br><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">ext4_writepages</span><span class="hljs-params">(...)</span> &#123;<br>    <span class="hljs-comment">// 1. 构建bio请求</span><br>    mpd.do_io = <span class="hljs-number">1</span>;<br>    <span class="hljs-comment">// 2. 提交到块层</span><br>    ret = ext4_io_submit(&amp;mpd);<br>    <span class="hljs-comment">// 3. 等待完成</span><br>    wait_on_all_page_writeback(inode-&gt;i_mapping);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="sync、fsync和fdatasync系统调用"><a href="#sync、fsync和fdatasync系统调用" class="headerlink" title="sync、fsync和fdatasync系统调用"></a><code>sync</code>、<code>fsync</code>和<code>fdatasync</code>系统调用</h2><table>
+<thead>
+<tr>
+<th align="center">系统调用</th>
+<th align="center">作用范围</th>
+<th align="center">元数据同步</th>
+<th align="center">性能开销</th>
+<th align="center">典型应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>sync()</code></td>
+<td align="center">全局所有脏页</td>
+<td align="center">是</td>
+<td align="center">高</td>
+<td align="center">系统关机前、定时备份</td>
+</tr>
+<tr>
+<td align="center"><code>fsync()</code></td>
+<td align="center">单个文件</td>
+<td align="center">是</td>
+<td align="center">中</td>
+<td align="center">数据库事务提交</td>
+</tr>
+<tr>
+<td align="center"><code>fdatasync()</code></td>
+<td align="center">单个文件（仅数据）</td>
+<td align="center">否</td>
+<td align="center">低</td>
+<td align="center">日志文件写入</td>
+</tr>
+</tbody></table>
+<h1 id="访问文件"><a href="#访问文件" class="headerlink" title="访问文件"></a>访问文件</h1><h2 id="读写文件"><a href="#读写文件" class="headerlink" title="读写文件"></a>读写文件</h2><h3 id="读文件（read-）的流程"><a href="#读文件（read-）的流程" class="headerlink" title="读文件（read()）的流程"></a><strong>读文件（<code>read()</code>）的流程</strong></h3><p><strong>(1) 用户发起请求</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">read(fd, buf, <span class="hljs-number">4096</span>); <span class="hljs-comment">// 读取 4KB 数据</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>(2) 内核处理路径</strong></p>
+<ol>
+<li><strong>VFS 层</strong>：调用文件对象的 <code>read</code> 方法（通常为 <code>generic_file_read()</code>）。检查页缓存（<code>struct address_space</code>）是否已缓存目标数据页。</li>
+<li><strong>页缓存未命中（Cache Miss）</strong>：分配新页框（<code>struct page</code>），加入页缓存。文件系统（如 ext4）定位数据在磁盘上的 <strong>物理块号</strong>（通过 <code>inode-&gt;i_mapping</code>）。</li>
+<li><strong>块设备层</strong>：将物理块号转换为 <strong>扇区号</strong>（如块号 <code>n</code> → 扇区 <code>8n</code> 到 <code>8n+7</code>，假设 512B 扇区）。创建 <code>bio</code> 请求，提交到块设备队列。</li>
+<li><strong>驱动执行</strong>：磁盘控制器通过 DMA 将数据从磁盘读取到内存页。中断通知完成，页缓存更新为有效。</li>
+<li><strong>数据拷贝到用户空间</strong>：将页缓存中的数据复制到用户缓冲区 <code>buf</code>。</li>
+</ol>
+<h3 id="写文件（write-）的流程"><a href="#写文件（write-）的流程" class="headerlink" title="写文件（write()）的流程"></a><strong>写文件（<code>write()</code>）的流程</strong></h3><h4 id="1-用户发起请求"><a href="#1-用户发起请求" class="headerlink" title="(1) 用户发起请求"></a><strong>(1) 用户发起请求</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">write(fd, buf, <span class="hljs-number">4096</span>); <span class="hljs-comment">// 写入 4KB 数据</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2-内核处理路径"><a href="#2-内核处理路径" class="headerlink" title="(2) 内核处理路径"></a><strong>(2) 内核处理路径</strong></h4><ol>
+<li><strong>VFS 层</strong>：调用文件对象的 <code>write</code> 方法（如 <code>generic_file_write()</code>）。检查页缓存是否存在目标页，若不存在则分配新页。</li>
+<li><strong>数据准备</strong>：将用户缓冲区 <code>buf</code> 的数据拷贝到页缓存（写时可能延迟，见下文）。</li>
+<li><strong>文件系统处理</strong>：<ul>
+<li><strong>普通文件系统（如 ext4）</strong>：若文件大小扩展，分配新磁盘块（更新 <code>inode-&gt;i_blocks</code>）。标记页为 <strong>脏页（Dirty）</strong>，由后台线程（如 <code>pdflush</code>）异步写入磁盘。</li>
+<li><strong>日志文件系统（如 ext4 with journal）</strong>：先写日志（Journal），再提交实际数据块，确保崩溃一致性。</li>
+</ul>
+</li>
+<li><strong>块设备层</strong>：脏页回写时，生成 <code>bio</code> 请求写入磁盘。</li>
+</ol>
+<h4 id="3-写模式差异"><a href="#3-写模式差异" class="headerlink" title="(3) 写模式差异"></a><strong>(3) 写模式差异</strong></h4><table>
+<thead>
+<tr>
+<th align="left"><strong>模式</strong></th>
+<th align="left"><strong>行为</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>缓冲写（默认）</strong></td>
+<td align="left">数据先写入页缓存，异步回盘。高性能，但崩溃可能丢数据。</td>
+</tr>
+<tr>
+<td align="left"><strong>同步写（<code>O_SYNC</code>）</strong></td>
+<td align="left">数据直达磁盘，阻塞直到写入完成。安全，但性能低。</td>
+</tr>
+<tr>
+<td align="left"><strong>直接写（<code>O_DIRECT</code>）</strong></td>
+<td align="left">绕过页缓存，直接 DMA 到磁盘。需对齐缓冲区，适合数据库。</td>
+</tr>
+</tbody></table>
+<h2 id="内存映射"><a href="#内存映射" class="headerlink" title="内存映射"></a>内存映射</h2><p><strong>内存映射（Memory Mapping）</strong> 是一种将文件或设备直接映射到进程地址空间的技术，允许进程通过访问内存来操作文件数据，无需显式调用 <code>read()</code>&#x2F;<code>write()</code>。</p>
+<p><strong>(1) 共享映射（<code>MAP_SHARED</code>）</strong></p>
+<p>对映射内存的修改会同步到磁盘文件，对其他映射同一文件的进程可见。适用于进程间通信（IPC）或持久化共享数据。<strong>内核标志</strong>：线性区（<code>vm_area_struct</code>）设置 <code>VM_SHARED</code>。</p>
+<p><strong>(2) 私有映射（<code>MAP_PRIVATE</code>）</strong></p>
+<p>写操作触发 <strong>写时复制（Copy-on-Write, COW）</strong>，修改仅对当前进程可见，不影响磁盘文件。初始数据从文件加载，但后续变更独立。<strong>内核标志</strong>：线性区清除 <code>VM_SHARED</code>。</p>
+<p><img src="https://s2.loli.net/2025/07/02/ILXUKtd6QErZq7D.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="内存映射的核心流程"><a href="#内存映射的核心流程" class="headerlink" title="内存映射的核心流程"></a><strong>内存映射的核心流程</strong></h3><h4 id="1-创建映射（mmap-）"><a href="#1-创建映射（mmap-）" class="headerlink" title="(1) 创建映射（mmap()）"></a><strong>(1) 创建映射（<code>mmap()</code>）</strong></h4><ol>
+<li>**用户调用 <code>mmap()</code>**：<br>指定文件描述符 <code>fd</code>、映射长度、保护权限（如 <code>PROT_READ</code>）和映射类型（<code>MAP_SHARED</code>&#x2F;<code>MAP_PRIVATE</code>）。</li>
+<li><strong>内核处理</strong>：在进程地址空间创建线性区（<code>vm_area_struct</code>），关联文件 <code>inode</code>。建立页表项，但<strong>不立即加载文件数据</strong>（按需调页）。</li>
+<li><strong>按需调页（Page Fault）</strong>：<br>当进程首次访问映射区域时：内核分配物理页框，从文件读取对应数据到页缓存。更新页表，建立虚拟地址到物理页的映射。</li>
+</ol>
+<h4 id="2-写时复制（COW）与私有映射"><a href="#2-写时复制（COW）与私有映射" class="headerlink" title="(2) 写时复制（COW）与私有映射"></a><strong>(2) 写时复制（COW）与私有映射</strong></h4><ul>
+<li><strong>读操作</strong>：直接共享页缓存的只读页。</li>
+<li><strong>写操作</strong>：<ol>
+<li>内核复制目标页到新物理页。</li>
+<li>修改新页，标记为私有，原文件页保持不变。</li>
+<li>更新页表指向新页。</li>
+</ol>
+</li>
+</ul>
+<h4 id="3-同步与回写"><a href="#3-同步与回写" class="headerlink" title="(3) 同步与回写"></a><strong>(3) 同步与回写</strong></h4><ul>
+<li><strong>共享映射</strong>：脏页由内核线程（如 <code>pdflush</code>）异步回写到磁盘。可调用 <code>msync()</code> 强制同步。</li>
+<li><strong>私有映射</strong>：写操作不影响文件，无需回写。</li>
+</ul>
+<h4 id="4-解除映射（munmap-）"><a href="#4-解除映射（munmap-）" class="headerlink" title="(4) 解除映射（munmap()）"></a><strong>(4) 解除映射（<code>munmap()</code>）</strong></h4><p>释放线性区，清除页表项。私有映射的修改丢弃，共享映射的脏页回写（若未同步）。</p>
+<h2 id="直接I-O传送"><a href="#直接I-O传送" class="headerlink" title="直接I&#x2F;O传送"></a>直接I&#x2F;O传送</h2><p>我们已经看到，在Linux2.6版本中，通过文件系统与通过引用基本块设备文件上的块，甚至与通过建立文件内存映射访问一个普通文件之间没有什么本质的差异。</p>
+<p>但是，还是有一些非常复杂的程序（自缓存的应用程序，self-caching_application）更愿意具有控I?O数据传送机制的全部权力。例如，考虑高性能数据库服务器：它们大都实现了白已的高速缓存机制，以充分挖掘对数据库独特的查询机制。</p>
+<p>对于这些类型的程序，内核页高速缓存毫无帮助；相反，因为以下原因它可能是有害的：</p>
+<ul>
+<li>很多页框浪费在复制已在RAM中的磁盘数据上（在用户级磁盘高速缓存中）</li>
+<li>处理页高速缓存和预读的多余指令降低了read（）和write（）系统调用的执行效率，也降低了与文件内存映射相关的分页操作。</li>
+<li>read（）和write（）系统调用不是在磁盘和用户存储器之间直接传送数据，而是分<br>成两次传送：在磁盘和内核缓冲区之间和在内核缓冲区与用户存储器之间。</li>
+<li>因为必须通过中断和直接内存访问（DMA）处理块硬件设备，而且这只能在内核态完成，因此，最终需要某种内核支持来实现自缓存的应用程序。</li>
+</ul>
+<p>Linux提供了绕过页高速缓存的简单方法：直接I&#x2F;O传送。在每次I&#x2F;O直接传送中，内核对磁盘控制器进行编程，以便在自缓存的应用程序的用户态地址空间中的页与磁盘之间直接传送数据。</p>
+<p> 我们知道，任何数据传送都是异步进行的。当数据传送正在进行时，内核可能切换当前进程，CPU可能返回到用户态，产生数据传送的进程的页可能被交换出去，等等。这对于普通I&#x2F;O数据传送没有什么影响，因为它们涉及磁盘高速缓存中的页，磁盘高速缓存由内核拥有，不能被换出去，并且对内核态的所有进程都是可见的。</p>
+<p>另一方面，直接I&#x2F;O传送应当在给定进程的用户态地址空间的页内移动数据。内核必须当心这些页是由内核态的任一进程访问的，当数据传送正在进行时不能把它们交换出去。</p>
+<p>在 Linux 中，<strong>直接 I&#x2F;O（Direct I&#x2F;O）</strong> 是一种绕过内核页缓存（Page Cache）的 I&#x2F;O 传输机制，允许应用程序（如高性能数据库）直接控制数据在 <strong>用户空间缓冲区</strong> 和 <strong>磁盘设备</strong> 之间的传输。</p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>特性</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>绕过页缓存</strong></td>
+<td align="left">数据直接传输到用户缓冲区，避免内核缓存的开销和冗余拷贝。</td>
+</tr>
+<tr>
+<td align="left"><strong>零拷贝（Zero-Copy）</strong></td>
+<td align="left">通过 DMA 将磁盘数据直接写入用户空间内存（需缓冲区对齐）。</td>
+</tr>
+<tr>
+<td align="left"><strong>异步性</strong></td>
+<td align="left">I&#x2F;O 操作由硬件异步执行，进程可继续运行或切换。</td>
+</tr>
+<tr>
+<td align="left"><strong>适用场景</strong></td>
+<td align="left">自缓存应用（如数据库）、大文件顺序访问、需要精确控制 I&#x2F;O 的场景。</td>
+</tr>
+</tbody></table>
+<h2 id="异步I-O"><a href="#异步I-O" class="headerlink" title="异步I&#x2F;O"></a>异步I&#x2F;O</h2><p><strong>异步 I&#x2F;O</strong> 是一种非阻塞的 I&#x2F;O 操作模型，允许进程发起 I&#x2F;O 请求后立即继续执行，无需等待数据传输完成。POSIX 标准定义了一组 AIO 接口（如 <code>aio_read()</code>、<code>aio_write()</code>），而 Linux 也提供了原生内核 AIO（如 <code>io_submit</code>）。</p>
+<p><img src="https://s2.loli.net/2025/07/02/UTs4RDVMJcv9CnF.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="异步-I-O-的工作机制"><a href="#异步-I-O-的工作机制" class="headerlink" title="异步 I&#x2F;O 的工作机制"></a><strong>异步 I&#x2F;O 的工作机制</strong></h3><ol>
+<li><strong>请求提交</strong>：用户调用 <code>aio_read()</code> 或 <code>io_submit()</code>，内核将请求加入队列。</li>
+<li><strong>异步执行</strong>：内核启动 DMA 传输，进程继续运行。</li>
+<li><strong>完成通知</strong>：通过事件（如信号、回调或 <code>io_getevents()</code>）通知用户进程。</li>
+</ol>
+<p><strong>与同步 I&#x2F;O 的对比</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>特性</strong></th>
+<th align="left"><strong>异步 I&#x2F;O</strong></th>
+<th align="left"><strong>同步 I&#x2F;O</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>阻塞行为</strong></td>
+<td align="left">非阻塞，立即返回。</td>
+<td align="left">阻塞直到 I&#x2F;O 完成。</td>
+</tr>
+<tr>
+<td align="left"><strong>性能</strong></td>
+<td align="left">高并发，适合高吞吐场景。</td>
+<td align="left">简单但并发能力低。</td>
+</tr>
+<tr>
+<td align="left"><strong>复杂度</strong></td>
+<td align="left">需处理回调或事件轮询。</td>
+<td align="left">逻辑直观。</td>
+</tr>
+</tbody></table>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Linux内核原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>磁盘管理</div>
+      <div>https://hermes37.vercel.app/2025/07/01/工科知识库/计算机科学与技术/内核原理/Linux内核原理/磁盘管理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月1日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/01/%E7%A1%AC%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E7%94%B5%E5%AD%90%E5%BC%80%E5%8F%91/Linux%E5%BC%80%E5%8F%91/%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F/" title="驱动程序">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">驱动程序</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/01/%E7%A1%AC%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E7%94%B5%E5%AD%90%E5%BC%80%E5%8F%91/Linux%E5%BC%80%E5%8F%91/%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E4%B8%8E%E4%BF%A1%E5%8F%B7/" title="系统调用与信号">
+                        <span class="hidden-mobile">系统调用与信号</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

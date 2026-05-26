@@ -1,0 +1,820 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="MD5在前面的文章密码学体系框架 - The Peak Tower简单谈到了MD5的基本构成，本文将专注于分析OPenSSL中的md5实现和其逆向反汇编 数据填充和分块—MD5_Update() 这些操作更新了 MD5 上下文中的数据，主要是处理当前处理的字节长度和数据大小的累加。  这里检查了当前的数据块是否已经足够处理。如果当前块的大小还没有满（小于 64 字节），我们就将数据拷贝到当前的缓冲">
+<meta property="og:type" content="article">
+<meta property="og:title" content="摘要算法">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/05/26/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="MD5在前面的文章密码学体系框架 - The Peak Tower简单谈到了MD5的基本构成，本文将专注于分析OPenSSL中的md5实现和其逆向反汇编 数据填充和分块—MD5_Update() 这些操作更新了 MD5 上下文中的数据，主要是处理当前处理的字节长度和数据大小的累加。  这里检查了当前的数据块是否已经足够处理。如果当前块的大小还没有满（小于 64 字节），我们就将数据拷贝到当前的缓冲">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/KtxRHozYsrLemAy.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/P9vSF1GBoIaA7ni.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/e4OjRFYpfhab823.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/EiOeS3p4fc1VrXb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/oOVkEH1SAm7uc8W.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/UskShGlgq14ADeP.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/01/8Rhi9yCaPcBMVAb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/02/K9TURQLcwqauJzj.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/02/1mcAfyeaolH9jCP.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/02/2qAbCZJ7HuDY4Qx.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/02/A3KNBajJpoTGHln.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/02/ZSiaFju4WRElQrp.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/02/uqXyROCZUbGwVL2.png">
+<meta property="article:published_time" content="2026-05-26T02:48:08.851Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.414Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/01/KtxRHozYsrLemAy.png">
+  
+  
+  
+  <title>摘要算法 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="摘要算法"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">摘要算法</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="MD5"><a href="#MD5" class="headerlink" title="MD5"></a>MD5</h1><p>在前面的文章<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/07/15/%E5%AF%86%E7%A0%81%E5%AD%A6/#%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95">密码学体系框架 - The Peak Tower</a>简单谈到了MD5的基本构成，本文将专注于分析OPenSSL中的md5实现和其逆向反汇编</p>
+<h2 id="数据填充和分块—MD5-Update"><a href="#数据填充和分块—MD5-Update" class="headerlink" title="数据填充和分块—MD5_Update()"></a>数据填充和分块—MD5_Update()</h2><p><img src="https://s2.loli.net/2025/02/01/KtxRHozYsrLemAy.png" srcset="/img/loading.gif" lazyload alt="image-20250201163718349"></p>
+<p>这些操作更新了 MD5 上下文中的数据，主要是处理当前处理的字节长度和数据大小的累加。</p>
+<p><img src="https://s2.loli.net/2025/02/01/P9vSF1GBoIaA7ni.png" srcset="/img/loading.gif" lazyload alt="image-20250201163736522"></p>
+<p>这里检查了当前的数据块是否已经足够处理。如果当前块的大小还没有满（小于 64 字节），我们就将数据拷贝到当前的缓冲区，更新计数并返回。</p>
+<p><img src="https://s2.loli.net/2025/02/01/e4OjRFYpfhab823.png" srcset="/img/loading.gif" lazyload alt="image-20250201163751202"></p>
+<p>如果当前块已经满了，我们将数据分成多个部分：</p>
+<ul>
+<li>**<code>memcpy</code>**：把数据拷贝到缓冲区中。</li>
+<li>**<code>ossl_md5_block_asm_data_order</code>**：调用一个内联汇编函数来处理当前的块并更新 MD5 状态。</li>
+<li>更新缓冲区，继续处理剩余的数据。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/01/EiOeS3p4fc1VrXb.png" srcset="/img/loading.gif" lazyload alt="image-20250201163810371"></p>
+<p>如果剩余数据的长度大于或等于 64 字节，我们直接处理这些数据。</p>
+<p><code>ossl_md5_block_asm_data_order</code> 处理整块数据，每次处理 64 字节（512 位）。</p>
+<p>更新剩余的数据指针和长度。</p>
+<p><img src="https://s2.loli.net/2025/02/01/oOVkEH1SAm7uc8W.png" srcset="/img/loading.gif" lazyload alt="image-20250201163824174"></p>
+<p>如果剩余的数据长度小于 64 字节，直接将数据拷贝到缓冲区，准备下次更新。</p>
+<h2 id="链接变量初始化—MD5-Init"><a href="#链接变量初始化—MD5-Init" class="headerlink" title="链接变量初始化—MD5_Init()"></a>链接变量初始化—MD5_Init()</h2><p><img src="https://s2.loli.net/2025/02/01/UskShGlgq14ADeP.png" srcset="/img/loading.gif" lazyload alt="image-20250201164051685"></p>
+<p><code>MD5_Init</code> 函数是 MD5 算法中的初始化步骤，主要完成以下工作：</p>
+<ol>
+<li><strong>清空上下文</strong>：确保 MD5 上下文的内存没有之前的残留数据。</li>
+<li><strong>设置初始化常数</strong>：将 MD5 算法的四个寄存器 <code>A</code>、<code>B</code>、<code>C</code> 和 <code>D</code> 设置为预定义的常数。</li>
+<li><strong>准备好进行哈希计算</strong>：初始化完成后，MD5 就可以开始接受输入数据并计算哈希值了</li>
+</ol>
+<h2 id="压缩循环—MD5-Transform"><a href="#压缩循环—MD5-Transform" class="headerlink" title="压缩循环—MD5_Transform()"></a>压缩循环—MD5_Transform()</h2><p><img src="https://s2.loli.net/2025/02/01/8Rhi9yCaPcBMVAb.png" srcset="/img/loading.gif" lazyload alt="image-20250201164313446"></p>
+<h2 id="结果输出—MD5-Final"><a href="#结果输出—MD5-Final" class="headerlink" title="结果输出—MD5_Final()"></a>结果输出—MD5_Final()</h2><p><code>MD5_Final</code> 的主要任务是：</p>
+<ol>
+<li>对消息进行最后的填充，以确保它的长度是 512 位的整数倍（如果消息长度已经是 512 位的倍数，这步操作也不会多余）。</li>
+<li>将原始消息的长度信息附加到数据末尾，完成填充。</li>
+<li>使用填充后的数据计算最终的 MD5 哈希值。</li>
+<li>清除相关内存（例如清除哈希计算过程中的中间结果），以增强安全性。</li>
+<li>将最终的 MD5 哈希值存储到输出缓冲区。</li>
+</ol>
+<h3 id="详细分析"><a href="#详细分析" class="headerlink" title="详细分析"></a><strong>详细分析</strong></h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">__int64 __fastcall <span class="hljs-title">MD5_Final</span><span class="hljs-params">(_DWORD *a1, _DWORD *a2)</span></span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>**<code>a1</code>**：最终 MD5 哈希值的输出缓冲区（长度为 4 个 32 位整数，总共 128 位，最终结果是 16 字节的 MD5 哈希）。</li>
+<li>**<code>a2</code>**：存储 MD5 哈希计算状态的内部数据结构（通常是一个包含 MD5 状态、计数器、缓冲区等的上下文结构）。</li>
+</ul>
+<h4 id="1-填充操作"><a href="#1-填充操作" class="headerlink" title="1. 填充操作"></a>1. <strong>填充操作</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp">v2 = (<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)a2[<span class="hljs-number">22</span>]; <br>v3 = a2 + <span class="hljs-number">6</span>;<br>*((_BYTE *)a2 + v2 + <span class="hljs-number">24</span>) = <span class="hljs-number">0x80</span>;<br>v6 = v2 + <span class="hljs-number">1</span>;<br><span class="hljs-keyword">if</span> ((<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)v2 &gt;= <span class="hljs-number">0x38</span>)<br>&#123;<br>    <span class="hljs-built_in">memset</span>((<span class="hljs-type">char</span> *)v3 + v6, <span class="hljs-number">0</span>, <span class="hljs-number">63</span> - v2);<br>    <span class="hljs-built_in">ossl_md5_block_asm_data_order</span>(a2, v3, <span class="hljs-number">1</span>);<br>    v6 = <span class="hljs-number">0LL</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-长度信息附加"><a href="#2-长度信息附加" class="headerlink" title="2. 长度信息附加"></a>2. <strong>长度信息附加</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">memset</span>((<span class="hljs-type">char</span> *)v3 + v6, <span class="hljs-number">0</span>, <span class="hljs-number">56</span> - v6);<br>v7 = a2[<span class="hljs-number">5</span>];<br>a2[<span class="hljs-number">20</span>] = a2[<span class="hljs-number">4</span>];<br>a2[<span class="hljs-number">21</span>] = v7;<br><span class="hljs-built_in">ossl_md5_block_asm_data_order</span>(a2, v3, <span class="hljs-number">1</span>);<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-清理和输出结果"><a href="#3-清理和输出结果" class="headerlink" title="3. 清理和输出结果"></a>3. <strong>清理和输出结果</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp">a2[<span class="hljs-number">22</span>] = <span class="hljs-number">0</span>;<br><span class="hljs-built_in">OPENSSL_cleanse</span>(v3, <span class="hljs-number">64LL</span>);<br>result = <span class="hljs-number">1LL</span>;<br>*a1 = *a2;<br>a1[<span class="hljs-number">1</span>] = a2[<span class="hljs-number">1</span>];<br>a1[<span class="hljs-number">2</span>] = a2[<span class="hljs-number">2</span>];<br>a1[<span class="hljs-number">3</span>] = a2[<span class="hljs-number">3</span>];<br><span class="hljs-keyword">return</span> result;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="SHA1"><a href="#SHA1" class="headerlink" title="SHA1"></a>SHA1</h1><p>原理部分在<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/07/15/%E5%AF%86%E7%A0%81%E5%AD%A6/">密码学体系框架 - The Peak Tower</a>中已经简单解释过，本文着重观察openssl中的实现和逆向反汇编形式</p>
+<h2 id="Openssl中Sha1使用"><a href="#Openssl中Sha1使用" class="headerlink" title="Openssl中Sha1使用"></a>Openssl中Sha1使用</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;openssl/evp.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;openssl/sha.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">compute_sha1</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *data, <span class="hljs-type">size_t</span> length)</span> </span>&#123;<br>    <span class="hljs-comment">// 创建并初始化 SHA1_CTX（OpenSSL的SHA1上下文）</span><br>    EVP_MD_CTX *mdctx = <span class="hljs-built_in">EVP_MD_CTX_new</span>();<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> hash[SHA_DIGEST_LENGTH]; <span class="hljs-comment">// 用于存储 SHA1 的哈希值</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> hash_len = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">// 初始化 SHA1</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">EVP_DigestInit_ex</span>(mdctx, <span class="hljs-built_in">EVP_sha1</span>(), <span class="hljs-literal">NULL</span>) != <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;EVP_DigestInit_ex failed\n&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 更新哈希计算</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">EVP_DigestUpdate</span>(mdctx, data, length) != <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;EVP_DigestUpdate failed\n&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 完成哈希计算</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">EVP_DigestFinal_ex</span>(mdctx, hash, &amp;hash_len) != <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;EVP_DigestFinal_ex failed\n&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 输出计算结果</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;SHA-1 hash: &quot;</span>);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; hash_len; i++) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%02x&quot;</span>, hash[i]);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br><br>    <span class="hljs-comment">// 清理</span><br>    <span class="hljs-built_in">EVP_MD_CTX_free</span>(mdctx);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *data = <span class="hljs-string">&quot;Hello, OpenSSL SHA-1!&quot;</span>;<br>    <span class="hljs-type">size_t</span> length = <span class="hljs-built_in">strlen</span>(data);<br><br>    <span class="hljs-comment">// 计算并打印 SHA1 哈希</span><br>    <span class="hljs-built_in">compute_sha1</span>((<span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *)data, length);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>上述代码是经过包装后的，更清晰的代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;openssl/sha.h&gt;</span></span><br> <br><span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">char</span> hex_chars[] = <span class="hljs-string">&quot;0123456789abcdef&quot;</span>;<br> <br><span class="hljs-type">void</span> <span class="hljs-title function_">convert_hex</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *md, <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *mdstr)</span><br>&#123;<br>    <span class="hljs-type">int</span> i;<br>    <span class="hljs-type">int</span> j = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> c;<br> <br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">20</span>; i++) &#123;<br>        c = (md[i] &gt;&gt; <span class="hljs-number">4</span>) &amp; <span class="hljs-number">0x0f</span>;<br>        mdstr[j++] = hex_chars[c];<br>        mdstr[j++] = hex_chars[md[i] &amp; <span class="hljs-number">0x0f</span>];<br>    &#125;<br>    mdstr[<span class="hljs-number">40</span>] = <span class="hljs-string">&#x27;\0&#x27;</span>;<br>&#125;<br> <br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> **argv)</span><br>&#123;<br>    SHA_CTX shactx;<br>    <span class="hljs-type">char</span> data[] = <span class="hljs-string">&quot;hello groad.net&quot;</span>;<br>    <span class="hljs-type">char</span> md[SHA_DIGEST_LENGTH];<br>    <span class="hljs-type">char</span> mdstr[<span class="hljs-number">40</span>];<br><br>    SHA1_Init(&amp;shactx);<br>    SHA1_Update(&amp;shactx, data, <span class="hljs-number">6</span>);<br>    SHA1_Update(&amp;shactx, data+<span class="hljs-number">6</span>, <span class="hljs-number">9</span>);<br>    SHA1_Final(md, &amp;shactx);<br>    convert_hex(md, mdstr);<br>    <span class="hljs-built_in">printf</span> (<span class="hljs-string">&quot;Result of SHA1 : %s\n&quot;</span>, mdstr);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="SHA1-Init"><a href="#SHA1-Init" class="headerlink" title="SHA1_Init"></a>SHA1_Init</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> HASH_INIT                       SHA1_Init</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/02/02/K9TURQLcwqauJzj.png" srcset="/img/loading.gif" lazyload alt="image-20250202151008385"></p>
+<h3 id="特征"><a href="#特征" class="headerlink" title="特征"></a>特征</h3><p><img src="https://s2.loli.net/2025/02/02/1mcAfyeaolH9jCP.png" srcset="/img/loading.gif" lazyload alt="image-20250202151028300"></p>
+<h2 id="SHA1-Update"><a href="#SHA1-Update" class="headerlink" title="SHA1_Update"></a>SHA1_Update</h2><p>其中分块与填充同MD5相同</p>
+<p><img src="https://s2.loli.net/2025/02/02/2qAbCZJ7HuDY4Qx.png" srcset="/img/loading.gif" lazyload alt="image-20250202202844646"></p>
+<h2 id="sha1-block-data-order"><a href="#sha1-block-data-order" class="headerlink" title="sha1_block_data_order"></a>sha1_block_data_order</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> HASH_BLOCK_DATA_ORDER           sha1_block_data_order</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> Xupdate(a,ix,ia,ib,ic,id)       ( (a)=(ia^ib^ic^id),    \</span><br><span class="hljs-meta">                                          ix=(a)=ROTATE((a),1)  \</span><br><span class="hljs-meta">                                        )</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INIT_DATA_h0 0x67452301UL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INIT_DATA_h1 0xefcdab89UL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INIT_DATA_h2 0x98badcfeUL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INIT_DATA_h3 0x10325476UL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> INIT_DATA_h4 0xc3d2e1f0UL</span><br><br><span class="hljs-type">int</span> <span class="hljs-title function_">HASH_INIT</span><span class="hljs-params">(SHA_CTX *c)</span><br>&#123;<br>    <span class="hljs-built_in">memset</span>(c, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(*c));<br>    c-&gt;h0 = INIT_DATA_h0;<br>    c-&gt;h1 = INIT_DATA_h1;<br>    c-&gt;h2 = INIT_DATA_h2;<br>    c-&gt;h3 = INIT_DATA_h3;<br>    c-&gt;h4 = INIT_DATA_h4;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> K_00_19 0x5a827999UL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> K_20_39 0x6ed9eba1UL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> K_40_59 0x8f1bbcdcUL</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> K_60_79 0xca62c1d6UL</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> F_00_19(b,c,d)  ((((c) ^ (d)) &amp; (b)) ^ (d))</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> F_20_39(b,c,d)  ((b) ^ (c) ^ (d))</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> F_40_59(b,c,d)  (((b) &amp; (c)) | (((b)|(c)) &amp; (d)))</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> F_60_79(b,c,d)  F_20_39(b,c,d)</span><br><br><span class="hljs-meta"># <span class="hljs-keyword">define</span> BODY_00_15(i,a,b,c,d,e,f,xi) \</span><br><span class="hljs-meta">        (f)=xi+(e)+K_00_19+ROTATE((a),5)+F_00_19((b),(c),(d)); \</span><br><span class="hljs-meta">        (b)=ROTATE((b),30);</span><br><br><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">HASH_BLOCK_DATA_ORDER</span><span class="hljs-params">(SHA_CTX *c, <span class="hljs-type">const</span> <span class="hljs-type">void</span> *p, <span class="hljs-type">size_t</span> num)</span><br>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> *data = p;<br>    <span class="hljs-keyword">register</span> <span class="hljs-type">unsigned</span> MD32_REG_T A, B, C, D, E, T, l;<br><span class="hljs-meta">#  <span class="hljs-keyword">ifndef</span> MD32_XARRAY</span><br>    <span class="hljs-type">unsigned</span> MD32_REG_T XX0, XX1, XX2, XX3, XX4, XX5, XX6, XX7,<br>        XX8, XX9, XX10, XX11, XX12, XX13, XX14, XX15;<br><span class="hljs-meta">#  <span class="hljs-keyword">else</span></span><br>    SHA_LONG XX[<span class="hljs-number">16</span>];<br><span class="hljs-meta">#  <span class="hljs-keyword">endif</span></span><br><br>    A = c-&gt;h0;<br>    B = c-&gt;h1;<br>    C = c-&gt;h2;<br>    D = c-&gt;h3;<br>    E = c-&gt;h4;<br><br>    <span class="hljs-keyword">for</span> (;;) &#123;<br>        DECLARE_IS_ENDIAN;<br><br>        <span class="hljs-keyword">if</span> (!IS_LITTLE_ENDIAN &amp;&amp; <span class="hljs-keyword">sizeof</span>(SHA_LONG) == <span class="hljs-number">4</span><br>            &amp;&amp; ((<span class="hljs-type">size_t</span>)p % <span class="hljs-number">4</span>) == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-type">const</span> SHA_LONG *W = (<span class="hljs-type">const</span> SHA_LONG *)data;<br><br>            X(<span class="hljs-number">0</span>) = W[<span class="hljs-number">0</span>];<br>            X(<span class="hljs-number">1</span>) = W[<span class="hljs-number">1</span>];<br>            BODY_00_15(<span class="hljs-number">0</span>, A, B, C, D, E, T, X(<span class="hljs-number">0</span>));<br>            X(<span class="hljs-number">2</span>) = W[<span class="hljs-number">2</span>];<br>            BODY_00_15(<span class="hljs-number">1</span>, T, A, B, C, D, E, X(<span class="hljs-number">1</span>));<br>            X(<span class="hljs-number">3</span>) = W[<span class="hljs-number">3</span>];<br>            BODY_00_15(<span class="hljs-number">2</span>, E, T, A, B, C, D, X(<span class="hljs-number">2</span>));<br>            X(<span class="hljs-number">4</span>) = W[<span class="hljs-number">4</span>];<br>            BODY_00_15(<span class="hljs-number">3</span>, D, E, T, A, B, C, X(<span class="hljs-number">3</span>));<br>            X(<span class="hljs-number">5</span>) = W[<span class="hljs-number">5</span>];<br>            BODY_00_15(<span class="hljs-number">4</span>, C, D, E, T, A, B, X(<span class="hljs-number">4</span>));<br>            X(<span class="hljs-number">6</span>) = W[<span class="hljs-number">6</span>];<br>            BODY_00_15(<span class="hljs-number">5</span>, B, C, D, E, T, A, X(<span class="hljs-number">5</span>));<br>            X(<span class="hljs-number">7</span>) = W[<span class="hljs-number">7</span>];<br>            BODY_00_15(<span class="hljs-number">6</span>, A, B, C, D, E, T, X(<span class="hljs-number">6</span>));<br>            X(<span class="hljs-number">8</span>) = W[<span class="hljs-number">8</span>];<br>            BODY_00_15(<span class="hljs-number">7</span>, T, A, B, C, D, E, X(<span class="hljs-number">7</span>));<br>            X(<span class="hljs-number">9</span>) = W[<span class="hljs-number">9</span>];<br>            BODY_00_15(<span class="hljs-number">8</span>, E, T, A, B, C, D, X(<span class="hljs-number">8</span>));<br>            X(<span class="hljs-number">10</span>) = W[<span class="hljs-number">10</span>];<br>            BODY_00_15(<span class="hljs-number">9</span>, D, E, T, A, B, C, X(<span class="hljs-number">9</span>));<br>            X(<span class="hljs-number">11</span>) = W[<span class="hljs-number">11</span>];<br>            BODY_00_15(<span class="hljs-number">10</span>, C, D, E, T, A, B, X(<span class="hljs-number">10</span>));<br>            X(<span class="hljs-number">12</span>) = W[<span class="hljs-number">12</span>];<br>            BODY_00_15(<span class="hljs-number">11</span>, B, C, D, E, T, A, X(<span class="hljs-number">11</span>));<br>            X(<span class="hljs-number">13</span>) = W[<span class="hljs-number">13</span>];<br>            BODY_00_15(<span class="hljs-number">12</span>, A, B, C, D, E, T, X(<span class="hljs-number">12</span>));<br>            X(<span class="hljs-number">14</span>) = W[<span class="hljs-number">14</span>];<br>            BODY_00_15(<span class="hljs-number">13</span>, T, A, B, C, D, E, X(<span class="hljs-number">13</span>));<br>            X(<span class="hljs-number">15</span>) = W[<span class="hljs-number">15</span>];<br>            BODY_00_15(<span class="hljs-number">14</span>, E, T, A, B, C, D, X(<span class="hljs-number">14</span>));<br>            BODY_00_15(<span class="hljs-number">15</span>, D, E, T, A, B, C, X(<span class="hljs-number">15</span>));<br><br>            data += SHA_CBLOCK;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">0</span>) = l;<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">1</span>) = l;<br>            BODY_00_15(<span class="hljs-number">0</span>, A, B, C, D, E, T, X(<span class="hljs-number">0</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">2</span>) = l;<br>            BODY_00_15(<span class="hljs-number">1</span>, T, A, B, C, D, E, X(<span class="hljs-number">1</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">3</span>) = l;<br>            BODY_00_15(<span class="hljs-number">2</span>, E, T, A, B, C, D, X(<span class="hljs-number">2</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">4</span>) = l;<br>            BODY_00_15(<span class="hljs-number">3</span>, D, E, T, A, B, C, X(<span class="hljs-number">3</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">5</span>) = l;<br>            BODY_00_15(<span class="hljs-number">4</span>, C, D, E, T, A, B, X(<span class="hljs-number">4</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">6</span>) = l;<br>            BODY_00_15(<span class="hljs-number">5</span>, B, C, D, E, T, A, X(<span class="hljs-number">5</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">7</span>) = l;<br>            BODY_00_15(<span class="hljs-number">6</span>, A, B, C, D, E, T, X(<span class="hljs-number">6</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">8</span>) = l;<br>            BODY_00_15(<span class="hljs-number">7</span>, T, A, B, C, D, E, X(<span class="hljs-number">7</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">9</span>) = l;<br>            BODY_00_15(<span class="hljs-number">8</span>, E, T, A, B, C, D, X(<span class="hljs-number">8</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">10</span>) = l;<br>            BODY_00_15(<span class="hljs-number">9</span>, D, E, T, A, B, C, X(<span class="hljs-number">9</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">11</span>) = l;<br>            BODY_00_15(<span class="hljs-number">10</span>, C, D, E, T, A, B, X(<span class="hljs-number">10</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">12</span>) = l;<br>            BODY_00_15(<span class="hljs-number">11</span>, B, C, D, E, T, A, X(<span class="hljs-number">11</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">13</span>) = l;<br>            BODY_00_15(<span class="hljs-number">12</span>, A, B, C, D, E, T, X(<span class="hljs-number">12</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">14</span>) = l;<br>            BODY_00_15(<span class="hljs-number">13</span>, T, A, B, C, D, E, X(<span class="hljs-number">13</span>));<br>            (<span class="hljs-type">void</span>)HOST_c2l(data, l);<br>            X(<span class="hljs-number">15</span>) = l;<br>            BODY_00_15(<span class="hljs-number">14</span>, E, T, A, B, C, D, X(<span class="hljs-number">14</span>));<br>            BODY_00_15(<span class="hljs-number">15</span>, D, E, T, A, B, C, X(<span class="hljs-number">15</span>));<br>        &#125;<br><br>        BODY_16_19(<span class="hljs-number">16</span>, C, D, E, T, A, B, X(<span class="hljs-number">0</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">13</span>));<br>        BODY_16_19(<span class="hljs-number">17</span>, B, C, D, E, T, A, X(<span class="hljs-number">1</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">14</span>));<br>        BODY_16_19(<span class="hljs-number">18</span>, A, B, C, D, E, T, X(<span class="hljs-number">2</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">15</span>));<br>        BODY_16_19(<span class="hljs-number">19</span>, T, A, B, C, D, E, X(<span class="hljs-number">3</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">0</span>));<br><br>        BODY_20_31(<span class="hljs-number">20</span>, E, T, A, B, C, D, X(<span class="hljs-number">4</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">1</span>));<br>        BODY_20_31(<span class="hljs-number">21</span>, D, E, T, A, B, C, X(<span class="hljs-number">5</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">2</span>));<br>        BODY_20_31(<span class="hljs-number">22</span>, C, D, E, T, A, B, X(<span class="hljs-number">6</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">3</span>));<br>        BODY_20_31(<span class="hljs-number">23</span>, B, C, D, E, T, A, X(<span class="hljs-number">7</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">4</span>));<br>        BODY_20_31(<span class="hljs-number">24</span>, A, B, C, D, E, T, X(<span class="hljs-number">8</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">5</span>));<br>        BODY_20_31(<span class="hljs-number">25</span>, T, A, B, C, D, E, X(<span class="hljs-number">9</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">6</span>));<br>        BODY_20_31(<span class="hljs-number">26</span>, E, T, A, B, C, D, X(<span class="hljs-number">10</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">7</span>));<br>        BODY_20_31(<span class="hljs-number">27</span>, D, E, T, A, B, C, X(<span class="hljs-number">11</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">8</span>));<br>        BODY_20_31(<span class="hljs-number">28</span>, C, D, E, T, A, B, X(<span class="hljs-number">12</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">9</span>));<br>        BODY_20_31(<span class="hljs-number">29</span>, B, C, D, E, T, A, X(<span class="hljs-number">13</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">10</span>));<br>        BODY_20_31(<span class="hljs-number">30</span>, A, B, C, D, E, T, X(<span class="hljs-number">14</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">11</span>));<br>        BODY_20_31(<span class="hljs-number">31</span>, T, A, B, C, D, E, X(<span class="hljs-number">15</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">12</span>));<br><br>        BODY_32_39(<span class="hljs-number">32</span>, E, T, A, B, C, D, X(<span class="hljs-number">0</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">13</span>));<br>        BODY_32_39(<span class="hljs-number">33</span>, D, E, T, A, B, C, X(<span class="hljs-number">1</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">14</span>));<br>        BODY_32_39(<span class="hljs-number">34</span>, C, D, E, T, A, B, X(<span class="hljs-number">2</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">15</span>));<br>        BODY_32_39(<span class="hljs-number">35</span>, B, C, D, E, T, A, X(<span class="hljs-number">3</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">0</span>));<br>        BODY_32_39(<span class="hljs-number">36</span>, A, B, C, D, E, T, X(<span class="hljs-number">4</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">1</span>));<br>        BODY_32_39(<span class="hljs-number">37</span>, T, A, B, C, D, E, X(<span class="hljs-number">5</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">2</span>));<br>        BODY_32_39(<span class="hljs-number">38</span>, E, T, A, B, C, D, X(<span class="hljs-number">6</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">3</span>));<br>        BODY_32_39(<span class="hljs-number">39</span>, D, E, T, A, B, C, X(<span class="hljs-number">7</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">4</span>));<br><br>        BODY_40_59(<span class="hljs-number">40</span>, C, D, E, T, A, B, X(<span class="hljs-number">8</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">5</span>));<br>        BODY_40_59(<span class="hljs-number">41</span>, B, C, D, E, T, A, X(<span class="hljs-number">9</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">6</span>));<br>        BODY_40_59(<span class="hljs-number">42</span>, A, B, C, D, E, T, X(<span class="hljs-number">10</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">7</span>));<br>        BODY_40_59(<span class="hljs-number">43</span>, T, A, B, C, D, E, X(<span class="hljs-number">11</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">8</span>));<br>        BODY_40_59(<span class="hljs-number">44</span>, E, T, A, B, C, D, X(<span class="hljs-number">12</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">9</span>));<br>        BODY_40_59(<span class="hljs-number">45</span>, D, E, T, A, B, C, X(<span class="hljs-number">13</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">10</span>));<br>        BODY_40_59(<span class="hljs-number">46</span>, C, D, E, T, A, B, X(<span class="hljs-number">14</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">11</span>));<br>        BODY_40_59(<span class="hljs-number">47</span>, B, C, D, E, T, A, X(<span class="hljs-number">15</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">12</span>));<br>        BODY_40_59(<span class="hljs-number">48</span>, A, B, C, D, E, T, X(<span class="hljs-number">0</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">13</span>));<br>        BODY_40_59(<span class="hljs-number">49</span>, T, A, B, C, D, E, X(<span class="hljs-number">1</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">14</span>));<br>        BODY_40_59(<span class="hljs-number">50</span>, E, T, A, B, C, D, X(<span class="hljs-number">2</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">15</span>));<br>        BODY_40_59(<span class="hljs-number">51</span>, D, E, T, A, B, C, X(<span class="hljs-number">3</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">0</span>));<br>        BODY_40_59(<span class="hljs-number">52</span>, C, D, E, T, A, B, X(<span class="hljs-number">4</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">1</span>));<br>        BODY_40_59(<span class="hljs-number">53</span>, B, C, D, E, T, A, X(<span class="hljs-number">5</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">2</span>));<br>        BODY_40_59(<span class="hljs-number">54</span>, A, B, C, D, E, T, X(<span class="hljs-number">6</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">3</span>));<br>        BODY_40_59(<span class="hljs-number">55</span>, T, A, B, C, D, E, X(<span class="hljs-number">7</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">4</span>));<br>        BODY_40_59(<span class="hljs-number">56</span>, E, T, A, B, C, D, X(<span class="hljs-number">8</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">5</span>));<br>        BODY_40_59(<span class="hljs-number">57</span>, D, E, T, A, B, C, X(<span class="hljs-number">9</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">6</span>));<br>        BODY_40_59(<span class="hljs-number">58</span>, C, D, E, T, A, B, X(<span class="hljs-number">10</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">7</span>));<br>        BODY_40_59(<span class="hljs-number">59</span>, B, C, D, E, T, A, X(<span class="hljs-number">11</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">8</span>));<br><br>        BODY_60_79(<span class="hljs-number">60</span>, A, B, C, D, E, T, X(<span class="hljs-number">12</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">9</span>));<br>        BODY_60_79(<span class="hljs-number">61</span>, T, A, B, C, D, E, X(<span class="hljs-number">13</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">10</span>));<br>        BODY_60_79(<span class="hljs-number">62</span>, E, T, A, B, C, D, X(<span class="hljs-number">14</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">11</span>));<br>        BODY_60_79(<span class="hljs-number">63</span>, D, E, T, A, B, C, X(<span class="hljs-number">15</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">12</span>));<br>        BODY_60_79(<span class="hljs-number">64</span>, C, D, E, T, A, B, X(<span class="hljs-number">0</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">13</span>));<br>        BODY_60_79(<span class="hljs-number">65</span>, B, C, D, E, T, A, X(<span class="hljs-number">1</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">14</span>));<br>        BODY_60_79(<span class="hljs-number">66</span>, A, B, C, D, E, T, X(<span class="hljs-number">2</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">15</span>));<br>        BODY_60_79(<span class="hljs-number">67</span>, T, A, B, C, D, E, X(<span class="hljs-number">3</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">0</span>));<br>        BODY_60_79(<span class="hljs-number">68</span>, E, T, A, B, C, D, X(<span class="hljs-number">4</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">1</span>));<br>        BODY_60_79(<span class="hljs-number">69</span>, D, E, T, A, B, C, X(<span class="hljs-number">5</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">2</span>));<br>        BODY_60_79(<span class="hljs-number">70</span>, C, D, E, T, A, B, X(<span class="hljs-number">6</span>), X(<span class="hljs-number">8</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">3</span>));<br>        BODY_60_79(<span class="hljs-number">71</span>, B, C, D, E, T, A, X(<span class="hljs-number">7</span>), X(<span class="hljs-number">9</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">4</span>));<br>        BODY_60_79(<span class="hljs-number">72</span>, A, B, C, D, E, T, X(<span class="hljs-number">8</span>), X(<span class="hljs-number">10</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">5</span>));<br>        BODY_60_79(<span class="hljs-number">73</span>, T, A, B, C, D, E, X(<span class="hljs-number">9</span>), X(<span class="hljs-number">11</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">6</span>));<br>        BODY_60_79(<span class="hljs-number">74</span>, E, T, A, B, C, D, X(<span class="hljs-number">10</span>), X(<span class="hljs-number">12</span>), X(<span class="hljs-number">2</span>), X(<span class="hljs-number">7</span>));<br>        BODY_60_79(<span class="hljs-number">75</span>, D, E, T, A, B, C, X(<span class="hljs-number">11</span>), X(<span class="hljs-number">13</span>), X(<span class="hljs-number">3</span>), X(<span class="hljs-number">8</span>));<br>        BODY_60_79(<span class="hljs-number">76</span>, C, D, E, T, A, B, X(<span class="hljs-number">12</span>), X(<span class="hljs-number">14</span>), X(<span class="hljs-number">4</span>), X(<span class="hljs-number">9</span>));<br>        BODY_60_79(<span class="hljs-number">77</span>, B, C, D, E, T, A, X(<span class="hljs-number">13</span>), X(<span class="hljs-number">15</span>), X(<span class="hljs-number">5</span>), X(<span class="hljs-number">10</span>));<br>        BODY_60_79(<span class="hljs-number">78</span>, A, B, C, D, E, T, X(<span class="hljs-number">14</span>), X(<span class="hljs-number">0</span>), X(<span class="hljs-number">6</span>), X(<span class="hljs-number">11</span>));<br>        BODY_60_79(<span class="hljs-number">79</span>, T, A, B, C, D, E, X(<span class="hljs-number">15</span>), X(<span class="hljs-number">1</span>), X(<span class="hljs-number">7</span>), X(<span class="hljs-number">12</span>));<br><br>        c-&gt;h0 = (c-&gt;h0 + E) &amp; <span class="hljs-number">0xffffffff</span>L;<br>        c-&gt;h1 = (c-&gt;h1 + T) &amp; <span class="hljs-number">0xffffffff</span>L;<br>        c-&gt;h2 = (c-&gt;h2 + A) &amp; <span class="hljs-number">0xffffffff</span>L;<br>        c-&gt;h3 = (c-&gt;h3 + B) &amp; <span class="hljs-number">0xffffffff</span>L;<br>        c-&gt;h4 = (c-&gt;h4 + C) &amp; <span class="hljs-number">0xffffffff</span>L;<br><br>        <span class="hljs-keyword">if</span> (--num == <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">break</span>;<br><br>        A = c-&gt;h0;<br>        B = c-&gt;h1;<br>        C = c-&gt;h2;<br>        D = c-&gt;h3;<br>        E = c-&gt;h4;<br><br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="特征-1"><a href="#特征-1" class="headerlink" title="特征"></a>特征</h3><p><img src="https://s2.loli.net/2025/02/02/A3KNBajJpoTGHln.png" srcset="/img/loading.gif" lazyload alt="image-20250202214343955"></p>
+<p><img src="https://s2.loli.net/2025/02/02/ZSiaFju4WRElQrp.png" srcset="/img/loading.gif" lazyload alt="image-20250202213859931"></p>
+<h2 id="SHA1-Final"><a href="#SHA1-Final" class="headerlink" title="SHA1_Final"></a>SHA1_Final</h2><p><img src="https://s2.loli.net/2025/02/02/uqXyROCZUbGwVL2.png" srcset="/img/loading.gif" lazyload alt="image-20250202214918335"></p>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">__int64 __fastcall <span class="hljs-title function_">SHA1_Final</span><span class="hljs-params">(_DWORD *a1, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> *a2)</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>SHA1_Final</code> 是一个函数，<code>a1</code> 用来存储最终的哈希结果（一个 160 位的 SHA-1 哈希值），而 <code>a2</code> 是 SHA-1 的上下文结构，包含了算法的当前状态。</li>
+</ul>
+<h4 id="初始化："><a href="#初始化：" class="headerlink" title="初始化："></a>初始化：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">v2 = a2[<span class="hljs-number">23</span>];<br>v3 = a2 + <span class="hljs-number">7</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>v2 = a2[23]</code>：这里 <code>a2[23]</code> 可能代表了数据的当前长度（即处理过的数据的字节数）。<code>a2</code> 是一个指向 SHA-1 上下文数据的指针，通常会包含哈希状态寄存器（例如，<code>h0</code> 到 <code>h4</code>）以及缓冲区等信息。</li>
+<li><code>v3 = a2 + 7</code>：<code>v3</code> 是一个指向 <code>a2</code> 数组第 7 个元素的指针，用于后续的内存操作。</li>
+</ul>
+<h4 id="设置填充位（Padding）："><a href="#设置填充位（Padding）：" class="headerlink" title="设置填充位（Padding）："></a>设置填充位（Padding）：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">*((_BYTE *)a2 + v2 + <span class="hljs-number">28</span>) = <span class="hljs-number">0x80</span>;<br>v6 = v2 + <span class="hljs-number">1</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>*((_BYTE *)a2 + v2 + 28) = 0x80;</code>：这行代码将 <code>0x80</code> 写入到位于 <code>a2 + v2 + 28</code> 的位置。<code>0x80</code> 是一个标志位，用于填充消息，使其长度满足 512 位的倍数要求。</li>
+<li><code>v6 = v2 + 1;</code>：计算填充后需要的位数。</li>
+</ul>
+<h4 id="处理填充后消息长度："><a href="#处理填充后消息长度：" class="headerlink" title="处理填充后消息长度："></a>处理填充后消息长度：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> ( (<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)v2 &gt;= <span class="hljs-number">0x38</span> )<br>&#123;<br>  <span class="hljs-built_in">memset</span>((<span class="hljs-type">char</span> *)v3 + v6, <span class="hljs-number">0</span>, <span class="hljs-number">63</span> - v2);<br>  sha1_block_data_order(a2, v3, <span class="hljs-number">1LL</span>);<br>  v6 = <span class="hljs-number">0LL</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>这部分检查是否需要额外的块填充。SHA-1 处理消息时每次操作 512 位数据，如果数据长度大于或等于 <code>0x38</code>，则需要进行填充。</li>
+<li><code>memset((char *)v3 + v6, 0, 63 - v2)</code>：根据消息的剩余长度将其填充至 512 位的边界。</li>
+<li>调用 <code>sha1_block_data_order(a2, v3, 1LL)</code>：这是核心的 SHA-1 哈希计算函数，处理当前的数据块。</li>
+<li>填充完成后，<code>v6 = 0LL</code>，准备处理下一个块。</li>
+</ul>
+<h4 id="填充到下一个-512-位块："><a href="#填充到下一个-512-位块：" class="headerlink" title="填充到下一个 512 位块："></a>填充到下一个 512 位块：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-built_in">memset</span>((<span class="hljs-type">char</span> *)v3 + v6, <span class="hljs-number">0</span>, <span class="hljs-number">56</span> - v6);<br>v7 = bswap32(a2[<span class="hljs-number">5</span>]);<br>a2[<span class="hljs-number">21</span>] = bswap32(a2[<span class="hljs-number">6</span>]);<br>a2[<span class="hljs-number">22</span>] = v7;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>memset((char *)v3 + v6, 0, 56 - v6)</code>：填充当前块的剩余部分，确保数据块大小为 512 位。</li>
+<li><code>v7 = bswap32(a2[5])</code>：字节序转换，将 <code>a2[5]</code> （SHA-1 中的状态寄存器）进行字节交换，以确保大端字节序。</li>
+<li><code>a2[21] = bswap32(a2[6])</code> 和 <code>a2[22] = v7</code>：将 <code>a2</code> 数组中的状态寄存器更新，转换字节序。</li>
+</ul>
+<h4 id="最后一块数据哈希计算："><a href="#最后一块数据哈希计算：" class="headerlink" title="最后一块数据哈希计算："></a>最后一块数据哈希计算：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">sha1_block_data_order(a2, v3, <span class="hljs-number">1LL</span>);<br>a2[<span class="hljs-number">23</span>] = <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>再次调用 <code>sha1_block_data_order</code>，处理填充后的最后一块数据。</li>
+<li><code>a2[23] = 0</code>：清除填充长度标记，表示所有数据块都已处理完成。</li>
+</ul>
+<h4 id="清除敏感数据："><a href="#清除敏感数据：" class="headerlink" title="清除敏感数据："></a>清除敏感数据：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">OPENSSL_cleanse(v3, <span class="hljs-number">64LL</span>);<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>OPENSSL_cleanse(v3, 64LL)</code>：清除与 <code>v3</code> 相关的内存，通常是为了保证安全性，防止敏感数据泄漏。</li>
+</ul>
+<h4 id="生成最终的哈希值："><a href="#生成最终的哈希值：" class="headerlink" title="生成最终的哈希值："></a>生成最终的哈希值：</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c">result = <span class="hljs-number">1LL</span>;<br>*a1 = bswap32(*a2);<br>a1[<span class="hljs-number">1</span>] = bswap32(a2[<span class="hljs-number">1</span>]);<br>a1[<span class="hljs-number">2</span>] = bswap32(a2[<span class="hljs-number">2</span>]);<br>a1[<span class="hljs-number">3</span>] = bswap32(a2[<span class="hljs-number">3</span>]);<br>a1[<span class="hljs-number">4</span>] = bswap32(a2[<span class="hljs-number">4</span>]);<br><span class="hljs-keyword">return</span> result;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>最后，<code>*a1</code> 将存储最终的 SHA-1 哈希值，将 <code>a2</code> 中的状态寄存器内容转换为字节序正确的格式并复制到 <code>a1</code> 中。</li>
+<li><code>bswap32</code> 是一个字节交换函数，用于确保最终结果按大端字节序存储。</li>
+<li>返回值 <code>result = 1LL</code> 表示操作成功。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/" class="category-chain-item">逆向与开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件逆向工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E5%AF%86%E7%A0%81%E5%AD%A6/" class="category-chain-item">密码学</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>摘要算法</div>
+      <div>https://hermes37.vercel.app/2026/05/26/逆向与开发/软件逆向工程/密码学/摘要算法/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月26日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/26/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E6%8A%80%E6%9C%AF/angr%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/" title="angr符号执行">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">angr符号执行</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/26/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Web%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E8%AE%BE%E5%A4%87%E6%8C%87%E7%BA%B9%E8%BF%BD%E8%B8%AA/" title="设备指纹追踪">
+                        <span class="hidden-mobile">设备指纹追踪</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

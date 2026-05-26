@@ -1,0 +1,886 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="对luoyesiqiu&#x2F;dpt-shell: An android Dex protects shell implementation拙劣的模仿  什么是抽取壳Android的抽取壳是一种常见的App保护技术，属于DEX加固的一种形式，主要用于防止反编译和代码分析。它的核心原理是将原始DEX文件中的关键代码（通常是业务逻辑或敏感算法）动态隐藏，在运行时再解密并加载执行，从而增加逆向分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="抽取加固实现关键点">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/10/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/%E5%A3%B3%E5%8E%9F%E7%90%86/%E6%8A%BD%E5%8F%96%E5%8A%A0%E5%9B%BA%E5%AE%9E%E7%8E%B0%E5%85%B3%E9%94%AE%E7%82%B9/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="对luoyesiqiu&#x2F;dpt-shell: An android Dex protects shell implementation拙劣的模仿  什么是抽取壳Android的抽取壳是一种常见的App保护技术，属于DEX加固的一种形式，主要用于防止反编译和代码分析。它的核心原理是将原始DEX文件中的关键代码（通常是业务逻辑或敏感算法）动态隐藏，在运行时再解密并加载执行，从而增加逆向分析">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/08/27/yp9164vWYoPfRrQ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/qVWN1JftbIO67DS.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/hKUs2ouAZ9YykgJ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/cLyH9SZ8R6sG7O1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/2YIBVtkoGzQsye3.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/p91vc6EATIKHLgq.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/L5GXsCNtko1TaBh.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/vxbWToqZVLdB9Xe.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/A7Z4siDK9r6bmCR.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/25/j2QyagAKnWXRec5.png">
+<meta property="article:published_time" content="2025-05-10T05:55:12.968Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.334Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/08/27/yp9164vWYoPfRrQ.png">
+  
+  
+  
+  <title>抽取加固实现关键点 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="抽取加固实现关键点"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          36 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">抽取加固实现关键点</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>对<a target="_blank" rel="noopener" href="https://github.com/luoyesiqiu/dpt-shell">luoyesiqiu&#x2F;dpt-shell: An android Dex protects shell implementation</a>拙劣的模仿</p>
+</blockquote>
+<h1 id="什么是抽取壳"><a href="#什么是抽取壳" class="headerlink" title="什么是抽取壳"></a>什么是抽取壳</h1><p>Android的<strong>抽取壳</strong>是一种常见的App保护技术，属于DEX加固的一种形式，主要用于防止反编译和代码分析。它的核心原理是将原始DEX文件中的关键代码（通常是业务逻辑或敏感算法）<strong>动态隐藏</strong>，在运行时再解密并加载执行，从而增加逆向分析的难度。<strong>其抽取壳的核心原理是：</strong></p>
+<ul>
+<li><strong>代码抽取</strong>：在编译阶段，将原始DEX中的关键方法（如<code>onCreate()</code>、支付逻辑等）的<strong>字节码替换为空实现或无效指令</strong>（如全NOP指令）。被抽离的原始字节码会被加密后存储在DEX的其他位置（如资源文件、自定义段）或服务器上。</li>
+<li><strong>动态恢复</strong>：App运行时，壳代码（加固后的入口）会先执行，在内存中解密被抽取的原始字节码。通过Hook Android的类加载机制（如<code>ClassLoader</code>）或动态修改内存中的DEX结构，将解密后的指令回填到对应的方法体中。</li>
+</ul>
+<p>还记得在“DEX文件解析器编写”一文中，我们在“类定义列表”中分析了几个关键的结构：</p>
+<p><img src="https://s2.loli.net/2025/08/27/yp9164vWYoPfRrQ.png" srcset="/img/loading.gif" lazyload></p>
+<p>在这里将DexCode(又称：codeItem)中的”insns”指令抽取并保存到一个文件中，待App加载时再进行指令回填。</p>
+<h1 id="简单实现"><a href="#简单实现" class="headerlink" title="简单实现"></a>简单实现</h1><blockquote>
+<p>这里只简单复现了dpt-shell的指令抽取和回填的思路。</p>
+<p>注意的是这里对于dex是解析主要使用的android源码中的dx</p>
+</blockquote>
+<p>首先准备一个测试APP:</p>
+<p><img src="https://s2.loli.net/2025/05/25/qVWN1JftbIO67DS.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="代码抽取"><a href="#代码抽取" class="headerlink" title="代码抽取"></a>代码抽取</h2><p>对于方法的抽取，首先定位到DexMethod结构，并进一步找到CodeItem结构，先将原始指令进行保存，再用0填充源指令。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 处理单个DEX方法，提取指令并修改方法体为返回指令</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> dex Dex文件对象</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> method 要处理的方法对象</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> modifiedDexFile 待保存的DEX文件</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@return</span> 包含原始指令的Instruction对象，处理失败返回null</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> IOException 文件操作异常</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Instruction <span class="hljs-title function_">processMethod</span><span class="hljs-params">(Dex dex, ClassData.Method method, File modifiedDexFile)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>    <span class="hljs-comment">// 0. 基础检查：跳过没有实际代码的方法（抽象方法/本地方法）</span><br>    <span class="hljs-keyword">if</span> (method.getCodeOffset() == <span class="hljs-number">0</span>) &#123;<br>        Log.d(<span class="hljs-string">&quot;processMethod&quot;</span>, <span class="hljs-string">&quot;跳过无代码的方法: offset=0&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>    &#125;<br><br>    <span class="hljs-type">Instruction</span> <span class="hljs-variable">instructions</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Instruction</span>();  <span class="hljs-comment">// 创建指令容器对象</span><br><br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 1. 获取方法基本信息</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">className</span> <span class="hljs-operator">=</span> dex.typeNames().get(<br>                dex.methodIds().get(method.getMethodIndex()).getDeclaringClassIndex());<br>        <span class="hljs-type">String</span> <span class="hljs-variable">methodName</span> <span class="hljs-operator">=</span> dex.strings().get(<br>                dex.methodIds().get(method.getMethodIndex()).getNameIndex());<br>        <span class="hljs-type">String</span> <span class="hljs-variable">returnTypeName</span> <span class="hljs-operator">=</span> dex.typeNames().get(<br>                dex.protoIds().get(dex.methodIds().get(method.getMethodIndex()).getProtoIndex()).getReturnTypeIndex());<br><br>        <span class="hljs-comment">//------------------------获取原始信息--------------------</span><br>        <span class="hljs-comment">// 计算实际指令开始位置（CodeItem头部结构占用16字节）</span><br>        <span class="hljs-comment">// 结构说明：</span><br>        <span class="hljs-comment">// 0x0C insns_size  4字节  指令的2字节单位数量</span><br>        <span class="hljs-comment">// 0x10 insns[]     insns_size*2字节  实际指令开始</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">insOffset</span> <span class="hljs-operator">=</span> method.getCodeOffset() + <span class="hljs-number">16</span>;<br>        <br>        <span class="hljs-comment">// 读取原始代码指令</span><br>        <span class="hljs-type">Code</span> <span class="hljs-variable">code</span> <span class="hljs-operator">=</span> dex.readCode(method);<br>        <span class="hljs-keyword">if</span> (code == <span class="hljs-literal">null</span> || code.getInstructions().length == <span class="hljs-number">0</span>) &#123;<br>            Log.d(<span class="hljs-string">&quot;processMethod&quot;</span>, <span class="hljs-string">&quot;跳过无指令的方法: &quot;</span> + className + <span class="hljs-string">&quot;.&quot;</span> + methodName);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>        &#125;<br>        <br>        <span class="hljs-comment">// 将short数组指令转换为字节数组（Android DEX使用小端序）</span><br>        <span class="hljs-type">short</span>[] ins = code.getInstructions();<br>        <span class="hljs-type">int</span> <span class="hljs-variable">insSize</span> <span class="hljs-operator">=</span> ins.length * <span class="hljs-number">2</span>;  <span class="hljs-comment">// 计算原始指令字节大小</span><br>        <span class="hljs-type">byte</span>[] bytecode = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[insSize * <span class="hljs-number">2</span>];<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; ins.length; i++) &#123;<br>            bytecode[i*<span class="hljs-number">2</span>] = (<span class="hljs-type">byte</span>) (ins[i] &amp; <span class="hljs-number">0xFF</span>);      <span class="hljs-comment">// 低位字节</span><br>            bytecode[i*<span class="hljs-number">2</span>+<span class="hljs-number">1</span>] = (<span class="hljs-type">byte</span>) ((ins[i] &gt;&gt; <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xFF</span>); <span class="hljs-comment">// 高位字节</span><br>        &#125;<br><br>        <span class="hljs-comment">// 保存原始指令信息到Instruction对象</span><br>        instructions.setMethodIndex(method.getMethodIndex());<br>        instructions.setInstructionDataSize(insSize);<br>        instructions.setInstructionsData(bytecode);<br>        <span class="hljs-comment">//-----------------------------------------------------</span><br><br>        <span class="hljs-comment">// 2. 准备返回指令（根据返回类型生成对应的字节码）</span><br>        <span class="hljs-type">byte</span>[] returnBytes = getReturnByteCodes(returnTypeName);<br>        <br>        <span class="hljs-comment">// 验证空间是否足够存放返回指令</span><br>        <span class="hljs-keyword">if</span> (returnBytes.length &gt; insSize) &#123;<br>            Log.w(<span class="hljs-string">&quot;processMethod&quot;</span>, <span class="hljs-string">&quot;指令空间不足: &quot;</span> + className + <span class="hljs-string">&quot;.&quot;</span> + methodName);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>        &#125;<br><br>        <span class="hljs-comment">//-----------------------修改DEX文件------------------------</span><br>        <span class="hljs-keyword">try</span> (<span class="hljs-type">RandomAccessFile</span> <span class="hljs-variable">raf</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RandomAccessFile</span>(modifiedDexFile, <span class="hljs-string">&quot;rw&quot;</span>)) &#123;<br>            <span class="hljs-comment">// 3.1 清空原方法体（全部填充为NOP指令0x0000）</span><br>            raf.seek(insOffset);<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; code.getInstructions().length; i++) &#123;<br>                raf.writeShort(<span class="hljs-number">0</span>); <span class="hljs-comment">// 写入NOP (0x0000)</span><br>            &#125;<br>            <br>            <span class="hljs-comment">// 3.2 写入返回指令</span><br>            raf.seek(insOffset);<br>            raf.write(returnBytes);<br>            raf.getFD().sync();  <span class="hljs-comment">// 强制刷盘</span><br><br>            <span class="hljs-comment">// 记录修改日志</span><br>            Log.d(<span class="hljs-string">&quot;processMethod&quot;</span>, <span class="hljs-string">&quot;成功修改: &quot;</span> + className + <span class="hljs-string">&quot;.&quot;</span> + methodName +<br>                    <span class="hljs-string">&quot; | 原始大小: &quot;</span> + insOffset + <span class="hljs-string">&quot;B | 返回指令: &quot;</span> + returnBytes.length + <span class="hljs-string">&quot;B&quot;</span>);<br>            <br>            <span class="hljs-comment">// 详细调试日志（十六进制输出）</span><br>            Log.d(<span class="hljs-string">&quot;DexDebug&quot;</span>, String.format(<br>                    <span class="hljs-string">&quot;方法 %s.%s @ 0x%X\n原始指令: %s\n返回指令: %s&quot;</span>,<br>                    className, methodName, insOffset,<br>                    bytesToHex(bytecode, insSize),<br>                    bytesToHex(returnBytes, returnBytes.length)<br>            );<br>        &#125;<br>        <span class="hljs-keyword">return</span> instructions;<br>    &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>        Log.e(<span class="hljs-string">&quot;processMethod&quot;</span>, <span class="hljs-string">&quot;处理方法失败: &quot;</span> + e.getMessage(), e);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>对dex中所有的方法进行提取，即遍历classDefs和其下的所有Methods。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 从DEX文件中提取所有方法并进行处理，将结果存储在Map和文件中</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> dexPath DEX文件路径</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> context Android上下文，用于文件操作</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> IOException 如果出现文件操作错误</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">extractAllMethods</span><span class="hljs-params">(String dexPath, Context context)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>    <span class="hljs-comment">// 创建有序Map存储方法信息（保持插入顺序）</span><br>    Map&lt;String, Instruction&gt; maptable = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LinkedHashMap</span>&lt;&gt;();<br><br>    <span class="hljs-comment">// 加载DEX文件</span><br>    <span class="hljs-type">Dex</span> <span class="hljs-variable">dex</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Dex</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(dexPath));<br>    <br>    <span class="hljs-comment">// 准备输出文件</span><br>    <span class="hljs-type">File</span> <span class="hljs-variable">modifiedDexFile</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(context.getFilesDir(), <span class="hljs-string">&quot;modified.dex&quot;</span>);<br>    <span class="hljs-type">String</span> <span class="hljs-variable">FilePath</span> <span class="hljs-operator">=</span> context.getFilesDir() + <span class="hljs-string">&quot;/element.dat&quot;</span>;<br>    <span class="hljs-comment">// 如果modified.dex不存在则创建</span><br>    <span class="hljs-keyword">if</span> (!modifiedDexFile.exists()) &#123;<br>        Files.write(modifiedDexFile.toPath(), dex.getBytes());<br>    &#125;<br><br>    <span class="hljs-comment">// 从DEX文件中获取所有类定义</span><br>    Iterable&lt;ClassDef&gt; classDefs = dex.classDefs();<br><br>    <span class="hljs-comment">// 处理每个类定义</span><br>    <span class="hljs-keyword">for</span> (ClassDef classDef : classDefs) &#123;<br>        <span class="hljs-comment">// 跳过没有class_data_item的类（没有实现）</span><br>        <span class="hljs-keyword">if</span> (classDef.getClassDataOffset() == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br><br>        <span class="hljs-comment">// 检查是否应该根据排除规则跳过该类</span><br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">skip</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">for</span> (String rule : excludeRule) &#123;<br>            <span class="hljs-keyword">if</span> (classDef.toString().matches(rule)) &#123;<br>                skip = <span class="hljs-literal">true</span>;<br>                <span class="hljs-keyword">break</span>;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">if</span> (skip) &#123;<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">// 读取类数据</span><br>            <span class="hljs-type">ClassData</span> <span class="hljs-variable">classData</span> <span class="hljs-operator">=</span> dex.readClassData(classDef);<br>            <br>            <span class="hljs-comment">// 处理直接方法（静态方法、构造函数）</span><br>            <span class="hljs-keyword">for</span> (ClassData.Method method : classData.getDirectMethods()) &#123;<br>                <span class="hljs-comment">// 获取方法信息</span><br>                <span class="hljs-type">String</span> <span class="hljs-variable">className</span> <span class="hljs-operator">=</span> dex.typeNames().get(<br>                    dex.methodIds().get(method.getMethodIndex()).getDeclaringClassIndex());<br>                <span class="hljs-type">String</span> <span class="hljs-variable">methodName</span> <span class="hljs-operator">=</span> dex.strings().get(<br>                    dex.methodIds().get(method.getMethodIndex()).getNameIndex());<br>                <span class="hljs-type">String</span> <span class="hljs-variable">fullMethodName</span> <span class="hljs-operator">=</span> className + <span class="hljs-string">&quot;.&quot;</span> + methodName;<br>                <br>                <span class="hljs-comment">// 处理方法并存储结果</span><br>                <span class="hljs-type">Instruction</span> <span class="hljs-variable">ins</span> <span class="hljs-operator">=</span> processMethod(dex, method, modifiedDexFile);<br>                maptable.put(fullMethodName, ins);<br>            &#125;<br>            <br>            <span class="hljs-comment">// 处理虚方法（实例方法）</span><br>            <span class="hljs-keyword">for</span> (ClassData.Method method : classData.getVirtualMethods()) &#123;<br>                <span class="hljs-comment">// 获取方法信息</span><br>                <span class="hljs-type">String</span> <span class="hljs-variable">className</span> <span class="hljs-operator">=</span> dex.typeNames().get(<br>                    dex.methodIds().get(method.getMethodIndex()).getDeclaringClassIndex());<br>                <span class="hljs-type">String</span> <span class="hljs-variable">methodName</span> <span class="hljs-operator">=</span> dex.strings().get(<br>                    dex.methodIds().get(method.getMethodIndex()).getNameIndex());<br>                <span class="hljs-type">String</span> <span class="hljs-variable">fullMethodName</span> <span class="hljs-operator">=</span> className + <span class="hljs-string">&quot;.&quot;</span> + methodName;<br>                <br>                <span class="hljs-comment">// 处理方法并存储结果</span><br>                <span class="hljs-type">Instruction</span> <span class="hljs-variable">ins</span> <span class="hljs-operator">=</span> processMethod(dex, method, modifiedDexFile);<br>                maptable.put(fullMethodName, ins);<br>            &#125;<br>            <br>            <span class="hljs-comment">// 将收集到的方法信息保存到文件</span><br>            saveInstructionMap(maptable, FilePath);<br><br>        &#125; <span class="hljs-keyword">catch</span> (IllegalArgumentException e) &#123;<br>            <span class="hljs-comment">// 如果类解析失败，记录错误</span><br>            Log.e(<span class="hljs-string">&quot;提取&quot;</span>, <span class="hljs-string">&quot;解析失败: &quot;</span> + dex.typeNames().get(classDef.getTypeIndex()), e);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>抽取保存的结果如下：</p>
+<p><img src="https://s2.loli.net/2025/05/25/hKUs2ouAZ9YykgJ.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="指令回填"><a href="#指令回填" class="headerlink" title="指令回填"></a>指令回填</h2><h3 id="不涉及APP加载的回填"><a href="#不涉及APP加载的回填" class="headerlink" title="不涉及APP加载的回填"></a>不涉及APP加载的回填</h3><p>在前面得到了俩个文件：抽取的指令映射表，被抽取的dex文件。在这里如果不涉及app加载，仅仅从文件修复的角度，看看回填方法是什么？</p>
+<p>首先，在之前的“被抽取的dex文件”中保存的是一张表，键名是完整方法名，值是具体方法的指令数组。那么在回填中，只需依旧遍历classDefs和其下的所有Methods，找到拼接其完整方法名，再到“抽取的指令映射表”寻找即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 处理指定类的方法列表，将原始指令回填到DEX文件中</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> dex Dex解析器对象</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> classDef 当前处理的类定义</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> methods 要处理的方法列表（直接方法或虚方法）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> instable 存储原始指令的映射表（key=完整方法名，value=指令数据）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> dexBytes DEX文件的字节数组（直接修改此数组）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> IOException 当指令数据异常或写入越界时抛出</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processMethods</span><span class="hljs-params">(Dex dex, ClassDef classDef,</span><br><span class="hljs-params">                          List&lt;ClassData.Method&gt; methods,</span><br><span class="hljs-params">                          Map&lt;String, Instruction&gt; instable,</span><br><span class="hljs-params">                          <span class="hljs-type">byte</span>[] dexBytes)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br><br>    <span class="hljs-comment">// 遍历所有待处理方法</span><br>    <span class="hljs-keyword">for</span> (ClassData.Method method : methods) &#123;<br>        <span class="hljs-comment">// 1. 获取方法标识信息</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">className</span> <span class="hljs-operator">=</span> dex.typeNames().get(classDef.getTypeIndex());<br>        <span class="hljs-type">String</span> <span class="hljs-variable">methodName</span> <span class="hljs-operator">=</span> dex.strings().get(dex.methodIds().get(method.getMethodIndex()).getNameIndex());<br>        <span class="hljs-type">String</span> <span class="hljs-variable">fullMethodName</span> <span class="hljs-operator">=</span> className + <span class="hljs-string">&quot;.&quot;</span> + methodName;  <span class="hljs-comment">// 构造完整方法名（如：com.example.MainActivity.onCreate）</span><br><br>        <span class="hljs-comment">// 2. 从映射表中获取原始指令数据</span><br>        <span class="hljs-type">Instruction</span> <span class="hljs-variable">ins</span> <span class="hljs-operator">=</span> instable.get(fullMethodName);<br>        <span class="hljs-keyword">if</span> (ins == <span class="hljs-literal">null</span> || method.getCodeOffset() == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-keyword">continue</span>;  <span class="hljs-comment">// 跳过没有记录或没有代码的方法</span><br>        &#125;<br><br>        <span class="hljs-comment">// 调试日志：打印方法名和原始指令（十六进制）</span><br>        Log.d(<span class="hljs-string">&quot;Self_test&quot;</span>, <span class="hljs-string">&quot;method is &quot;</span> + methodName + <span class="hljs-string">&quot; data is: &quot;</span> + <br>              bytesToHex(ins.getInstructionsData(), ins.getInstructionDataSize()));<br><br>        <span class="hljs-comment">// 3. 指令数据验证</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">insSize</span> <span class="hljs-operator">=</span> ins.getInstructionDataSize();<br>        <span class="hljs-type">byte</span>[] bytes = ins.getInstructionsData();<br><br>        <span class="hljs-comment">// 3.1 检查全零指令（异常情况）</span><br>        <span class="hljs-keyword">if</span> (isAllZero(bytes)) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IOException</span>(<span class="hljs-string">&quot;无效的全零指令数据: &quot;</span> + fullMethodName);<br>        &#125;<br>        Log.d(<span class="hljs-string">&quot;DexDebug&quot;</span>, <span class="hljs-string">&quot;即将填充的数据： &quot;</span> + bytesToHex(bytes, insSize));<br><br>        <span class="hljs-comment">// 4. 边界检查</span><br>        <span class="hljs-type">Code</span> <span class="hljs-variable">code</span> <span class="hljs-operator">=</span> dex.readCode(method);<br>        <span class="hljs-comment">// 检查指令数据是否超过方法体容量</span><br>        <span class="hljs-keyword">if</span> (ins.getInstructionDataSize() &gt; code.getInstructions().length * <span class="hljs-number">2</span>) &#123;<br>            Log.e(<span class="hljs-string">&quot;DexPatch&quot;</span>, <span class="hljs-string">&quot;指令数据超出方法体边界: &quot;</span> + methodName);<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br><br>        <span class="hljs-comment">// 5. 记录修改前的指令（调试用）</span><br>        <span class="hljs-type">short</span>[] ins1 = code.getInstructions();<br>        <span class="hljs-type">int</span> <span class="hljs-variable">insSize1</span> <span class="hljs-operator">=</span> ins1.length * <span class="hljs-number">2</span>;<br>        <span class="hljs-type">byte</span>[] bytecode1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[insSize * <span class="hljs-number">2</span>];<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; ins1.length; i++) &#123;<br>            bytecode1[i*<span class="hljs-number">2</span>] = (<span class="hljs-type">byte</span>) (ins1[i] &amp; <span class="hljs-number">0xFF</span>);       <span class="hljs-comment">// 低位字节</span><br>            bytecode1[i*<span class="hljs-number">2</span>+<span class="hljs-number">1</span>] = (<span class="hljs-type">byte</span>) ((ins1[i] &gt;&gt; <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xFF</span>); <span class="hljs-comment">// 高位字节</span><br>        &#125;<br>        Log.d(<span class="hljs-string">&quot;DexDebug&quot;</span>, <span class="hljs-string">&quot;填充前指令： &quot;</span> + bytesToHex(bytecode1, insSize1));<br><br>        <span class="hljs-comment">// 6. 计算实际写入位置（跳过16字节的code_item头部）</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">insnsOffset</span> <span class="hljs-operator">=</span> method.getCodeOffset() + <span class="hljs-number">16</span>;<br>        <span class="hljs-comment">/* </span><br><span class="hljs-comment">         * code_item结构：</span><br><span class="hljs-comment">         * 0x00 registers_size</span><br><span class="hljs-comment">         * 0x02 ins_size</span><br><span class="hljs-comment">         * 0x04 outs_size</span><br><span class="hljs-comment">         * 0x06 tries_size</span><br><span class="hljs-comment">         * 0x08 debug_info_off</span><br><span class="hljs-comment">         * 0x0C insns_size</span><br><span class="hljs-comment">         * 0x10 insns[]  ← 实际指令开始位置</span><br><span class="hljs-comment">         */</span><br><br>        <span class="hljs-comment">// 7. 安全写入检查</span><br>        <span class="hljs-keyword">if</span> (insnsOffset + ins.getInstructionDataSize() &gt; dexBytes.length) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IOException</span>(<span class="hljs-string">&quot;写入位置超出文件末尾（偏移:0x&quot;</span> + <br>                                Integer.toHexString(insnsOffset) + <br>                                <span class="hljs-string">&quot;，文件大小:&quot;</span> + dexBytes.length + <span class="hljs-string">&quot;)&quot;</span>);<br>        &#125;<br><br>        <span class="hljs-comment">// 8. 执行指令回填（直接修改内存中的dexBytes数组）</span><br>        System.arraycopy(<br>            ins.getInstructionsData(),  <span class="hljs-comment">// 源数据（原始指令）</span><br>            <span class="hljs-number">0</span>,                         <span class="hljs-comment">// 源起始位置</span><br>            dexBytes,                  <span class="hljs-comment">// 目标数组（DEX文件）</span><br>            insnsOffset,               <span class="hljs-comment">// 目标起始偏移</span><br>            ins.getInstructionDataSize() <span class="hljs-comment">// 拷贝长度</span><br>        );<br><br>        <span class="hljs-comment">// 9. 记录操作日志</span><br>        Log.d(<span class="hljs-string">&quot;DexPatch&quot;</span>, <br>            <span class="hljs-string">&quot;回填方法: &quot;</span> + methodName + <span class="hljs-string">&quot;\n&quot;</span> +<br>            <span class="hljs-string">&quot;偏移: 0x&quot;</span> + Integer.toHexString(insnsOffset) + <span class="hljs-string">&quot;\n&quot;</span> +<br>            <span class="hljs-string">&quot;回填指令大小: &quot;</span> + ins.getInstructionDataSize() + <span class="hljs-string">&quot;字节\n&quot;</span> +<br>            <span class="hljs-string">&quot;原来指令大小: &quot;</span> + insSize1 + <span class="hljs-string">&quot;字节\n&quot;</span> +<br>            <span class="hljs-string">&quot;类: &quot;</span> + className<br>        );<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里主要加载指令映射表，任何依旧遍历处理即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * DEX指令修补方法 - 将修改后的DEX恢复原始指令</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> context Android上下文对象（用于文件操作）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> IOException 当文件操作或数据处理出错时抛出</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">InstructionPatching</span><span class="hljs-params">(Context context)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>    <span class="hljs-comment">// ============= 1. 准备输入输出文件 =============</span><br>    <span class="hljs-type">File</span> <span class="hljs-variable">inputFile</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(context.getCacheDir(), <span class="hljs-string">&quot;modified.dex&quot;</span>);  <span class="hljs-comment">// 临时输入的DEX文件</span><br>    <span class="hljs-type">File</span> <span class="hljs-variable">outputFile</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(context.getFilesDir(), <span class="hljs-string">&quot;patched.dex&quot;</span>);  <span class="hljs-comment">// 最终输出的DEX文件</span><br><br>    <span class="hljs-comment">// 从assets目录复制modified.dex到缓存目录（使用8KB缓冲区提高复制效率）</span><br>    <span class="hljs-keyword">try</span> (<span class="hljs-type">InputStream</span> <span class="hljs-variable">is</span> <span class="hljs-operator">=</span> context.getAssets().open(<span class="hljs-string">&quot;modified.dex&quot;</span>);<br>         <span class="hljs-type">OutputStream</span> <span class="hljs-variable">os</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileOutputStream</span>(inputFile)) &#123;<br>        <span class="hljs-type">byte</span>[] buffer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8192</span>];  <br>        <span class="hljs-type">int</span> length;<br>        <span class="hljs-keyword">while</span> ((length = is.read(buffer)) &gt; <span class="hljs-number">0</span>) &#123;<br>            os.write(buffer, <span class="hljs-number">0</span>, length);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// ============= 2. 加载指令映射表 =============</span><br>    Map&lt;String, Instruction&gt; insTable = loadInstructionMapFromAssets(context, <span class="hljs-string">&quot;element.dat&quot;</span>);<br>    <span class="hljs-keyword">if</span> (insTable == <span class="hljs-literal">null</span> || insTable.isEmpty()) &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IOException</span>(<span class="hljs-string">&quot;无法加载或解析element.dat文件（可能为空或格式错误）&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-comment">// ============= 3. DEX文件处理主流程 =============</span><br>    <span class="hljs-keyword">try</span> (<span class="hljs-type">RandomAccessFile</span> <span class="hljs-variable">dexFile</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RandomAccessFile</span>(inputFile, <span class="hljs-string">&quot;rw&quot;</span>);  <span class="hljs-comment">// 可读写的DEX文件</span><br>          <span class="hljs-type">FileChannel</span> <span class="hljs-variable">outChannel</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileOutputStream</span>(outputFile).getChannel()) &#123;  <span class="hljs-comment">// 输出文件通道</span><br><br>        <span class="hljs-comment">// 3.1 将整个DEX文件读入内存（提高处理速度）</span><br>        <span class="hljs-type">byte</span>[] dexBytes = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[(<span class="hljs-type">int</span>)dexFile.length()];<br>        dexFile.readFully(dexBytes);  <span class="hljs-comment">// 完全读取文件内容</span><br>        dexFile.seek(<span class="hljs-number">0</span>);  <span class="hljs-comment">// 重置文件指针</span><br><br>        <span class="hljs-type">Dex</span> <span class="hljs-variable">dex</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Dex</span>(dexBytes);  <span class="hljs-comment">// 使用内存字节数组创建Dex解析对象</span><br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">modified</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;  <span class="hljs-comment">// 修改标志位（当前版本未使用）</span><br><br>        <span class="hljs-comment">// 3.2 遍历所有类定义</span><br>        <span class="hljs-keyword">for</span> (ClassDef classDef : dex.classDefs()) &#123;<br>            <span class="hljs-comment">// 跳过没有实际代码的类（接口/抽象类）</span><br>            <span class="hljs-keyword">if</span> (classDef.getClassDataOffset() == <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br><br>            <span class="hljs-comment">// 应用排除规则（跳过特定包名/类名）</span><br>            <span class="hljs-type">boolean</span> <span class="hljs-variable">skip</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>            <span class="hljs-keyword">for</span>(String rule : excludeRule) &#123;<br>                <span class="hljs-keyword">if</span>(classDef.toString().matches(rule))&#123;<br>                    skip = <span class="hljs-literal">true</span>;<br>                    <span class="hljs-keyword">break</span>;<br>                &#125;<br>            &#125;<br>            <span class="hljs-keyword">if</span>(skip) &#123;<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br><br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-comment">// 3.3 读取类数据</span><br>                <span class="hljs-type">ClassData</span> <span class="hljs-variable">classinfo</span> <span class="hljs-operator">=</span> dex.readClassData(classDef);<br>                <br>                <span class="hljs-comment">// 处理直接方法（静态方法/构造函数）</span><br>                processMethods(dex, classDef,<br>                        List.of(classinfo.getDirectMethods()),<br>                        insTable, dexBytes);<br>                <br>                <span class="hljs-comment">// 处理虚方法（实例方法）</span><br>                processMethods(dex, classDef,<br>                        List.of(classinfo.getVirtualMethods()),<br>                        insTable, dexBytes);<br>                        <br>            &#125; <span class="hljs-keyword">catch</span> (IllegalArgumentException e) &#123;<br>                Log.e(<span class="hljs-string">&quot;DEX处理&quot;</span>, <span class="hljs-string">&quot;类解析失败: &quot;</span> + dex.typeNames().get(classDef.getTypeIndex()), e);<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-comment">// 3.4 写入处理后的数据（注释掉的校验和更新逻辑）</span><br>        <span class="hljs-comment">/* </span><br><span class="hljs-comment">         * 注意：实际应用时应取消以下注释，此处为演示保留</span><br><span class="hljs-comment">         * if (modified) &#123;</span><br><span class="hljs-comment">         *     updateDexChecksumAndSignature(dexBytes);  // 更新DEX校验和与签名</span><br><span class="hljs-comment">         * &#125;</span><br><span class="hljs-comment">         */</span><br>        <br>        <span class="hljs-comment">// 使用NIO通道高效写入输出文件</span><br>        <span class="hljs-keyword">try</span> (<span class="hljs-type">ByteArrayInputStream</span> <span class="hljs-variable">bis</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ByteArrayInputStream</span>(dexBytes)) &#123;<br>            <span class="hljs-type">byte</span>[] buffer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8192</span>];<br>            <span class="hljs-type">int</span> length;<br>            <span class="hljs-keyword">while</span> ((length = bis.read(buffer)) &gt; <span class="hljs-number">0</span>) &#123;<br>                outChannel.write(ByteBuffer.wrap(buffer, <span class="hljs-number">0</span>, length));<br>            &#125;<br>        &#125;<br><br>        Log.d(<span class="hljs-string">&quot;DEX处理&quot;</span>, <span class="hljs-string">&quot;处理完成，输出路径: &quot;</span> + outputFile.getAbsolutePath());<br>    &#125; <span class="hljs-keyword">catch</span> (IOException e) &#123;<br>        Log.e(<span class="hljs-string">&quot;DEX处理&quot;</span>, <span class="hljs-string">&quot;文件操作异常&quot;</span>, e);<br>        <span class="hljs-keyword">throw</span> e;  <span class="hljs-comment">// 重新抛出异常供上层处理</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>回填后的结果：</p>
+<p><img src="https://s2.loli.net/2025/05/25/cLyH9SZ8R6sG7O1.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="涉及APP的加载"><a href="#涉及APP的加载" class="headerlink" title="涉及APP的加载"></a>涉及APP的加载</h3><h4 id="需要Hook的方法"><a href="#需要Hook的方法" class="headerlink" title="需要Hook的方法"></a>需要Hook的方法</h4><blockquote>
+<p>hook框架使用了：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/bytedance/bhook">bytedance&#x2F;bhook: :fire: ByteHook is an Android PLT hook library which supports armeabi-v7a, arm64-v8a, x86 and x86_64.</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/jmpews/Dobby">jmpews&#x2F;Dobby: a lightweight, multi-platform, multi-architecture hook framework.</a></p>
+</blockquote>
+<p>在前面的文章：“Android类加载流程”  谈到了：</p>
+<p><img src="https://s2.loli.net/2025/05/25/2YIBVtkoGzQsye3.png" srcset="/img/loading.gif" lazyload></p>
+<p>在Hook DefineClass函数之前，我们需要了解DefineClass函数流程。为什么是DefineClass函数，其他函数是否可行？</p>
+<p>当一个类被加载的时候，它的调用顺序是这样的(部分流程已省略)：</p>
+<ol>
+<li>ClassLoader.java::loadClass </li>
+<li>DexFile.java::defineClass </li>
+<li>class_linker.cc::DefineClass </li>
+<li>class_linker.cc::LoadClass </li>
+<li>class_linker.cc::LoadClassMembers </li>
+<li>class_linker.cc::LoadMethod</li>
+</ol>
+<p>也就是说，当一个类被加载，它是会去调用DefineClass函数的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">mirror::Class* <span class="hljs-title function_">ClassLinker::DefineClass</span><span class="hljs-params">(Thread* self,</span><br><span class="hljs-params">                                        <span class="hljs-type">const</span> <span class="hljs-type">char</span>* descriptor,</span><br><span class="hljs-params">                                        <span class="hljs-type">size_t</span> hash,</span><br><span class="hljs-params">                                        Handle&lt;mirror::ClassLoader&gt; class_loader,</span><br><span class="hljs-params">                                        <span class="hljs-type">const</span> DexFile&amp; dex_file,</span><br><span class="hljs-params">                                        <span class="hljs-type">const</span> DexFile::ClassDef&amp; dex_class_def)</span>;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/05/25/p91vc6EATIKHLgq.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>关于这里的DexFile结构，建议阅读：<a target="_blank" rel="noopener" href="https://restack3.github.io/2025/05/09/%E9%80%86%E5%90%91%E4%B8%8E%E9%A3%8E%E6%8E%A7/Android%E5%B9%B3%E5%8F%B0/%E9%80%86%E5%90%91/%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F(%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C)/Dex%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/">Dex加载流程 - The Peak Tower</a></p>
+</blockquote>
+<p>DefineClass函数的参数很巧，有DexFile结构，还有ClassDef结构，我们通过Hook这个函数就知道以下信息：</p>
+<ul>
+<li>加载的类来自哪个dex文件</li>
+<li>加载类的数据的偏移</li>
+</ul>
+<p>第一条可以帮助我们大致定位到存储的CodeItem的位置；第二条可以帮助我们找到CodeItem具体存储的位置以及填充到的位置。</p>
+<blockquote>
+<p>还有，DefineClass函数的参数会改变吗？目前来看从Android M到现在没有变过。所以使用它不用太担心随着Android版本的升级而导致字段偏移的变化，也就是兼容性较强。这就是为什么用DefineClass作为Hook点。</p>
+<p><strong>Hook其他函数是否可行？</strong></p>
+<p>答案是肯定的，dpt之前就是使用的LoadMethod函数作为Hook点，在LoadMethod函数里面做CodeItem填充操作。</p>
+<p>但是后来发现，LoadMethod函数参数不太固定，随着Android版本的升级可能要不断适配，而且每个函数都要填充，会影响一定的性能。</p>
+</blockquote>
+<h4 id="Hook支持"><a href="#Hook支持" class="headerlink" title="Hook支持"></a>Hook支持</h4><blockquote>
+<p>这里使用的bhook属于PLT Hook,详细原理建议阅读官方文档：<a target="_blank" rel="noopener" href="https://github.com/bytedance/bhook/blob/main/doc/overview.zh-CN.md">bhook&#x2F;doc&#x2F;overview.zh-CN.md at main · bytedance&#x2F;bhook</a></p>
+<p>而dobby属于inlineHook</p>
+<p>[<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-280661.htm">原创]Dobby框架源码学习-Android安全-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1779984-1-1.html">luckfollowme arm 学习篇 07 - dobby - 吾爱破解 - 52pojie.cn</a></p>
+</blockquote>
+<p>因为需要深入Android Native层的进行hook，尽管Java层的Hook工具多种多样，但是Native Hook的工具缺寥寥无几。目前主要流行的有两大路线：PLT Hook和Inline Hook。这里简单聊聊两者的基本原理，具体实现待后面有时间一一实现。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010164190/article/details/104718199">PLT hook与Inline hook-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.sunmoonblog.com/2019/07/15/inline-hook-basic/">Android inline hook 浅析 | 皮皮小黑屋</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7502442616073666623">Android PLT hook 与 Inline hook前言 Android Native 函数 Hook 技术是 - 掘金</a></p>
+<p><a target="_blank" rel="noopener" href="http://blog.gerryyang.com/gcc/clang/2021/02/13/elf-plt-hook.html">ELF PLT Hook | Gerry’s blog</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/a_Chaon/article/details/131476579">【胖虎的逆向之路】——GOT&#x2F;PLT Hook详解&amp;针对自定义so库的Hook实操-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZhaoxiCheung/p/17871105.html">深入浅出 PLT&#x2F;GOT Hook与原理实践 - zxzhang - 博客园</a></p>
+</blockquote>
+<h5 id="PLT-Hook（以-bhook-为例）"><a href="#PLT-Hook（以-bhook-为例）" class="headerlink" title="PLT Hook（以 bhook 为例）"></a>PLT Hook（以 bhook 为例）</h5><h6 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本<strong>原理</strong></h6><p><strong>目标对象</strong>：拦截 <strong>PLT（Procedure Linkage Table）</strong> 中的函数调用，主要用于动态链接库（<code>.so</code>）中的 <strong>外部函数调用</strong>（如 <code>libc</code> 的 <code>open</code>、<code>read</code> 等）。</p>
+<p><img src="https://s2.loli.net/2025/05/25/L5GXsCNtko1TaBh.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>实现步骤</strong>：</p>
+<ol>
+<li><strong>定位 PLT 表</strong>：PLT 表用于在动态链接时跳转到 GOT（Global Offset Table）中的真实函数地址。</li>
+<li><strong>修改 GOT 条目</strong>：将 GOT 中的函数地址替换为自定义的 Hook 函数地址。</li>
+<li><strong>执行流重定向</strong>：当原函数被调用时，实际跳转到 Hook 函数。</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/05/25/vxbWToqZVLdB9Xe.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>特点</strong></p>
+<ul>
+<li><strong>稳定性高</strong>：不修改函数体代码，只修改 GOT 表中的指针。</li>
+<li><strong>局限性</strong>：仅适用于动态链接的符号（通过 PLT&#x2F;GOT 调用的函数），无法 Hook 静态函数或模块内调用。</li>
+<li><strong>性能影响小</strong>：无指令替换开销。</li>
+</ul>
+<blockquote>
+<p><strong>适用场景</strong>：Hook 系统库（如 <code>libc</code>、<code>libart</code>）的导出函数。适合需要高稳定性的轻量级 Hook。</p>
+</blockquote>
+<hr>
+<h5 id="Inline-Hook（以-Dobby-为例）"><a href="#Inline-Hook（以-Dobby-为例）" class="headerlink" title="Inline Hook（以 Dobby 为例）"></a>Inline Hook（以 Dobby 为例）</h5><h6 id="原理"><a href="#原理" class="headerlink" title="原理"></a><strong>原理</strong></h6><p><strong>目标对象</strong>：直接修改目标函数的 <strong>机器指令</strong>，劫持执行流。</p>
+<p><img src="https://s2.loli.net/2025/05/25/A7Z4siDK9r6bmCR.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>实现步骤</strong>：</p>
+<ol>
+<li><strong>定位函数入口</strong>：找到目标函数的起始地址。</li>
+<li><strong>插入跳转指令</strong>：在函数开头写入 <code>ARM/Thumb</code> 或 <code>x86</code> 的跳转指令（如 <code>B &lt;hook&gt;</code> 或 <code>JMP</code>）。</li>
+<li><strong>备份原指令</strong>：保存被覆盖的原始指令，在 Hook 函数中执行后再恢复。</li>
+<li><strong>跳转回原函数</strong>：通过 <code>trampoline</code> 机制执行原始指令并返回。</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/05/25/j2QyagAKnWXRec5.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a><strong>特点</strong></h4><ul>
+<li><strong>通用性强</strong>：可 Hook 任意函数（包括静态函数、模块内调用）。</li>
+<li><strong>侵入性高</strong>：直接修改函数代码，可能触发代码签名校验或反调试。</li>
+<li><strong>兼容性挑战</strong>：需处理指令对齐、多线程竞争等问题。</li>
+</ul>
+<blockquote>
+<p><strong>适用场景</strong>：Hook 任意地址的函数（如游戏逻辑、JNI 函数）。需要深度定制的复杂 Hook。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>PLT Hook (bhook)</th>
+<th>Inline Hook (Dobby)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hook 对象</strong></td>
+<td>动态链接的符号（PLT&#x2F;GOT）</td>
+<td>任意函数地址（包括静态函数）</td>
+</tr>
+<tr>
+<td><strong>实现复杂度</strong></td>
+<td>低（修改指针）</td>
+<td>高（指令替换、trampoline）</td>
+</tr>
+<tr>
+<td><strong>稳定性</strong></td>
+<td>高（不破坏原函数）</td>
+<td>中（可能破坏指令或寄存器状态）</td>
+</tr>
+<tr>
+<td><strong>性能开销</strong></td>
+<td>几乎无</td>
+<td>轻微（跳转指令 + trampoline）</td>
+</tr>
+<tr>
+<td><strong>兼容性</strong></td>
+<td>仅限动态链接库</td>
+<td>全平台（需处理指令集差异）</td>
+</tr>
+<tr>
+<td><strong>对抗反 Hook</strong></td>
+<td>容易被检测（GOT 表修改）</td>
+<td>更隐蔽（但可能触发代码校验）</td>
+</tr>
+</tbody></table>
+<p>值得注意的是：</p>
+<p>**PLT Hook **无法 Hook 以下情况：</p>
+<p>1.静态链接的函数。2.通过 <code>dlopen</code> 动态加载的库（需先确保符号已绑定）。</p>
+<p><strong>Inline Hook 需要注意：</strong></p>
+<ul>
+<li><strong>指令修复</strong>：ARM 架构需处理 <code>Thumb/ARM</code> 模式切换（如 <code>PC+4</code> 规则）。</li>
+<li><strong>原子操作</strong>：多线程环境下需确保指令替换的原子性（如 <code>ARM</code> 的 <code>IT</code> 块）。</li>
+<li><strong>反调试对抗</strong>：某些应用会校验关键函数的内存完整性。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/" class="category-chain-item">逆向与开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件逆向工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" class="category-chain-item">Android逆向分析</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/" class="category-chain-item">壳对抗</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/%E5%A3%B3%E5%8E%9F%E7%90%86/" class="category-chain-item">壳原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>抽取加固实现关键点</div>
+      <div>https://hermes37.vercel.app/2025/05/10/逆向与开发/软件逆向工程/Android逆向分析/壳对抗/壳原理/抽取加固实现关键点/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月10日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/18/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%A4%A7%E5%89%8D%E7%AB%AF/MFC%E4%B8%8EQT%E5%85%A8%E8%A7%A3/" title="MFC与QT全解">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MFC与QT全解</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/10/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/Hook%E6%8A%80%E6%9C%AF/Xposed%E5%8E%9F%E7%90%86/" title="Xposed原理">
+                        <span class="hidden-mobile">Xposed原理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

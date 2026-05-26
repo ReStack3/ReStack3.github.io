@@ -1,0 +1,859 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="进程线程数据结构进程结构体每个Windows进程在0环都有一个对应的结构体：_EPROCESS，该结构体包含了进程所有的重要信息。每个KPROCESS对象都代表一个进程， 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616">
+<meta property="og:type" content="article">
+<meta property="og:title" content="管理与调度">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/06/21/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/CPU%E8%99%9A%E6%8B%9F%E5%8C%96%E4%B8%8E%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/%E7%AE%A1%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="进程线程数据结构进程结构体每个Windows进程在0环都有一个对应的结构体：_EPROCESS，该结构体包含了进程所有的重要信息。每个KPROCESS对象都代表一个进程， 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/06/25/X6OfaTsSnMyCFhH.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/25/KzAIfGbdpmgFlnD.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/25/SB7dmNlwO2rhtxY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/gSydzM1ElP7QpsK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/MroBZQK3Rv4y6u1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/No3EgVW7M6Dk8b5.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/3VGnTr6589aRCgS.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/MbqiTQzXWloHeNC.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/KGJUuVcvd61iCQk.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/Wobxekw2KQmnOHy.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/29/JYsiUtnwqegZzTd.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/25/bCm1zQtKeV4jSNL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/06/25/xdiWNIeSGD2KUht.png">
+<meta property="article:published_time" content="2025-06-21T01:10:52.115Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:23.953Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/06/25/X6OfaTsSnMyCFhH.png">
+  
+  
+  
+  <title>管理与调度 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="管理与调度"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          9.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          78 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">管理与调度</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="进程线程数据结构"><a href="#进程线程数据结构" class="headerlink" title="进程线程数据结构"></a>进程线程数据结构</h1><h2 id="进程结构体"><a href="#进程结构体" class="headerlink" title="进程结构体"></a>进程结构体</h2><p>每个Windows进程在0环都有一个对应的结构体：<code>_EPROCESS</code>，该结构体包含了进程所有的重要信息。每个<code>KPROCESS</code>对象都代表一个进程，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_EPROCESS<br>   +<span class="hljs-number">0x000</span> Pcb              : _KPROCESS  <span class="hljs-comment">// 进程控制块，包含基本调度信息</span><br>   +<span class="hljs-number">0x438</span> ProcessLock      : _EX_PUSH_LOCK  <span class="hljs-comment">// 进程操作同步锁</span><br>   +<span class="hljs-number">0x440</span> UniqueProcessId  : Ptr64 Void  <span class="hljs-comment">// 进程ID (PID)</span><br>   +<span class="hljs-number">0x448</span> ActiveProcessLinks : _LIST_ENTRY  <span class="hljs-comment">// 活动进程链表</span><br>   +<span class="hljs-number">0x458</span> RundownProtect   : _EX_RUNDOWN_REF  <span class="hljs-comment">// 进程退出保护机制</span><br><br>   <span class="hljs-comment">// Flags2 标志位组 (32位)</span><br>   +<span class="hljs-number">0x460</span> Flags2           : Uint4B<br>   +<span class="hljs-number">0x460</span> JobNotReallyActive : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 作业非活动状态</span><br>   +<span class="hljs-number">0x460</span> AccountingFolded : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 资源统计已完成</span><br>   +<span class="hljs-number">0x460</span> NewProcessReported : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 已报告新进程创建</span><br>   +<span class="hljs-number">0x460</span> ExitProcessReported : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 已报告进程退出</span><br>   +<span class="hljs-number">0x460</span> ReportCommitChanges : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 报告提交内存变更</span><br>   +<span class="hljs-number">0x460</span> LastReportMemory : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 最后报告的内存状态</span><br>   +<span class="hljs-number">0x460</span> ForceWakeCharge  : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 强制唤醒计费</span><br>   +<span class="hljs-number">0x460</span> CrossSessionCreate : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 跨会话创建标志</span><br>   +<span class="hljs-number">0x460</span> NeedsHandleRundown : Pos <span class="hljs-number">8</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 需要处理句柄回收</span><br>   +<span class="hljs-number">0x460</span> RefTraceEnabled  : Pos <span class="hljs-number">9</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 引用跟踪启用</span><br>   +<span class="hljs-number">0x460</span> PicoCreated      : Pos <span class="hljs-number">10</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// Pico进程标志(Linux子系统)</span><br>   +<span class="hljs-number">0x460</span> EmptyJobEvaluated : Pos <span class="hljs-number">11</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 空作业评估完成</span><br>   +<span class="hljs-number">0x460</span> DefaultPagePriority : Pos <span class="hljs-number">12</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 默认页面优先级</span><br>   +<span class="hljs-number">0x460</span> PrimaryTokenFrozen : Pos <span class="hljs-number">15</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 主令牌已冻结</span><br>   +<span class="hljs-number">0x460</span> ProcessVerifierTarget : Pos <span class="hljs-number">16</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程验证器目标</span><br>   +<span class="hljs-number">0x460</span> RestrictSetThreadContext : Pos <span class="hljs-number">17</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 限制设置线程上下文</span><br>   +<span class="hljs-number">0x460</span> AffinityPermanent : Pos <span class="hljs-number">18</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 永久CPU亲和性</span><br>   +<span class="hljs-number">0x460</span> AffinityUpdateEnable : Pos <span class="hljs-number">19</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 允许更新CPU亲和性</span><br>   +<span class="hljs-number">0x460</span> PropagateNode    : Pos <span class="hljs-number">20</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 传播NUMA节点</span><br>   +<span class="hljs-number">0x460</span> ExplicitAffinity : Pos <span class="hljs-number">21</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 显式CPU亲和性</span><br>   +<span class="hljs-number">0x460</span> ProcessExecutionState : Pos <span class="hljs-number">22</span>, <span class="hljs-number">2</span> Bits  <span class="hljs-comment">// 进程执行状态</span><br>   +<span class="hljs-number">0x460</span> EnableReadVmLogging : Pos <span class="hljs-number">24</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用读取虚拟内存日志</span><br>   +<span class="hljs-number">0x460</span> EnableWriteVmLogging : Pos <span class="hljs-number">25</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用写入虚拟内存日志</span><br>   +<span class="hljs-number">0x460</span> FatalAccessTerminationRequested : Pos <span class="hljs-number">26</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 请求终止致命访问</span><br>   +<span class="hljs-number">0x460</span> DisableSystemAllowedCpuSet : Pos <span class="hljs-number">27</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁用系统允许的CPU集</span><br>   +<span class="hljs-number">0x460</span> ProcessStateChangeRequest : Pos <span class="hljs-number">28</span>, <span class="hljs-number">2</span> Bits  <span class="hljs-comment">// 进程状态变更请求</span><br>   +<span class="hljs-number">0x460</span> ProcessStateChangeInProgress : Pos <span class="hljs-number">30</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程状态变更进行中</span><br>   +<span class="hljs-number">0x460</span> InPrivate        : Pos <span class="hljs-number">31</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 隐私模式标志(如Edge InPrivate)</span><br><br>   <span class="hljs-comment">// Flags 标志位组 (32位)</span><br>   +<span class="hljs-number">0x464</span> Flags            : Uint4B<br>   +<span class="hljs-number">0x464</span> CreateReported   : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 创建已报告</span><br>   +<span class="hljs-number">0x464</span> NoDebugInherit   : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁止调试继承</span><br>   +<span class="hljs-number">0x464</span> ProcessExiting   : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程正在退出</span><br>   +<span class="hljs-number">0x464</span> ProcessDelete    : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程已标记删除</span><br>   +<span class="hljs-number">0x464</span> ManageExecutableMemoryWrites : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 管理可执行内存写入</span><br>   +<span class="hljs-number">0x464</span> VmDeleted        : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 虚拟内存已删除</span><br>   +<span class="hljs-number">0x464</span> OutswapEnabled   : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用交换输出</span><br>   +<span class="hljs-number">0x464</span> Outswapped       : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 已交换输出</span><br>   +<span class="hljs-number">0x464</span> FailFastOnCommitFail : Pos <span class="hljs-number">8</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 提交失败时快速失败</span><br>   +<span class="hljs-number">0x464</span> Wow64VaSpace4Gb  : Pos <span class="hljs-number">9</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// WoW64 4GB地址空间</span><br>   +<span class="hljs-number">0x464</span> AddressSpaceInitialized : Pos <span class="hljs-number">10</span>, <span class="hljs-number">2</span> Bits  <span class="hljs-comment">// 地址空间初始化状态</span><br>   +<span class="hljs-number">0x464</span> SetTimerResolution : Pos <span class="hljs-number">12</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 设置定时器分辨率</span><br>   +<span class="hljs-number">0x464</span> BreakOnTermination : Pos <span class="hljs-number">13</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 终止时中断调试器</span><br>   +<span class="hljs-number">0x464</span> DeprioritizeViews : Pos <span class="hljs-number">14</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 视图降级</span><br>   +<span class="hljs-number">0x464</span> WriteWatch       : Pos <span class="hljs-number">15</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 写入监视</span><br>   +<span class="hljs-number">0x464</span> ProcessInSession : Pos <span class="hljs-number">16</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程在会话中</span><br>   +<span class="hljs-number">0x464</span> OverrideAddressSpace : Pos <span class="hljs-number">17</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 覆盖地址空间</span><br>   +<span class="hljs-number">0x464</span> HasAddressSpace  : Pos <span class="hljs-number">18</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 拥有地址空间</span><br>   +<span class="hljs-number">0x464</span> LaunchPrefetched : Pos <span class="hljs-number">19</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 预取启动</span><br>   +<span class="hljs-number">0x464</span> Background       : Pos <span class="hljs-number">20</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 后台进程</span><br>   +<span class="hljs-number">0x464</span> VmTopDown        : Pos <span class="hljs-number">21</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 自顶向下虚拟内存分配</span><br>   +<span class="hljs-number">0x464</span> ImageNotifyDone  : Pos <span class="hljs-number">22</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 映像通知完成</span><br>   +<span class="hljs-number">0x464</span> PdeUpdateNeeded  : Pos <span class="hljs-number">23</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 需要更新PDE</span><br>   +<span class="hljs-number">0x464</span> VdmAllowed       : Pos <span class="hljs-number">24</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 允许VDM(虚拟DOS机)</span><br>   +<span class="hljs-number">0x464</span> ProcessRundown   : Pos <span class="hljs-number">25</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程回收进行中</span><br>   +<span class="hljs-number">0x464</span> ProcessInserted  : Pos <span class="hljs-number">26</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程已插入</span><br>   +<span class="hljs-number">0x464</span> DefaultIoPriority : Pos <span class="hljs-number">27</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 默认I/O优先级</span><br>   +<span class="hljs-number">0x464</span> ProcessSelfDelete : Pos <span class="hljs-number">30</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程自删除</span><br>   +<span class="hljs-number">0x464</span> SetTimerResolutionLink : Pos <span class="hljs-number">31</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 定时器分辨率链接</span><br><br>   +<span class="hljs-number">0x468</span> CreateTime       : _LARGE_INTEGER  <span class="hljs-comment">// 进程创建时间</span><br>   +<span class="hljs-number">0x470</span> ProcessQuotaUsage : [<span class="hljs-number">2</span>] Uint8B  <span class="hljs-comment">// 进程配额使用情况</span><br>   +<span class="hljs-number">0x480</span> ProcessQuotaPeak : [<span class="hljs-number">2</span>] Uint8B  <span class="hljs-comment">// 进程配额峰值</span><br>   +<span class="hljs-number">0x490</span> PeakVirtualSize  : Uint8B  <span class="hljs-comment">// 峰值虚拟内存大小</span><br>   +<span class="hljs-number">0x498</span> VirtualSize      : Uint8B  <span class="hljs-comment">// 当前虚拟内存大小</span><br>   +<span class="hljs-number">0x4a0</span> SessionProcessLinks : _LIST_ENTRY  <span class="hljs-comment">// 会话进程链表</span><br><br>   <span class="hljs-comment">// 异常端口信息</span><br>   +<span class="hljs-number">0x4b0</span> ExceptionPortData : Ptr64 Void  <span class="hljs-comment">// 异常端口数据</span><br>   +<span class="hljs-number">0x4b0</span> ExceptionPortValue : Uint8B  <span class="hljs-comment">// 异常端口值</span><br>   +<span class="hljs-number">0x4b0</span> ExceptionPortState : Pos <span class="hljs-number">0</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 异常端口状态</span><br><br>   +<span class="hljs-number">0x4b8</span> Token            : _EX_FAST_REF  <span class="hljs-comment">// 进程令牌(快速引用)</span><br>   +<span class="hljs-number">0x4c0</span> MmReserved       : Uint8B  <span class="hljs-comment">// 内存管理保留字段</span><br>   +<span class="hljs-number">0x4c8</span> AddressCreationLock : _EX_PUSH_LOCK  <span class="hljs-comment">// 地址创建锁</span><br>   +<span class="hljs-number">0x4d0</span> PageTableCommitmentLock : _EX_PUSH_LOCK  <span class="hljs-comment">// 页表提交锁</span><br>   +<span class="hljs-number">0x4d8</span> RotateInProgress : Ptr64 _ETHREAD  <span class="hljs-comment">// 正在进行旋转的线程</span><br>   +<span class="hljs-number">0x4e0</span> ForkInProgress   : Ptr64 _ETHREAD  <span class="hljs-comment">// 正在进行fork的线程</span><br>   +<span class="hljs-number">0x4e8</span> CommitChargeJob  : Ptr64 _EJOB  <span class="hljs-comment">// 提交计费作业</span><br>   +<span class="hljs-number">0x4f0</span> CloneRoot        : _RTL_AVL_TREE  <span class="hljs-comment">// 克隆根节点</span><br>   +<span class="hljs-number">0x4f8</span> NumberOfPrivatePages : Uint8B  <span class="hljs-comment">// 私有页面数量</span><br>   +<span class="hljs-number">0x500</span> NumberOfLockedPages : Uint8B  <span class="hljs-comment">// 锁定页面数量</span><br>   +<span class="hljs-number">0x508</span> Win32Process     : Ptr64 Void  <span class="hljs-comment">// Win32进程结构</span><br>   +<span class="hljs-number">0x510</span> Job              : Ptr64 _EJOB  <span class="hljs-comment">// 作业对象</span><br>   +<span class="hljs-number">0x518</span> SectionObject    : Ptr64 Void  <span class="hljs-comment">// 节区对象</span><br>   +<span class="hljs-number">0x520</span> SectionBaseAddress : Ptr64 Void  <span class="hljs-comment">// 节区基地址</span><br>   +<span class="hljs-number">0x528</span> Cookie           : Uint4B  <span class="hljs-comment">// 安全Cookie</span><br>   +<span class="hljs-number">0x530</span> WorkingSetWatch  : Ptr64 _PAGEFAULT_HISTORY  <span class="hljs-comment">// 工作集监视器</span><br>   +<span class="hljs-number">0x538</span> Win32WindowStation : Ptr64 Void  <span class="hljs-comment">// Win32窗口站</span><br>   +<span class="hljs-number">0x540</span> InheritedFromUniqueProcessId : Ptr64 Void  <span class="hljs-comment">// 父进程ID</span><br>   +<span class="hljs-number">0x548</span> OwnerProcessId   : Uint8B  <span class="hljs-comment">// 所有者进程ID</span><br>   +<span class="hljs-number">0x550</span> Peb              : Ptr64 _PEB  <span class="hljs-comment">// 进程环境块</span><br>   +<span class="hljs-number">0x558</span> Session          : Ptr64 _MM_SESSION_SPACE  <span class="hljs-comment">// 会话空间</span><br>   +<span class="hljs-number">0x560</span> Spare1           : Ptr64 Void  <span class="hljs-comment">// 保留字段1</span><br>   +<span class="hljs-number">0x568</span> QuotaBlock       : Ptr64 _EPROCESS_QUOTA_BLOCK  <span class="hljs-comment">// 配额块</span><br>   +<span class="hljs-number">0x570</span> ObjectTable      : Ptr64 _HANDLE_TABLE  <span class="hljs-comment">// 对象句柄表</span><br>   +<span class="hljs-number">0x578</span> DebugPort        : Ptr64 Void  <span class="hljs-comment">// 调试端口</span><br>   +<span class="hljs-number">0x580</span> WoW64Process     : Ptr64 _EWOW64PROCESS  <span class="hljs-comment">// WoW64进程结构</span><br>   +<span class="hljs-number">0x588</span> DeviceMap        : Ptr64 Void  <span class="hljs-comment">// 设备映射</span><br>   +<span class="hljs-number">0x590</span> EtwDataSource    : Ptr64 Void  <span class="hljs-comment">// ETW数据源</span><br>   +<span class="hljs-number">0x598</span> PageDirectoryPte : Uint8B  <span class="hljs-comment">// 页目录PTE</span><br>   +<span class="hljs-number">0x5a0</span> ImageFilePointer : Ptr64 _FILE_OBJECT  <span class="hljs-comment">// 映像文件对象</span><br>   +<span class="hljs-number">0x5a8</span> ImageFileName    : [<span class="hljs-number">15</span>] UChar  <span class="hljs-comment">// 映像文件名(15字符)</span><br>   +<span class="hljs-number">0x5b7</span> PriorityClass    : UChar  <span class="hljs-comment">// 优先级类别</span><br>   +<span class="hljs-number">0x5b8</span> SecurityPort     : Ptr64 Void  <span class="hljs-comment">// 安全端口</span><br>   +<span class="hljs-number">0x5c0</span> SeAuditProcessCreationInfo : _SE_AUDIT_PROCESS_CREATION_INFO  <span class="hljs-comment">// 进程创建审计信息</span><br>   +<span class="hljs-number">0x5c8</span> JobLinks         : _LIST_ENTRY  <span class="hljs-comment">// 作业链接</span><br>   +<span class="hljs-number">0x5d8</span> HighestUserAddress : Ptr64 Void  <span class="hljs-comment">// 用户模式最高地址</span><br>   +<span class="hljs-number">0x5e0</span> ThreadListHead   : _LIST_ENTRY  <span class="hljs-comment">// 线程链表头</span><br>   +<span class="hljs-number">0x5f0</span> ActiveThreads    : Uint4B  <span class="hljs-comment">// 活动线程数</span><br>   +<span class="hljs-number">0x5f4</span> ImagePathHash    : Uint4B  <span class="hljs-comment">// 映像路径哈希</span><br>   +<span class="hljs-number">0x5f8</span> DefaultHardErrorProcessing : Uint4B  <span class="hljs-comment">// 默认硬件错误处理</span><br>   +<span class="hljs-number">0x5fc</span> LastThreadExitStatus : Int4B  <span class="hljs-comment">// 最后线程退出状态</span><br>   +<span class="hljs-number">0x600</span> PrefetchTrace    : _EX_FAST_REF  <span class="hljs-comment">// 预取跟踪</span><br>   +<span class="hljs-number">0x608</span> LockedPagesList  : Ptr64 Void  <span class="hljs-comment">// 锁定页面列表</span><br>   +<span class="hljs-number">0x610</span> ReadOperationCount : _LARGE_INTEGER  <span class="hljs-comment">// 读操作计数</span><br>   +<span class="hljs-number">0x618</span> WriteOperationCount : _LARGE_INTEGER  <span class="hljs-comment">// 写操作计数</span><br>   +<span class="hljs-number">0x620</span> OtherOperationCount : _LARGE_INTEGER  <span class="hljs-comment">// 其他操作计数</span><br>   +<span class="hljs-number">0x628</span> ReadTransferCount : _LARGE_INTEGER  <span class="hljs-comment">// 读取传输量</span><br>   +<span class="hljs-number">0x630</span> WriteTransferCount : _LARGE_INTEGER  <span class="hljs-comment">// 写入传输量</span><br>   +<span class="hljs-number">0x638</span> OtherTransferCount : _LARGE_INTEGER  <span class="hljs-comment">// 其他传输量</span><br>   +<span class="hljs-number">0x640</span> CommitChargeLimit : Uint8B  <span class="hljs-comment">// 提交计费限制</span><br>   +<span class="hljs-number">0x648</span> CommitCharge     : Uint8B  <span class="hljs-comment">// 当前提交计费</span><br>   +<span class="hljs-number">0x650</span> CommitChargePeak : Uint8B  <span class="hljs-comment">// 提交计费峰值</span><br>   +<span class="hljs-number">0x680</span> Vm               : _MMSUPPORT_FULL  <span class="hljs-comment">// 虚拟内存支持结构</span><br>   +<span class="hljs-number">0x7c0</span> MmProcessLinks   : _LIST_ENTRY  <span class="hljs-comment">// 内存管理器进程链表</span><br>   +<span class="hljs-number">0x7d0</span> ModifiedPageCount : Uint4B  <span class="hljs-comment">// 修改页面计数</span><br>   +<span class="hljs-number">0x7d4</span> ExitStatus       : Int4B  <span class="hljs-comment">// 退出状态</span><br>   +<span class="hljs-number">0x7d8</span> VadRoot          : _RTL_AVL_TREE  <span class="hljs-comment">// VAD树根节点</span><br>   +<span class="hljs-number">0x7e0</span> VadHint          : Ptr64 Void  <span class="hljs-comment">// VAD提示指针</span><br>   +<span class="hljs-number">0x7e8</span> VadCount         : Uint8B  <span class="hljs-comment">// VAD计数</span><br>   +<span class="hljs-number">0x7f0</span> VadPhysicalPages : Uint8B  <span class="hljs-comment">// VAD物理页面</span><br>   +<span class="hljs-number">0x7f8</span> VadPhysicalPagesLimit : Uint8B  <span class="hljs-comment">// VAD物理页面限制</span><br>   +<span class="hljs-number">0x800</span> AlpcContext      : _ALPC_PROCESS_CONTEXT  <span class="hljs-comment">// ALPC进程上下文</span><br>   +<span class="hljs-number">0x820</span> TimerResolutionLink : _LIST_ENTRY  <span class="hljs-comment">// 定时器分辨率链接</span><br>   +<span class="hljs-number">0x830</span> TimerResolutionStackRecord : Ptr64 _PO_DIAG_STACK_RECORD  <span class="hljs-comment">// 定时器分辨率栈记录</span><br>   +<span class="hljs-number">0x838</span> RequestedTimerResolution : Uint4B  <span class="hljs-comment">// 请求的定时器分辨率</span><br>   +<span class="hljs-number">0x83c</span> SmallestTimerResolution : Uint4B  <span class="hljs-comment">// 最小定时器分辨率</span><br>   +<span class="hljs-number">0x840</span> ExitTime         : _LARGE_INTEGER  <span class="hljs-comment">// 退出时间</span><br>   +<span class="hljs-number">0x848</span> InvertedFunctionTable : Ptr64 _INVERTED_FUNCTION_TABLE  <span class="hljs-comment">// 反转函数表</span><br>   +<span class="hljs-number">0x850</span> InvertedFunctionTableLock : _EX_PUSH_LOCK  <span class="hljs-comment">// 反转函数表锁</span><br>   +<span class="hljs-number">0x858</span> ActiveThreadsHighWatermark : Uint4B  <span class="hljs-comment">// 活动线程高水位标记</span><br>   +<span class="hljs-number">0x85c</span> LargePrivateVadCount : Uint4B  <span class="hljs-comment">// 大型私有VAD计数</span><br>   +<span class="hljs-number">0x860</span> ThreadListLock   : _EX_PUSH_LOCK  <span class="hljs-comment">// 线程列表锁</span><br>   +<span class="hljs-number">0x868</span> WnfContext       : Ptr64 Void  <span class="hljs-comment">// WNF(Windows通知框架)上下文</span><br>   +<span class="hljs-number">0x870</span> ServerSilo       : Ptr64 _EJOB  <span class="hljs-comment">// 服务器Silo(容器)</span><br>   +<span class="hljs-number">0x878</span> SignatureLevel   : UChar  <span class="hljs-comment">// 签名级别</span><br>   +<span class="hljs-number">0x879</span> SectionSignatureLevel : UChar  <span class="hljs-comment">// 节区签名级别</span><br>   +<span class="hljs-number">0x87a</span> Protection       : _PS_PROTECTION  <span class="hljs-comment">// 进程保护级别</span><br>   +<span class="hljs-number">0x87b</span> HangCount        : Pos <span class="hljs-number">0</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 挂起计数</span><br>   +<span class="hljs-number">0x87b</span> GhostCount       : Pos <span class="hljs-number">3</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 幽灵计数</span><br>   +<span class="hljs-number">0x87b</span> PrefilterException : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 预过滤异常</span><br>   +<span class="hljs-number">0x87c</span> Flags3           : Uint4B  <span class="hljs-comment">// 第三组标志位</span><br>   +<span class="hljs-number">0x87c</span> Minimal          : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 最小化进程</span><br>   +<span class="hljs-number">0x87c</span> ReplacingPageRoot : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 替换页根</span><br>   +<span class="hljs-number">0x87c</span> Crashed          : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程已崩溃</span><br>   +<span class="hljs-number">0x87c</span> JobVadsAreTracked : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 作业VAD被跟踪</span><br>   +<span class="hljs-number">0x87c</span> VadTrackingDisabled : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// VAD跟踪禁用</span><br>   +<span class="hljs-number">0x87c</span> AuxiliaryProcess : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 辅助进程</span><br>   +<span class="hljs-number">0x87c</span> SubsystemProcess : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 子系统进程</span><br>   +<span class="hljs-number">0x87c</span> IndirectCpuSets  : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 间接CPU集</span><br>   +<span class="hljs-number">0x87c</span> RelinquishedCommit : Pos <span class="hljs-number">8</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 已放弃提交</span><br>   +<span class="hljs-number">0x87c</span> HighGraphicsPriority : Pos <span class="hljs-number">9</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 高图形优先级</span><br>   +<span class="hljs-number">0x87c</span> CommitFailLogged : Pos <span class="hljs-number">10</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 提交失败已记录</span><br>   +<span class="hljs-number">0x87c</span> ReserveFailLogged : Pos <span class="hljs-number">11</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 保留失败已记录</span><br>   +<span class="hljs-number">0x87c</span> SystemProcess    : Pos <span class="hljs-number">12</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 系统进程</span><br>   +<span class="hljs-number">0x87c</span> HideImageBaseAddresses : Pos <span class="hljs-number">13</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 隐藏映像基址</span><br>   +<span class="hljs-number">0x87c</span> AddressPolicyFrozen : Pos <span class="hljs-number">14</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 地址策略已冻结</span><br>   +<span class="hljs-number">0x87c</span> ProcessFirstResume : Pos <span class="hljs-number">15</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程首次恢复</span><br>   +<span class="hljs-number">0x87c</span> ForegroundExternal : Pos <span class="hljs-number">16</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 外部前台进程</span><br>   +<span class="hljs-number">0x87c</span> ForegroundSystem : Pos <span class="hljs-number">17</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 系统前台进程</span><br>   +<span class="hljs-number">0x87c</span> HighMemoryPriority : Pos <span class="hljs-number">18</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 高内存优先级</span><br>   +<span class="hljs-number">0x87c</span> EnableProcessSuspendResumeLogging : Pos <span class="hljs-number">19</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用进程挂起恢复日志</span><br>   +<span class="hljs-number">0x87c</span> EnableThreadSuspendResumeLogging : Pos <span class="hljs-number">20</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用线程挂起恢复日志</span><br>   +<span class="hljs-number">0x87c</span> SecurityDomainChanged : Pos <span class="hljs-number">21</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 安全域已更改</span><br>   +<span class="hljs-number">0x87c</span> SecurityFreezeComplete : Pos <span class="hljs-number">22</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 安全冻结完成</span><br>   +<span class="hljs-number">0x87c</span> VmProcessorHost  : Pos <span class="hljs-number">23</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// VM处理器主机</span><br>   +<span class="hljs-number">0x87c</span> VmProcessorHostTransition : Pos <span class="hljs-number">24</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// VM处理器主机转换</span><br>   +<span class="hljs-number">0x87c</span> AltSyscall       : Pos <span class="hljs-number">25</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 替代系统调用</span><br>   +<span class="hljs-number">0x87c</span> TimerResolutionIgnore : Pos <span class="hljs-number">26</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 忽略定时器分辨率</span><br>   +<span class="hljs-number">0x87c</span> DisallowUserTerminate : Pos <span class="hljs-number">27</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁止用户终止</span><br>   +<span class="hljs-number">0x880</span> DeviceAsid       : Int4B  <span class="hljs-comment">// 设备ASID</span><br>   +<span class="hljs-number">0x888</span> SvmData          : Ptr64 Void  <span class="hljs-comment">// SVM(安全虚拟机)数据</span><br>   +<span class="hljs-number">0x890</span> SvmProcessLock   : _EX_PUSH_LOCK  <span class="hljs-comment">// SVM进程锁</span><br>   +<span class="hljs-number">0x898</span> SvmLock          : Uint8B  <span class="hljs-comment">// SVM锁</span><br>   +<span class="hljs-number">0x8a0</span> SvmProcessDeviceListHead : _LIST_ENTRY  <span class="hljs-comment">// SVM进程设备列表头</span><br>   +<span class="hljs-number">0x8b0</span> LastFreezeInterruptTime : Uint8B  <span class="hljs-comment">// 最后冻结中断时间</span><br>   +<span class="hljs-number">0x8b8</span> DiskCounters     : Ptr64 _PROCESS_DISK_COUNTERS  <span class="hljs-comment">// 磁盘计数器</span><br>   +<span class="hljs-number">0x8c0</span> PicoContext      : Ptr64 Void  <span class="hljs-comment">// Pico进程上下文(Linux子系统)</span><br>   +<span class="hljs-number">0x8c8</span> EnclaveTable     : Ptr64 Void  <span class="hljs-comment">// 飞地(Enclave)表</span><br>   +<span class="hljs-number">0x8d0</span> EnclaveNumber    : Uint8B  <span class="hljs-comment">// 飞地数量</span><br>   +<span class="hljs-number">0x8d8</span> EnclaveLock      : _EX_PUSH_LOCK  <span class="hljs-comment">// 飞地锁</span><br>   +<span class="hljs-number">0x8e0</span> HighPriorityFaultsAllowed : Uint4B  <span class="hljs-comment">// 允许高优先级错误</span><br>   +<span class="hljs-number">0x8e8</span> EnergyContext    : Ptr64 _PO_PROCESS_ENERGY_CONTEXT  <span class="hljs-comment">// 能源上下文</span><br>   +<span class="hljs-number">0x8f0</span> VmContext        : Ptr64 Void  <span class="hljs-comment">// 虚拟机上下文</span><br>   +<span class="hljs-number">0x8f8</span> SequenceNumber   : Uint8B  <span class="hljs-comment">// 序列号</span><br>   +<span class="hljs-number">0x900</span> CreateInterruptTime : Uint8B  <span class="hljs-comment">// 创建中断时间</span><br>   +<span class="hljs-number">0x908</span> CreateUnbiasedInterruptTime : Uint8B  <span class="hljs-comment">// 创建无偏中断时间</span><br>   +<span class="hljs-number">0x910</span> TotalUnbiasedFrozenTime : Uint8B  <span class="hljs-comment">// 总无偏冻结时间</span><br>   +<span class="hljs-number">0x918</span> LastAppStateUpdateTime : Uint8B  <span class="hljs-comment">// 最后应用状态更新时间</span><br>   +<span class="hljs-number">0x920</span> LastAppStateUptime : Pos <span class="hljs-number">0</span>, <span class="hljs-number">61</span> Bits  <span class="hljs-comment">// 最后应用状态运行时间</span><br>   +<span class="hljs-number">0x920</span> LastAppState     : Pos <span class="hljs-number">61</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 最后应用状态</span><br>   +<span class="hljs-number">0x928</span> SharedCommitCharge : Uint8B  <span class="hljs-comment">// 共享提交计费</span><br>   +<span class="hljs-number">0x930</span> SharedCommitLock : _EX_PUSH_LOCK  <span class="hljs-comment">// 共享提交锁</span><br>   +<span class="hljs-number">0x938</span> SharedCommitLinks : _LIST_ENTRY  <span class="hljs-comment">// 共享提交链接</span><br>   +<span class="hljs-number">0x948</span> AllowedCpuSets   : Uint8B  <span class="hljs-comment">// 允许的CPU集</span><br>   +<span class="hljs-number">0x950</span> DefaultCpuSets   : Uint8B  <span class="hljs-comment">// 默认CPU集</span><br>   +<span class="hljs-number">0x948</span> AllowedCpuSetsIndirect : Ptr64 Uint8B  <span class="hljs-comment">// 间接允许的CPU集指针</span><br>   +<span class="hljs-number">0x950</span> DefaultCpuSetsIndirect : Ptr64 Uint8B  <span class="hljs-comment">// 间接默认CPU集指针</span><br>   +<span class="hljs-number">0x958</span> DiskIoAttribution : Ptr64 Void  <span class="hljs-comment">// 磁盘I/O归属</span><br>   +<span class="hljs-number">0x960</span> DxgProcess       : Ptr64 Void  <span class="hljs-comment">// DirectX图形进程</span><br>   +<span class="hljs-number">0x968</span> Win32KFilterSet  : Uint4B  <span class="hljs-comment">// Win32k过滤器集</span><br>   +<span class="hljs-number">0x970</span> ProcessTimerDelay : _PS_INTERLOCKED_TIMER_DELAY_VALUES  <span class="hljs-comment">// 进程定时器延迟</span><br>   +<span class="hljs-number">0x978</span> KTimerSets       : Uint4B  <span class="hljs-comment">// 内核定时器集</span><br>   +<span class="hljs-number">0x97c</span> KTimer2Sets      : Uint4B  <span class="hljs-comment">// 内核定时器2集</span><br>   +<span class="hljs-number">0x980</span> ThreadTimerSets  : Uint4B  <span class="hljs-comment">// 线程定时器集</span><br>   +<span class="hljs-number">0x988</span> VirtualTimerListLock : Uint8B  <span class="hljs-comment">// 虚拟定时器列表锁</span><br>   +<span class="hljs-number">0x990</span> VirtualTimerListHead : _LIST_ENTRY  <span class="hljs-comment">// 虚拟定时器列表头</span><br>   +<span class="hljs-number">0x9a0</span> WakeChannel      : _WNF_STATE_NAME  <span class="hljs-comment">// 唤醒通道</span><br>   +<span class="hljs-number">0x9a0</span> WakeInfo         : _PS_PROCESS_WAKE_INFORMATION  <span class="hljs-comment">// 唤醒信息</span><br>   +<span class="hljs-number">0x9d0</span> MitigationFlags  : Uint4B  <span class="hljs-comment">// 缓解策略标志</span><br>   +<span class="hljs-number">0x9d0</span> MitigationFlagsValues : &lt;anonymous-tag&gt;  <span class="hljs-comment">// 缓解策略标志值</span><br>   +<span class="hljs-number">0x9d4</span> MitigationFlags2 : Uint4B  <span class="hljs-comment">// 第二组缓解策略标志</span><br>   +<span class="hljs-number">0x9d4</span> MitigationFlags2Values : &lt;anonymous-tag&gt;  <span class="hljs-comment">// 第二组缓解策略标志值</span><br>   +<span class="hljs-number">0x9d8</span> PartitionObject  : Ptr64 Void  <span class="hljs-comment">// 分区对象</span><br>   +<span class="hljs-number">0x9e0</span> SecurityDomain   : Uint8B  <span class="hljs-comment">// 安全域</span><br>   +<span class="hljs-number">0x9e8</span> ParentSecurityDomain : Uint8B  <span class="hljs-comment">// 父安全域</span><br>   +<span class="hljs-number">0x9f0</span> CoverageSamplerContext : Ptr64 Void  <span class="hljs-comment">// 覆盖率采样器上下文</span><br>   +<span class="hljs-number">0x9f8</span> MmHotPatchContext : Ptr64 Void  <span class="hljs-comment">// 内存热补丁上下文</span><br>   +<span class="hljs-number">0xa00</span> DynamicEHContinuationTargetsTree : _RTL_AVL_TREE  <span class="hljs-comment">// 动态异常处理延续目标树</span><br>   +<span class="hljs-number">0xa08</span> DynamicEHContinuationTargetsLock : _EX_PUSH_LOCK  <span class="hljs-comment">// 动态异常处理延续目标锁</span><br>   +<span class="hljs-number">0xa10</span> DynamicEnforcedCetCompatibleRanges : _PS_DYNAMIC_ENFORCED_ADDRESS_RANGES  <span class="hljs-comment">// 动态强制CET兼容范围</span><br>   +<span class="hljs-number">0xa20</span> DisabledComponentFlags : Uint4B  <span class="hljs-comment">// 禁用组件标志</span><br>   +<span class="hljs-number">0xa28</span> PathRedirectionHashes : Ptr64 Uint4B  <span class="hljs-comment">// 路径重定向哈希表</span><br>   +<span class="hljs-number">0xa30</span> MitigationFlags3 : Uint4B  <span class="hljs-comment">// 第三组缓解策略标志</span><br>   +<span class="hljs-number">0xa30</span> MitigationFlags3Values : &lt;anonymous-tag&gt;  <span class="hljs-comment">// 第三组缓解策略标志值</span><br></code></pre></td></tr></table></figure>
+
+<p>简单归纳一下，KPROCESS对象中记录的信息主要包括两类：</p>
+<ul>
+<li>一类跟进程的内存环境相关，比如页目录表、交换状态等；</li>
+<li>另一类是与其线程相关的一些属性，比如线程列表以及线程所需要的优先级、时限设置等。系统中的KPROCESS对象通过KiProcessListHead链表串起来，但这一链表仅用于AMD64系统。</li>
+</ul>
+<h3 id="KPROCESS"><a href="#KPROCESS" class="headerlink" title="_KPROCESS"></a><code>_KPROCESS</code></h3><p>进程结构体_EPROCESS的第一个成员（即0x0偏移位）也是一个结构体_KPROCESS</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_KPROCESS<br>   +<span class="hljs-number">0x000</span> Header           : _DISPATCHER_HEADER  <span class="hljs-comment">// 内核对象头，包含类型、信号状态等基本信息</span><br>   +<span class="hljs-number">0x018</span> ProfileListHead  : _LIST_ENTRY  <span class="hljs-comment">// 性能分析列表头（用于性能采样）</span><br>   +<span class="hljs-number">0x028</span> DirectoryTableBase : Uint8B  <span class="hljs-comment">// 页目录表基址（CR3寄存器值）</span><br>   +<span class="hljs-number">0x030</span> ThreadListHead   : _LIST_ENTRY  <span class="hljs-comment">// 进程线程链表头（连接所有线程的ThreadListEntry）</span><br>   +<span class="hljs-number">0x040</span> ProcessLock      : Uint4B  <span class="hljs-comment">// 进程操作自旋锁</span><br>   +<span class="hljs-number">0x044</span> ProcessTimerDelay : Uint4B  <span class="hljs-comment">// 进程定时器延迟（单位：时钟周期）</span><br>   +<span class="hljs-number">0x048</span> DeepFreezeStartTime : Uint8B  <span class="hljs-comment">// 深度冻结开始时间（用于内存压缩）</span><br>   +<span class="hljs-number">0x050</span> Affinity         : _KAFFINITY_EX  <span class="hljs-comment">// CPU亲和性掩码（支持超过64核的扩展结构）</span><br>   +<span class="hljs-number">0x0f8</span> AffinityPadding  : [<span class="hljs-number">12</span>] Uint8B  <span class="hljs-comment">// 亲和性结构填充字段</span><br>   +<span class="hljs-number">0x158</span> ReadyListHead    : _LIST_ENTRY  <span class="hljs-comment">// 就绪线程链表头</span><br>   +<span class="hljs-number">0x168</span> SwapListEntry    : _SINGLE_LIST_ENTRY  <span class="hljs-comment">// 交换链表节点（用于内存交换）</span><br>   +<span class="hljs-number">0x170</span> ActiveProcessors : _KAFFINITY_EX  <span class="hljs-comment">// 当前活动处理器掩码</span><br>   +<span class="hljs-number">0x218</span> ActiveProcessorsPadding : [<span class="hljs-number">12</span>] Uint8B  <span class="hljs-comment">// 活动处理器掩码填充字段</span><br>   +<span class="hljs-number">0x278</span> AutoAlignment    : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 自动内存对齐标志</span><br>   +<span class="hljs-number">0x278</span> DisableBoost     : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁用优先级提升</span><br>   +<span class="hljs-number">0x278</span> DisableQuantum   : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁用时间配额调整</span><br>   +<span class="hljs-number">0x278</span> DeepFreeze       : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 深度冻结状态标志</span><br>   +<span class="hljs-number">0x278</span> TimerVirtualization : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 定时器虚拟化启用标志</span><br>   +<span class="hljs-number">0x278</span> CheckStackExtents : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 检查堆栈范围标志</span><br>   +<span class="hljs-number">0x278</span> CacheIsolationEnabled : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 缓存隔离启用标志</span><br>   +<span class="hljs-number">0x278</span> PpmPolicy        : Pos <span class="hljs-number">7</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 电源策略管理器策略</span><br>   +<span class="hljs-number">0x278</span> VaSpaceDeleted   : Pos <span class="hljs-number">10</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 虚拟地址空间已删除标志</span><br>   +<span class="hljs-number">0x278</span> ReservedFlags    : Pos <span class="hljs-number">11</span>, <span class="hljs-number">21</span> Bits  <span class="hljs-comment">// 保留标志位</span><br>   +<span class="hljs-number">0x27c</span> ActiveGroupsMask : Uint4B  <span class="hljs-comment">// 活跃处理器组掩码</span><br>   +<span class="hljs-number">0x280</span> BasePriority     : Char  <span class="hljs-comment">// 基础优先级（0-31）</span><br>   +<span class="hljs-number">0x281</span> QuantumReset     : Char  <span class="hljs-comment">// 时间配额重置值</span><br>   +<span class="hljs-number">0x282</span> Visited          : Char  <span class="hljs-comment">// 遍历标记（用于调度算法）</span><br>   +<span class="hljs-number">0x283</span> Flags            : _KEXECUTE_OPTIONS  <span class="hljs-comment">// 执行选项（NX策略等）</span><br>   +<span class="hljs-number">0x284</span> ThreadSeed       : [<span class="hljs-number">20</span>] Uint2B  <span class="hljs-comment">// 线程随机种子数组（用于负载均衡）</span><br>   +<span class="hljs-number">0x2ac</span> ThreadSeedPadding : [<span class="hljs-number">12</span>] Uint2B  <span class="hljs-comment">// 线程种子填充字段</span><br>   +<span class="hljs-number">0x2c4</span> IdealProcessor   : [<span class="hljs-number">20</span>] Uint2B  <span class="hljs-comment">// 理想处理器数组（每个组一个）</span><br>   +<span class="hljs-number">0x2ec</span> IdealProcessorPadding : [<span class="hljs-number">12</span>] Uint2B  <span class="hljs-comment">// 理想处理器填充字段</span><br>   +<span class="hljs-number">0x304</span> IdealNode        : [<span class="hljs-number">20</span>] Uint2B  <span class="hljs-comment">// 理想NUMA节点数组</span><br>   +<span class="hljs-number">0x32c</span> IdealNodePadding : [<span class="hljs-number">12</span>] Uint2B  <span class="hljs-comment">// NUMA节点填充字段</span><br>   +<span class="hljs-number">0x344</span> IdealGlobalNode  : Uint2B  <span class="hljs-comment">// 全局理想NUMA节点</span><br>   +<span class="hljs-number">0x346</span> Spare1           : Uint2B  <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x348</span> StackCount       : _KSTACK_COUNT  <span class="hljs-comment">// 内核栈计数（用于栈压缩）</span><br>   +<span class="hljs-number">0x350</span> ProcessListEntry : _LIST_ENTRY  <span class="hljs-comment">// 全局进程链表节点（链接到PsActiveProcessHead）</span><br>   +<span class="hljs-number">0x360</span> CycleTime        : Uint8B  <span class="hljs-comment">// 周期时间计数（用于性能统计）</span><br>   +<span class="hljs-number">0x368</span> ContextSwitches  : Uint8B  <span class="hljs-comment">// 上下文切换计数</span><br>   +<span class="hljs-number">0x370</span> SchedulingGroup  : Ptr64 _KSCHEDULING_GROUP  <span class="hljs-comment">// 调度组指针</span><br>   +<span class="hljs-number">0x378</span> FreezeCount      : Uint4B  <span class="hljs-comment">// 冻结计数（用于内存管理）</span><br>   +<span class="hljs-number">0x37c</span> KernelTime       : Uint4B  <span class="hljs-comment">// 内核模式CPU时间（单位：时钟周期）</span><br>   +<span class="hljs-number">0x380</span> UserTime         : Uint4B  <span class="hljs-comment">// 用户模式CPU时间（单位：时钟周期）</span><br>   +<span class="hljs-number">0x384</span> ReadyTime        : Uint4B  <span class="hljs-comment">// 就绪队列等待时间</span><br>   +<span class="hljs-number">0x388</span> UserDirectoryTableBase : Uint8B  <span class="hljs-comment">// 用户空间页目录基址（LPC通信用）</span><br>   +<span class="hljs-number">0x390</span> AddressPolicy    : UChar  <span class="hljs-comment">// 地址空间策略（ASLR等）</span><br>   +<span class="hljs-number">0x391</span> Spare2           : [<span class="hljs-number">71</span>] UChar  <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x3d8</span> InstrumentationCallback : Ptr64 Void  <span class="hljs-comment">// 检测回调函数指针</span><br>   +<span class="hljs-number">0x3e0</span> SecureState      : &lt;anonymous-tag&gt;  <span class="hljs-comment">// 安全状态信息（VBS/TPM相关）</span><br>   +<span class="hljs-number">0x3e8</span> KernelWaitTime   : Uint8B  <span class="hljs-comment">// 内核模式等待时间</span><br>   +<span class="hljs-number">0x3f0</span> UserWaitTime     : Uint8B  <span class="hljs-comment">// 用户模式等待时间</span><br>   +<span class="hljs-number">0x3f8</span> EndPadding       : [<span class="hljs-number">8</span>] Uint8B  <span class="hljs-comment">// 结构体尾部填充</span><br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="进程句柄表ObjectTable"><a href="#进程句柄表ObjectTable" class="headerlink" title="进程句柄表ObjectTable"></a>进程句柄表<code>ObjectTable</code></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_HANDLE_TABLE<br>   +<span class="hljs-number">0x000</span> NextHandleNeedingPool : Uint4B  <span class="hljs-comment">// 下一个需要分配内存池的句柄索引（按需增长）</span><br><br>   +<span class="hljs-number">0x004</span> ExtraInfoPages   : Int4B  <span class="hljs-comment">// 附加信息页计数（用于扩展句柄属性）</span><br><br>   +<span class="hljs-number">0x008</span> TableCode        : Uint8B  <span class="hljs-comment">// 句柄表编码值（低2位表示层级）：</span><br>   <span class="hljs-comment">//   Bit0-1: 0=单级, 1=两级, 2=三级, 3=保留</span><br>   <span class="hljs-comment">//   Bit2-63: 实际表结构的物理地址</span><br><br>   +<span class="hljs-number">0x010</span> QuotaProcess     : Ptr64 _EPROCESS <span class="hljs-comment">// 配额归属进程（通常与UniqueProcessId一致）</span><br><br>   +<span class="hljs-number">0x018</span> HandleTableList  : _LIST_ENTRY  <span class="hljs-comment">// 全局句柄表链表节点（链接到所有活动句柄表）</span><br><br>   +<span class="hljs-number">0x028</span> UniqueProcessId  : Uint4B  <span class="hljs-comment">// 所属进程的PID（用于句柄跟踪）</span><br><br>   +<span class="hljs-number">0x02c</span> Flags            : Uint4B  <span class="hljs-comment">// 句柄表标志位</span><br>   +<span class="hljs-number">0x02c</span> StrictFIFO       : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 严格FIFO顺序分配</span><br>   +<span class="hljs-number">0x02c</span> EnableHandleExceptions : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用句柄异常检查</span><br>   +<span class="hljs-number">0x02c</span> Rundown          : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 正在回收句柄表</span><br>   +<span class="hljs-number">0x02c</span> Duplicated       : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 这是重复的句柄表</span><br>   +<span class="hljs-number">0x02c</span> RaiseUMExceptionOnInvalidHandleClose : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 无效关闭时触发用户模式异常</span><br><br>   +<span class="hljs-number">0x030</span> HandleContentionEvent : _EX_PUSH_LOCK  <span class="hljs-comment">// 句柄争用事件（用于高并发优化）</span><br><br>   +<span class="hljs-number">0x038</span> HandleTableLock  : _EX_PUSH_LOCK  <span class="hljs-comment">// 句柄表自旋锁（保护表结构修改）</span><br><br>   +<span class="hljs-number">0x040</span> FreeLists        : [<span class="hljs-number">1</span>] _HANDLE_TABLE_FREE_LIST  <span class="hljs-comment">// 空闲句柄链表（实际是动态数组）</span><br>   +<span class="hljs-number">0x040</span> ActualEntry      : [<span class="hljs-number">32</span>] UChar  <span class="hljs-comment">// 调试用原始条目数据（与FreeLists共享内存）</span><br><br>   +<span class="hljs-number">0x060</span> DebugInfo        : Ptr64 _HANDLE_TRACE_DEBUG_INFO<span class="hljs-comment">// 调试追踪信息（需开启句柄跟踪）</span><br></code></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://s2.loli.net/2025/06/25/X6OfaTsSnMyCFhH.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="活动进程链表ActiveProcessLinks"><a href="#活动进程链表ActiveProcessLinks" class="headerlink" title="活动进程链表ActiveProcessLinks"></a>活动进程链表<code>ActiveProcessLinks</code></h3><p><img src="https://s2.loli.net/2025/06/25/KzAIfGbdpmgFlnD.png" srcset="/img/loading.gif" lazyload></p>
+<p><code>ActiveProcessLinks</code> 是一个双向链表（<code>_LIST_ENTRY</code>），包含 <code>Flink</code>（前向指针）和 <code>Blink</code>（后向指针）。<code>PsActiveProcessHead</code>指向了该链表的表头位置。</p>
+<p><img src="https://s2.loli.net/2025/06/25/SB7dmNlwO2rhtxY.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="线程结构体"><a href="#线程结构体" class="headerlink" title="线程结构体"></a>线程结构体</h2><p>每个进程默认都会有一个线程，每启动一个线程，在内存里就会多一个线程结构体，即_ETHREAD。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_ETHREAD<br>   +<span class="hljs-number">0x000</span> Tcb              : _KTHREAD  <span class="hljs-comment">// 内核线程控制块，包含调度、APC、定时器等核心功能</span><br>   +<span class="hljs-number">0x430</span> CreateTime       : _LARGE_INTEGER  <span class="hljs-comment">// 线程创建时间戳（UTC，100ns单位）</span><br>   +<span class="hljs-number">0x438</span> ExitTime         : _LARGE_INTEGER  <span class="hljs-comment">// 线程退出时间戳（未退出时为0）</span><br>   +<span class="hljs-number">0x438</span> KeyedWaitChain   : _LIST_ENTRY  <span class="hljs-comment">// 用于KeyedEvent同步的等待链（与ExitTime共享内存）</span><br>   +<span class="hljs-number">0x448</span> PostBlockList    : _LIST_ENTRY  <span class="hljs-comment">// APC投递阻塞列表</span><br>   +<span class="hljs-number">0x448</span> ForwardLinkShadow : Ptr64 Void  <span class="hljs-comment">// 调试用的前向链接影子指针（与PostBlockList共享内存）</span><br>   +<span class="hljs-number">0x450</span> StartAddress     : Ptr64 Void  <span class="hljs-comment">// 线程起始执行地址（用户模式）</span><br>   +<span class="hljs-number">0x458</span> TerminationPort  : Ptr64 _TERMINATION_PORT  <span class="hljs-comment">// 线程终止端口</span><br>   +<span class="hljs-number">0x458</span> ReaperLink       : Ptr64 _ETHREAD  <span class="hljs-comment">// 回收线程时的链接指针（与TerminationPort共享内存）</span><br>   +<span class="hljs-number">0x458</span> KeyedWaitValue   : Ptr64 Void  <span class="hljs-comment">// KeyedEvent等待值（与TerminationPort共享内存）</span><br>   +<span class="hljs-number">0x460</span> ActiveTimerListLock : Uint8B  <span class="hljs-comment">// 活跃定时器列表的自旋锁</span><br>   +<span class="hljs-number">0x468</span> ActiveTimerListHead : _LIST_ENTRY  <span class="hljs-comment">// 活跃内核定时器列表头</span><br>   +<span class="hljs-number">0x478</span> Cid              : _CLIENT_ID  <span class="hljs-comment">// 客户端ID（进程PID+线程TID）</span><br>   +<span class="hljs-number">0x488</span> KeyedWaitSemaphore : _KSEMAPHORE  <span class="hljs-comment">// KeyedEvent等待信号量</span><br>   +<span class="hljs-number">0x488</span> AlpcWaitSemaphore : _KSEMAPHORE  <span class="hljs-comment">// ALPC等待信号量（与KeyedWaitSemaphore共享内存）</span><br>   +<span class="hljs-number">0x4a8</span> ClientSecurity   : _PS_CLIENT_SECURITY_CONTEXT  <span class="hljs-comment">// 客户端安全上下文（令牌/模拟信息）</span><br>   +<span class="hljs-number">0x4b0</span> IrpList          : _LIST_ENTRY  <span class="hljs-comment">// 挂起的I/O请求包（IRP）列表</span><br>   +<span class="hljs-number">0x4c0</span> TopLevelIrp      : Uint8B  <span class="hljs-comment">// 当前线程的顶层IRP指针</span><br>   +<span class="hljs-number">0x4c8</span> DeviceToVerify   : Ptr64 _DEVICE_OBJECT  <span class="hljs-comment">// 需要验证的设备对象指针</span><br>   +<span class="hljs-number">0x4d0</span> Win32StartAddress : Ptr64 Void  <span class="hljs-comment">// Win32子系统线程起始地址</span><br>   +<span class="hljs-number">0x4d8</span> ChargeOnlySession : Ptr64 Void  <span class="hljs-comment">// 仅计费的会话指针</span><br>   +<span class="hljs-number">0x4e0</span> LegacyPowerObject : Ptr64 Void  <span class="hljs-comment">// 传统电源管理对象</span><br>   +<span class="hljs-number">0x4e8</span> ThreadListEntry  : _LIST_ENTRY  <span class="hljs-comment">// 全局线程链表节点（链接到nt!PsActiveThreadsHead）</span><br>   +<span class="hljs-number">0x4f8</span> RundownProtect   : _EX_RUNDOWN_REF  <span class="hljs-comment">// 线程回收保护机制</span><br>   +<span class="hljs-number">0x500</span> ThreadLock       : _EX_PUSH_LOCK  <span class="hljs-comment">// 线程对象锁</span><br>   +<span class="hljs-number">0x508</span> ReadClusterSize  : Uint4B  <span class="hljs-comment">// 读取操作的簇大小</span><br>   +<span class="hljs-number">0x50c</span> MmLockOrdering   : Int4B  <span class="hljs-comment">// 内存管理器锁顺序</span><br>   +<span class="hljs-number">0x510</span> CrossThreadFlags : Uint4B  <span class="hljs-comment">// 跨线程标志位（见下方位域定义）</span><br>   +<span class="hljs-number">0x510</span> Terminated       : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 线程已终止</span><br>   +<span class="hljs-number">0x510</span> ThreadInserted   : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 已插入全局线程列表</span><br>   +<span class="hljs-number">0x510</span> HideFromDebugger : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 对调试器隐藏</span><br>   +<span class="hljs-number">0x510</span> ActiveImpersonationInfo : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 存在活动模拟信息</span><br>   +<span class="hljs-number">0x510</span> HardErrorsAreDisabled : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁用硬件错误提示</span><br>   +<span class="hljs-number">0x510</span> BreakOnTermination : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 终止时触发调试断点</span><br>   +<span class="hljs-number">0x510</span> SkipCreationMsg  : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 跳过创建消息</span><br>   +<span class="hljs-number">0x510</span> SkipTerminationMsg : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 跳过终止消息</span><br>   +<span class="hljs-number">0x510</span> CopyTokenOnOpen  : Pos <span class="hljs-number">8</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 打开时复制令牌</span><br>   +<span class="hljs-number">0x510</span> ThreadIoPriority : Pos <span class="hljs-number">9</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// I/O优先级（0-7）</span><br>   +<span class="hljs-number">0x510</span> ThreadPagePriority : Pos <span class="hljs-number">12</span>, <span class="hljs-number">3</span> Bits  <span class="hljs-comment">// 内存页面优先级</span><br>   +<span class="hljs-number">0x510</span> RundownFail      : Pos <span class="hljs-number">15</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 回收失败标志</span><br>   +<span class="hljs-number">0x514</span> SameThreadPassiveFlags : Uint4B  <span class="hljs-comment">// 线程被动标志（见下方位域）</span><br>   +<span class="hljs-number">0x518</span> SameThreadApcFlags : Uint4B  <span class="hljs-comment">// APC相关标志</span><br>   +<span class="hljs-number">0x51c</span> CacheManagerActive : UChar  <span class="hljs-comment">// 缓存管理器活动状态</span><br>   +<span class="hljs-number">0x51d</span> DisablePageFaultClustering : UChar  <span class="hljs-comment">// 禁用页面错误聚类</span><br>   +<span class="hljs-number">0x51e</span> ActiveFaultCount : UChar  <span class="hljs-comment">// 活动页面错误计数</span><br>   +<span class="hljs-number">0x51f</span> LockOrderState   : UChar  <span class="hljs-comment">// 锁顺序状态</span><br>   +<span class="hljs-number">0x520</span> PerformanceCountLowReserved : Uint4B  <span class="hljs-comment">// 性能计数器低位</span><br>   +<span class="hljs-number">0x524</span> PerformanceCountHighReserved : Int4B  <span class="hljs-comment">// 性能计数器高位</span><br>   +<span class="hljs-number">0x528</span> AlpcMessageId    : Uint8B  <span class="hljs-comment">// ALPC消息ID</span><br>   +<span class="hljs-number">0x530</span> AlpcMessage      : Ptr64 Void  <span class="hljs-comment">// ALPC消息指针</span><br>   +<span class="hljs-number">0x530</span> AlpcReceiveAttributeSet : Uint4B  <span class="hljs-comment">// ALPC接收属性集（与AlpcMessage共享内存）</span><br>   +<span class="hljs-number">0x538</span> AlpcWaitListEntry : _LIST_ENTRY  <span class="hljs-comment">// ALPC等待列表节点</span><br>   +<span class="hljs-number">0x548</span> ExitStatus       : Int4B  <span class="hljs-comment">// 线程退出状态码</span><br>   +<span class="hljs-number">0x54c</span> CacheManagerCount : Uint4B  <span class="hljs-comment">// 缓存管理器计数</span><br>   +<span class="hljs-number">0x550</span> IoBoostCount     : Uint4B  <span class="hljs-comment">// I/O提升计数</span><br>   +<span class="hljs-number">0x554</span> IoQoSBoostCount  : Uint4B  <span class="hljs-comment">// I/O服务质量提升计数</span><br>   +<span class="hljs-number">0x558</span> IoQoSThrottleCount : Uint4B  <span class="hljs-comment">// I/O服务质量限制计数</span><br>   +<span class="hljs-number">0x55c</span> KernelStackReference : Uint4B  <span class="hljs-comment">// 内核栈引用计数</span><br>   +<span class="hljs-number">0x560</span> BoostList        : _LIST_ENTRY  <span class="hljs-comment">// 优先级提升列表</span><br>   +<span class="hljs-number">0x570</span> DeboostList      : _LIST_ENTRY  <span class="hljs-comment">// 优先级降低列表</span><br>   +<span class="hljs-number">0x580</span> BoostListLock    : Uint8B  <span class="hljs-comment">// 优先级调整列表锁</span><br>   +<span class="hljs-number">0x588</span> IrpListLock      : Uint8B  <span class="hljs-comment">// IRP列表锁</span><br>   +<span class="hljs-number">0x590</span> ReservedForSynchTracking : Ptr64 Void  <span class="hljs-comment">// 同步跟踪保留字段</span><br>   +<span class="hljs-number">0x598</span> CmCallbackListHead : _SINGLE_LIST_ENTRY  <span class="hljs-comment">// 回调函数列表头</span><br>   +<span class="hljs-number">0x5a0</span> ActivityId       : Ptr64 _GUID  <span class="hljs-comment">// 活动ID（ETW跟踪用）</span><br>   +<span class="hljs-number">0x5a8</span> SeLearningModeListHead : _SINGLE_LIST_ENTRY  <span class="hljs-comment">// 安全学习模式列表</span><br>   +<span class="hljs-number">0x5b0</span> VerifierContext  : Ptr64 Void  <span class="hljs-comment">// 驱动验证器上下文</span><br>   +<span class="hljs-number">0x5b8</span> AdjustedClientToken : Ptr64 Void  <span class="hljs-comment">// 调整后的客户端令牌</span><br>   +<span class="hljs-number">0x5c0</span> WorkOnBehalfThread : Ptr64 Void  <span class="hljs-comment">// 代工线程指针</span><br>   +<span class="hljs-number">0x5c8</span> PropertySet      : _PS_PROPERTY_SET  <span class="hljs-comment">// 线程属性集</span><br>   +<span class="hljs-number">0x5e0</span> PicoContext      : Ptr64 Void  <span class="hljs-comment">// Pico进程上下文（WSL/Linux子系统）</span><br>   +<span class="hljs-number">0x5e8</span> UserFsBase       : Uint8B  <span class="hljs-comment">// 用户模式FS寄存器基址</span><br>   +<span class="hljs-number">0x5f0</span> UserGsBase       : Uint8B  <span class="hljs-comment">// 用户模式GS寄存器基址</span><br>   +<span class="hljs-number">0x5f8</span> EnergyValues     : Ptr64 _THREAD_ENERGY_VALUES  <span class="hljs-comment">// 线程能耗统计</span><br>   +<span class="hljs-number">0x600</span> SelectedCpuSets  : Uint8B  <span class="hljs-comment">// 选中的CPU集合</span><br>   +<span class="hljs-number">0x600</span> SelectedCpuSetsIndirect : Ptr64 Uint8B  <span class="hljs-comment">// 间接CPU集合指针（与SelectedCpuSets共享内存）</span><br>   +<span class="hljs-number">0x608</span> Silo             : Ptr64 _EJOB  <span class="hljs-comment">// 所属的Job/Silo容器</span><br>   +<span class="hljs-number">0x610</span> ThreadName       : Ptr64 _UNICODE_STRING  <span class="hljs-comment">// 线程名称（可读标识）</span><br>   +<span class="hljs-number">0x618</span> SetContextState  : Ptr64 _CONTEXT  <span class="hljs-comment">// 上下文状态设置</span><br>   +<span class="hljs-number">0x620</span> LastExpectedRunTime : Uint4B  <span class="hljs-comment">// 最后预期运行时间</span><br>   +<span class="hljs-number">0x624</span> HeapData         : Uint4B  <span class="hljs-comment">// 堆管理器数据</span><br>   +<span class="hljs-number">0x628</span> OwnerEntryListHead : _LIST_ENTRY  <span class="hljs-comment">// 资源所有者列表头</span><br>   +<span class="hljs-number">0x638</span> DisownedOwnerEntryListLock : Uint8B  <span class="hljs-comment">// 放弃的资源所有者列表锁</span><br>   +<span class="hljs-number">0x640</span> DisownedOwnerEntryListHead : _LIST_ENTRY  <span class="hljs-comment">// 放弃的资源所有者列表</span><br>   +<span class="hljs-number">0x650</span> LockEntries      : [<span class="hljs-number">6</span>] _KLOCK_ENTRY  <span class="hljs-comment">// 锁条目数组</span><br>   +<span class="hljs-number">0x890</span> CmDbgInfo        : Ptr64 Void  <span class="hljs-comment">// 配置管理器调试信息</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="KTHREAD"><a href="#KTHREAD" class="headerlink" title="_KTHREAD"></a><code>_KTHREAD</code></h3><p>与进程结构体一样，线程结构体的第一个成员（即0x0偏移位）也是一个结构体<code>_KTHREAD</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_KTHREAD<br>   +<span class="hljs-number">0x000</span> Header           : _DISPATCHER_HEADER  <span class="hljs-comment">// 内核对象头，包含类型、信号状态等基本信息</span><br>   +<span class="hljs-number">0x018</span> SListFaultAddress : Ptr64 Void  <span class="hljs-comment">// 用户模式SList故障地址（用于快速用户模式APC）</span><br>   +<span class="hljs-number">0x020</span> QuantumTarget    : Uint8B  <span class="hljs-comment">// 量子时间目标值（用于时间配额计算）</span><br>   +<span class="hljs-number">0x028</span> InitialStack     : Ptr64 Void  <span class="hljs-comment">// 初始栈指针（线程创建时的RSP值）</span><br>   +<span class="hljs-number">0x030</span> StackLimit       : Ptr64 Void  <span class="hljs-comment">// 栈空间下限地址</span><br>   +<span class="hljs-number">0x038</span> StackBase        : Ptr64 Void  <span class="hljs-comment">// 栈空间基址（上限地址）</span><br>   +<span class="hljs-number">0x040</span> ThreadLock       : Uint8B  <span class="hljs-comment">// 线程对象自旋锁</span><br>   +<span class="hljs-number">0x048</span> CycleTime        : Uint8B  <span class="hljs-comment">// 周期时间计数（用于性能统计）</span><br>   +<span class="hljs-number">0x050</span> CurrentRunTime   : Uint4B  <span class="hljs-comment">// 当前运行时间（单位：时钟周期）</span><br>   +<span class="hljs-number">0x054</span> ExpectedRunTime  : Uint4B  <span class="hljs-comment">// 预期运行时间（调度器预测值）</span><br>   +<span class="hljs-number">0x058</span> KernelStack      : Ptr64 Void  <span class="hljs-comment">// 内核模式栈指针</span><br>   +<span class="hljs-number">0x060</span> StateSaveArea    : Ptr64 _XSAVE_FORMAT  <span class="hljs-comment">// CPU状态保存区域（FPU/AVX等扩展状态）</span><br>   +<span class="hljs-number">0x068</span> SchedulingGroup  : Ptr64 _KSCHEDULING_GROUP  <span class="hljs-comment">// 调度组指针（用于CPU带宽预留）</span><br>   +<span class="hljs-number">0x070</span> WaitRegister     : _KWAIT_STATUS_REGISTER  <span class="hljs-comment">// 等待状态寄存器（快速用户模式等待）</span><br>   +<span class="hljs-number">0x071</span> Running          : UChar  <span class="hljs-comment">// 运行状态标志（非零表示正在CPU上运行）</span><br>   +<span class="hljs-number">0x072</span> Alerted          : [<span class="hljs-number">2</span>] UChar  <span class="hljs-comment">// 各处理器组的警报状态</span><br>   +<span class="hljs-number">0x074</span> AutoBoostActive  : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 自动优先级提升激活标志</span><br>   +<span class="hljs-number">0x074</span> ReadyTransition  : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 就绪状态转换中标志</span><br>   +<span class="hljs-number">0x074</span> WaitNext         : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 等待下一个操作标志</span><br>   +<span class="hljs-number">0x074</span> SystemAffinityActive : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 系统亲和性激活标志</span><br>   +<span class="hljs-number">0x074</span> Alertable        : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 可警报状态标志（允许APC中断）</span><br>   +<span class="hljs-number">0x074</span> UserStackWalkActive : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 用户栈遍历激活标志</span><br>   +<span class="hljs-number">0x074</span> ApcInterruptRequest : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// APC中断请求挂起</span><br>   +<span class="hljs-number">0x074</span> QuantumEndMigrate : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 时间配额结束迁移标志</span><br>   +<span class="hljs-number">0x074</span> UmsDirectedSwitchEnable : Pos <span class="hljs-number">8</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 用户模式调度定向切换启用</span><br>   +<span class="hljs-number">0x074</span> TimerActive      : Pos <span class="hljs-number">9</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 定时器激活标志</span><br>   +<span class="hljs-number">0x074</span> SystemThread     : Pos <span class="hljs-number">10</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 系统线程标志（内核模式线程）</span><br>   +<span class="hljs-number">0x074</span> ProcessDetachActive : Pos <span class="hljs-number">11</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 进程分离激活标志</span><br>   +<span class="hljs-number">0x074</span> CalloutActive    : Pos <span class="hljs-number">12</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 回调激活标志（执行回调函数中）</span><br>   +<span class="hljs-number">0x074</span> ScbReadyQueue    : Pos <span class="hljs-number">13</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// SCB就绪队列标志</span><br>   +<span class="hljs-number">0x074</span> ApcQueueable     : Pos <span class="hljs-number">14</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// APC可排队标志</span><br>   +<span class="hljs-number">0x074</span> ReservedStackInUse : Pos <span class="hljs-number">15</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 保留栈使用中标志</span><br>   +<span class="hljs-number">0x074</span> UmsPerformingSyscall : Pos <span class="hljs-number">16</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// UMS线程执行系统调用中</span><br>   +<span class="hljs-number">0x074</span> TimerSuspended   : Pos <span class="hljs-number">17</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 定时器挂起标志</span><br>   +<span class="hljs-number">0x074</span> SuspendedWaitMode : Pos <span class="hljs-number">18</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 挂起等待模式标志</span><br>   +<span class="hljs-number">0x074</span> SuspendSchedulerApcWait : Pos <span class="hljs-number">19</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 调度器APC等待挂起</span><br>   +<span class="hljs-number">0x074</span> CetUserShadowStack : Pos <span class="hljs-number">20</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 控制流防护用户影子栈启用</span><br>   +<span class="hljs-number">0x074</span> BypassProcessFreeze : Pos <span class="hljs-number">21</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 绕过进程冻结标志</span><br>   +<span class="hljs-number">0x074</span> MiscFlags        : Int4B  <span class="hljs-comment">// 杂项标志组合值</span><br>   +<span class="hljs-number">0x078</span> ThreadFlagsSpare : Pos <span class="hljs-number">0</span>, <span class="hljs-number">2</span> Bits  <span class="hljs-comment">// 线程标志保留位</span><br>   +<span class="hljs-number">0x078</span> AutoAlignment    : Pos <span class="hljs-number">2</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 自动内存对齐标志</span><br>   +<span class="hljs-number">0x078</span> DisableBoost     : Pos <span class="hljs-number">3</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 禁用优先级提升标志</span><br>   +<span class="hljs-number">0x078</span> AlertedByThreadId : Pos <span class="hljs-number">4</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 被线程ID唤醒标志</span><br>   +<span class="hljs-number">0x078</span> QuantumDonation  : Pos <span class="hljs-number">5</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 时间配额捐赠标志</span><br>   +<span class="hljs-number">0x078</span> EnableStackSwap  : Pos <span class="hljs-number">6</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// 启用栈交换标志</span><br>   +<span class="hljs-number">0x078</span> GuiThread        : Pos <span class="hljs-number">7</span>, <span class="hljs-number">1</span> Bit  <span class="hljs-comment">// GUI线程标志</span><br>   +<span class="hljs-number">0x078</span> ThreadFlags      : Int4B  <span class="hljs-comment">// 线程标志组合值</span><br>   +<span class="hljs-number">0x07c</span> Tag              : UChar  <span class="hljs-comment">// 调试标记</span><br>   +<span class="hljs-number">0x07d</span> SystemHeteroCpuPolicy : UChar  <span class="hljs-comment">// 系统异构CPU策略</span><br>   +<span class="hljs-number">0x07e</span> UserHeteroCpuPolicy : Pos <span class="hljs-number">0</span>, <span class="hljs-number">7</span> Bits  <span class="hljs-comment">// 用户异构CPU策略</span><br>   +<span class="hljs-number">0x07f</span> SpecCtrl         : UChar  <span class="hljs-comment">// 推测执行控制标志（Spectre缓解）</span><br>   +<span class="hljs-number">0x080</span> SystemCallNumber : Uint4B  <span class="hljs-comment">// 当前系统调用号</span><br>   +<span class="hljs-number">0x084</span> ReadyTime        : Uint4B  <span class="hljs-comment">// 就绪队列等待时间</span><br>   +<span class="hljs-number">0x088</span> FirstArgument    : Ptr64 Void  <span class="hljs-comment">// 系统调用第一个参数</span><br>   +<span class="hljs-number">0x090</span> TrapFrame        : Ptr64 _KTRAP_FRAME  <span class="hljs-comment">// 陷阱帧指针（中断/异常上下文）</span><br>   +<span class="hljs-number">0x098</span> ApcState         : _KAPC_STATE  <span class="hljs-comment">// APC状态（内核/用户APC队列）</span><br>   +<span class="hljs-number">0x0c3</span> Priority         : Char  <span class="hljs-comment">// 当前线程优先级</span><br>   +<span class="hljs-number">0x0c4</span> UserIdealProcessor : Uint4B  <span class="hljs-comment">// 用户态理想处理器编号</span><br>   +<span class="hljs-number">0x0c8</span> WaitStatus       : Int8B  <span class="hljs-comment">// 等待状态返回值</span><br>   +<span class="hljs-number">0x0d0</span> WaitBlockList    : Ptr64 _KWAIT_BLOCK  <span class="hljs-comment">// 等待块列表头</span><br>   +<span class="hljs-number">0x0d8</span> WaitListEntry    : _LIST_ENTRY  <span class="hljs-comment">// 等待链表节点</span><br>   +<span class="hljs-number">0x0e8</span> Queue            : Ptr64 _DISPATCHER_HEADER  <span class="hljs-comment">// 当前排队对象（同步对象）</span><br>   +<span class="hljs-number">0x0f0</span> Teb              : Ptr64 Void  <span class="hljs-comment">// 线程环境块（用户模式）</span><br>   +<span class="hljs-number">0x0f8</span> RelativeTimerBias : Uint8B  <span class="hljs-comment">// 相对定时器偏差（用于节能）</span><br>   +<span class="hljs-number">0x100</span> Timer            : _KTIMER  <span class="hljs-comment">// 线程定时器对象</span><br>   +<span class="hljs-number">0x140</span> WaitBlock        : [<span class="hljs-number">4</span>] _KWAIT_BLOCK  <span class="hljs-comment">// 内置等待块（避免动态分配）</span><br>   +<span class="hljs-number">0x184</span> State            : UChar  <span class="hljs-comment">// 线程状态（Running/Standby等）</span><br>   +<span class="hljs-number">0x185</span> Spare13          : Char  <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x186</span> WaitIrql         : UChar  <span class="hljs-comment">// 等待时的IRQL级别</span><br>   +<span class="hljs-number">0x187</span> WaitMode         : Char  <span class="hljs-comment">// 等待模式（KernelMode/UserMode）</span><br>   +<span class="hljs-number">0x1b4</span> WaitTime         : Uint4B  <span class="hljs-comment">// 累计等待时间</span><br>   +<span class="hljs-number">0x1e4</span> KernelApcDisable : Int2B  <span class="hljs-comment">// 内核APC禁用计数</span><br>   +<span class="hljs-number">0x1e6</span> SpecialApcDisable : Int2B  <span class="hljs-comment">// 特殊APC禁用计数</span><br>   +<span class="hljs-number">0x1e8</span> ThreadCounters   : Ptr64 _KTHREAD_COUNTERS  <span class="hljs-comment">// 性能计数器指针</span><br>   +<span class="hljs-number">0x1f0</span> XStateSave       : Ptr64 _XSTATE_SAVE  <span class="hljs-comment">// 扩展处理器状态保存区</span><br>   +<span class="hljs-number">0x1f8</span> Win32Thread      : Ptr64 Void  <span class="hljs-comment">// Win32子系统线程结构</span><br>   +<span class="hljs-number">0x200</span> ThreadFlags2     : Int4B  <span class="hljs-comment">// 线程标志扩展（BAM服务质量等）</span><br>   +<span class="hljs-number">0x208</span> QueueListEntry   : _LIST_ENTRY  <span class="hljs-comment">// 调度队列链表节点</span><br>   +<span class="hljs-number">0x218</span> NextProcessor    : Uint4B  <span class="hljs-comment">// 下一个应运行的处理器编号</span><br>   +<span class="hljs-number">0x21c</span> QueuePriority    : Int4B  <span class="hljs-comment">// 调度队列优先级</span><br>   +<span class="hljs-number">0x220</span> Process          : Ptr64 _KPROCESS  <span class="hljs-comment">// 所属进程控制块</span><br>   +<span class="hljs-number">0x228</span> UserAffinity     : _GROUP_AFFINITY  <span class="hljs-comment">// 用户态亲和性掩码</span><br>   +<span class="hljs-number">0x232</span> PreviousMode     : Char  <span class="hljs-comment">// 先前执行模式（User/Kernel）</span><br>   +<span class="hljs-number">0x233</span> BasePriority     : Char  <span class="hljs-comment">// 基础优先级（从进程继承）</span><br>   +<span class="hljs-number">0x234</span> PriorityDecrement : Char  <span class="hljs-comment">// 优先级递减值（动态调整用）</span><br>   +<span class="hljs-number">0x234</span> ForegroundBoost  : Pos <span class="hljs-number">0</span>, <span class="hljs-number">4</span> Bits  <span class="hljs-comment">// 前台提升值</span><br>   +<span class="hljs-number">0x234</span> UnusualBoost     : Pos <span class="hljs-number">4</span>, <span class="hljs-number">4</span> Bits  <span class="hljs-comment">// 异常提升值</span><br>   +<span class="hljs-number">0x235</span> Preempted        : UChar  <span class="hljs-comment">// 被抢占标志</span><br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="APC"><a href="#APC" class="headerlink" title="APC"></a>APC</h3><p>线程结构体0x098偏移位成员指向了一个结构体_KAPC_STATE</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_KAPC_STATE<br>   <span class="hljs-comment">// 双模式APC队列头（内核模式+用户模式）</span><br>   +<span class="hljs-number">0x000</span> ApcListHead      : [<span class="hljs-number">2</span>] _LIST_ENTRY<br><br>   <span class="hljs-comment">// 当前关联的进程控制块（线程挂靠时指向目标进程）</span><br>   +<span class="hljs-number">0x020</span> Process          : Ptr64 _KPROCESS<br><br>   <span class="hljs-comment">// APC执行状态标志（按位分解）</span><br>   +<span class="hljs-number">0x028</span> InProgressFlags  : UChar<br>   <span class="hljs-comment">// Bit0 - 内核APC正在交付中</span><br>   +<span class="hljs-number">0x028</span> KernelApcInProgress : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit<br>   <span class="hljs-comment">// Bit1 - 特殊APC正在执行（如线程终止APC）</span><br>   +<span class="hljs-number">0x028</span> SpecialApcInProgress : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit<br><br>   <span class="hljs-comment">// 待处理的内核APC数量（非位域，直接计数）</span><br>   +<span class="hljs-number">0x029</span> KernelApcPending : UChar<br><br>   <span class="hljs-comment">// 用户APC复合状态字段</span><br>   +<span class="hljs-number">0x02a</span> UserApcPendingAll : UChar<br>   <span class="hljs-comment">// Bit0 - 紧急用户APC待处理（APC_LEVEL=0）</span><br>   +<span class="hljs-number">0x02a</span> SpecialUserApcPending : Pos <span class="hljs-number">0</span>, <span class="hljs-number">1</span> Bit<br>   <span class="hljs-comment">// Bit1 - 常规用户APC待处理</span><br>   +<span class="hljs-number">0x02a</span> UserApcPending   : Pos <span class="hljs-number">1</span>, <span class="hljs-number">1</span> Bit<br></code></pre></td></tr></table></figure>
+
+<p>成员ApcListHead有2个APC队列，本质上就是双向链表，<strong>在双向链表内存储的就是给线程提供的APC函数</strong>，你想让线程做什么事情，就给给它提供一个APC函数挂进这个双向链表内，挂进去之后<strong>线程在某一时刻会去检查这个链表</strong>，当发现链表内有函数就会去调用，因此你可以在提供的APC函数中来控制线程的行为，当线程去检查列表且执行就会进行设定的行为。</p>
+<p>成员Process表示当前线程所属或者所挂靠的进程，如果当前线程没有所挂靠的进程，那么该成员的值与<code>_KTHREAD</code>结构体0x220偏移位成员的值一致。</p>
+<h4 id="APC结构"><a href="#APC结构" class="headerlink" title="APC结构"></a>APC结构</h4><p>我们向APC队列中挂入的函数，准确来说不能称之为函数，<strong>而是一个APC结构体</strong>。</p>
+<ul>
+<li><strong>用户模式 APC</strong>：<code>SystemArgument1</code>（<code>+0x040</code>）存储用户空间回调函数地址（即传统意义上的 <code>NormalRoutine</code>）。</li>
+<li><strong>内核模式 APC</strong>：通过 <code>NormalContext</code>（<code>+0x038</code>）或 <code>KernelRoutine</code>（需额外初始化）传递函数逻辑。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs c">PSHED!_KAPC<br>   <span class="hljs-comment">// 对象类型标识（Windows内核对象类型系统）</span><br>   +<span class="hljs-number">0x000</span> Type             : UChar           <span class="hljs-comment">// 对象类型标识符（通常为0x12，表示APC对象）</span><br>   +<span class="hljs-number">0x001</span> SpareByte0       : UChar           <span class="hljs-comment">// 对齐填充/保留字节</span><br>   +<span class="hljs-number">0x002</span> Size             : UChar           <span class="hljs-comment">// 结构体大小（通常为0x58字节）</span><br>   +<span class="hljs-number">0x003</span> SpareByte1       : UChar           <span class="hljs-comment">// 对齐填充/保留字节</span><br>   +<span class="hljs-number">0x004</span> SpareLong0       : Uint4B          <span class="hljs-comment">// 保留字段（可能用于调试或特殊场景）</span><br><br>   <span class="hljs-comment">// 目标线程控制块</span><br>   +<span class="hljs-number">0x008</span> Thread           : Ptr64 _KTHREAD  <span class="hljs-comment">// 目标线程的KTHREAD结构指针（APC将插入此线程）</span><br><br>   <span class="hljs-comment">// APC队列管理</span><br>   +<span class="hljs-number">0x010</span> ApcListEntry     : _LIST_ENTRY     <span class="hljs-comment">// 链表节点（用于挂入线程的APC队列）</span><br><span class="hljs-comment">// Flink: 下一个APC</span><br><span class="hljs-comment">// Blink: 前一个APC</span><br><br>   <span class="hljs-comment">// 保留区域（可能用于扩展或特定处理器架构）</span><br>   +<span class="hljs-number">0x020</span> Reserved         : [<span class="hljs-number">3</span>] Ptr64 Void  <span class="hljs-comment">// 保留字段（x64系统通常为3个指针大小）</span><br><br>   <span class="hljs-comment">// 上下文参数（分模式存储）</span><br>   +<span class="hljs-number">0x038</span> NormalContext    : Ptr64 Void      <span class="hljs-comment">// 用户模式APC的上下文（或内核APC的常规参数）</span><br>   +<span class="hljs-number">0x040</span> SystemArgument1  : Ptr64 Void      <span class="hljs-comment">// 系统参数1（通常用于跨模式调用传递数据）</span><br>   +<span class="hljs-number">0x048</span> SystemArgument2  : Ptr64 Void      <span class="hljs-comment">// 系统参数2（扩展参数传递）</span><br><br>   <span class="hljs-comment">// APC控制标志</span><br>   +<span class="hljs-number">0x050</span> ApcStateIndex    : Char            <span class="hljs-comment">// APC状态索引：</span><br><span class="hljs-comment">// 0 = Original环境（未挂靠）</span><br><span class="hljs-comment">// 1 = Attached环境（挂靠到其他进程）</span><br>   +<span class="hljs-number">0x051</span> ApcMode          : Char            <span class="hljs-comment">// APC模式：</span><br><span class="hljs-comment">// 0 = KernelMode（内核APC）</span><br><span class="hljs-comment">// 1 = UserMode（用户APC）</span><br>   +<span class="hljs-number">0x052</span> Inserted         : UChar           <span class="hljs-comment">// 插入状态：</span><br><span class="hljs-comment">// 0 = 未插入队列</span><br><span class="hljs-comment">// 1 = 已插入目标线程的APC队列</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="备用APC队列"><a href="#备用APC队列" class="headerlink" title="备用APC队列"></a>备用APC队列</h4><h2 id="CPU描述-KPCR"><a href="#CPU描述-KPCR" class="headerlink" title="CPU描述_KPCR"></a>CPU描述<code>_KPCR</code></h2><p>每个进程或线程都一个结构体来描述本身，同样CPU也有这样一个结构体来描述自己，即_KPCR。</p>
+<p><strong>当线程进入0环时，FS:[0]指向的就不再是TEB了，而变成了_KPCR；</strong>每个CPU（每核）都有一个_KPCR结构体，该结构体中存储了CPU本身需要用到的一些重要数据：如GDT、IDT以及线程相关的一些信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_KPCR<br>   +<span class="hljs-number">0x000</span> NtTib            : _NT_TIB            <span class="hljs-comment">// 线程信息块（TEB/TIB结构）</span><br>   +<span class="hljs-number">0x000</span> GdtBase          : Ptr64 _KGDTENTRY64  <span class="hljs-comment">// 全局描述符表(GDT)基址（与NtTib共用内存）</span><br>   +<span class="hljs-number">0x008</span> TssBase          : Ptr64 _KTSS64       <span class="hljs-comment">// 任务状态段(TSS)基址</span><br>   +<span class="hljs-number">0x010</span> UserRsp          : Uint8B              <span class="hljs-comment">// 用户模式栈指针（RSP）</span><br>   +<span class="hljs-number">0x018</span> Self             : Ptr64 _KPCR         <span class="hljs-comment">// 指向自身的指针（自引用结构）</span><br>   +<span class="hljs-number">0x020</span> CurrentPrcb      : Ptr64 _KPRCB        <span class="hljs-comment">// 当前处理器控制块(PRCB)</span><br>   +<span class="hljs-number">0x028</span> LockArray        : Ptr64 _KSPIN_LOCK_QUEUE <span class="hljs-comment">// 自旋锁队列数组</span><br>   +<span class="hljs-number">0x030</span> Used_Self        : Ptr64 Void          <span class="hljs-comment">// 保留字段（旧版兼容）</span><br>   +<span class="hljs-number">0x038</span> IdtBase          : Ptr64 _KIDTENTRY64  <span class="hljs-comment">// 中断描述符表(IDT)基址</span><br>   +<span class="hljs-number">0x040</span> Unused           : [<span class="hljs-number">2</span>] Uint8B          <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x050</span> Irql             : UChar               <span class="hljs-comment">// 当前中断请求级别(IRQL)</span><br>   +<span class="hljs-number">0x051</span> SecondLevelCacheAssociativity : UChar  <span class="hljs-comment">// 二级缓存关联性</span><br>   +<span class="hljs-number">0x052</span> ObsoleteNumber   : UChar               <span class="hljs-comment">// 废弃的处理器编号</span><br>   +<span class="hljs-number">0x053</span> Fill0            : UChar               <span class="hljs-comment">// 填充字节</span><br>   +<span class="hljs-number">0x054</span> Unused0          : [<span class="hljs-number">3</span>] Uint4B          <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x060</span> MajorVersion     : Uint2B              <span class="hljs-comment">// 主版本号</span><br>   +<span class="hljs-number">0x062</span> MinorVersion     : Uint2B              <span class="hljs-comment">// 次版本号</span><br>   +<span class="hljs-number">0x064</span> StallScaleFactor : Uint4B              <span class="hljs-comment">// 延迟缩放因子（用于KeStallExecutionProcessor）</span><br>   +<span class="hljs-number">0x068</span> Unused1          : [<span class="hljs-number">3</span>] Ptr64 Void      <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x080</span> KernelReserved   : [<span class="hljs-number">15</span>] Uint4B         <span class="hljs-comment">// 内核保留区域</span><br>   +<span class="hljs-number">0x0bc</span> SecondLevelCacheSize : Uint4B          <span class="hljs-comment">// 二级缓存大小（KB）</span><br>   +<span class="hljs-number">0x0c0</span> HalReserved      : [<span class="hljs-number">16</span>] Uint4B         <span class="hljs-comment">// HAL保留区域</span><br>   +<span class="hljs-number">0x100</span> Unused2          : Uint4B              <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x108</span> KdVersionBlock   : Ptr64 Void          <span class="hljs-comment">// 调试版本信息块</span><br>   +<span class="hljs-number">0x110</span> Unused3          : Ptr64 Void          <span class="hljs-comment">// 保留字段</span><br>   +<span class="hljs-number">0x118</span> PcrAlign1        : [<span class="hljs-number">24</span>] Uint4B         <span class="hljs-comment">// 结构体对齐填充</span><br></code></pre></td></tr></table></figure>
+
+<p>其中结构体<code>_NT_TIB</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c">nt!_NT_TIB<br>   +<span class="hljs-number">0x000</span> ExceptionList    : Ptr64 _EXCEPTION_REGISTRATION_RECORD  <br>   <span class="hljs-comment">// 当前线程的异常处理链头（FS/GS:[0]指向这里）</span><br>   <span class="hljs-comment">// 注：x64下已改用动态异常处理，此字段主要为兼容性保留</span><br>   +<span class="hljs-number">0x008</span> StackBase        : Ptr64 Void  <br>   <span class="hljs-comment">// 线程栈基址（高地址，栈向下增长）</span><br>   +<span class="hljs-number">0x010</span> StackLimit       : Ptr64 Void  <br>   <span class="hljs-comment">// 线程栈界限（低地址）</span><br>   +<span class="hljs-number">0x018</span> SubSystemTib     : Ptr64 Void  <br>   <span class="hljs-comment">// 子系统专用TIB指针：</span><br>   <span class="hljs-comment">//   - Win32子系统：指向TEB的子系统特定部分</span><br>   <span class="hljs-comment">//   - 其他环境：可能指向特定运行时结构</span><br>   +<span class="hljs-number">0x020</span> FiberData        : Ptr64 Void  <br>   <span class="hljs-comment">// 纤程数据指针（与Version字段共享内存）</span><br>   +<span class="hljs-number">0x020</span> Version          : Uint4B  <br>   <span class="hljs-comment">// 版本标识（当不用于纤程时）</span><br>   +<span class="hljs-number">0x028</span> ArbitraryUserPointer : Ptr64 Void  <br>   <span class="hljs-comment">// 供用户模式自由使用的指针（调试器/运行时常用）</span><br>   +<span class="hljs-number">0x030</span> Self             : Ptr64 _NT_TIB  <br>   <span class="hljs-comment">// 自引用指针（指向结构自身）</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="全局结构体"><a href="#全局结构体" class="headerlink" title="全局结构体"></a>全局结构体</h2><h3 id="全局句柄表"><a href="#全局句柄表" class="headerlink" title="全局句柄表"></a>全局句柄表</h3><p>之前我们所了解的句柄表都是每个进程私有的句柄表，而实际上在Windows操作系统上有一个全局句柄表，所有进程、线程无论是否打开，都存放在这张表中。每个进程和线程都有一个唯一的编号，即PID、CID（我们在任务管理器中可以看到进程的PID），这两个值就是全局句柄表中的索引。</p>
+<p>我们可以通过如下函数根据PID、CID来获得进程、线程的内核对象，它们所查询的内核对象就是来自全局句柄表（PsdCidTable）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">PsLookupProcessThreadByCid<br>PsLookupProcessByProcessId<br>PsLookupThreadByThreadId<br></code></pre></td></tr></table></figure>
+
+<p>全局句柄表相对于进程私有的句柄表来说比较复杂，它的结构如下图所示，<strong>全局句柄表的大小可以通过它的成员TableCode来查看</strong>，当TableCode的低2位值为0时，</p>
+<p>则表示全局句柄表的大小只有一页也就是4KB（4096个字节），512个表项，当TableCode的低2位值为1时，它就是多级的，第一页存储的就是1024个地址，每个地址指向着具有实际内容（内核对象地址）的表，那也就表示有1024*512个表项，TableCode的其他值以此类推：</p>
+<p><img src="https://s2.loli.net/2025/06/29/gSydzM1ElP7QpsK.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="状态链表"><a href="#状态链表" class="headerlink" title="状态链表"></a>状态链表</h3><h1 id="线程管理"><a href="#线程管理" class="headerlink" title="线程管理"></a>线程管理</h1><h2 id="线程切换"><a href="#线程切换" class="headerlink" title="线程切换"></a>线程切换</h2><h3 id="线程切换的触发条件"><a href="#线程切换的触发条件" class="headerlink" title="线程切换的触发条件"></a><strong>线程切换的触发条件</strong></h3><blockquote>
+<p>并非所有线程切换都会进入内核，但<strong>涉及调度决策的切换必须由内核完成</strong>。</p>
+</blockquote>
+<p>线程切换通常由以下事件触发，这些事件会导致 CPU 从用户态进入内核态：</p>
+<ul>
+<li><strong>系统调用（Syscall）</strong>：如文件 I&#x2F;O、线程同步（<code>WaitForSingleObject</code>）、内存分配（<code>VirtualAlloc</code>）等。</li>
+<li><strong>硬件中断</strong>：如时钟中断（时间片耗尽）、设备 I&#x2F;O 完成中断。</li>
+<li><strong>异常</strong>：如访问无效内存（<code>ACCESS_VIOLATION</code>）、除以零（<code>DIVIDE_BY_ZERO</code>）。</li>
+<li><strong>主动让出 CPU</strong>：如 <code>Sleep()</code>、<code>SwitchToThread()</code> 或 <code>YieldProcessor()</code>。</li>
+</ul>
+<h3 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h3><p>当线程从用户态进入内核态时，CPU 会经历以下步骤：</p>
+<ol>
+<li><p><strong>触发 Trap&#x2F;中断</strong>：系统调用通过 <code>syscall</code> &#x2F; <code>sysenter</code> 指令进入内核。硬件中断（如时钟中断）直接跳转到内核中断处理程序。</p>
+</li>
+<li><p><strong>保存用户态上下文</strong>：CPU 自动保存 <code>RIP</code>（指令指针）、<code>CS</code>（代码段）、<code>RFLAGS</code>（标志寄存器）、<code>RSP</code>（栈指针）等。Windows 内核会进一步保存 <code>RAX</code>、<code>RCX</code>、<code>RDX</code> 等通用寄存器到 <strong>KTHREAD 结构体</strong>（<code>Kernel Stack</code>）。</p>
+</li>
+<li><p><strong>切换到内核栈</strong>：每个线程在内核态有独立的 <strong>内核栈</strong>（Kernel Stack），用于执行内核代码。</p>
+</li>
+<li><p><strong>执行内核调度逻辑</strong>：</p>
+<p>内核检查是否需要线程切换（如时间片耗尽、高优先级线程就绪）。调用 <code>KiSwapContext</code> 进行上下文切换。</p>
+</li>
+</ol>
+<p><strong>注意</strong>：</p>
+<ul>
+<li><strong>线程切换必须在内核态完成</strong>，因为只有内核能访问 <code>KTHREAD</code> 结构和调度队列。</li>
+<li><strong>用户态无法直接修改线程状态</strong>（如挂起、恢复），必须通过系统调用。</li>
+</ul>
+<h3 id="主动切换"><a href="#主动切换" class="headerlink" title="主动切换"></a>主动切换</h3><h3 id="时钟中断切换"><a href="#时钟中断切换" class="headerlink" title="时钟中断切换"></a>时钟中断切换</h3><h4 id="时间片管理与备用线程"><a href="#时间片管理与备用线程" class="headerlink" title="时间片管理与备用线程"></a>时间片管理与备用线程</h4><h3 id="线程切换与TSS的关系"><a href="#线程切换与TSS的关系" class="headerlink" title="线程切换与TSS的关系"></a>线程切换与TSS的关系</h3><h4 id="内核堆栈"><a href="#内核堆栈" class="headerlink" title="内核堆栈"></a>内核堆栈</h4><p>每一个线程都有一个内核堆栈，在系统调用章节时我们了解到使用API从3环进0环都要进行一个堆栈的切换，进0环所切换的堆栈就是内核堆栈。在线程结构体_KTHREAD中有关于内核堆栈的相关信息（栈顶、栈底、栈边界）。</p>
+<p><img src="https://s2.loli.net/2025/06/29/MroBZQK3Rv4y6u1.png" srcset="/img/loading.gif" lazyload></p>
+<p>内核堆栈的结构大致分为两个部分。第一部分就是从InitialStack开始一共0x210个字节，存储的就是浮点寄存器的值；剩下的第二部分就是我们之前了解过的_Trap_Frame结构体。</p>
+<p><img src="https://s2.loli.net/2025/06/29/No3EgVW7M6Dk8b5.png" srcset="/img/loading.gif" lazyload></p>
+<p>_Trap_Frame结构体在系统调用章节已经学过了，它的结构成员如下：</p>
+<p><img src="https://s2.loli.net/2025/06/29/3VGnTr6589aRCgS.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="调用API进0环"><a href="#调用API进0环" class="headerlink" title="调用API进0环"></a>调用API进0环</h4><p>API进0环有两种方式，分别为普通调用和快速调用。普通调用通过API进0环后会从TSS的ESP0得到0环的堆栈；快速调用则是先从MSR得到一个临时的0环栈来提供代码执行的环境，但是这段代码的执行实际上就是从TSS的ESP0得到0环的堆栈。</p>
+<p><img src="https://s2.loli.net/2025/06/29/MbqiTQzXWloHeNC.png" srcset="/img/loading.gif" lazyload></p>
+<p>无论是什么调用方式进入0环都是要通过TSS来切换堆栈的。</p>
+<h4 id="TSS"><a href="#TSS" class="headerlink" title="TSS"></a>TSS</h4><p>Intel设计TSS的目的是为了任务切换（线程切换），但是Windows和Linux都没有使用，而是采用堆栈来保护线程的各种寄存器。</p>
+<p>一个CPU只有一个TSS，但是线程是有很多个的，每个线程在0环对应的堆栈是不一样的，那么到底是什么样的方式能让一个TSS来保存所有线程的ESP0呢？这里的细节在线程切换中，因此我们需要分析SwapContext函数。</p>
+<h5 id="SwapContext分析"><a href="#SwapContext分析" class="headerlink" title="SwapContext分析"></a>SwapContext分析</h5><h3 id="线程切换与FS寄存器的关系"><a href="#线程切换与FS寄存器的关系" class="headerlink" title="线程切换与FS寄存器的关系"></a>线程切换与FS寄存器的关系</h3><p>我们知道在3环下FS:[0]指向的是TEB，而在0环下FS:[0]指向的是_KPCR。<strong>在系统中同时会有很多个线程运行，这就意味着FS:[0]需要存储的不同线程的相关信息，但是在实际的使用中发现3环下不同线程的FS寄存器（段选择子）都是一样的值，那么到底是什么样的一个实现能让同一个寄存器指向多个不同的TEB呢</strong>，要了解其中的细节我们还是需要来分析SwapContext这个函数的代码。</p>
+<p>如下我们找到与FS寄存器有关系的代码段，可以看出它显示取出目标线程的TEB地址，接着取出GDT表，并且向表中的成员写入值。我们知道FS在Windows XP下的段选择子是0x3B，也就表示它的段描述符是在GDT表的第7个，即0x38偏移位，再结合如下的代码，我们可以根据段选择子的结构体，<strong>发现它实际上就是将目标线程的TEB地址写入到FS段描述符的Base Address成员位中</strong>。</p>
+<p><img src="https://s2.loli.net/2025/06/29/KGJUuVcvd61iCQk.png" srcset="/img/loading.gif" lazyload></p>
+<p>综上所示，也就解答了我们的困惑，在多个线程中，FS选择子不变，依旧可以获取对应线程的信息。</p>
+<h2 id="线程优先级"><a href="#线程优先级" class="headerlink" title="线程优先级"></a>线程优先级</h2><p>我们发现在主动调用、时间片到期的情况下导致的线程切换，它们所用到的API都会通过KiFindReadyThread函数来找到下一个要切换的线程，那么这时候就抛出了一个问题：</p>
+<p><strong>该函数是根据什么样的条件取寻找下一个切换的线程呢？</strong></p>
+<blockquote>
+<p>KiFindReadyThread就是根据调度链表去查询的线程，**它的查询优先级就是根据调度链表的级别（32个调度链表），按线程级别大小从高到低查找：31、30、29、28…**，如果在线程级别31的链表中找到了线程，那么查找就结束了。</p>
+</blockquote>
+<p>但是如果每次都是按照这个从高到低的优先级寻找，从效率和性能来看是很差的，所以Windows就通过一个DWORD类型的变量：优先级位图（_KiReadySummary）来记录，当向调度链表中挂入或取出某个线程时，会先判断当前级别的链表是否为空，为空则在DWORD变量的对应偏移位的值设为0，反之不为空就设为1。</p>
+<h3 id="优先级位图"><a href="#优先级位图" class="headerlink" title="优先级位图"></a><strong>优先级位图</strong></h3><p>快速定位非空的优先级链表，避免逐级扫描32个链表。</p>
+<p><strong>实现</strong>：</p>
+<ul>
+<li>每个优先级（0~31）对应<code>_KiReadySummary</code>的一个bit位（32位DWORD）。</li>
+<li>若某优先级的链表<strong>非空</strong>，则对应bit置<code>1</code>；否则置<code>0</code>。</li>
+</ul>
+<p>例如，若<code>_KiReadySummary = 0x60000000</code>（二进制<code>0110...</code>），表示<strong>优先级30和29的链表中有就绪线程</strong>。</p>
+<p><strong>高效查询</strong>：通过<code>BitScanReverse</code>等指令快速找到最高置<code>1</code>的bit位（即最高非空优先级）。无需遍历所有优先级，时间复杂度从O(32)降至O(1)。</p>
+<p>如下图所示，就意味着线程级别为30、29的链表中是有线程的，其他链表中没有线程。</p>
+<p><img src="https://s2.loli.net/2025/06/29/Wobxekw2KQmnOHy.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="多级调度链表"><a href="#多级调度链表" class="headerlink" title="多级调度链表"></a><strong>多级调度链表</strong></h3><p>系统维护<strong>32个双向链表</strong>（<code>_KiDispatcherReadyListHead</code>数组），每个链表对应一个优先级（0~31）。线程根据其<strong>当前优先级</strong>（<code>KTHREAD.Priority</code>）挂入对应链表。</p>
+<p><strong>调度策略</strong>：</p>
+<ul>
+<li><strong>严格优先级抢占</strong>：从最高非空优先级链表中选取线程（如31 &gt; 30 &gt; … &gt; 0）。</li>
+<li><strong>同一优先级的轮转调度</strong>：同优先级线程按时间片轮转（FIFO）。</li>
+</ul>
+<h3 id="线程选择流程"><a href="#线程选择流程" class="headerlink" title="线程选择流程"></a><strong>线程选择流程</strong></h3><ol>
+<li>**读取<code>_KiReadySummary</code>**：获取当前非空链表的位图。</li>
+<li><strong>定位最高优先级</strong>：通过位操作找到最高置<code>1</code>的bit（如优先级30）。</li>
+<li><strong>从对应链表中取出线程</strong>：若链表有多个线程，选择队首线程，队尾线程时间片更新。</li>
+<li><strong>处理空链表</strong>：若线程被移除后链表为空，清除<code>_KiReadySummary</code>对应bit。</li>
+</ol>
+<p>假设调度链表中都没有就绪状态的线程了，CPU就会取<code>_KPCR.PrcbData.IdleThread</code>即空闲线程去运行</p>
+<h2 id="线程状态转移"><a href="#线程状态转移" class="headerlink" title="线程状态转移"></a>线程状态转移</h2><h2 id="APC机制"><a href="#APC机制" class="headerlink" title="APC机制"></a>APC机制</h2><h3 id="APC挂入过程"><a href="#APC挂入过程" class="headerlink" title="APC挂入过程"></a>APC挂入过程</h3><p>无论是正常状态还是挂靠状态，都有两个APC队列，一个是内核队列，一个是用户队列。每当要挂入一个APC时，不管是内核空间还是用户空间的函数，内核都要准备一个KAPC的数据结构，并将这个结构挂到相应的APC队列中。</p>
+<h3 id="内核APC执行过程"><a href="#内核APC执行过程" class="headerlink" title="内核APC执行过程"></a>内核APC执行过程</h3><p>APC函数的执行与插入并不是同一个线程，在A线程中向B线程插入一个APC，插入的动作是在A线程中完成的，但什么时候执行则由B线程决定，所以称之为<strong>异步过程调用</strong>。内核APC函数与用户APC函数的执行时间和执行方式也有区别，我们本章节主要学习内核APC的执行过程。</p>
+<h2 id="优先级调度和环境切换"><a href="#优先级调度和环境切换" class="headerlink" title="优先级调度和环境切换"></a>优先级调度和环境切换</h2><p><img src="https://s2.loli.net/2025/06/29/JYsiUtnwqegZzTd.png" srcset="/img/loading.gif" lazyload></p>
+<p>多核同步</p>
+<h1 id="并发和同步"><a href="#并发和同步" class="headerlink" title="并发和同步"></a>并发和同步</h1><h2 id="临界区"><a href="#临界区" class="headerlink" title="临界区"></a>临界区</h2><h2 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h2><h3 id="事件等待"><a href="#事件等待" class="headerlink" title="事件等待"></a>事件等待</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">+<span class="hljs-number">0x0d0</span> WaitBlockList    : Ptr64 _KWAIT_BLOCK  <span class="hljs-comment">// 等待块列表头</span><br></code></pre></td></tr></table></figure>
+
+<p>_KWAIT_BLOCK结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-number">3</span>: kd&gt; dt _KWAIT_BLOCK<br>nt!_KWAIT_BLOCK<br>   +<span class="hljs-number">0x000</span> WaitListEntry    : _LIST_ENTRY  <span class="hljs-comment">// 链表条目，用于将等待块链接到等待列表中</span><br>   +<span class="hljs-number">0x010</span> WaitType         : UChar        <span class="hljs-comment">// 等待类型（例如WaitAny或WaitAll）</span><br>   +<span class="hljs-number">0x011</span> BlockState       : UChar        <span class="hljs-comment">// 块状态（例如已插入、已唤醒等）</span><br>   +<span class="hljs-number">0x012</span> WaitKey          : Uint2B       <span class="hljs-comment">// 等待键，用于标识等待结果</span><br>   +<span class="hljs-number">0x014</span> SpareLong        : Int4B        <span class="hljs-comment">// 保留的长整型字段</span><br>   +<span class="hljs-number">0x018</span> Thread           : Ptr64 _KTHREAD  <span class="hljs-comment">// 指向等待线程的指针</span><br>   +<span class="hljs-number">0x018</span> NotificationQueue : Ptr64 _KQUEUE  <span class="hljs-comment">// 通知队列（与Thread共用同一内存位置）</span><br>   +<span class="hljs-number">0x020</span> Object           : Ptr64 Void   <span class="hljs-comment">// 指向被等待对象的指针</span><br>   +<span class="hljs-number">0x028</span> SparePtr         : Ptr64 Void   <span class="hljs-comment">// 保留的指针字段</span><br></code></pre></td></tr></table></figure>
+
+<p>综上所述，我们可以使用如下图来表示一个线程等待一个对象的情况：</p>
+<p><img src="https://s2.loli.net/2025/06/25/bCm1zQtKeV4jSNL.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="等待网"><a href="#等待网" class="headerlink" title="等待网"></a>等待网</h2><p>如下图所示，这是海东老师根据等待关系构造的一张等待网（这只是自定义的概念），我们可以看见所有处于等待状态的线程，线程对应的等待块，以及被等待对象，都会位于类似的等待网上。</p>
+<p><img src="https://s2.loli.net/2025/06/25/xdiWNIeSGD2KUht.png" srcset="/img/loading.gif" lazyload></p>
+<p>等待中的线程一定会挂入等待链表中（即KiWaitListHead），同时也一定位于等待网上（即KThread+5C的位置不为空）。</p>
+<h1 id="进程挂靠"><a href="#进程挂靠" class="headerlink" title="进程挂靠"></a>进程挂靠</h1>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Windows内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/CPU%E8%99%9A%E6%8B%9F%E5%8C%96%E4%B8%8E%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" class="category-chain-item">CPU虚拟化与进程管理</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>管理与调度</div>
+      <div>https://hermes37.vercel.app/2025/06/21/工科知识库/计算机科学与技术/内核原理/Windows内核原理/CPU虚拟化与进程管理/管理与调度/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/21/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%9D%E6%8A%A4/%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F/" title="保护模式">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">保护模式</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/16/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%99%9A%E6%8B%9F%E6%9C%BA/ART/ART%E4%B8%AD%E7%9A%84JNI/" title="ART中的JNI">
+                        <span class="hidden-mobile">ART中的JNI</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

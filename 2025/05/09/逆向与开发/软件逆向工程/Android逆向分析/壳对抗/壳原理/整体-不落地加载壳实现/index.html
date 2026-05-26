@@ -1,0 +1,742 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前情回顾在第一代壳实现【DEX整体加固壳-落地加载】 - The Peak Tower和壳实现的前置知识 - The Peak Tower中实现的整体加固壳的基本工作原理可以简单总结为：  将加密的 DEX 文件解密后，写入设备的存储（如 &#x2F;data&#x2F;data&#x2F;&lt;package&gt;&#x2F; 或 &#x2F;sdcard&#x2F; 等目录）。 使用 DexClassLoader 或 PathClassLoader">
+<meta property="og:type" content="article">
+<meta property="og:title" content="整体-不落地加载壳实现">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/%E5%A3%B3%E5%8E%9F%E7%90%86/%E6%95%B4%E4%BD%93-%E4%B8%8D%E8%90%BD%E5%9C%B0%E5%8A%A0%E8%BD%BD%E5%A3%B3%E5%AE%9E%E7%8E%B0/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="前情回顾在第一代壳实现【DEX整体加固壳-落地加载】 - The Peak Tower和壳实现的前置知识 - The Peak Tower中实现的整体加固壳的基本工作原理可以简单总结为：  将加密的 DEX 文件解密后，写入设备的存储（如 &#x2F;data&#x2F;data&#x2F;&lt;package&gt;&#x2F; 或 &#x2F;sdcard&#x2F; 等目录）。 使用 DexClassLoader 或 PathClassLoader">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250308110708372.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.534Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.336Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250308110708372.png">
+  
+  
+  
+  <title>整体-不落地加载壳实现 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="整体-不落地加载壳实现"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          834 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          7 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">整体-不落地加载壳实现</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前情回顾"><a href="#前情回顾" class="headerlink" title="前情回顾"></a>前情回顾</h1><p>在<a target="_blank" rel="noopener" href="https://restack3.github.io/2023/06/05/%E4%B8%80%E4%BB%A3%E5%A3%B3%E5%AE%9E%E7%8E%B0/">第一代壳实现【DEX整体加固壳-落地加载】 - The Peak Tower</a>和<a target="_blank" rel="noopener" href="https://restack3.github.io/2023/05/25/%E5%A3%B3%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/">壳实现的前置知识 - The Peak Tower</a>中实现的整体加固壳的基本工作原理可以简单总结为：</p>
+<ol>
+<li>将加密的 DEX 文件解密后，写入设备的存储（如 <code>/data/data/&lt;package&gt;/</code> 或 <code>/sdcard/</code> 等目录）。</li>
+<li>使用 <code>DexClassLoader</code> 或 <code>PathClassLoader</code> 从磁盘加载解密后的 DEX 文件。</li>
+</ol>
+<p>我们注意到：<strong>解密后的 DEX 文件会被写入磁盘</strong>，生成一个临时文件。暂且不论文件 I&#x2F;O 操作（如读写磁盘）会带来额外的性能开销。</p>
+<p>但从安全性和隐私上：攻击者可以通过文件系统提取并分析这些文件。临时文件可能被恶意软件或调试工具捕获。解密后的 DEX 文件可能包含敏感信息（如密钥、算法等），写入磁盘后容易被泄露。</p>
+<p>所以有没有一种机制能够之间<strong>直接在内存中解密和加载 DEX 文件</strong>，避免将解密后的 DEX 文件写入磁盘，从而减少被攻击的风险。<strong>不落地加载</strong>的方式也就应运而生了。</p>
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250308110708372.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="二代壳实现【Dex整体加固壳-不落地加载】"><a href="#二代壳实现【Dex整体加固壳-不落地加载】" class="headerlink" title="二代壳实现【Dex整体加固壳-不落地加载】"></a>二代壳实现【Dex整体加固壳-不落地加载】</h1><h2 id="Android-5以下-Dalvik-时代"><a href="#Android-5以下-Dalvik-时代" class="headerlink" title="Android 5以下 (Dalvik 时代)"></a>Android 5以下 (<strong>Dalvik 时代</strong>)</h2><blockquote>
+<p>这一部分因为自己只有一个Pxiel 3(android 10)的测试机。经过一次刷机变砖的经历，就懒得为了测试再刷低版本了。所以这里就偷个懒，先解析一下前辈成功实现的项目，搞清楚原理，等以后富裕了再进行尝试。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Frezrik/Jiagu">Frezrik&#x2F;Jiagu: Android apk jiagu</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.520monkey.com/archives/629">Android中apk加固完善篇之内存加载dex方案实现原理(不落地方式加载) | 尼古拉斯.赵四</a></p>
+</blockquote>
+<h2 id="Android-5-8-ART-时代"><a href="#Android-5-8-ART-时代" class="headerlink" title="Android 5-8 (ART 时代)"></a>Android 5-8 (<strong>ART 时代</strong>)</h2><h2 id="Android-8及以上-ART-时代"><a href="#Android-8及以上-ART-时代" class="headerlink" title="Android 8及以上(ART 时代)"></a>Android 8及以上(<strong>ART 时代</strong>)</h2><p><strong>Android 8（API 级别 26）及以上系统</strong> 中， Android 系统提供的 <code>InMemoryDexClassLoader</code>【内存dex加载器】，专门用于 <strong>直接从内存中加载 DEX 文件</strong>。而不需要将其写入磁盘。实现起来也很简单，只需在一代落地加载壳的基础上将应用的默认类加载器替换为自定义的 <code>InMemoryDexClassLoader</code>即可。</p>
+<p>在一代整体加载壳的基础上:</p>
+<p>修改splitSrcApkFromDex使其返回字节流。</p>
+<p>并在 onCreate()中修改为使用 <strong><code>InMemoryDexClassLoader</code></strong> 来加载内存中的 Dex 文件。去除(不需要落地加载到磁盘上)：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 获取apk_out目录</span><br>File apkDir=base.getDir(<span class="hljs-string">&quot;apk_out&quot;</span>,MODE_PRIVATE);<br><span class="hljs-comment">// 获取src.apk文件的路径</span><br><span class="hljs-type">String</span> <span class="hljs-variable">SrcApkPath</span> <span class="hljs-operator">=</span> apkDir.getAbsolutePath() + <span class="hljs-string">&quot;/src.apk&quot;</span>;<br><span class="hljs-comment">// 创建src.apk文件</span><br>File SrcApkFile=<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(SrcApkPath);<br><span class="hljs-comment">// 设置src.apk文件可写</span><br>SrcApkFile.setWritable(<span class="hljs-literal">true</span>);<br><span class="hljs-comment">// 创建FileOutputStream对象，用于向src.apk文件写入数据</span><br>FileOutputStream SrcApkFileInput=<span class="hljs-keyword">new</span> <span class="hljs-title class_">FileOutputStream</span>(SrcApkFile);<br><span class="hljs-comment">// 打印SrcApkData的长度</span><br>Log.i(<span class="hljs-string">&quot;demo&quot;</span>, String.format(<span class="hljs-string">&quot;%d&quot;</span>, SrcApkData.length));<br><span class="hljs-comment">// 向src.apk文件写入数据</span><br>SrcApkFileInput.write(SrcApkData);<br><span class="hljs-comment">// 关闭FileOutputStream对象</span><br>SrcApkFileInput.close();<br><span class="hljs-comment">// 设置src.apk文件只读</span><br>SrcApkFile.setReadOnly();<br></code></pre></td></tr></table></figure>
+
+<p>并修改：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//  dexBuffer 是内存中的 Dex 文件数据（byte[] 形式）</span><br><span class="hljs-type">byte</span>[] dexBuffer = readDexFileFromMemory(); <span class="hljs-comment">// 从内存中读取 Dex 文件数据</span><br><br><span class="hljs-comment">// 获取 ProxyApplication 的 ClassLoader</span><br><span class="hljs-type">ClassLoader</span> <span class="hljs-variable">pathClassLoader</span> <span class="hljs-operator">=</span> ProxyApplication.class.getClassLoader();<br><br><span class="hljs-comment">// 创建 InMemoryDexClassLoader</span><br><span class="hljs-type">InMemoryDexClassLoader</span> <span class="hljs-variable">inMemoryDexClassLoader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryDexClassLoader</span>(<br>    dexBuffer,          <span class="hljs-comment">// 内存中的 Dex 文件数据</span><br>    pathClassLoader     <span class="hljs-comment">// 父 ClassLoader</span><br>);<br><br><span class="hljs-comment">// 打印日志，表示 InMemoryDexClassLoader 创建成功</span><br>Log.i(<span class="hljs-string">&quot;demo&quot;</span>, <span class="hljs-string">&quot;Successfully initiate InMemoryDexClassLoader.&quot;</span>);<br><br><span class="hljs-comment">// 替换 ClassLoader</span><br>replaceClassLoader(base, inMemoryDexClassLoader);<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+<h1 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h1><p><a target="_blank" rel="noopener" href="http://www.520monkey.com/archives/629">Android中apk加固完善篇之内存加载dex方案实现原理(不落地方式加载) | 尼古拉斯.赵四</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/z9722/article/details/120785602">Android加固实现，不落地加载（support 5.0-11）全网完成度最高的开源方案]_com.frezrik.jiagu-CSDN博客</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/" class="category-chain-item">逆向与开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="category-chain-item">软件逆向工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/" class="category-chain-item">Android逆向分析</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/" class="category-chain-item">壳对抗</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/%E5%A3%B3%E5%8E%9F%E7%90%86/" class="category-chain-item">壳原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>整体-不落地加载壳实现</div>
+      <div>https://hermes37.vercel.app/2025/05/09/逆向与开发/软件逆向工程/Android逆向分析/壳对抗/壳原理/整体-不落地加载壳实现/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E5%A3%B3%E5%AF%B9%E6%8A%97/%E5%A3%B3%E5%8E%9F%E7%90%86/%E6%95%B4%E4%BD%93%E5%8A%A0%E5%9B%BA%E5%AE%9E%E7%8E%B0%E5%85%B3%E9%94%AE%E7%82%B9/" title="整体加固实现关键点">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">整体加固实现关键点</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/View%E6%9C%BA%E5%88%B6/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB/" title="View的事件体系">
+                        <span class="hidden-mobile">View的事件体系</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,1347 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="使用方式 先从使用路径入手，再深入底层实现。  OpenClaw 实际上有两种不同的通信路径：  Gateway ↔ 渠道（Channel），作为 Bot 客户端连接第三方服务器，出站 HTTPS 连接。是 Gateway 主动连接出去，不是外部连接进来 Gateway ↔ 远端设备（电脑&#x2F;手机），这里存在三种方式：  1234- VPN（主方案）- SSH（调试）- Tunnel（临时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenClaw源码鉴赏">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/05/16/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/Agent%E5%BA%94%E7%94%A8/OpenClaw%E6%BA%90%E7%A0%81%E9%89%B4%E8%B5%8F/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="使用方式 先从使用路径入手，再深入底层实现。  OpenClaw 实际上有两种不同的通信路径：  Gateway ↔ 渠道（Channel），作为 Bot 客户端连接第三方服务器，出站 HTTPS 连接。是 Gateway 主动连接出去，不是外部连接进来 Gateway ↔ 远端设备（电脑&#x2F;手机），这里存在三种方式：  1234- VPN（主方案）- SSH（调试）- Tunnel（临时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/08/mo1T/image-20260408160400552.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/08/H6fe/image-20260408104507508.png">
+<meta property="article:published_time" content="2026-05-16T09:23:55.503Z">
+<meta property="article:modified_time" content="2026-05-26T03:06:24.272Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/08/mo1T/image-20260408160400552.png">
+  
+  
+  
+  <title>OpenClaw源码鉴赏 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="OpenClaw源码鉴赏"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          87 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">OpenClaw源码鉴赏</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h1><blockquote>
+<p>先从使用路径入手，再深入底层实现。</p>
+</blockquote>
+<p>OpenClaw 实际上有两种不同的通信路径：</p>
+<ul>
+<li><strong>Gateway ↔ 渠道（Channel）</strong>，作为 Bot 客户端连接第三方服务器，出站 HTTPS 连接。是 Gateway 主动连接出去，不是外部连接进来</li>
+<li><strong>Gateway ↔ 远端设备（电脑&#x2F;手机）</strong>，这里存在三种方式：</li>
+</ul>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-bullet">- </span>VPN（主方案）<br><span class="hljs-bullet">- </span>SSH（调试）<br><span class="hljs-bullet">- </span>Tunnel（临时）<br><span class="hljs-bullet">- </span>公网（禁止）<br></code></pre></td></tr></table></figure>
+
+<p>这里我们谈谈第二种方式中的   VPN方式  和  公网方式：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">手机 → Web界面 / Chat界面 → OpenClaw → 电脑执行<br></code></pre></td></tr></table></figure>
+
+<p>公网方式 将本地电脑设备当作了服务器，在电脑上部署 OpenClaw 后：</p>
+<ol>
+<li>启动服务（一般是 localhost:xxxx）</li>
+<li>用内网穿透（关键），如：ngrok</li>
+<li>手机打开内网穿透的网址，输入指令。</li>
+</ol>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">手机 → Telegram → <span class="hljs-keyword">Bot </span>→ OpenClaw → 电脑<br></code></pre></td></tr></table></figure>
+
+<p> VPN方式 将本地电脑设备当作了客户端。是通过内置的渠道将任务推送到后端服务器上，本地电脑实时请求该服务器获得指令任务。</p>
+<p>按照VPN方式，可以将整体架构分成：</p>
+<ul>
+<li>远程控制端（Client）</li>
+<li>Gateway服务端（Hub）</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">架构一：VPS常驻网关</th>
+<th align="left">架构二：台式机网关+笔记本远程</th>
+<th align="left">架构三：笔记本网关+远程访问</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Gateway位置</strong></td>
+<td align="left">VPS&#x2F;云服务器（24h在线）</td>
+<td align="left">家庭台式机（长期在线）</td>
+<td align="left">笔记本电脑（移动设备）</td>
+</tr>
+<tr>
+<td align="left"><strong>控制端位置</strong></td>
+<td align="left">笔记本&#x2F;手机</td>
+<td align="left">笔记本</td>
+<td align="left">其他台式机&#x2F;手机</td>
+</tr>
+<tr>
+<td align="left"><strong>连接方式</strong></td>
+<td align="left">Tailscale&#x2F;SSH隧道</td>
+<td align="left">SSH远程隧道</td>
+<td align="left">SSH隧道&#x2F;Tailscale Serve</td>
+</tr>
+<tr>
+<td align="left"><strong>Gateway.bind</strong></td>
+<td align="left"><code>&quot;loopback&quot;</code></td>
+<td align="left"><code>&quot;loopback&quot;</code></td>
+<td align="left"><code>&quot;loopback&quot;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>公网暴露</strong></td>
+<td align="left">无（仅VPN&#x2F;隧道）</td>
+<td align="left">无</td>
+<td align="left">无</td>
+</tr>
+<tr>
+<td align="left"><strong>渠道通信</strong></td>
+<td align="left">从VPS出站</td>
+<td align="left">从台式机出站</td>
+<td align="left">从笔记本出站</td>
+</tr>
+<tr>
+<td align="left"><strong>会话持久性</strong></td>
+<td align="left">高（永不掉线）</td>
+<td align="left">较高（台式机常开）</td>
+<td align="left">低（笔记本休眠会断）</td>
+</tr>
+<tr>
+<td align="left"><strong>延迟</strong></td>
+<td align="left">取决于VPS位置</td>
+<td align="left">家庭网络延迟</td>
+<td align="left">取决于笔记本网络</td>
+</tr>
+</tbody></table>
+<p>譬如：<a target="_blank" rel="noopener" href="https://docs.openclaw.ac.cn/gateway/remote">远程访问 - OpenClaw (Clawdbot) 文档</a>这里：</p>
+<blockquote>
+<p>将 <strong>网关主机</strong> 视为“代理驻留的地方”。它拥有会话、身份验证配置文件、频道和状态。您的笔记本电脑&#x2F;台式机（以及节点）都连接到该主机。</p>
+</blockquote>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs awk">手机 / 客户端<br>        ↓<br>   （渠道：Telegram <span class="hljs-regexp">/ Web /</span> App）<br>        ↓<br>   Gateway（中心服务器）<br>        ↓<br>WebSocket长连接<br>        ↓<br>电脑（OpenClaw节点）<br></code></pre></td></tr></table></figure>
+
+<p>可以看出此时电脑节点是 WebSocket客户端连接到 Gateway（服务器）并建立“持久连接”。后续并通过渠道将指令发送到 GateWay  路由到正确Agent，电脑通过 WebSocket <strong>被动接收推送任务</strong>。</p>
+<p>从安全性上看：</p>
+<p>公网方式 把电脑“暴露成一个公网服务”，其本质是Web直连。而 VPN方式 通过Bot中转( <strong>通常运行在一台服务器上</strong>)，使用VPN&#x2F;Tailnet 设置 <strong>等价于“内网调用”</strong>，不会直接暴露公网端口。进一步减少了攻击面【Tailscale 是一个基于 WireGuard 的零信任 VPN 服务<strong>，可以简单理解为：</strong>把所有设备组成一个安全的私有网络，无论这些设备在哪里（家里、公司、云端)】，所以一般人使用也大多使用第二种。</p>
+<hr>
+<p>天下没有攻不破的系统，即使是内网环境下也可以通过横向移动进而控制整个系统。那么对于这样的部署方式，可能的攻击点有哪些呢？又该什么防御呢？</p>
+<p>这里我按照数据流的顺序，讲一讲每个环节的攻击点以及Openclaw是如何应对的：</p>
+<ul>
+<li>Gateway服务端怎么确认客户端的真实性并且防止重放攻击</li>
+<li>工具调用劫持怎么办？如何防范滥用工具对系统资源的破坏和权限提升？</li>
+</ul>
+<h1 id="Gateway安全连接与认证"><a href="#Gateway安全连接与认证" class="headerlink" title="Gateway安全连接与认证"></a>Gateway安全连接与认证</h1><blockquote>
+<p>这一个阶段主要用于验证客户端的真实性 并且 <strong>每次新连接都生成一个全新的、不可预测的 UUID 作为 nonce</strong> 用于防止重放攻击。</p>
+</blockquote>
+<h2 id="预认证与注册"><a href="#预认证与注册" class="headerlink" title="预认证与注册"></a>预认证与注册</h2><p>Gateway 的客户端认证主要靠 <strong>Token &#x2F; TLS（设备指纹）&#x2F; Tailscale &#x2F; Origin  ** 四个手段。这一过程的核心思想是</strong>先认证身份再检查权限再分配会话&#x2F;技能访问**</p>
+<blockquote>
+<p>src\gateway\server.impl.ts</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> &#123;<br>  canvasHost,                        <span class="hljs-comment">// Canvas 主机实例 - 管理动态内容渲染和用户脚本执行</span><br>  releasePluginRouteRegistry,       <span class="hljs-comment">// 释放插件路由注册表的函数 - 清理/卸载已注册的插件路由</span><br>  httpServer,                       <span class="hljs-comment">// 主 HTTP 服务器实例（监听主端口）</span><br>  httpServers,                      <span class="hljs-comment">// 多个 HTTP 服务器实例数组（监听不同端口或主机）</span><br>  httpBindHosts,                    <span class="hljs-comment">// HTTP 服务绑定的主机地址列表（如 [&#x27;0.0.0.0&#x27;, &#x27;127.0.0.1&#x27;]）</span><br>  wss,                              <span class="hljs-comment">// WebSocket 服务器实例（用于实时双向通信）</span><br>  preauthConnectionBudget,          <span class="hljs-comment">// 预认证连接预算 - 限制未认证连接数量，防止资源耗尽</span><br>  clients,                          <span class="hljs-comment">// 客户端连接管理 Map - 存储所有已连接的客户端信息</span><br>  broadcast,                        <span class="hljs-comment">// 广播函数 - 向所有连接的客户端发送消息</span><br>  broadcastToConnIds,               <span class="hljs-comment">// 向指定连接ID列表广播消息的函数</span><br>  agentRunSeq,                      <span class="hljs-comment">// Agent 运行序号/序列号（用于追踪执行顺序）</span><br>  dedupe,                           <span class="hljs-comment">// 去重函数/Map - 防止重复处理相同请求或消息</span><br>  chatRunState,                     <span class="hljs-comment">// 聊天运行状态 - 存储每个聊天会话的运行状态</span><br>  chatRunBuffers,                   <span class="hljs-comment">// 聊天运行缓冲区 - 缓存聊天消息数据</span><br>  chatDeltaSentAt,                  <span class="hljs-comment">// 聊天增量消息发送时间戳 - 记录最后一次发送增量消息的时间</span><br>  chatDeltaLastBroadcastLen,        <span class="hljs-comment">// 上次广播的聊天增量消息长度</span><br>  addChatRun,                       <span class="hljs-comment">// 添加聊天运行的函数 - 启动新的聊天会话</span><br>  removeChatRun,                    <span class="hljs-comment">// 移除聊天运行的函数 - 结束/清理聊天会话</span><br>  chatAbortControllers,             <span class="hljs-comment">// 聊天中止控制器 Map - 用于取消/中止正在进行的聊天请求</span><br>  toolEventRecipients,              <span class="hljs-comment">// 工具事件接收器 - 处理工具调用相关事件的监听器集合</span><br>&#125; = <span class="hljs-keyword">await</span> <span class="hljs-title function_">createGatewayRuntimeState</span>(&#123;<br>  <span class="hljs-comment">// HTTP 严格传输安全头（HSTS）配置，强制客户端使用 HTTPS</span><br>  strictTransportSecurityHeader,<br>  <span class="hljs-comment">// 解析后的认证配置（如 JWT、API Key、OAuth 等）</span><br>  resolvedAuth,<br>  <span class="hljs-comment">// 网关自身的 TLS/HTTPS 配置（证书、密钥、加密套件等）</span><br>  gatewayTls,<br>  <span class="hljs-comment">//.....</span><br>  &#125;);<br></code></pre></td></tr></table></figure>
+
+<p>Gateway 可启用 TLS 并验证指纹，确保控制端和 Gateway 之间的流量加密，同时校验身份。</p>
+<blockquote>
+<p>TLS（传输层安全协议）是一种加密协议，用于在计算机网络中提供安全通信。它的主要作用是确保两个应用程序（如Web服务器和浏览器）之间传输的数据具有<strong>机密性</strong>（不被窃听）、<strong>完整性</strong>（不被篡改）和<strong>身份验证</strong>（确认对方身份可信）。</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs TS"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">GatewayTlsRuntime</span> = &#123;<br>  <span class="hljs-attr">enabled</span>: <span class="hljs-built_in">boolean</span>;<span class="hljs-comment">// TLS 是否启用（true=开启 HTTPS，false=仅 HTTP）</span><br>  <span class="hljs-attr">required</span>: <span class="hljs-built_in">boolean</span>; <span class="hljs-comment">// TLS 是否强制（true=只允许 HTTPS 访问，false=HTTP/HTTPS 均可）</span><br>  certPath?: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// 证书文件路径（如 cert.pem）</span><br>  keyPath?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// 私钥文件路径（如 key.pem）</span><br>  caPath?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// CA 证书路径（用于双向 TLS/mTLS 验证客户端）</span><br>  fingerprintSha256?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// 证书的 SHA-256 指纹（用于证书固定校验）</span><br>  tlsOptions?: tls.<span class="hljs-property">TlsOptions</span>;<span class="hljs-comment">// Node.js TLS 底层选项（加密套件、TLS 版本、证书验证等）</span><br>  error?: <span class="hljs-built_in">string</span>;<span class="hljs-comment">// TLS 配置错误信息（如证书不存在、格式错误时填充）</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>同时启动时生成或配置的认证 token，每个客户端必须提供该 token 才能注册到 Gateway</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> runtimeConfig = <span class="hljs-keyword">await</span> <span class="hljs-title function_">resolveGatewayRuntimeConfig</span>(&#123;<br>    <span class="hljs-attr">cfg</span>: cfgAtStart,<br>    port,<br>    <span class="hljs-attr">bind</span>: opts.<span class="hljs-property">bind</span>,<br>    <span class="hljs-attr">host</span>: opts.<span class="hljs-property">host</span>,<br>    <span class="hljs-attr">controlUiEnabled</span>: opts.<span class="hljs-property">controlUiEnabled</span>,  <br>    <span class="hljs-attr">openAiChatCompletionsEnabled</span>: opts.<span class="hljs-property">openAiChatCompletionsEnabled</span>,<br>    <span class="hljs-attr">openResponsesEnabled</span>: opts.<span class="hljs-property">openResponsesEnabled</span>,<br>    <span class="hljs-attr">auth</span>: opts.<span class="hljs-property">auth</span>,<br>    <span class="hljs-attr">tailscale</span>: opts.<span class="hljs-property">tailscale</span>,<br>  &#125;);<br><br><span class="hljs-keyword">const</span> &#123;<br>    <span class="hljs-comment">//...</span><br>    strictTransportSecurityHeader,<br>    resolvedAuth,<br>    tailscaleConfig,<br>    tailscaleMode,<br>    <span class="hljs-comment">//....</span><br>  &#125; = runtimeConfig;<br><br><br></code></pre></td></tr></table></figure>
+
+<p>并且会检查控制 <strong>Origin 白名单</strong>【<strong>跨域请求控制机制</strong>】。Openclaw有一个控制 UI ，是一个由 Gateway 网关提供的小型 <strong>Vite + Lit</strong> 单页应用，它会<strong>直接连接到同一端口上的 Gateway 网关 WebSocket</strong>。该白名单用于限制哪些网站&#x2F;域名可以访问网关控制台 UI。</p>
+<p> <code>~/.openclaw/openclaw.json</code> 的配置：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">18789</span><span class="hljs-punctuation">,</span><br>   controlUi<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> dangerouslyDisableDeviceAuth<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;auth&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;mode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;token&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;token&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;自定义密码&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;reload&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;mode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;hybrid&quot;</span> <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>对企业或跨网络节点，用 Tailscale 作为身份和访问控制，设置配置<code>gateway.auth.allowTailscale: true</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json">tailscale?<span class="hljs-punctuation">:</span> import(<span class="hljs-string">&quot;../config/config.js&quot;</span>).GatewayTailscaleConfig;<br></code></pre></td></tr></table></figure>
+
+<p>当客户端接入 Gateway 时，会走 <strong>预认证和注册流程</strong>：</p>
+<ol>
+<li>客户端发起 WebSocket &#x2F; HTTP 请求。</li>
+<li>Gateway 验证 Token 、allowedOrigins 、 TLS 指纹。</li>
+<li>认证通过后，将客户端信息记录到 <code>clients</code> 或 <code>nodeRegistry</code>。</li>
+<li>分配 <strong>sessionKey &#x2F; agentRunSeq</strong> 等用于会话追踪。</li>
+</ol>
+<blockquote>
+<p>src\gateway\node-registry.ts</p>
+</blockquote>
+<p><code>nodeRegistry</code> 保存注册节点和它们可用的技能（agents）。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// Create auth rate limiters used by connect/auth flows.防止滥用</span><br>  <span class="hljs-keyword">const</span> rateLimitConfig = cfgAtStart.<span class="hljs-property">gateway</span>?.<span class="hljs-property">auth</span>?.<span class="hljs-property">rateLimit</span>;<br>  <span class="hljs-keyword">const</span> &#123; <span class="hljs-attr">rateLimiter</span>: authRateLimiter, <span class="hljs-attr">browserRateLimiter</span>: browserAuthRateLimiter &#125; =<br>    <span class="hljs-title function_">createGatewayAuthRateLimiters</span>(rateLimitConfig);<br></code></pre></td></tr></table></figure>
+
+<p>在<code>const sessionRow = loadGatewaySessionRow(sessionKey);</code>中注意<strong>Session Scope &#x2F; Subagent Role</strong>表示每个 agent 或客户端有独立的权限范围【不同客户端信任级别不同，权限需要分层】</p>
+<h2 id="WebSocket-握手与认证流程"><a href="#WebSocket-握手与认证流程" class="headerlink" title="WebSocket 握手与认证流程"></a>WebSocket 握手与认证流程</h2><p>还记的在前面的 <code>createGatewayRuntimeState</code>中我们初始化了WebSocket 服务器实例wss，它监听 <code>port</code>，处理所有客户端的 WebSocket 连接。<code>httpServer</code> 和 <code>httpServers</code> 是底层 HTTP&#x2F;HTTPS server，用于握手升级到 WebSocket。Gateway 在这里统一管理 HTTP&#x2F;WS 端口和安全配置。</p>
+<img src="https://files.seeusercontent.com/2026/04/08/mo1T/image-20260408160400552.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+
+
+<blockquote>
+<p>src\gateway\server\ws-connection.ts</p>
+<p>attachGatewayWsHandlers—attachGatewayWsConnectionHandler—attachGatewayWsMessageHandler</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">//attachGatewayWsConnectionHandler:</span><br><span class="hljs-keyword">const</span> connectNonce = <span class="hljs-title function_">randomUUID</span>();  <span class="hljs-comment">// 每次 WebSocket 连接生成唯一的 nonce</span><br><span class="hljs-title function_">send</span>(&#123;<br>  <span class="hljs-attr">type</span>: <span class="hljs-string">&quot;event&quot;</span>,<br>  <span class="hljs-attr">event</span>: <span class="hljs-string">&quot;connect.challenge&quot;</span>,<br>  <span class="hljs-attr">payload</span>: &#123; <span class="hljs-attr">nonce</span>: connectNonce, <span class="hljs-attr">ts</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() &#125;,<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>在 <code>attachGatewayWsMessageHandler</code> 函数中:</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> providedNonce = <span class="hljs-keyword">typeof</span> device.<span class="hljs-property">nonce</span> === <span class="hljs-string">&quot;string&quot;</span> ? device.<span class="hljs-property">nonce</span>.<span class="hljs-title function_">trim</span>() : <span class="hljs-string">&quot;&quot;</span>;<br><span class="hljs-keyword">if</span> (!providedNonce) &#123;<br>  <span class="hljs-title function_">rejectDeviceAuthInvalid</span>(<span class="hljs-string">&quot;device-nonce-missing&quot;</span>, <span class="hljs-string">&quot;device nonce required&quot;</span>);<br>  <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-keyword">if</span> (providedNonce !== connectNonce) &#123;  <span class="hljs-comment">// ← 核心防重放检查</span><br>  <span class="hljs-title function_">rejectDeviceAuthInvalid</span>(<span class="hljs-string">&quot;device-nonce-mismatch&quot;</span>, <span class="hljs-string">&quot;device nonce mismatch&quot;</span>);<br>  <span class="hljs-keyword">return</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过nonce可以有效解决重放攻击：</p>
+<table>
+<thead>
+<tr>
+<th align="left">攻击场景</th>
+<th align="left">防护机制</th>
+<th align="left">代码位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>攻击者截获之前的认证包并重放</strong></td>
+<td align="left">每次连接生成新的 <code>connectNonce</code>，旧的 nonce 会被拒绝</td>
+<td align="left"><code>providedNonce !== connectNonce</code></td>
+</tr>
+<tr>
+<td align="left"><strong>攻击者开新连接重放旧签名</strong></td>
+<td align="left">新连接有新 nonce，旧签名对应的是旧 nonce，不匹配</td>
+<td align="left">同上</td>
+</tr>
+<tr>
+<td align="left"><strong>攻击者尝试暴力猜测 nonce</strong></td>
+<td align="left">nonce 是 128 位 UUID (2^128 种可能)，不可猜测</td>
+<td align="left"><code>randomUUID()</code></td>
+</tr>
+<tr>
+<td align="left"><strong>攻击者重放但修改 nonce</strong></td>
+<td align="left">签名会失效，因为签名绑定了原始 nonce</td>
+<td align="left">签名验证</td>
+</tr>
+</tbody></table>
+<p>更详细的可以在<code>attachGatewayWsMessageHandler</code>找到：</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>设备绑定</strong></td>
+<td align="left">设备公钥与 scopes&#x2F;role 绑定，后续连接自动恢复权限</td>
+</tr>
+<tr>
+<td align="left"><strong>配对机制</strong></td>
+<td align="left">首次连接或权限升级需要管理员批准（通过广播 <code>device.pair.requested</code>）</td>
+</tr>
+<tr>
+<td align="left"><strong>来源校验</strong></td>
+<td align="left">对浏览器客户端强制 Origin 检查，可配置允许列表</td>
+</tr>
+<tr>
+<td align="left"><strong>本地客户端豁免</strong></td>
+<td align="left">本地回环连接可绕过部分检查（取决于配置）</td>
+</tr>
+<tr>
+<td align="left"><strong>防洪水</strong></td>
+<td align="left">未授权请求限流 + 超限断连</td>
+</tr>
+<tr>
+<td align="left"><strong>元数据钉固</strong></td>
+<td align="left">配对后 platform&#x2F;deviceFamily 不可随意更改，除非重新配对</td>
+</tr>
+</tbody></table>
+<h1 id="工具权限与沙盒隔离机制"><a href="#工具权限与沙盒隔离机制" class="headerlink" title="工具权限与沙盒隔离机制"></a>工具权限与沙盒隔离机制</h1><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  auth<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    profiles<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;openai-codex:default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        provider<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex&quot;</span><span class="hljs-punctuation">,</span><br>        mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;oauth&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  agents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    defaults<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      model<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        primary<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex/gpt-5.4&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;sandbox&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;mode&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;non-main&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;scope&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;session&quot;</span><br>     <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      maxConcurrent<span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span><br>      subagents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        maxConcurrent<span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    list<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span><br>        id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;main&quot;</span><span class="hljs-punctuation">,</span><br>        model<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          primary<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex/gpt-5.4&quot;</span><span class="hljs-punctuation">,</span><br>          fallbacks<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;openai-codex/gpt-5.2&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        tools<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          profile<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;coding&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  channels<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    telegram<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      enabled<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>      dmPolicy<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pairing&quot;</span><span class="hljs-punctuation">,</span><br>      groupPolicy<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;allowlist&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  gateway<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    port<span class="hljs-punctuation">:</span> <span class="hljs-number">18789</span><span class="hljs-punctuation">,</span><br>    auth<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;token&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    controlUi<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      allowedOrigins<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;http://127.0.0.1:18789&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;http://localhost:18789&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>做计算机病毒分析时，刚入门的逆向工程师都不会直接把可疑样本直接扔进真实系统，而是搭建一个隔离的沙盒环境，</p>
+<blockquote>
+<ul>
+<li>Linux 下常用 <strong>Docker</strong></li>
+<li>Windows 下可以使用 <strong>Windows Sandbox</strong></li>
+<li>Android 系统中存在 <strong>VirtualApp</strong></li>
+</ul>
+</blockquote>
+<p>在“笼子”里观察病毒的每一个动作。即便病毒爆发，损失也仅限于这个可以一键还原的快照。</p>
+<p>OpenClaw 的 Agent 在某种意义上，就是一个“有益但不可预测的病毒”。当它以最高权限运行时，拥有读取文件、执行命令、修改配置的能力——这与勒索病毒的破坏力在技术层面没有什么区别。尤其是当LLM 犯错，出现幻觉乃至误解指令。一个“rm -rf &#x2F;”的误判，一个错误的文件覆写，就足以让“有益的助手”变成“灾难性的病毒”。</p>
+<p>所以我很好奇openclaw是怎么实现一个沙盒的？【蛮想知道的是怎么在windows下实现的（要是使用<strong>Hyper-V</strong>就更好了）】</p>
+<h2 id="Sandbox配置"><a href="#Sandbox配置" class="headerlink" title="Sandbox配置"></a>Sandbox配置</h2><table>
+<thead>
+<tr>
+<th>配置类别</th>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Mode</strong>(启用范围)</td>
+<td><code>off</code></td>
+<td>完全禁用沙盒，所有工具直接在宿主机运行（风险最高）</td>
+</tr>
+<tr>
+<td></td>
+<td><code>non-main</code> (默认)</td>
+<td>仅非主会话（群聊&#x2F;频道）启用沙盒，主会话（私聊）在宿主机运行</td>
+</tr>
+<tr>
+<td></td>
+<td><code>all</code></td>
+<td>所有会话强制使用沙盒，最高隔离级别</td>
+</tr>
+<tr>
+<td><strong>Scope</strong>(共享范围)</td>
+<td><code>session</code></td>
+<td>每个会话独立容器，隔离最彻底，资源开销大</td>
+</tr>
+<tr>
+<td></td>
+<td><code>agent</code> (默认)</td>
+<td>同一智能体的所有会话共享一个容器，资源利用率高</td>
+</tr>
+<tr>
+<td></td>
+<td><code>shared</code></td>
+<td>所有沙盒会话共享全局容器，资源开销最小但隔离弱</td>
+</tr>
+<tr>
+<td><strong>workspaceAccess</strong>(工作区访问)</td>
+<td><code>none</code> (默认)</td>
+<td>无法访问宿主机工作区，技能文件自动复制到容器临时目录</td>
+</tr>
+<tr>
+<td></td>
+<td><code>ro</code></td>
+<td>只读挂载工作区到 <code>/agent</code>，写入工具（write&#x2F;edit）自动禁用</td>
+</tr>
+<tr>
+<td></td>
+<td><code>rw</code></td>
+<td>读写挂载工作区，允许修改工作区内文件（无法访问外部系统文件）</td>
+</tr>
+</tbody></table>
+<p>遗憾的是，一顿搜索我只找到了：</p>
+<blockquote>
+<p>OpenClaw 可以<strong>在 Docker 容器中运行工具</strong>以减少爆炸半径。在<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/zh-CN/gateway/sandboxing">沙盒隔离 - OpenClaw</a>文档中提到：</p>
+<ul>
+<li><code>&quot;docker&quot;</code>（默认）：本地基于 Docker 的沙盒运行时。</li>
+<li><code>&quot;ssh&quot;</code>：通用的基于 SSH 的远程沙盒运行时。</li>
+<li><code>&quot;openshell&quot;</code>：基于 OpenShell 的沙盒运行时。</li>
+</ul>
+<p><code>agents.defaults.sandbox.backend</code> 控制<strong>由哪种运行时</strong>提供沙盒：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">Docker</th>
+<th align="left">SSH</th>
+<th align="left">OpenShell</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>运行位置</strong></td>
+<td align="left">本地容器</td>
+<td align="left">任意可通过 SSH 访问的主机</td>
+<td align="left">由 OpenShell 管理的沙盒</td>
+</tr>
+<tr>
+<td align="left"><strong>设置</strong></td>
+<td align="left"><code>scripts/sandbox-setup.sh</code></td>
+<td align="left">SSH 密钥 + 目标主机</td>
+<td align="left">启用 OpenShell 插件</td>
+</tr>
+<tr>
+<td align="left"><strong>Workspace 模型</strong></td>
+<td align="left">bind mount 或 copy</td>
+<td align="left">远程规范源（初始化一次）</td>
+<td align="left"><code>mirror</code> 或 <code>remote</code></td>
+</tr>
+<tr>
+<td align="left"><strong>网络控制</strong></td>
+<td align="left"><code>docker.network</code>（默认：none）</td>
+<td align="left">取决于远程主机</td>
+<td align="left">取决于 OpenShell</td>
+</tr>
+<tr>
+<td align="left"><strong>浏览器沙盒</strong></td>
+<td align="left">支持</td>
+<td align="left">不支持</td>
+<td align="left">尚不支持</td>
+</tr>
+<tr>
+<td align="left"><strong>Bind mounts</strong></td>
+<td align="left"><code>docker.binds</code></td>
+<td align="left">不适用</td>
+<td align="left">不适用</td>
+</tr>
+<tr>
+<td align="left"><strong>最适合</strong></td>
+<td align="left">本地开发，完全隔离</td>
+<td align="left">将执行卸载到远程机器</td>
+<td align="left">具有可选双向同步的受管远程沙盒</td>
+</tr>
+</tbody></table>
+<p>所以OpenClaw 在 Windows 下通常无法直接开启 Docker 沙盒模式，普遍建议在采用 SSH 或 OpenShell（远程 Linux）来做工具隔离。</p>
+<blockquote>
+<p>OpenClaw 通过 SSH 连接到远程主机（通常是 Linux），在远程主机上执行工具。远程主机本身不是完全隔离的容器，可以把远程主机的一个用户、目录或者 chroot&#x2F;容器作为“沙盒”来限制工具执行。OpenClaw 并不会在 SSH 后端额外创建 Docker 容器，它只是把远程机器当作受控执行环境，借助远程主机的权限和隔离机制来减少风险。</p>
+</blockquote>
+<blockquote>
+<p>OpenShell 提供了完整的沙盒生命周期管理：创建工作区、执行命令、同步文件、销毁环境。远程主机（通常是 Linux）在 OpenShell 管理下，被当作专门的“沙盒环境”。<strong>隔离主要靠文件系统路径和远程主机权限</strong>，不依赖 Linux Namespace&#x2F;Cgroups。可以用 chroot、虚拟用户、容器化命令（如果管理员手动启用）增强隔离，但默认只是逻辑隔离。适合 <strong>远程受控执行</strong>，可审计、可回溯，但隔离强度比 Docker 低。</p>
+</blockquote>
+<p>所以再看看基于docker 实现的沙盒：</p>
+<p>曾经我在<a href="https://hermes37.vercel.app/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/%E4%BB%80%E4%B9%88%E6%98%AFDocker/">什么是Docker - Hermes</a>这篇文章中，就已经了解过docker的底层实现原理了，记得当时还跟着这本书<a target="_blank" rel="noopener" href="https://weread.qq.com/web/reader/a8932240721e42b5a89f479">自己动手写Docker - 陈显鹭 - 微信读书</a> 写过一个demo。其本质是利用了Linux内核的三大支柱技术：</p>
+<ul>
+<li>Linux Namespace</li>
+<li>Linux Cgroups</li>
+<li>Union File System</li>
+</ul>
+<p>利用 <strong>Linux Namespace</strong> 实现环境隔离，<strong>Cgroups</strong> 实现资源限制，<strong>Union File System</strong> 实现写时复制（“省空间”）。这三项技术都已在内核层面经过十余年生产环境验证，成熟度极高。</p>
+<p>因此，OpenClaw 基于 Docker 构建沙盒环境，在技术上是完全可靠的。将 Agent 的文件读写、命令执行等高权限操作全部放入 Docker 容器中执行，即便容器内执行 <code>rm -rf /</code> 或恶意篡改系统配置，破坏范围也被严格限制在容器内部，宿主机丝毫无损。</p>
+<p>需要注意的是默认情况下，Docker 沙盒容器会在<strong>无网络</strong>模式下运行。 可通过 <code>agents.defaults.sandbox.docker.network</code> 覆盖。</p>
+<blockquote>
+<p>深入了解的话，可以看看<a href="https://hermes37.vercel.app/2025/05/09/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E8%BF%90%E7%BB%B4/%E5%AE%B9%E5%99%A8%E5%8C%96%E4%B8%8E%E7%BC%96%E6%8E%92/Docker%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/">Docker网络模型 - Hermes</a></p>
+</blockquote>
+<p>后面比较好奇的是想看看Openclaw在Docker沙盒怎么做工具权限管理的，有时间就继续读读源码再写一篇文章记录。</p>
+<h1 id="渠道管理"><a href="#渠道管理" class="headerlink" title="渠道管理"></a>渠道管理</h1><blockquote>
+<ul>
+<li>src\gateway\server-channels.ts</li>
+<li>src\channels\plugins\registry.ts</li>
+<li>src\cli\gateway-cli\run-loop.ts</li>
+<li>src\gateway\server.impl.ts</li>
+<li>src\cli\gateway-cli\run.ts</li>
+</ul>
+</blockquote>
+<h2 id="插件工厂"><a href="#插件工厂" class="headerlink" title="插件工厂"></a><strong>插件工厂</strong></h2><blockquote>
+<p>extensions\telegram</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">type</span> <span class="hljs-title class_">DefinedChannelPluginEntry</span>&lt;<span class="hljs-title class_">TPlugin</span>&gt; = &#123;<br>  <span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>;<br>  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>;<br>  <span class="hljs-attr">description</span>: <span class="hljs-built_in">string</span>;<br>  <span class="hljs-attr">configSchema</span>: <span class="hljs-title class_">OpenClawPluginConfigSchema</span>;<br>  <span class="hljs-attr">register</span>: <span class="hljs-function">(<span class="hljs-params">api: OpenClawPluginApi</span>) =&gt;</span> <span class="hljs-built_in">void</span>;<br>  <span class="hljs-attr">channelPlugin</span>: <span class="hljs-title class_">TPlugin</span>;<br>  setChannelRuntime?: <span class="hljs-function">(<span class="hljs-params">runtime: PluginRuntime</span>) =&gt;</span> <span class="hljs-built_in">void</span>;<br>&#125;;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> defineChannelPluginEntry&lt;<span class="hljs-title class_">TPlugin</span>&gt;(&#123;<br>  id,<br>  name,<br>  description,<br>  plugin,<br>  configSchema = emptyPluginConfigSchema,<br>  setRuntime,<br>  registerCliMetadata,<br>  registerFull,<br>&#125;: <span class="hljs-title class_">DefineChannelPluginEntryOptions</span>&lt;<span class="hljs-title class_">TPlugin</span>&gt;): <span class="hljs-title class_">DefinedChannelPluginEntry</span>&lt;<span class="hljs-title class_">TPlugin</span>&gt; &#123;...&#125;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-title function_">defineChannelPluginEntry</span>(&#123;<br>  <span class="hljs-attr">id</span>: <span class="hljs-string">&quot;telegram&quot;</span>,<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&quot;Telegram&quot;</span>,<br>  <span class="hljs-attr">description</span>: <span class="hljs-string">&quot;Telegram channel plugin&quot;</span>,<br>  <span class="hljs-attr">plugin</span>: telegramPlugin <span class="hljs-keyword">as</span> <span class="hljs-title class_">ChannelPlugin</span>,<br>  <span class="hljs-attr">setRuntime</span>: setTelegramRuntime,<br>&#125;);<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">ChannelPlugin</span>&lt;<span class="hljs-title class_">ResolvedAccount</span> = <span class="hljs-built_in">any</span>, <span class="hljs-title class_">Probe</span> = <span class="hljs-built_in">unknown</span>, <span class="hljs-title class_">Audit</span> = <span class="hljs-built_in">unknown</span>&gt; = &#123;...&#125;;<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">分组</th>
+<th align="left">包含字段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>基础标识</strong></td>
+<td align="left"><code>id</code>, <code>meta</code>, <code>capabilities</code>, <code>defaults</code>, <code>reload</code></td>
+</tr>
+<tr>
+<td align="left"><strong>配置管理</strong></td>
+<td align="left"><code>config</code>, <code>configSchema</code>, <code>setup</code>, <code>setupWizard</code></td>
+</tr>
+<tr>
+<td align="left"><strong>账户与网关</strong></td>
+<td align="left"><code>gateway</code>, <code>gatewayMethods</code>, <code>status</code>, <code>lifecycle</code>, <code>auth</code></td>
+</tr>
+<tr>
+<td align="left"><strong>安全与权限</strong></td>
+<td align="left"><code>security</code>, <code>allowlist</code>, <code>approvals</code>, <code>elevated</code>, <code>groups</code></td>
+</tr>
+<tr>
+<td align="left"><strong>消息处理</strong></td>
+<td align="left"><code>outbound</code>, <code>messaging</code>, <code>streaming</code>, <code>threading</code>, <code>mentions</code></td>
+</tr>
+<tr>
+<td align="left"><strong>会话管理</strong></td>
+<td align="left"><code>bindings</code>, <code>conversationBindings</code>, <code>pairing</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Agent 集成</strong></td>
+<td align="left"><code>agentPrompt</code>, <code>agentTools</code>, <code>commands</code>, <code>actions</code></td>
+</tr>
+<tr>
+<td align="left"><strong>目录与解析</strong></td>
+<td align="left"><code>directory</code>, <code>resolver</code></td>
+</tr>
+<tr>
+<td align="left"><strong>其他</strong></td>
+<td align="left"><code>heartbeat</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> telegramPlugin = <span class="hljs-title function_">createChatChannelPlugin</span>(&#123;<br>    <span class="hljs-attr">base</span>: &#123;...&#125;,<span class="hljs-comment">//基础配置</span><br>    <span class="hljs-attr">pairing</span>: &#123;...&#125;,<span class="hljs-comment">//配对功能</span><br>    <span class="hljs-attr">security</span>: &#123;...&#125;,<span class="hljs-comment">//安全配置</span><br>    <span class="hljs-attr">threading</span>: &#123;...&#125;,<span class="hljs-comment">//线程管理</span><br>    <span class="hljs-attr">outbound</span>: &#123;...&#125;,<span class="hljs-comment">//出站消息</span><br>&#125;)<br>                <br><span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> createChatChannelPlugin&lt;<span class="hljs-attr">base</span>: <span class="hljs-title class_">ChatChannelPluginBase</span>&lt;<span class="hljs-title class_">TResolvedAccount</span>, <span class="hljs-title class_">Probe</span>, <span class="hljs-title class_">Audit</span>&gt;;<br>  security?:<br>    | <span class="hljs-title class_">ChannelSecurityAdapter</span>&lt;<span class="hljs-title class_">TResolvedAccount</span>&gt;<br>    | <span class="hljs-title class_">ChatChannelSecurityOptions</span>&lt;<span class="hljs-title class_">TResolvedAccount</span>&gt;;<br>  pairing?: <span class="hljs-title class_">ChannelPairingAdapter</span> | <span class="hljs-title class_">ChatChannelPairingOptions</span>;<br>  threading?: <span class="hljs-title class_">ChannelThreadingAdapter</span> | <span class="hljs-title class_">ChatChannelThreadingOptions</span>&lt;<span class="hljs-title class_">TResolvedAccount</span>&gt;;<br>  outbound?: <span class="hljs-title class_">ChannelOutboundAdapter</span> | <span class="hljs-title class_">ChatChannelAttachedOutboundOptions</span>;): <span class="hljs-title class_">ChannelPlugin</span>&lt;<span class="hljs-title class_">TResolvedAccount</span>, <span class="hljs-title class_">Probe</span>, <span class="hljs-title class_">Audit</span>&gt; &#123;....&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h3><p>如果是直接导入并添加到插件列表，应该会有：<code>DefinedChannelPluginEntry&lt;TPlugin&gt;[]</code>，比如：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">import</span> telegramPluginEntry <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./telegram-plugin&#x27;</span>;<br><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> &#123; <span class="hljs-title class_">DefinedChannelPluginEntry</span> &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./types&#x27;</span>;<br><br><span class="hljs-comment">// 收集所有频道插件</span><br><span class="hljs-keyword">const</span> <span class="hljs-attr">channelPlugins</span>: <span class="hljs-title class_">DefinedChannelPluginEntry</span>&lt;<span class="hljs-built_in">any</span>&gt;[] = [<br>  telegramPluginEntry,<br>  <span class="hljs-comment">// 其他插件如 discord, slack 等</span><br>];<br></code></pre></td></tr></table></figure>
+
+<p>但我搜索了一下并没有。结合配置文件想来也不会采用怎么笨的方式，所以大抵是动态加载插件。结合index.ts目录名，猜测是通过目录名进行，搜索.&#x2F;extensions&#96;结果只搜出来：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">buildBundledPluginModuleId</span>(<span class="hljs-params">pluginId: <span class="hljs-built_in">string</span>, artifactBasename: <span class="hljs-built_in">string</span></span>): <span class="hljs-built_in">string</span> &#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-string">`../../../extensions/<span class="hljs-subst">$&#123;pluginId&#125;</span>/<span class="hljs-subst">$&#123;artifactBasename&#125;</span>`</span>;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">buildBundledPluginModuleId</span>(<span class="hljs-params">pluginId: <span class="hljs-built_in">string</span>, artifactBasename: <span class="hljs-built_in">string</span></span>): <span class="hljs-built_in">string</span> &#123;<br>  <span class="hljs-keyword">return</span> [<span class="hljs-string">&quot;..&quot;</span>, <span class="hljs-string">&quot;..&quot;</span>, <span class="hljs-string">&quot;..&quot;</span>, <span class="hljs-string">&quot;..&quot;</span>, <span class="hljs-string">&quot;extensions&quot;</span>, pluginId, artifactBasename].<span class="hljs-title function_">join</span>(<span class="hljs-string">&quot;/&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>最后笔者只能使用关键词搜索：<code>registry</code>最后找到：</p>
+<blockquote>
+<p>src\channels\plugins\registry.ts</p>
+</blockquote>
+<p>经过：listChannelPlugins()—resolveCachedChannelPlugins()—requireActivePluginChannelRegistry()—requireActivePluginRegistry()—state.activeRegistry 最终发现：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">setActivePluginRegistry</span>(<span class="hljs-params"></span><br><span class="hljs-params">  registry: PluginRegistry,</span><br><span class="hljs-params">  cacheKey?: <span class="hljs-built_in">string</span>,</span><br><span class="hljs-params">  runtimeSubagentMode: <span class="hljs-string">&quot;default&quot;</span> | <span class="hljs-string">&quot;explicit&quot;</span> | <span class="hljs-string">&quot;gateway-bindable&quot;</span> = <span class="hljs-string">&quot;default&quot;</span>,</span><br><span class="hljs-params"></span>) &#123;<br>  state.<span class="hljs-property">activeRegistry</span> = registry;<br>  state.<span class="hljs-property">activeVersion</span> += <span class="hljs-number">1</span>;<br>  <span class="hljs-title function_">syncTrackedSurface</span>(state.<span class="hljs-property">httpRoute</span>, registry, <span class="hljs-literal">true</span>);<br>  <span class="hljs-title function_">syncTrackedSurface</span>(state.<span class="hljs-property">channel</span>, registry, <span class="hljs-literal">true</span>);<br>  state.<span class="hljs-property">key</span> = cacheKey ?? <span class="hljs-literal">null</span>;<br>  state.<span class="hljs-property">runtimeSubagentMode</span> = runtimeSubagentMode;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在<code>startGatewayServer()</code>中：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// 1. 创建空的插件注册表（基线）</span><br><span class="hljs-keyword">const</span> emptyPluginRegistry = <span class="hljs-title function_">createEmptyPluginRegistry</span>();<br><span class="hljs-keyword">let</span> pluginRegistry = emptyPluginRegistry;  <span class="hljs-comment">// 初始化为空</span><br><span class="hljs-keyword">let</span> baseGatewayMethods = baseMethods;<br><br><span class="hljs-comment">// 2. 如果不是最小化测试模式</span><br><span class="hljs-keyword">if</span> (!minimalTestGateway) &#123;<br>  <span class="hljs-comment">// 加载启动插件，返回填充后的注册表和增强后的网关方法</span><br>  (&#123; pluginRegistry, <span class="hljs-attr">gatewayMethods</span>: baseGatewayMethods &#125; = <span class="hljs-title function_">loadGatewayStartupPlugins</span>(&#123;<br>    <span class="hljs-attr">cfg</span>: gatewayPluginConfigAtStart,           <span class="hljs-comment">// 插件配置</span><br>    <span class="hljs-attr">workspaceDir</span>: defaultWorkspaceDir,         <span class="hljs-comment">// 工作目录</span><br>    log,                                        <span class="hljs-comment">// 日志器</span><br>    coreGatewayHandlers,                       <span class="hljs-comment">// 核心网关处理器</span><br>    baseMethods,                               <span class="hljs-comment">// 基础方法</span><br>    <span class="hljs-attr">preferSetupRuntimeForChannelPlugins</span>: deferredConfiguredChannelPluginIds.<span class="hljs-property">length</span> &gt; <span class="hljs-number">0</span>,<br>  &#125;));<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>  <span class="hljs-comment">// 测试模式：使用空注册表</span><br>  <span class="hljs-title function_">setActivePluginRegistry</span>(emptyPluginRegistry);<br>&#125;<br><br><span class="hljs-comment">//其中：</span><br><span class="hljs-keyword">type</span> <span class="hljs-title class_">GatewayPluginBootstrapParams</span> = &#123;<br>  <span class="hljs-comment">// 1. 插件配置（从配置文件加载）</span><br>  <span class="hljs-attr">cfg</span>: <span class="hljs-title class_">ReturnType</span>&lt;<span class="hljs-keyword">typeof</span> loadConfig&gt;;<br>  <span class="hljs-comment">// 2. 工作目录（用于解析插件路径）</span><br>  <span class="hljs-attr">workspaceDir</span>: <span class="hljs-built_in">string</span>;<br>  <span class="hljs-comment">// 3. 日志记录器</span><br>  <span class="hljs-attr">log</span>: <span class="hljs-title class_">GatewayPluginBootstrapLog</span>;<br>  <span class="hljs-comment">// 4. 核心网关处理器（请求处理函数映射）</span><br>  <span class="hljs-attr">coreGatewayHandlers</span>: <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">GatewayRequestHandler</span>&gt;;<br>  <span class="hljs-comment">// 5. 基础方法列表（网关提供的基础能力）</span><br>  <span class="hljs-attr">baseMethods</span>: <span class="hljs-built_in">string</span>[];<br>  <span class="hljs-comment">// 6. 是否优先为频道插件设置运行时（可选）</span><br>  preferSetupRuntimeForChannelPlugins?: <span class="hljs-built_in">boolean</span>;<br>  <span class="hljs-comment">// 7. 是否输出诊断日志（可选）</span><br>  logDiagnostics?: <span class="hljs-built_in">boolean</span>;<br>  <span class="hljs-comment">// 8. 注册表准备完成后的回调（可选）</span><br>  beforePrimeRegistry?: <span class="hljs-function">(<span class="hljs-params">pluginRegistry: PluginRegistry</span>) =&gt;</span> <span class="hljs-built_in">void</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>defaultWorkspaceDir在前面的：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// 步骤 1: 初始化子代理注册表</span><br><span class="hljs-title function_">initSubagentRegistry</span>();<br><span class="hljs-comment">// 步骤 2: 应用插件自动启用（根据配置自动启用需要的插件）</span><br><span class="hljs-keyword">const</span> gatewayPluginConfigAtStart = <span class="hljs-title function_">applyPluginAutoEnable</span>(&#123;<br>  <span class="hljs-attr">config</span>: cfgAtStart,      <span class="hljs-comment">// 原始配置</span><br>  <span class="hljs-attr">env</span>: process.<span class="hljs-property">env</span>,        <span class="hljs-comment">// 环境变量</span><br>&#125;).<span class="hljs-property">config</span>;                 <span class="hljs-comment">// 返回处理后的配置</span><br><span class="hljs-comment">// 步骤 3: 解析默认 Agent ID</span><br><span class="hljs-keyword">const</span> defaultAgentId = <span class="hljs-title function_">resolveDefaultAgentId</span>(gatewayPluginConfigAtStart);<br><span class="hljs-comment">// 步骤 4: 解析默认 Agent 的工作目录</span><br><span class="hljs-keyword">const</span> defaultWorkspaceDir = <span class="hljs-title function_">resolveAgentWorkspaceDir</span>(<br>  gatewayPluginConfigAtStart, <br>  defaultAgentId<br>);<br></code></pre></td></tr></table></figure>
+
+<p>在经过applyPluginAutoEnable中的registerPluginEntry：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">registerPluginEntry</span>(<span class="hljs-params">cfg: OpenClawConfig, pluginId: <span class="hljs-built_in">string</span></span>): <span class="hljs-title class_">OpenClawConfig</span> &#123;<br>  <span class="hljs-comment">// 1. 检查是否为内置频道插件（如 telegram, discord）</span><br>  <span class="hljs-keyword">const</span> builtInChannelId = <span class="hljs-title function_">normalizeChatChannelId</span>(pluginId);<br>  <br>  <span class="hljs-comment">// 2. 如果是内置频道插件</span><br>  <span class="hljs-keyword">if</span> (builtInChannelId) &#123;<br>    <span class="hljs-comment">// 获取现有频道配置</span><br>    <span class="hljs-keyword">const</span> channels = cfg.<span class="hljs-property">channels</span> <span class="hljs-keyword">as</span> <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>&gt; | <span class="hljs-literal">undefined</span>;<br>    <span class="hljs-keyword">const</span> existing = channels?.[builtInChannelId];<br>    <br>    <span class="hljs-comment">// 确保配置是对象格式</span><br>    <span class="hljs-keyword">const</span> existingRecord =<br>      existing &amp;&amp; <span class="hljs-keyword">typeof</span> existing === <span class="hljs-string">&quot;object&quot;</span> &amp;&amp; !<span class="hljs-title class_">Array</span>.<span class="hljs-title function_">isArray</span>(existing)<br>        ? (existing <span class="hljs-keyword">as</span> <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>&gt;)<br>        : &#123;&#125;;<br>    <br>    <span class="hljs-comment">// 返回新配置，启用该频道</span><br>    <span class="hljs-keyword">return</span> &#123;<br>      ...cfg,<br>      <span class="hljs-attr">channels</span>: &#123;<br>        ...cfg.<span class="hljs-property">channels</span>,<br>        [builtInChannelId]: &#123;<br>          ...existingRecord,<br>          <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// ← 关键：设置 enabled: true</span><br>        &#125;,<br>      &#125;,<br>    &#125;;<br>  &#125;<br>  <br>  <span class="hljs-comment">// 3. 如果是普通插件（非内置频道）</span><br>  <span class="hljs-comment">// 更新 plugins.entries 配置</span><br>  <span class="hljs-keyword">const</span> entries = &#123;<br>    ...cfg.<span class="hljs-property">plugins</span>?.<span class="hljs-property">entries</span>,<br>    [pluginId]: &#123;<br>      ...(cfg.<span class="hljs-property">plugins</span>?.<span class="hljs-property">entries</span>?.[pluginId] <span class="hljs-keyword">as</span> <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>&gt; | <span class="hljs-literal">undefined</span>),<br>      <span class="hljs-attr">enabled</span>: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// ← 关键：设置 enabled: true</span><br>    &#125;,<br>  &#125;;<br>  <br>  <span class="hljs-comment">// 返回新配置</span><br>  <span class="hljs-keyword">return</span> &#123;<br>    ...cfg,<br>    <span class="hljs-attr">plugins</span>: &#123;<br>      ...cfg.<span class="hljs-property">plugins</span>,<br>      entries,<br>    &#125;,<br>  &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>终于按照配置将其注册好了。</p>
+<h2 id="配置管理"><a href="#配置管理" class="headerlink" title="配置管理"></a>配置管理</h2><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">applyPluginAutoEnable</span>(<span class="hljs-params">params: &#123;</span><br><span class="hljs-params">  config: OpenClawConfig;</span><br><span class="hljs-params">  env?: NodeJS.ProcessEnv;</span><br><span class="hljs-params">  manifestRegistry?: PluginManifestRegistry;</span><br><span class="hljs-params">&#125;</span>): <span class="hljs-title class_">PluginAutoEnableResult</span> &#123;<br>  <br>  <span class="hljs-comment">// 1. 检查是否需要自动启用（快速路径）</span><br>  <span class="hljs-keyword">if</span> (!<span class="hljs-title function_">configMayNeedPluginAutoEnable</span>(params.<span class="hljs-property">config</span>, env)) &#123;<br>    <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">config</span>: params.<span class="hljs-property">config</span>, <span class="hljs-attr">changes</span>: [] &#125;;<br>  &#125;<br>  <br>  <span class="hljs-comment">// 2. 加载插件清单注册表</span><br>  <span class="hljs-keyword">const</span> registry = params.<span class="hljs-property">manifestRegistry</span> ??<br>    (<span class="hljs-title function_">configMayNeedPluginManifestRegistry</span>(params.<span class="hljs-property">config</span>)<br>      ? <span class="hljs-title function_">loadPluginManifestRegistry</span>(&#123; <span class="hljs-attr">config</span>: params.<span class="hljs-property">config</span>, env &#125;)<br>      : <span class="hljs-variable constant_">EMPTY_PLUGIN_MANIFEST_REGISTRY</span>);<br>  <br>  <span class="hljs-comment">// 3. 解析配置中需要的插件</span><br>  <span class="hljs-keyword">const</span> configured = <span class="hljs-title function_">resolveConfiguredPlugins</span>(params.<span class="hljs-property">config</span>, env, registry);<br>  <span class="hljs-keyword">if</span> (configured.<span class="hljs-property">length</span> === <span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">config</span>: params.<span class="hljs-property">config</span>, <span class="hljs-attr">changes</span>: [] &#125;;<br>  &#125;<br><br>  <span class="hljs-keyword">let</span> next = params.<span class="hljs-property">config</span>;<br>  <span class="hljs-keyword">const</span> <span class="hljs-attr">changes</span>: <span class="hljs-built_in">string</span>[] = [];<br><br>  <span class="hljs-comment">// 4. 如果插件系统被完全禁用，直接返回</span><br>  <span class="hljs-keyword">if</span> (next.<span class="hljs-property">plugins</span>?.<span class="hljs-property">enabled</span> === <span class="hljs-literal">false</span>) &#123;<br>    <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">config</span>: next, changes &#125;;<br>  &#125;<br><br>  <span class="hljs-comment">// 5. 遍历需要启用的插件</span><br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> entry <span class="hljs-keyword">of</span> configured) &#123;<br>    <span class="hljs-keyword">const</span> builtInChannelId = <span class="hljs-title function_">normalizeChatChannelId</span>(entry.<span class="hljs-property">pluginId</span>);<br>    <br>    <span class="hljs-comment">// 检查是否被拒绝</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-title function_">isPluginDenied</span>(next, entry.<span class="hljs-property">pluginId</span>)) <span class="hljs-keyword">continue</span>;<br>    <br>    <span class="hljs-comment">// 检查是否显式禁用</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-title function_">isPluginExplicitlyDisabled</span>(next, entry.<span class="hljs-property">pluginId</span>)) <span class="hljs-keyword">continue</span>;<br>    <br>    <span class="hljs-comment">// 检查是否应该跳过（首选插件逻辑）</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-title function_">shouldSkipPreferredPluginAutoEnable</span>(next, entry, configured, env, registry)) <span class="hljs-keyword">continue</span>;<br>    <br>    <span class="hljs-comment">// 检查是否已经在启用状态</span><br>    <span class="hljs-keyword">const</span> alreadyEnabled = <span class="hljs-title function_">checkIfAlreadyEnabled</span>(next, entry, builtInChannelId);<br>    <br>    <span class="hljs-keyword">if</span> (alreadyEnabled &amp;&amp; !allowMissing) <span class="hljs-keyword">continue</span>;<br>    <br>    <span class="hljs-comment">// 注册插件</span><br>    next = <span class="hljs-title function_">registerPluginEntry</span>(next, entry.<span class="hljs-property">pluginId</span>);<br>    <span class="hljs-keyword">if</span> (!builtInChannelId) &#123;<br>      next = <span class="hljs-title function_">ensurePluginAllowlisted</span>(next, entry.<span class="hljs-property">pluginId</span>);<br>    &#125;<br>    changes.<span class="hljs-title function_">push</span>(<span class="hljs-title function_">formatAutoEnableChange</span>(entry));<br>  &#125;<br><br>  <span class="hljs-keyword">return</span> &#123; <span class="hljs-attr">config</span>: next, changes &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>注意在<code>loadPluginManifestRegistry()</code>中可以看出OpenClaw 按以下顺序扫描插件：</p>
+<ol>
+<li><em>plugins.load.paths</em> 指定路径</li>
+<li>工作区扩展：*<workspace>&#x2F;.openclaw&#x2F;extensions&#x2F;*</li>
+<li>全局扩展：*~&#x2F;.openclaw&#x2F;extensions&#x2F;*</li>
+<li>捆绑扩展（默认禁用）</li>
+</ol>
+<p>同 ID 插件按优先级加载，低优先级版本会被忽略。</p>
+<h2 id="渠道管理-1"><a href="#渠道管理-1" class="headerlink" title="渠道管理"></a>渠道管理</h2><p>继续看后续渠道是怎么管理的：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">startGatewayServer</span>(<span class="hljs-params"></span><br><span class="hljs-params">  port = <span class="hljs-number">18789</span>,</span><br><span class="hljs-params">  opts: GatewayServerOptions = &#123;&#125;,</span><br><span class="hljs-params"></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">GatewayServer</span>&gt; &#123;<br>	<span class="hljs-comment">//.....</span><br>      <span class="hljs-keyword">const</span> channelManager = <span class="hljs-title function_">createChannelManager</span>(&#123;<br>        <span class="hljs-attr">loadConfig</span>: <span class="hljs-function">() =&gt;</span><br>          <span class="hljs-title function_">applyPluginAutoEnable</span>(&#123;<br>            <span class="hljs-attr">config</span>: <span class="hljs-title function_">loadConfig</span>(),<br>            <span class="hljs-attr">env</span>: process.<span class="hljs-property">env</span>,<br>          &#125;).<span class="hljs-property">config</span>,<br>        channelLogs,<br>        channelRuntimeEnvs,<br>        <span class="hljs-attr">resolveChannelRuntime</span>: getChannelRuntime,<br>      &#125;);<br>   <span class="hljs-comment">// ....</span><br>&#125;<br><br><span class="hljs-comment">//其中：</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">ChannelManager</span> = &#123;<br>  <span class="hljs-attr">getRuntimeSnapshot</span>: <span class="hljs-function">() =&gt;</span> <span class="hljs-title class_">ChannelRuntimeSnapshot</span>;<br>  <span class="hljs-attr">startChannels</span>: <span class="hljs-function">() =&gt;</span> <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;<br>  <span class="hljs-attr">startChannel</span>: <span class="hljs-function">(<span class="hljs-params">channel: ChannelId, accountId?: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;<br>  <span class="hljs-attr">stopChannel</span>: <span class="hljs-function">(<span class="hljs-params">channel: ChannelId, accountId?: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;<br>  <span class="hljs-attr">markChannelLoggedOut</span>: <span class="hljs-function">(<span class="hljs-params">channelId: ChannelId, cleared: <span class="hljs-built_in">boolean</span>, accountId?: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">void</span>;<br>  <span class="hljs-attr">isManuallyStopped</span>: <span class="hljs-function">(<span class="hljs-params">channelId: ChannelId, accountId: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">boolean</span>;<br>  <span class="hljs-attr">resetRestartAttempts</span>: <span class="hljs-function">(<span class="hljs-params">channelId: ChannelId, accountId: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">void</span>;<br>  <span class="hljs-attr">isHealthMonitorEnabled</span>: <span class="hljs-function">(<span class="hljs-params">channelId: ChannelId, accountId: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">boolean</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在<code>createConfigIO().loadConfig();</code>中OpenClaw 会从 <code>~/.openclaw/openclaw.json</code> 读取可选的 <strong>JSON</strong>配置。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-comment">// ~/.openclaw/openclaw.json</span><br><span class="hljs-punctuation">&#123;</span><br>  agents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> defaults<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> workspace<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/workspace&quot;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  channels<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> whatsapp<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> allowFrom<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;+15555550123&quot;</span><span class="hljs-punctuation">]</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>最终的OpenClawConfig：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">OpenClawConfig</span> = &#123;<br>  meta?: &#123;<br>    <span class="hljs-comment">/** Last OpenClaw version that wrote this config. */</span><br>    lastTouchedVersion?: <span class="hljs-built_in">string</span>;<br>    <span class="hljs-comment">/** ISO timestamp when this config was last written. */</span><br>    lastTouchedAt?: <span class="hljs-built_in">string</span>;<br>  &#125;;<br>  auth?: <span class="hljs-title class_">AuthConfig</span>;<br>  acp?: <span class="hljs-title class_">AcpConfig</span>;<br>  env?: &#123;<br>    <span class="hljs-comment">/** Opt-in: import missing secrets from a login shell environment (exec `$SHELL -l -c &#x27;env -0&#x27;`). */</span><br>    shellEnv?: &#123;<br>      enabled?: <span class="hljs-built_in">boolean</span>;<br>      <span class="hljs-comment">/** Timeout for the login shell exec (ms). Default: 15000. */</span><br>      timeoutMs?: <span class="hljs-built_in">number</span>;<br>    &#125;;<br>    <span class="hljs-comment">/** Inline env vars to apply when not already present in the process env. */</span><br>    vars?: <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt;;<br>    <span class="hljs-comment">/** Sugar: allow env vars directly under env (string values only). */</span><br>    [<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>]:<br>      | <span class="hljs-built_in">string</span><br>      | <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt;<br>      | &#123; enabled?: <span class="hljs-built_in">boolean</span>; timeoutMs?: <span class="hljs-built_in">number</span> &#125;<br>      | <span class="hljs-literal">undefined</span>;<br>  &#125;;<br>  wizard?: &#123;<br>    lastRunAt?: <span class="hljs-built_in">string</span>;<br>    lastRunVersion?: <span class="hljs-built_in">string</span>;<br>    lastRunCommit?: <span class="hljs-built_in">string</span>;<br>    lastRunCommand?: <span class="hljs-built_in">string</span>;<br>    lastRunMode?: <span class="hljs-string">&quot;local&quot;</span> | <span class="hljs-string">&quot;remote&quot;</span>;<br>  &#125;;<br>  diagnostics?: <span class="hljs-title class_">DiagnosticsConfig</span>;<br>  logging?: <span class="hljs-title class_">LoggingConfig</span>;<br>  cli?: <span class="hljs-title class_">CliConfig</span>;<br>  update?: &#123;<br>    <span class="hljs-comment">/** Update channel for git + npm installs (&quot;stable&quot;, &quot;beta&quot;, or &quot;dev&quot;). */</span><br>    channel?: <span class="hljs-string">&quot;stable&quot;</span> | <span class="hljs-string">&quot;beta&quot;</span> | <span class="hljs-string">&quot;dev&quot;</span>;<br>    <span class="hljs-comment">/** Check for updates on gateway start (npm installs only). */</span><br>    checkOnStart?: <span class="hljs-built_in">boolean</span>;<br>    <span class="hljs-comment">/** Core auto-update policy for package installs. */</span><br>    auto?: &#123;<br>      <span class="hljs-comment">/** Enable background auto-update checks and apply logic. Default: false. */</span><br>      enabled?: <span class="hljs-built_in">boolean</span>;<br>      <span class="hljs-comment">/** Stable channel minimum delay before auto-apply. Default: 6. */</span><br>      stableDelayHours?: <span class="hljs-built_in">number</span>;<br>      <span class="hljs-comment">/** Additional stable-channel jitter window. Default: 12. */</span><br>      stableJitterHours?: <span class="hljs-built_in">number</span>;<br>      <span class="hljs-comment">/** Beta channel check cadence. Default: 1 hour. */</span><br>      betaCheckIntervalHours?: <span class="hljs-built_in">number</span>;<br>    &#125;;<br>  &#125;;<br>  browser?: <span class="hljs-title class_">BrowserConfig</span>;<br>  ui?: &#123;<br>    <span class="hljs-comment">/** Accent color for OpenClaw UI chrome (hex). */</span><br>    seamColor?: <span class="hljs-built_in">string</span>;<br>    assistant?: &#123;<br>      <span class="hljs-comment">/** Assistant display name for UI surfaces. */</span><br>      name?: <span class="hljs-built_in">string</span>;<br>      <span class="hljs-comment">/** Assistant avatar (emoji, short text, or image URL/data URI). */</span><br>      avatar?: <span class="hljs-built_in">string</span>;<br>    &#125;;<br>  &#125;;<br>  secrets?: <span class="hljs-title class_">SecretsConfig</span>;<br>  skills?: <span class="hljs-title class_">SkillsConfig</span>;<br>  plugins?: <span class="hljs-title class_">PluginsConfig</span>;<br>  models?: <span class="hljs-title class_">ModelsConfig</span>;<br>  nodeHost?: <span class="hljs-title class_">NodeHostConfig</span>;<br>  agents?: <span class="hljs-title class_">AgentsConfig</span>;<br>  tools?: <span class="hljs-title class_">ToolsConfig</span>;<br>  bindings?: <span class="hljs-title class_">AgentBinding</span>[];<br>  broadcast?: <span class="hljs-title class_">BroadcastConfig</span>;<br>  audio?: <span class="hljs-title class_">AudioConfig</span>;<br>  media?: &#123;<br>    <span class="hljs-comment">/** Preserve original uploaded filenames when storing inbound media. */</span><br>    preserveFilenames?: <span class="hljs-built_in">boolean</span>;<br>    <span class="hljs-comment">/** Optional retention window for persisted inbound media cleanup. */</span><br>    ttlHours?: <span class="hljs-built_in">number</span>;<br>  &#125;;<br>  messages?: <span class="hljs-title class_">MessagesConfig</span>;<br>  commands?: <span class="hljs-title class_">CommandsConfig</span>;<br>  approvals?: <span class="hljs-title class_">ApprovalsConfig</span>;<br>  session?: <span class="hljs-title class_">SessionConfig</span>;<br>  web?: <span class="hljs-title class_">WebConfig</span>;<br>  channels?: <span class="hljs-title class_">ChannelsConfig</span>;<br>  cron?: <span class="hljs-title class_">CronConfig</span>;<br>  hooks?: <span class="hljs-title class_">HooksConfig</span>;<br>  discovery?: <span class="hljs-title class_">DiscoveryConfig</span>;<br>  canvasHost?: <span class="hljs-title class_">CanvasHostConfig</span>;<br>  talk?: <span class="hljs-title class_">TalkConfig</span>;<br>  gateway?: <span class="hljs-title class_">GatewayConfig</span>;<br>  memory?: <span class="hljs-title class_">MemoryConfig</span>;<br>  mcp?: <span class="hljs-title class_">McpConfig</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  auth<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    profiles<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;openai-codex:default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        provider<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex&quot;</span><span class="hljs-punctuation">,</span><br>        mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;oauth&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  agents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    defaults<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      model<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        primary<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex/gpt-5.4&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      maxConcurrent<span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span><br>      subagents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        maxConcurrent<span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    list<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span><br>        id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;main&quot;</span><span class="hljs-punctuation">,</span><br>        model<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          primary<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openai-codex/gpt-5.4&quot;</span><span class="hljs-punctuation">,</span><br>          fallbacks<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;openai-codex/gpt-5.2&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        tools<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          profile<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;coding&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  channels<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    telegram<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      enabled<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>      dmPolicy<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pairing&quot;</span><span class="hljs-punctuation">,</span><br>      groupPolicy<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;allowlist&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  gateway<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    port<span class="hljs-punctuation">:</span> <span class="hljs-number">18789</span><span class="hljs-punctuation">,</span><br>    auth<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;token&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    controlUi<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      allowedOrigins<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;http://127.0.0.1:18789&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;http://localhost:18789&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="路由系统"><a href="#路由系统" class="headerlink" title="路由系统"></a>路由系统</h1><p>从前面知道<code>startGatewayServer</code>是核心函数。这里偷个懒，直接把<code>export async function startGatewayServer()</code>喂给AI，分析一下大致轮廓。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs ts">启动<br> ├─ 环境准备（端口、日志选项）<br> ├─ 配置读取与迁移<br> ├─ 自动启用插件<br> ├─ 密钥加载与激活<br> ├─ 认证配置生成<br> ├─ 渠道与插件初始化<br> ├─ <span class="hljs-variable constant_">HTTP</span>/<span class="hljs-title class_">WebSocket</span> 服务启动<br> ├─ 事件监听器注册<br> ├─ 后台任务启动（健康检查、<span class="hljs-title class_">Cron</span>、更新检查）<br> ├─ <span class="hljs-title class_">WebSocket</span> 消息处理器挂载<br> ├─ 插件 <span class="hljs-title class_">Sidecar</span> 启动<br> ├─ 配置热重载器启动<br> └─ 返回 close 函数（用于优雅停止）<br></code></pre></td></tr></table></figure>
+
+<p>这里先看到<strong>Agent 事件监听器</strong>，其作用是<strong>将 Agent 执行过程中的实时事件（流式文本、工具调用、生命周期状态）广播给所有需要监听的客户端（WebSocket、控制界面、节点等）。</strong></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// Agent 事件监听器</span><br>agentUnsub = <span class="hljs-title function_">onAgentEvent</span>(<br>  <span class="hljs-title function_">createAgentEventHandler</span>(&#123;<br>    broadcast,           <span class="hljs-comment">// 广播给所有客户端</span><br>    broadcastToConnIds,  <span class="hljs-comment">// 广播给指定连接</span><br>    nodeSendToSession,   <span class="hljs-comment">// 发送给特定会话的节点</span><br>    agentRunSeq,         <span class="hljs-comment">// Agent 运行序列</span><br>    chatRunState,        <span class="hljs-comment">// 会话运行状态（核心！）</span><br>    resolveSessionKeyForRun,  <span class="hljs-comment">// 解析运行对应的会话</span><br>    clearAgentRunContext,<br>    toolEventRecipients,<br>    sessionEventSubscribers,  <span class="hljs-comment">// 会话订阅者</span><br>  &#125;),<br>);<br><br><span class="hljs-comment">//心跳事件监听器</span><br><span class="hljs-comment">//会话转录更新监听器</span><br><span class="hljs-comment">//会话生命周期事件监听器</span><br><span class="hljs-comment">//订阅管理器创建</span><br></code></pre></td></tr></table></figure>
+
+<p>接着来重点分析WebSocket 消息处理器：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-title function_">attachGatewayWsHandlers</span>(&#123;<br>  wss,                    <span class="hljs-comment">// WebSocket 服务器</span><br>  clients,                <span class="hljs-comment">// 客户端连接池</span><br>  <span class="hljs-comment">//...</span><br>  gatewayMethods,         <span class="hljs-comment">// RPC 方法列表</span><br>  <span class="hljs-attr">events</span>: <span class="hljs-variable constant_">GATEWAY_EVENTS</span>,<br>  <span class="hljs-comment">//....</span><br>  <span class="hljs-attr">extraHandlers</span>: &#123;        <span class="hljs-comment">// 插件扩展的处理器</span><br>    ...pluginRegistry.<span class="hljs-property">gatewayHandlers</span>,<br>    ...execApprovalHandlers,<br>    ...pluginApprovalHandlers,<br>    ...secretsHandlers,<br>  &#125;,<br>  broadcast,<br>  <span class="hljs-attr">context</span>: gatewayRequestContext,<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p><code>attachGatewayWsHandlers</code>—<code>attachGatewayWsConnectionHandler</code> —-<code>attachGatewayWsMessageHandler</code>—<code>handleGatewayRequest</code>   </p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> <span class="hljs-title class_">GatewayRequestHandlerOptions</span> = &#123;<br>  <span class="hljs-attr">req</span>: <span class="hljs-title class_">RequestFrame</span>;<br>  <span class="hljs-attr">params</span>: <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>&gt;;<br>  <span class="hljs-attr">client</span>: <span class="hljs-title class_">GatewayClient</span> | <span class="hljs-literal">null</span>;<br>  <span class="hljs-attr">isWebchatConnect</span>: <span class="hljs-function">(<span class="hljs-params">params: ConnectParams | <span class="hljs-literal">null</span> | <span class="hljs-literal">undefined</span></span>) =&gt;</span> <span class="hljs-built_in">boolean</span>;<br>  <span class="hljs-attr">respond</span>: <span class="hljs-title class_">RespondFn</span>;<br>  <span class="hljs-attr">context</span>: <span class="hljs-title class_">GatewayRequestContext</span>;<br>&#125;;<br><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">handleGatewayRequest</span>(<span class="hljs-params"></span><br><span class="hljs-params">  opts: GatewayRequestOptions &amp; &#123; extraHandlers?: GatewayRequestHandlers &#125;,</span><br><span class="hljs-params"></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;&#123;<br>   	<br>    <span class="hljs-comment">//检查客户端是否有权限调用这个 RPC 方法。根据客户端的 role（operator/node/webchat）和 scopes判断是否允许调用 req.method</span><br>     <span class="hljs-keyword">const</span> authError = <span class="hljs-title function_">authorizeGatewayMethod</span>(req.<span class="hljs-property">method</span>, client);<br>    <span class="hljs-keyword">if</span> (authError) &#123;<br>      <span class="hljs-title function_">respond</span>(<span class="hljs-literal">false</span>, <span class="hljs-literal">undefined</span>, authError);<br>      <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <br>    ....<br>    <br>    <span class="hljs-comment">//控制平面写操作（如 device.update、node.config.set）是高频危险操作，需要限流</span><br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable constant_">CONTROL_PLANE_WRITE_METHODS</span>.<span class="hljs-title function_">has</span>(req.<span class="hljs-property">method</span>)) &#123;<br>  <span class="hljs-keyword">const</span> budget = <span class="hljs-title function_">consumeControlPlaneWriteBudget</span>(&#123; client &#125;);<br>  <span class="hljs-keyword">if</span> (!budget.<span class="hljs-property">allowed</span>) &#123;<br>    context.<span class="hljs-property">logGateway</span>.<span class="hljs-title function_">warn</span>(<br>      <span class="hljs-string">`control-plane write rate-limited method=<span class="hljs-subst">$&#123;req.method&#125;</span> ...`</span><br>    );<br>    <span class="hljs-title function_">respond</span>(<br>          <span class="hljs-literal">false</span>,<br>          <span class="hljs-literal">undefined</span>,<br>          <span class="hljs-title function_">errorShape</span>(<br>            <span class="hljs-title class_">ErrorCodes</span>.<span class="hljs-property">UNAVAILABLE</span>,<br>            <span class="hljs-string">`rate limit exceeded for <span class="hljs-subst">$&#123;req.method&#125;</span>; retry after <span class="hljs-subst">$&#123;<span class="hljs-built_in">Math</span>.ceil(budget.retryAfterMs / <span class="hljs-number">1000</span>)&#125;</span>s`</span>,<br>            &#123;<br>              <span class="hljs-attr">retryable</span>: <span class="hljs-literal">true</span>,<br>              <span class="hljs-attr">retryAfterMs</span>: budget.<span class="hljs-property">retryAfterMs</span>,<br>            &#125;,<br>          ),<br>        );<br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br>    &#125;<br>    <br>    <span class="hljs-comment">//查找方法处理器,先找 extraHandlers（外部注入的处理器，用于扩展）再找 coreGatewayHandlers（核心内置处理器）都找不到则返回 unknown method</span><br>  <span class="hljs-keyword">const</span> handler = opts.<span class="hljs-property">extraHandlers</span>?.[req.<span class="hljs-property">method</span>] ?? coreGatewayHandlers[req.<span class="hljs-property">method</span>];<br>    <span class="hljs-keyword">if</span> (!handler) &#123;<br>      <span class="hljs-title function_">respond</span>(<br>        <span class="hljs-literal">false</span>,<br>        <span class="hljs-literal">undefined</span>,<br>        <span class="hljs-title function_">errorShape</span>(<span class="hljs-title class_">ErrorCodes</span>.<span class="hljs-property">INVALID_REQUEST</span>, <span class="hljs-string">`unknown method: <span class="hljs-subst">$&#123;req.method&#125;</span>`</span>),<br>      );<br>      <span class="hljs-keyword">return</span>;<br>    &#125;<br>    ...<br>    <span class="hljs-comment">//调用处理器</span><br>    <span class="hljs-keyword">const</span> <span class="hljs-title function_">invokeHandler</span> = (<span class="hljs-params"></span>) =&gt;<br>  <span class="hljs-title function_">handler</span>(&#123;<br>    req,<br>    <span class="hljs-attr">params</span>: (req.<span class="hljs-property">params</span> ?? &#123;&#125;) <span class="hljs-keyword">as</span> <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">unknown</span>&gt;,<br>    client,<br>    isWebchatConnect,<br>    respond,<br>    context,<br>  &#125;);<br>    <br>  <span class="hljs-comment">//请求作用域包装</span><br>   <span class="hljs-keyword">await</span> <span class="hljs-title function_">withPluginRuntimeGatewayRequestScope</span>(<br>  &#123; context, client, isWebchatConnect &#125;, <br>  invokeHandler<br>	);<br>    <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>coreGatewayHandlers</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">coreGatewayHandlers</span>: <span class="hljs-title class_">GatewayRequestHandlers</span> = &#123;<br>  ...connectHandlers,        <span class="hljs-comment">// 连接相关：connect, disconnect</span><br>  ...logsHandlers,           <span class="hljs-comment">// 日志相关：logs.stream, logs.query</span><br>  ...voicewakeHandlers,      <span class="hljs-comment">// 语音唤醒：voicewake.configure, voicewake.trigger</span><br>  ...healthHandlers,         <span class="hljs-comment">// 健康检查：health.get, health.probe</span><br>  ...channelsHandlers,       <span class="hljs-comment">// 频道管理：channels.list, channels.join</span><br>  ...chatHandlers,           <span class="hljs-comment">// 聊天消息：chat.send, chat.history</span><br>  ...cronHandlers,           <span class="hljs-comment">// 定时任务：cron.list, cron.create</span><br>  ...deviceHandlers,         <span class="hljs-comment">// 设备配对：device.pair, device.approve</span><br>  ...doctorHandlers,         <span class="hljs-comment">// 诊断检查：doctor.run, doctor.status</span><br>  ...execApprovalsHandlers,  <span class="hljs-comment">// 命令审批：exec.approve, exec.reject</span><br>  ...webHandlers,            <span class="hljs-comment">// 网页抓取：web.fetch, web.screenshot</span><br>  ...modelsHandlers,         <span class="hljs-comment">// AI模型：models.list, models.load</span><br>  ...configHandlers,         <span class="hljs-comment">// 配置管理：config.get, config.set</span><br>  ...wizardHandlers,         <span class="hljs-comment">// 向导配置：wizard.steps, wizard.save</span><br>  ...talkHandlers,           <span class="hljs-comment">// 对话接口：talk.prompt, talk.stream</span><br>  ...toolsCatalogHandlers,   <span class="hljs-comment">// 工具目录：tools.list, tools.install</span><br>  ...toolsEffectiveHandlers, <span class="hljs-comment">// 有效工具：tools.enabled, tools.disable</span><br>  ...ttsHandlers,            <span class="hljs-comment">// 语音合成：tts.speak, tts.voice</span><br>  ...skillsHandlers,         <span class="hljs-comment">// 技能管理：skills.load, skills.run</span><br>  ...sessionsHandlers,       <span class="hljs-comment">// 会话管理：sessions.get, sessions.delete</span><br>  ...systemHandlers,         <span class="hljs-comment">// 系统操作：system.reboot, system.status</span><br>  ...updateHandlers,         <span class="hljs-comment">// 更新升级：update.check, update.apply</span><br>  ...nodeHandlers,           <span class="hljs-comment">// 节点操作：node.list, node.command.exec</span><br>  ...nodePendingHandlers,    <span class="hljs-comment">// 待处理节点：node.pending.list, node.pending.approve</span><br>  ...pushHandlers,           <span class="hljs-comment">// 推送通知：push.send, push.register</span><br>  ...sendHandlers,           <span class="hljs-comment">// 发送消息：send.text, send.file</span><br>  ...usageHandlers,          <span class="hljs-comment">// 使用统计：usage.report, usage.limit</span><br>  ...agentHandlers,          <span class="hljs-comment">// 单个Agent：agent.create, agent.invoke</span><br>  ...agentsHandlers,         <span class="hljs-comment">// 多Agent管理：agents.list, agents.remove</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这里简单看看chatHandlers处理</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">chatHandlers</span>: <span class="hljs-title class_">GatewayRequestHandlers</span> = &#123;<br>  <span class="hljs-comment">// 获取聊天历史记录</span><br>  <span class="hljs-string">&quot;chat.history&quot;</span>: <span class="hljs-keyword">async</span> (&#123; params, respond, context &#125;) =&gt; &#123; ... &#125;,<br>  <span class="hljs-comment">//中止正在进行的聊天请求</span><br>  <span class="hljs-string">&quot;chat.abort&quot;</span>: <span class="hljs-function">(<span class="hljs-params">&#123; params, respond, context, client &#125;</span>) =&gt;</span> &#123; ... &#125;,<br>  <span class="hljs-comment">// 发送聊天消息（核心功能）</span><br>  <span class="hljs-string">&quot;chat.send&quot;</span>: <span class="hljs-keyword">async</span> (&#123; params, respond, context, client &#125;) =&gt; &#123; ... &#125;,<br>  <span class="hljs-comment">// 手动注入消息到会话转录文件</span><br>  <span class="hljs-string">&quot;chat.inject&quot;</span>: <span class="hljs-keyword">async</span> (&#123; params, respond, context &#125;) =&gt; &#123; ... &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在chat.send,找到<code>dispatchInboundMessage</code>—<code>dispatchReplyFromConfig</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 从配置分发回复 - 核心的消息处理中枢,将用户消息分发到正确的 Agent/插件，处理回复流，并路由回正确的渠道</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * 处理流程：</span><br><span class="hljs-comment"> * 1. 诊断追踪（记录消息处理耗时）</span><br><span class="hljs-comment"> * 2. 去重检查（防止重复处理）</span><br><span class="hljs-comment"> * 3. 插件绑定路由（特定会话绑定给特定插件处理）</span><br><span class="hljs-comment"> * 4. 插件钩子触发（message_received、before_dispatch）</span><br><span class="hljs-comment"> * 5. ACP（Agent Communication Protocol）分发</span><br><span class="hljs-comment"> * 6. 调用实际的 Agent 模型获取回复</span><br><span class="hljs-comment"> * 7. 处理流式回复（block/final）</span><br><span class="hljs-comment"> * 8. 跨渠道路由（如 Telegram 消息回复到 WhatsApp）</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">dispatchReplyFromConfig</span>(<span class="hljs-params">params: &#123;</span><br><span class="hljs-params">  ctx: FinalizedMsgContext;      // 标准化的消息上下文</span><br><span class="hljs-params">  cfg: OpenClawConfig;           // 系统配置</span><br><span class="hljs-params">  dispatcher: ReplyDispatcher;    // 回复分发器（收集 block/final 回复）</span><br><span class="hljs-params">  replyOptions?: &#123;...&#125;;           // 运行选项（runId、abortSignal、图片等）</span><br><span class="hljs-params">  replyResolver?: <span class="hljs-built_in">Function</span>;       // 可选的回复解析器（默认用 getReplyFromConfig）</span><br><span class="hljs-params">  configOverride?: OpenClawConfig; // 配置覆盖（如时区）</span><br><span class="hljs-params">&#125;</span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">DispatchFromConfigResult</span>&gt;<br></code></pre></td></tr></table></figure>
+
+<p>Agent 的选择发生在 <code>getReplyFromConfig</code> 内部（通过 <code>replyResolver</code> 参数）</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 从配置获取回复 - 消息到 Agent 回复的核心转换器,根据消息上下文、会话状态、Agent 配置，生成合适的回复</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * 核心流程：</span><br><span class="hljs-comment"> * 1. 解析 Agent ID（从 sessionKey 或命令目标）</span><br><span class="hljs-comment"> * 2. 解析模型（provider/model，支持渠道覆盖、心跳覆盖）</span><br><span class="hljs-comment"> * 3. 初始化会话状态（加载/创建会话）</span><br><span class="hljs-comment"> * 4. 处理命令（/think、/verbose、/reset 等）</span><br><span class="hljs-comment"> * 5. 处理内联动作（如技能调用）</span><br><span class="hljs-comment"> * 6. 执行实际的 Agent 回复生成</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getReplyFromConfig</span>(<span class="hljs-params"></span><br><span class="hljs-params">  ctx: MsgContext,                    <span class="hljs-comment">// 消息上下文</span></span><br><span class="hljs-params">  opts?: GetReplyOptions,              <span class="hljs-comment">// 可选选项（runId、abortSignal等）</span></span><br><span class="hljs-params">  configOverride?: OpenClawConfig,    <span class="hljs-comment">// 配置覆盖（如时区）</span></span><br><span class="hljs-params"></span>): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">ReplyPayload</span> | <span class="hljs-title class_">ReplyPayload</span>[] | <span class="hljs-literal">undefined</span>&gt;<br></code></pre></td></tr></table></figure>
+
+<p>可以看出OpenClaw 将用户聊天命令路由到正确的 Agent<strong>主要通过配置决策，而非 LLM 字段决策。</strong>比如通过配置某个渠道来执行对应任务。</p>
+<table>
+<thead>
+<tr>
+<th align="left">决策层级</th>
+<th align="left">来源</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>1. 会话绑定</strong></td>
+<td align="left">配置&#x2F;数据库</td>
+<td align="left"><code>sessionKey: &quot;user:123&quot; → agentId: &quot;personal-assistant&quot;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>2. 渠道默认</strong></td>
+<td align="left">配置</td>
+<td align="left"><code>webchat 渠道 → agentId: &quot;web-agent&quot;</code></td>
+</tr>
+<tr>
+<td align="left"><strong>3. 全局默认</strong></td>
+<td align="left">配置</td>
+<td align="left"><code>defaults.agentId: &quot;default-agent&quot;</code></td>
+</tr>
+</tbody></table>
+<p><strong>Agent 路由是基础设施层的配置问题，而非模型层的智能决策。</strong></p>
+<blockquote>
+<p>下面展示一个真实场景配置：一个团队同时使用 Telegram 和 WhatsApp，需要根据消息来源与风险等级将任务路由到不同智能体。</p>
+<p><strong>场景描述</strong></p>
+<ul>
+<li><code>assistant</code>：默认助手，处理日常问题，无外部工具权限</li>
+<li><code>devops</code>：运维智能体，绑定特定 Telegram 群组（DevOps-team），拥有 <code>exec</code>（执行命令）和 <code>ssh</code>（远程连接）工具</li>
+<li><code>writer</code>：写作智能体，绑定特定 WhatsApp 对端（产品编辑），拥有 <code>document</code>（文档编辑）工具，无执行权</li>
+</ul>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  agents<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    list<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span><br>        id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;assistant&quot;</span><span class="hljs-punctuation">,</span><br>        default<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span>                    <span class="hljs-comment">// 标记为默认智能体</span><br>        name<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;默认助手&quot;</span><span class="hljs-punctuation">,</span><br>        workspace<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/workspace-assistant&quot;</span><span class="hljs-punctuation">,</span><br>        agentDir<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/agents/assistant/agent&quot;</span><span class="hljs-punctuation">,</span><br>        model<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;anthropic/claude-sonnet-4-6&quot;</span><span class="hljs-punctuation">,</span><br>        tools<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> allow<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:fs&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:web&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> deny<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:runtime&quot;</span><span class="hljs-punctuation">]</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#123;</span><br>        id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;devops&quot;</span><span class="hljs-punctuation">,</span><br>        name<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;运维智能体&quot;</span><span class="hljs-punctuation">,</span><br>        workspace<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/workspace-devops&quot;</span><span class="hljs-punctuation">,</span><br>        agentDir<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/agents/devops/agent&quot;</span><span class="hljs-punctuation">,</span><br>        model<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;anthropic/claude-sonnet-4-6&quot;</span><span class="hljs-punctuation">,</span><br>        tools<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> allow<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:runtime&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:fs&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:web&quot;</span><span class="hljs-punctuation">]</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        sandbox<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> mode<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;all&quot;</span><span class="hljs-punctuation">,</span> scope<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;agent&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#123;</span><br>        id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;writer&quot;</span><span class="hljs-punctuation">,</span><br>        name<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;写作智能体&quot;</span><span class="hljs-punctuation">,</span><br>        workspace<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/workspace-writer&quot;</span><span class="hljs-punctuation">,</span><br>        agentDir<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;~/.openclaw/agents/writer/agent&quot;</span><span class="hljs-punctuation">,</span><br>        model<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;anthropic/claude-sonnet-4-6&quot;</span><span class="hljs-punctuation">,</span><br>        tools<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> allow<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:fs&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:web&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> deny<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:runtime&quot;</span><span class="hljs-punctuation">]</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><br>  <span class="hljs-comment">// bindings 是顶层数组，按 match 条件将消息路由到指定 agentId</span><br>  bindings<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>      agentId<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;devops&quot;</span><span class="hljs-punctuation">,</span><br>      match<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        channel<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;telegram&quot;</span><span class="hljs-punctuation">,</span><br>        peer<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> kind<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;group&quot;</span><span class="hljs-punctuation">,</span> id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;-1001234567890&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// DevOps-team 群组 ID</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      agentId<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;writer&quot;</span><span class="hljs-punctuation">,</span><br>      match<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        channel<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;whatsapp&quot;</span><span class="hljs-punctuation">,</span><br>        peer<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> kind<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;direct&quot;</span><span class="hljs-punctuation">,</span> id<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;+8615600000000&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 产品编辑对端号码</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br><br>  channels<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    telegram<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> enabled<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    whatsapp<span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> enabled<span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+
+
+
+
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7611540861139501065">OpenClaw 源码深度解析（一）：Gateway——为什么需要一个”中枢”从用户真实使用场景出发，层层推导 Open - 掘金</a></p>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbook.io/openclaw_guide">前言 | OpenClaw 从入门到精通 | OpenClaw Guide</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.openclaw.ac.cn/">OpenClaw - OpenClaw (Clawdbot) 文档</a></p>
+<blockquote>
+<p>Agent &#x3D; LLM+ 记忆 + 规划技能 + 工具使用+多agent间的调用</p>
+</blockquote>
+<h1 id="AI-智能体引擎"><a href="#AI-智能体引擎" class="headerlink" title="AI 智能体引擎"></a>AI 智能体引擎</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbook.io/openclaw_guide/di-san-bu-fen-shi-xian-yuan-li-yu-gong-cheng-luo-di/10_agent_loop/10.2_pi_framework">10.2 π 运行底座与嵌入式集成 | OpenClaw 从入门到精通 | OpenClaw Guide</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.openclaw.ac.cn/pi">Pi 集成架构 - OpenClaw (Clawdbot) 文档</a></p>
+</blockquote>
+<p>Pi是一个可执行的 AI Agent 运行时，OpenClaw 使用 pi SDK 将 AI 编码智能体嵌入到其消息网关架构中。OpenClaw 并非将 pi 作为子进程启动或使用 RPC 模式，而是通过 <code>createAgentSession()</code> 直接导入并实例化 pi 的 <code>AgentSession</code>。这种嵌入式方法提供了：</p>
+<ul>
+<li>对会话生命周期和事件处理的完全控制</li>
+<li>自定义工具注入（消息传递、沙箱、渠道特定操作）</li>
+<li>针对每个渠道&#x2F;上下文的系统提示词定制</li>
+<li>支持分支&#x2F;压缩的会话持久化</li>
+<li>支持故障转移的多账号身份验证配置轮换</li>
+<li>与供应商无关的模型切换</li>
+</ul>
+<figure class="highlight oxygene"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs oxygene">AgentSession是AI代理的一次完整执行上下文<br>AgentSession<br> ├── LLM（推理核心）<br> ├── Memory（上下文）<br> ├── Planner（任务拆解）<br> ├── Executor（执行器）<br> ├── Tool Registry（工具集合）<br> ├── State（执行状态）<br> └── <span class="hljs-keyword">Event</span> <span class="hljs-keyword">Loop</span>（循环驱动）<br></code></pre></td></tr></table></figure>
+
+<p>其核心是Event-driven + Agent Loop + Tool Execution</p>
+<figure class="highlight oxygene"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs oxygene">AgentSession<br> ├── Agent <span class="hljs-keyword">Loop</span>（驱动核心）<br> │     ├── LLM（决策）<br> │     ├── Tool（执行）<br> │     ├── Memory / State（状态）<br> │     └── <span class="hljs-keyword">Event</span> Bus（贯穿全过程）<br></code></pre></td></tr></table></figure>
+
+<p>通过<code>createAgentSession()</code>可以搜索到:</p>
+<blockquote>
+<p>src\agents\pi-embedded-runner\run.ts</p>
+<p>src\agents\pi-embedded-runner\run\attempt.ts</p>
+</blockquote>
+<p><code>createAgentSession()</code>—<code>runEmbeddedAttempt()</code>—<code>runEmbeddedPiAgent()</code></p>
+<blockquote>
+<p>src\plugins\runtime\runtime-agent.ts</p>
+</blockquote>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">createRuntimeAgent</span>(<span class="hljs-params"></span>): <span class="hljs-title class_">PluginRuntime</span>[<span class="hljs-string">&quot;agent&quot;</span>] &#123;<br>  <span class="hljs-keyword">const</span> agentRuntime = &#123;<br>    <span class="hljs-attr">defaults</span>: &#123;<br>      <span class="hljs-attr">model</span>: <span class="hljs-variable constant_">DEFAULT_MODEL</span>,<br>      <span class="hljs-attr">provider</span>: <span class="hljs-variable constant_">DEFAULT_PROVIDER</span>,<br>    &#125;,<br>    resolveAgentDir,<br>    resolveAgentWorkspaceDir,<br>    resolveAgentIdentity,<br>    resolveThinkingDefault,<br>    resolveAgentTimeoutMs,<br>    ensureAgentWorkspace,<br>  &#125; satisfies <span class="hljs-title class_">Omit</span>&lt;<span class="hljs-title class_">PluginRuntime</span>[<span class="hljs-string">&quot;agent&quot;</span>], <span class="hljs-string">&quot;runEmbeddedPiAgent&quot;</span> | <span class="hljs-string">&quot;session&quot;</span>&gt; &amp;<br>    <span class="hljs-title class_">Partial</span>&lt;<span class="hljs-title class_">Pick</span>&lt;<span class="hljs-title class_">PluginRuntime</span>[<span class="hljs-string">&quot;agent&quot;</span>], <span class="hljs-string">&quot;runEmbeddedPiAgent&quot;</span> | <span class="hljs-string">&quot;session&quot;</span>&gt;&gt;;<br><br>  <span class="hljs-title function_">defineCachedValue</span>(agentRuntime, <span class="hljs-string">&quot;runEmbeddedPiAgent&quot;</span>, <span class="hljs-function">() =&gt;</span><br>    <span class="hljs-title function_">createLazyRuntimeMethod</span>(loadEmbeddedPiRuntime, <span class="hljs-function">(<span class="hljs-params">runtime</span>) =&gt;</span> runtime.<span class="hljs-property">runEmbeddedPiAgent</span>),<br>  );<br>  <span class="hljs-title function_">defineCachedValue</span>(agentRuntime, <span class="hljs-string">&quot;session&quot;</span>, <span class="hljs-function">() =&gt;</span> (&#123;<br>    resolveStorePath,<br>    loadSessionStore,<br>    saveSessionStore,<br>    resolveSessionFilePath,<br>  &#125;));<br><br>  <span class="hljs-keyword">return</span> agentRuntime <span class="hljs-keyword">as</span> <span class="hljs-title class_">PluginRuntime</span>[<span class="hljs-string">&quot;agent&quot;</span>];<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><code>createPluginRuntime()</code>—<code>getChannelRuntime</code>—<code>startGatewayServer</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> channelManager = <span class="hljs-title function_">createChannelManager</span>(&#123;<br>  <span class="hljs-attr">loadConfig</span>: <span class="hljs-function">() =&gt;</span><br>    <span class="hljs-title function_">applyPluginAutoEnable</span>(&#123;<br>      <span class="hljs-attr">config</span>: <span class="hljs-title function_">loadConfig</span>(),<br>      <span class="hljs-attr">env</span>: process.<span class="hljs-property">env</span>,<br>    &#125;).<span class="hljs-property">config</span>,<br>  channelLogs,<br>  channelRuntimeEnvs,<br>  <span class="hljs-attr">resolveChannelRuntime</span>: getChannelRuntime,<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>最终由<code>channelManager</code>来管理使用对应<code>agent</code>，这和前面的文章《网关路由》最终的结论也是一致的。下面来重点看看其具体的记忆层和工具层是如何实现的。</p>
+<h1 id="记忆层"><a href="#记忆层" class="headerlink" title="记忆层"></a>记忆层</h1><h2 id="短期记忆"><a href="#短期记忆" class="headerlink" title="短期记忆"></a>短期记忆</h2><p>由于Pi是基于事件状态的，每一次LLM的回复或者调用工具的结果都将可以被订阅保存：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> subscription = <span class="hljs-title function_">subscribeEmbeddedPiSession</span>(&#123;<br>  <span class="hljs-attr">session</span>: activeSession,<br>  <span class="hljs-attr">runId</span>: params.<span class="hljs-property">runId</span>,<br>  <span class="hljs-attr">onToolResult</span>: params.<span class="hljs-property">onToolResult</span>,  <span class="hljs-comment">// 工具结果回调</span><br>  <span class="hljs-attr">toolResultFormat</span>: resolvedToolResultFormat,<br>  <span class="hljs-attr">shouldEmitToolResult</span>: params.<span class="hljs-property">shouldEmitToolResult</span>,<br>  <span class="hljs-attr">shouldEmitToolOutput</span>: params.<span class="hljs-property">shouldEmitToolOutput</span>,<br>  <span class="hljs-comment">// ...</span><br>&#125;);<br><br><span class="hljs-comment">// 从订阅中获取工具元数据</span><br><span class="hljs-keyword">const</span> &#123;<br>  toolMetas,           <span class="hljs-comment">// 工具调用元数据（工具名、参数、结果）</span><br>  getLastToolError,    <span class="hljs-comment">// 最后的工具错误</span><br>  getMessagingToolSentTexts,  <span class="hljs-comment">// 工具发送的文本</span><br>  getMessagingToolSentMediaUrls, <span class="hljs-comment">// 工具发送的媒体</span><br>&#125; = subscription;<br><br><span class="hljs-comment">// 工具调用结果被收集并返回</span><br><span class="hljs-keyword">return</span> &#123;<br>  <span class="hljs-attr">toolMetas</span>: toolMetasNormalized,  <span class="hljs-comment">// 包含工具名称和元数据</span><br>  <span class="hljs-attr">lastToolError</span>: getLastToolError?.(),<br>  <span class="hljs-attr">messagingToolSentTexts</span>: <span class="hljs-title function_">getMessagingToolSentTexts</span>(),<br>  <span class="hljs-comment">// ...</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>错误记录也写入会话文件：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// 提示词错误被持久化到会话文件</span><br><span class="hljs-keyword">if</span> (promptError &amp;&amp; promptErrorSource === <span class="hljs-string">&quot;prompt&quot;</span> &amp;&amp; !compactionOccurredThisAttempt) &#123;<br>  <span class="hljs-keyword">try</span> &#123;<br>    sessionManager.<span class="hljs-title function_">appendCustomEntry</span>(<span class="hljs-string">&quot;openclaw:prompt-error&quot;</span>, &#123;<br>      <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>(),<br>      <span class="hljs-attr">runId</span>: params.<span class="hljs-property">runId</span>,<br>      <span class="hljs-attr">sessionId</span>: params.<span class="hljs-property">sessionId</span>,<br>      <span class="hljs-attr">provider</span>: params.<span class="hljs-property">provider</span>,<br>      <span class="hljs-attr">model</span>: params.<span class="hljs-property">modelId</span>,<br>      <span class="hljs-attr">api</span>: params.<span class="hljs-property">model</span>.<span class="hljs-property">api</span>,<br>      <span class="hljs-attr">error</span>: <span class="hljs-title function_">describeUnknownError</span>(promptError),<br>    &#125;);<br>  &#125; <span class="hljs-keyword">catch</span> (entryErr) &#123;<br>    log.<span class="hljs-title function_">warn</span>(<span class="hljs-string">`failed to persist prompt error entry: <span class="hljs-subst">$&#123;<span class="hljs-built_in">String</span>(entryErr)&#125;</span>`</span>);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当通过 sessionKey&#x2F;sessionId 定位会话文件后</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> attempt = <span class="hljs-keyword">await</span> <span class="hljs-title function_">runEmbeddedAttempt</span>(&#123;<br>  <span class="hljs-attr">sessionId</span>: params.<span class="hljs-property">sessionId</span>,      <span class="hljs-comment">// 会话ID</span><br>  <span class="hljs-attr">sessionKey</span>: params.<span class="hljs-property">sessionKey</span>,    <span class="hljs-comment">// 会话密钥（如 &quot;user:123:personal&quot;）</span><br>  <span class="hljs-attr">sessionFile</span>: params.<span class="hljs-property">sessionFile</span>,  <span class="hljs-comment">// ← 会话文件路径</span><br>  <span class="hljs-comment">// ...</span><br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>在runEmbeddedAttempt中打开会话管理器</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs ts">sessionManager = <span class="hljs-title function_">guardSessionManager</span>(<span class="hljs-title class_">SessionManager</span>.<span class="hljs-title function_">open</span>(params.<span class="hljs-property">sessionFile</span>), &#123;<br>  <span class="hljs-attr">agentId</span>: sessionAgentId,<br>  <span class="hljs-attr">sessionKey</span>: params.<span class="hljs-property">sessionKey</span>,<br>  <span class="hljs-attr">inputProvenance</span>: params.<span class="hljs-property">inputProvenance</span>,  <span class="hljs-comment">// 记录消息来源</span><br>  <span class="hljs-attr">allowSyntheticToolResults</span>: transcriptPolicy.<span class="hljs-property">allowSyntheticToolResults</span>,<br>  allowedToolNames,<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>并进行历史消息的加载和注入</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">await</span> <span class="hljs-title function_">prepareSessionManagerForRun</span>(&#123;<br>        sessionManager,<br>        <span class="hljs-attr">sessionFile</span>: params.<span class="hljs-property">sessionFile</span>,<br>        hadSessionFile,<br>        <span class="hljs-attr">sessionId</span>: params.<span class="hljs-property">sessionId</span>,<br>        <span class="hljs-attr">cwd</span>: effectiveWorkspace,<br>      &#125;);<br><br><span class="hljs-comment">//创建 Agent 会话时传入 sessionManager</span><br>(&#123; session &#125; = <span class="hljs-keyword">await</span> <span class="hljs-title function_">createAgentSession</span>(&#123;<br>  sessionManager,  <span class="hljs-comment">// ← 包含完整历史的管理器</span><br>  <span class="hljs-comment">// ...</span><br>&#125;));<br></code></pre></td></tr></table></figure>
+
+<p>当然短期记忆也需要进行清洗和验证：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// 从会话管理器读取的历史消息经过处理</span><br><span class="hljs-keyword">const</span> prior = <span class="hljs-keyword">await</span> <span class="hljs-title function_">sanitizeSessionHistory</span>(&#123;<br>  <span class="hljs-attr">messages</span>: activeSession.<span class="hljs-property">messages</span>,  <span class="hljs-comment">// 原始历史</span><br>  <span class="hljs-attr">modelApi</span>: params.<span class="hljs-property">model</span>.<span class="hljs-property">api</span>,<br>  <span class="hljs-attr">modelId</span>: params.<span class="hljs-property">modelId</span>,<br>  <span class="hljs-attr">provider</span>: params.<span class="hljs-property">provider</span>,<br>  allowedToolNames,<br>  <span class="hljs-attr">config</span>: params.<span class="hljs-property">config</span>,<br>  sessionManager,<br>  <span class="hljs-attr">sessionId</span>: params.<span class="hljs-property">sessionId</span>,<br>  <span class="hljs-attr">policy</span>: transcriptPolicy,<br>&#125;);<br><br><span class="hljs-comment">// 验证角色交替（Gemini/Anthropic 要求）</span><br><span class="hljs-keyword">const</span> validatedGemini = transcriptPolicy.<span class="hljs-property">validateGeminiTurns</span><br>  ? <span class="hljs-title function_">validateGeminiTurns</span>(prior)<br>  : prior;<br><br><span class="hljs-comment">// 限制历史轮次（防止上下文过长）</span><br><span class="hljs-keyword">const</span> truncated = <span class="hljs-title function_">limitHistoryTurns</span>(<br>  validated,<br>  <span class="hljs-title function_">getDmHistoryLimitFromSessionKey</span>(params.<span class="hljs-property">sessionKey</span>, params.<span class="hljs-property">config</span>),<br>);<br><br><span class="hljs-comment">// 修复 tool_use/tool_result 配对</span><br><span class="hljs-keyword">const</span> limited = transcriptPolicy.<span class="hljs-property">repairToolUseResultPairing</span><br>  ? <span class="hljs-title function_">sanitizeToolUseResultPairing</span>(truncated, &#123;<br>      <span class="hljs-attr">erroredAssistantResultPolicy</span>: <span class="hljs-string">&quot;drop&quot;</span>,<br>    &#125;)<br>  : truncated;<br><br><span class="hljs-comment">// 将处理后的历史替换回会话</span><br><span class="hljs-keyword">if</span> (limited.<span class="hljs-property">length</span> &gt; <span class="hljs-number">0</span>) &#123;<br>  activeSession.<span class="hljs-property">agent</span>.<span class="hljs-title function_">replaceMessages</span>(limited);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="长期记忆"><a href="#长期记忆" class="headerlink" title="长期记忆"></a>长期记忆</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbook.io/openclaw_guide/di-er-bu-fen-jin-jie-shi-yong/06_context_memory/6.3_memory_mechanism">6.3 记忆机制：写入、检索与失效 | OpenClaw 从入门到精通 | OpenClaw Guide</a></p>
+</blockquote>
+<h3 id="Markdown-文件直接注入（基础长期记忆）"><a href="#Markdown-文件直接注入（基础长期记忆）" class="headerlink" title="Markdown 文件直接注入（基础长期记忆）"></a>Markdown 文件直接注入（基础长期记忆）</h3><p>还是在runEmbeddedAttempt 中，这里加载引导文件（包含 MEMORY.md）:</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">const</span> &#123; <span class="hljs-attr">bootstrapFiles</span>: hookAdjustedBootstrapFiles, contextFiles &#125; =<br>  <span class="hljs-keyword">await</span> <span class="hljs-title function_">resolveBootstrapContextForRun</span>(&#123;<br>    <span class="hljs-attr">workspaceDir</span>: effectiveWorkspace,<br>    <span class="hljs-attr">config</span>: params.<span class="hljs-property">config</span>,<br>    <span class="hljs-attr">sessionKey</span>: params.<span class="hljs-property">sessionKey</span>,<br>    <span class="hljs-attr">sessionId</span>: params.<span class="hljs-property">sessionId</span>,<br>  &#125;);<br><br><span class="hljs-comment">//contextFiles 包含 MEMORY.md 等 Markdown 文件，在构建系统提示词时直接注入</span><br><span class="hljs-keyword">const</span> appendPrompt = <span class="hljs-title function_">buildEmbeddedSystemPrompt</span>(&#123;<br>  contextFiles,  <span class="hljs-comment">//长期记忆文件（MEMORY.md）</span><br>  <span class="hljs-attr">memoryCitationsMode</span>: params.<span class="hljs-property">config</span>?.<span class="hljs-property">memory</span>?.<span class="hljs-property">citations</span>,<br>  <span class="hljs-comment">// ...</span><br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p><code>resolveBootstrapContextForRun</code>解析运行时的引导上下文，从工作区读取所有引导文件。</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">resolveBootstrapContextForRun</span>(<span class="hljs-params">params: &#123;</span><br><span class="hljs-params">  workspaceDir: <span class="hljs-built_in">string</span>;      // 工作区目录（如 ~/.openclaw/agents/<span class="hljs-keyword">default</span>/）</span><br><span class="hljs-params">  config?: OpenClawConfig;    // 配置（包含 maxChars 限制）</span><br><span class="hljs-params">  sessionKey?: <span class="hljs-built_in">string</span>;        // 会话密钥（用于个性化记忆）</span><br><span class="hljs-params">  sessionId?: <span class="hljs-built_in">string</span>;         // 会话ID</span><br><span class="hljs-params">  agentId?: <span class="hljs-built_in">string</span>;           // Agent ID</span><br><span class="hljs-params">  warn?: (message: <span class="hljs-built_in">string</span>) =&gt; <span class="hljs-built_in">void</span>;  // 警告回调</span><br><span class="hljs-params">  contextMode?: BootstrapContextMode;  // 上下文模式</span><br><span class="hljs-params">  runKind?: BootstrapContextRunKind;   // 运行类型</span><br><span class="hljs-params">&#125;</span>): <span class="hljs-title class_">Promise</span>&lt;&#123;<br>  <span class="hljs-attr">bootstrapFiles</span>: <span class="hljs-title class_">WorkspaceBootstrapFile</span>[];  <span class="hljs-comment">// 原始文件信息</span><br>  <span class="hljs-attr">contextFiles</span>: <span class="hljs-title class_">EmbeddedContextFile</span>[];       <span class="hljs-comment">// 可直接注入的内容</span><br>&#125;&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="向量检索增强（语义长期记忆）"><a href="#向量检索增强（语义长期记忆）" class="headerlink" title="向量检索增强（语义长期记忆）"></a>向量检索增强（语义长期记忆）</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-comment">// 上下文引擎从向量数据库检索相关长期记忆</span><br><span class="hljs-keyword">const</span> assembled = <span class="hljs-keyword">await</span> <span class="hljs-title function_">assembleAttemptContextEngine</span>(&#123;<br>  <span class="hljs-attr">contextEngine</span>: params.<span class="hljs-property">contextEngine</span>,<br>  <span class="hljs-comment">// contextEngine 内部集成了向量数据库</span><br>  <span class="hljs-comment">// 它会根据当前消息语义，检索相关的记忆片段</span><br>&#125;);<br><br><span class="hljs-comment">// 将检索到的记忆注入系统提示词</span><br><span class="hljs-keyword">if</span> (assembled.<span class="hljs-property">systemPromptAddition</span>) &#123;<br>  systemPromptText = <span class="hljs-title function_">prependSystemPromptAddition</span>(&#123;<br>    <span class="hljs-attr">systemPromptAddition</span>: assembled.<span class="hljs-property">systemPromptAddition</span>,  <span class="hljs-comment">// ← 检索到的相关记忆</span><br>  &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="工具层"><a href="#工具层" class="headerlink" title="工具层"></a>工具层</h1><ol>
+<li><strong>操作系统层</strong>:文件读写、执行 Shell 命令、运行脚本、调用摄像头&#x2F;麦克风等系统资源，相当于直接操控电脑本身。</li>
+<li><strong>浏览器层</strong>:网页浏览、信息抓取、表单填写、页面自动化操作，相当于”帮你用浏览器”。</li>
+<li><strong>外部工具&#x2F;服务层</strong>:通过 API 或集成连接邮件、日历、WhatsApp、Telegram、Slack 等，相当于”帮你用各种 App”。</li>
+</ol>
+<p>这三层其实也反映了一个递进关系：系统底层能力—信息获取能力—与外部世界交互能力。由于之前已经了解过了<a href="https://hermes37.vercel.app/2025/10/27/%E5%85%A8%E6%A0%88%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/%E5%BA%94%E7%94%A8/Agent%E5%BA%94%E7%94%A8/MCP%E5%8D%8F%E8%AE%AE/">MCP协议 - Hermes</a>这里不多赘述，这里先来了解一个新概念Skills:</p>
+<h2 id="Skills"><a href="#Skills" class="headerlink" title="Skills"></a>Skills</h2><img src="https://files.seeusercontent.com/2026/04/08/H6fe/image-20260408104507508.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<p><strong>Agent 的 Skill（技能）</strong>指的是该 Agent 能够执行的具体功能模块或能力单元，它定义了 Agent 在任务执行中可以完成的操作类型、输入输出接口和约束条件。每个 Skill 本质上是对某类任务的封装，它将复杂任务拆分成可独立调用的最小操作单元。</p>
+<p>Skill 通常与工具（Tool）或模型能力绑定，但比工具更抽象，可以通过策略或逻辑组合多个 Skill 来完成复杂任务。每个 Skill 都是一个实实在在存在的文件夹，它存放在一个固定的位置（如 .claude&#x2F;skills）这个文件夹里装着下面几样东西：</p>
+<ol>
+<li>指令（SKILL.md）： 告诉 AI 怎么干活的 SOP。</li>
+<li>参考（reference）： 更详细的参考文档（可选）。</li>
+<li>脚本（scripts）： 比如 Python 代码，让 Skill 也能调用外部能力（可选）。</li>
+<li>资源（assets）：图片、模版等可能使用到的资源（可选）。</li>
+</ol>
+<h2 id="工具清单"><a href="#工具清单" class="headerlink" title="工具清单"></a>工具清单</h2><p>在<a target="_blank" rel="noopener" href="https://yeasy.gitbook.io/openclaw_guide/di-er-bu-fen-jin-jie-shi-yong/05_tools_skills/5.1_tool_inventory">5.1 工具清单与调用范式 | OpenClaw 从入门到精通 | OpenClaw Guide</a>中已经说的很清楚了:</p>
+<blockquote>
+<p>建立工具清单不是为了死记硬背一份静态列表（可用工具会随版本、配置模板、插件与部署形态而变化），而是为了让你能在自己的实例上回答三件事：</p>
+<ol>
+<li><strong>候选工具集从哪里来</strong>：<code>tools.profile</code> 的基础集合 + 已启用插件带来的新增工具。</li>
+<li><strong>哪些工具被策略裁剪</strong>：<code>tools.allow</code>&#x2F;<code>tools.deny</code> 与 <code>channels.*.groups.*.tools</code> 的分层限制把候选集合收敛到可执行集合。</li>
+<li><strong>一次调用如何被审计</strong>：当工具被允许&#x2F;拒绝&#x2F;失败时，能在 <code>status --deep</code> 与结构化日志里复盘“命中哪条规则、失败在哪里”。</li>
+</ol>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;tools&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;profile&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;coding&quot;</span><span class="hljs-punctuation">,</span>                  <span class="hljs-comment">// 基础工具集合</span><br>    <span class="hljs-attr">&quot;allow&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:runtime&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:fs&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:web&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// 明确允许的工具分组</span><br>    <span class="hljs-attr">&quot;deny&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:messaging&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>          <span class="hljs-comment">// 明确禁止的工具分组</span><br>    <span class="hljs-attr">&quot;byProvider&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;google-antigravity&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span>             <span class="hljs-comment">// 针对特定提供商限制工具</span><br>        <span class="hljs-attr">&quot;profile&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;minimal&quot;</span><br>      <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;some-other-provider&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;allow&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:media&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;deny&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:fs&quot;</span><span class="hljs-punctuation">]</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;agents&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;agent-alpha&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;tools.profile&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;messaging&quot;</span><span class="hljs-punctuation">,</span>      <span class="hljs-comment">// 覆盖默认 profile</span><br>      <span class="hljs-attr">&quot;tools.allow&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:sessions&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;tools.deny&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:fs&quot;</span><span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;agent-beta&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;tools.profile&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;full&quot;</span><span class="hljs-punctuation">,</span>           <span class="hljs-comment">// 使用 full profile</span><br>      <span class="hljs-attr">&quot;tools.allow&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:automation&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:media&quot;</span><span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;channels&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;web_channel&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;groups&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;tools&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:web&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:runtime&quot;</span><span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;mobile_channel&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;groups&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;tools&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;group:messaging&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;group:sessions&quot;</span><span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>对于个人开发者来说，值得借鉴的设计有如下几点：</p>
+<ul>
+<li><p><strong>权限与分层策略</strong>：区分全局工具与每个 Agent 所需的工具并明确执行权限，确保 Agent 只能访问必要的能力，降低越权或误操作风险。通过允许（allow）、拒绝（deny）和分层策略管理工具使用，既保证安全，又支持灵活扩展和精细化控制</p>
+</li>
+<li><p><strong>工具分组管理</strong>：无论是 ReAct 模式还是 MCP 模式，Agent 所能调用的工具通常通过上下文提示词提供。将工具按功能分组，而不是一次性暴露全部工具，可以减少上下文信息量，提高任务规划效率，同时降低提示词复杂度。</p>
+</li>
+<li><p><strong>可审计性</strong>：确保工具有明确输入、明确输出、明确失败语义，并且其副作用必须可审计。</p>
+</li>
+</ul>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1999979760458167377">(99+ 封私信 &#x2F; 95 条消息) Agent Skills 完全指南：从原理到实战彻底搞懂！ - 知乎</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/" class="category-chain-item">逆向与开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">软件全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/" class="category-chain-item">后端</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/Agent%E5%BA%94%E7%94%A8/" class="category-chain-item">Agent应用</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OpenClaw源码鉴赏</div>
+      <div>https://hermes37.vercel.app/2026/05/16/逆向与开发/软件全栈开发/后端/Agent应用/OpenClaw源码鉴赏/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月16日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/19/%E7%A1%AC%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E7%94%B5%E5%AD%90%E5%BC%80%E5%8F%91/Linux%E5%BC%80%E5%8F%91/%E7%A7%BB%E6%A4%8D%E7%B3%BB%E7%BB%9F/" title="移植系统">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">移植系统</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/16/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E5%90%8E%E7%AB%AF/Agent%E5%BA%94%E7%94%A8/Agent%E5%BA%94%E7%94%A8%E6%8C%87%E5%8D%97/" title="Agent应用指南">
+                        <span class="hidden-mobile">Agent应用指南</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
