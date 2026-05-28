@@ -1,0 +1,839 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="桥接概念中继器、网桥和路由器 中继器（repeater）通常配有两个端口，只是简单地把在一个端口所接收的东西复制到另一个端口，反之亦然。它复制数据时是按位复制，并且对协议毫不关心，因此它无法区分不同的或封包。如今，中继器已很少使用，因为网桥已经变得很便宜，而且能提供更好的性能。多端口的中继器又称为集线器（Hub）。 网桥（bridge）和中继器不同，它了解链路层协议，因此可以按复制数据，而非按位复">
+<meta property="og:type" content="article">
+<meta property="og:title" content="桥接">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/07/02/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/%E5%B5%8C%E5%85%A5%E5%BC%8F%E8%BD%AF%E4%BB%B6/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%BD%91%E7%BB%9C/%E6%A1%A5%E6%8E%A5/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="桥接概念中继器、网桥和路由器 中继器（repeater）通常配有两个端口，只是简单地把在一个端口所接收的东西复制到另一个端口，反之亦然。它复制数据时是按位复制，并且对协议毫不关心，因此它无法区分不同的或封包。如今，中继器已很少使用，因为网桥已经变得很便宜，而且能提供更好的性能。多端口的中继器又称为集线器（Hub）。 网桥（bridge）和中继器不同，它了解链路层协议，因此可以按复制数据，而非按位复">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/07/03/V9HIMp7sxOdiWlC.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/03/Yz6EhmfoUJKHWDZ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/03/q87v9OHP2IKxfnA.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/07/EvYJjh8sm9BGZbi.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/03/FknfEzoNru7yTLV.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/07/FkKz9yP6fYbpICj.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/07/VHZhIytpcLdSbP5.png">
+<meta property="og:image" content="https://s2.loli.net/2025/07/03/bdUP5l9RjB31WIf.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20251107173942222.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/07/IAYnDrf2J3qXgVa.png">
+<meta property="article:published_time" content="2025-07-02T13:29:16.714Z">
+<meta property="article:modified_time" content="2026-05-28T02:13:49.723Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/07/03/V9HIMp7sxOdiWlC.png">
+  
+  
+  
+  <title>桥接 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="桥接"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">桥接</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="桥接概念"><a href="#桥接概念" class="headerlink" title="桥接概念"></a>桥接概念</h1><h2 id="中继器、网桥和路由器"><a href="#中继器、网桥和路由器" class="headerlink" title="中继器、网桥和路由器"></a>中继器、网桥和路由器</h2><ul>
+<li>中继器（repeater）通常配有两个端口，只是简单地把在一个端口所接收的东西复制到另一个端口，反之亦然。它复制数据时是按位复制，并且对协议毫不关心，因此它无法区分不同的或封包。如今，中继器已很少使用，因为网桥已经变得很便宜，而且能提供更好的性能。多端口的中继器又称为集线器（Hub）。</li>
+<li>网桥（bridge）和中继器不同，它了解链路层协议，因此可以按复制数据，而非按位复制。也就是说，网桥在每个端口上至少可以缓存一个。大多数LAN都月网桥——也常称为交换机（switch）；</li>
+<li>路由器（router）是了解L3网络层协议（例如IP）的设备，它可以根据路由表转发人口封包。在使用路由器之前，通常使用术语“网关（gateway）”指这类设备。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/07/03/V9HIMp7sxOdiWlC.png" srcset="/img/loading.gif" lazyload alt="中继器、网桥和路由器"></p>
+<p>术语网桥和交换机可以指相同的设备。但是，在讨论网桥的行为以及STP的运行方式的文档中（例如本章末尾提到的IEEE规范），主要使用术语“网桥”。相反的，当指那些真实的物理设备时，通常都是使用术语“交换机。</p>
+<h2 id="网桥合并LAN"><a href="#网桥合并LAN" class="headerlink" title="网桥合并LAN"></a><strong>网桥合并LAN</strong></h2><blockquote>
+<p>LAN就是多端口网桥</p>
+</blockquote>
+<p>网桥（Bridge）是<strong>链路层（L2）设备</strong>，通过合并多个物理LAN（如以太网），使它们<strong>逻辑上表现为一个LAN</strong>。</p>
+<p><strong>工作流程</strong>（以图14-2为例）：</p>
+<ol>
+<li><strong>主机A发送帧</strong>：主机A在LAN1中广播或单播一个以太网帧（如ARP请求或IP数据包）。</li>
+<li><strong>网桥接收帧</strong>：网桥通过端口1（连接LAN1）收到该帧。</li>
+<li><strong>泛洪（Flooding）</strong>：网桥将帧<strong>复制到所有其他端口</strong>（此处为端口2连接LAN2），LAN1和LAN2的所有主机都会收到副本。</li>
+<li><strong>透明传输</strong>：网桥<strong>不修改帧内容</strong>，LAN2主机收到的是原始帧的精确拷贝。</li>
+</ol>
+<p><strong>效果</strong>：<br>所有主机（无论LAN1或LAN2）的行为如同处于<strong>同一个广播域</strong>，可直接通过MAC地址通信。</p>
+<p><img src="https://s2.loli.net/2025/07/03/Yz6EhmfoUJKHWDZ.png" srcset="/img/loading.gif" lazyload alt="用网桥合并两个LAN"></p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>优点</strong></th>
+<th align="left"><strong>缺点</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">简单配置（无需改IP）</td>
+<td align="left">浪费带宽（无关流量被泛洪到所有端口）</td>
+</tr>
+<tr>
+<td align="left">透明传输（不修改帧）</td>
+<td align="left">所有主机必须在<strong>同一IP子网</strong>（否则无法路由）</td>
+</tr>
+<tr>
+<td align="left">扩展LAN覆盖范围</td>
+<td align="left">广播风暴风险（如ARP请求泛洪到所有LAN）</td>
+</tr>
+</tbody></table>
+<p>注意：</p>
+<ul>
+<li><strong>网桥（L2设备）</strong>：合并同一子网的LAN（如192.168.1.0&#x2F;24）。依赖MAC地址转发，泛洪未知单播&#x2F;广播&#x2F;组播帧。</li>
+</ul>
+<p>使用路由器替代网桥用来减少不必要的带宽浪费：</p>
+<p><strong>路由器（L3设备）</strong>：连接不同子网的LAN（如192.168.1.0&#x2F;24和192.168.2.0&#x2F;24）。基于IP地址路由，隔离广播域（不转发广播包）。</p>
+<p><img src="https://s2.loli.net/2025/07/03/q87v9OHP2IKxfnA.png" srcset="/img/loading.gif" lazyload alt="用路由器合并两个LAN"></p>
+<h2 id="桥接不同技术的LAN"><a href="#桥接不同技术的LAN" class="headerlink" title="桥接不同技术的LAN"></a>桥接不同技术的LAN</h2><p>“桥接不同技术的LAN”指的是使用<strong>网桥</strong>或<strong>交换机</strong>（现代的多端口网桥）将使用<strong>不同数据链路层协议</strong>或<strong>不同物理介质</strong>的局域网段连接起来，使它们能够相互通信，形成一个更大的逻辑网络。</p>
+<h3 id="地址学习"><a href="#地址学习" class="headerlink" title="地址学习"></a>地址学习</h3><p>在没有地址学习功能的集线器时代，当一个端口收到数据帧时，它会简单地将该帧<strong>广播</strong>到除接收端口外的所有其他端口。这种方式会导致：</p>
+<ul>
+<li><strong>网络拥塞</strong>：大量不必要的流量充斥在网络中。</li>
+<li><strong>安全风险</strong>：所有设备都能收到并非发给自己的数据帧。</li>
+<li><strong>性能低下</strong>：带宽被浪费，每个设备都需要处理无关的帧。</li>
+</ul>
+<p>而地址学习机制使网桥能够“知道”哪个设备连接在哪个端口上，从而做出智能的转发决策。</p>
+<blockquote>
+<p><strong>网桥的地址学习</strong> 是二层网络交换机（现代的多端口网桥）所具备的一种智能机制，它通过自动学习和记录网络中设备的MAC地址与交换机端口的对应关系，来构建和维护一个<strong>MAC地址表</strong>（也称为<strong>转发表</strong>或<strong>CAM表</strong>）。</p>
+</blockquote>
+<p>这个过程的核心目的是<strong>优化流量转发</strong>和<strong>减少不必要的网络流量</strong>，从而实现高效、智能的数据交换。</p>
+<p><img src="https://s2.loli.net/2025/11/07/EvYJjh8sm9BGZbi.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="多台网桥"><a href="#多台网桥" class="headerlink" title="多台网桥"></a>多台网桥</h3><p>当网络规模扩大，需要超过一台网桥（交换机）进行互连时，就形成了<strong>多台网桥</strong>的网络。这种情况引入了新的挑战和必要的机制，最核心的就是<strong>生成树协议</strong>。为什么需要多台网桥？</p>
+<ul>
+<li><strong>扩展端口数量</strong>：单一交换机的端口数量有限，需要连接更多设备时，必须使用多台交换机。</li>
+<li><strong>扩展距离</strong>：连接位于不同物理位置（例如不同楼层、不同建筑）的网络段。</li>
+<li><strong>提高可靠性</strong>：通过冗余链路，防止单点故障。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/07/03/FknfEzoNru7yTLV.png" srcset="/img/loading.gif" lazyload alt="地址学习和老化"></p>
+<p><img src="https://s2.loli.net/2025/11/07/FkKz9yP6fYbpICj.png" srcset="/img/loading.gif" lazyload alt="两台网桥的拓扑"></p>
+<h4 id="网桥环路"><a href="#网桥环路" class="headerlink" title="网桥环路"></a>网桥环路</h4><p>当两台以上的网桥通过多条路径连接起来时，就会形成物理上的<strong>环路</strong>。在数据链路层（二层），环路是致命的，它会引发三个主要问题：</p>
+<ol>
+<li><strong>广播风暴</strong><ul>
+<li><strong>过程</strong>：广播帧（如ARP请求）会被每台交换机泛洪到所有端口。在环路中，一个广播帧会在环路中被无限循环地转发，不断复制自己。</li>
+<li><strong>后果</strong>：在极短的时间内，网络带宽会被这些重复的广播帧完全占满，导致正常通信瘫痪，设备CPU因处理大量广播而负载过高。</li>
+</ul>
+</li>
+<li><strong>MAC地址表震荡</strong><ul>
+<li><strong>过程</strong>：假设一台PC发送一个单播帧。这个帧可能通过不同的路径（经过不同的交换机）到达同一台目的交换机。这台目的交换机会从不同端口收到<strong>同一个源MAC地址</strong>的帧。</li>
+<li><strong>后果</strong>：交换机的MAC地址学习机制会混乱，它会不断地更新该MAC地址对应的端口，导致MAC地址表项在多个端口间来回跳动，变得极不稳定，无法正确指导转发。</li>
+</ul>
+</li>
+<li><strong>多帧复制</strong><ul>
+<li><strong>过程</strong>：同一数据帧通过不同的路径到达目的地。</li>
+<li><strong>后果</strong>：目的设备会收到多个重复的帧，这对于上层协议（如TCP）来说是异常情况，可能导致通信错误。</li>
+</ul>
+</li>
+</ol>
+<p>当网络中存在环路时，网桥的泛洪机制会导致广播包无限循环。比如：</p>
+<ul>
+<li><strong>拓扑结构</strong>：两个网桥（网桥1和网桥2）连接两个LAN（LAN1和LAN2），形成<strong>物理环路</strong>。主机A位于LAN1，发送一个帧（如广播帧或未知单播帧）。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/11/07/VHZhIytpcLdSbP5.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>网桥状态</strong>：网桥的MAC地址表（转发表）为空，尚未学习任何主机的位置。</li>
+</ul>
+<p><strong>帧传播流程</strong></p>
+<ol>
+<li><strong>主机A发送帧</strong>：主机A在LAN1上发送帧，目标MAC地址可能是广播地址（<code>FF:FF:FF:FF:FF:FF</code>）或未知单播地址。</li>
+<li><strong>网桥接收并泛洪</strong>：<strong>网桥1</strong>和<strong>网桥2</strong>通过LAN1的端口收到该帧，记录<code>主机A的MAC → LAN1</code>（学习到主机A在LAN1）。由于目标MAC未知或为广播地址，两网桥均将帧<strong>泛洪到LAN2</strong>（复制到所有其他端口）。</li>
+<li><strong>帧在环路中无限循环</strong>：<ul>
+<li><strong>网桥1的副本到达LAN2</strong>：网桥2从LAN2收到该帧，误判<code>主机A的MAC → LAN2</code>（因为帧是从LAN2收到的），并重新泛洪到LAN1。</li>
+<li><strong>网桥2的副本到达LAN2</strong>：网桥1从LAN2收到该帧，同样误判<code>主机A的MAC → LAN2</code>，并重新泛洪到LAN1。</li>
+</ul>
+</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/07/03/bdUP5l9RjB31WIf.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>结果</strong>：帧在两网桥之间来回传递，形成<strong>广播风暴</strong>，耗尽网络带宽和CPU资源。</p>
+<h1 id="生成树协议"><a href="#生成树协议" class="headerlink" title="生成树协议"></a>生成树协议</h1><p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20251107173942222.png" srcset="/img/loading.gif" lazyload></p>
+<p>为了解决环路问题，同时又能保留冗余路径带来的可靠性，网络工程师们设计了 <strong>生成树协议</strong>。最常用的是 <strong>STP</strong> 和其增强版 <strong>RSTP</strong>。</p>
+<p><img src="https://s2.loli.net/2025/11/07/IAYnDrf2J3qXgVa.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/631850977">(45 封私信 &#x2F; 76 条消息) STP生成树协议（超详细小白也能看懂） - 知乎</a></p>
+</blockquote>
+<h2 id="STP的核心思想"><a href="#STP的核心思想" class="headerlink" title="STP的核心思想"></a>STP的核心思想</h2><p>STP通过一种<strong>分布式算法</strong>，在存在环路的物理拓扑中，逻辑上<strong>阻塞</strong>一个或多个端口，从而修剪出一棵<strong>无环路的树状拓扑</strong>。被阻塞的端口仍然连接在网络上，但不转发任何数据流量。</p>
+<ul>
+<li><strong>根桥</strong>：整个网络中被选举出的一个“中心”交换机，所有流量都以其为根进行路径规划。</li>
+<li><strong>根端口</strong>：在每个<strong>非根桥</strong>上，通往根桥“最近”的端口。</li>
+<li><strong>指定端口</strong>：在每个物理网段上，通往根桥“最近”的交换机上的那个端口。该网段上的数据通过这个端口流向根桥。</li>
+<li><strong>阻塞&#x2F;替代端口</strong>：既不是根端口也不是指定端口的端口将被置为<strong>阻塞状态</strong>，从而打破环路。</li>
+</ul>
+<p><strong>当活动路径发生故障时</strong>，STP会重新计算，并将之前阻塞的端口<strong>激活</strong>，从而利用冗余链路实现故障切换</p>
+<h1 id="Linux实现"><a href="#Linux实现" class="headerlink" title="Linux实现"></a>Linux实现</h1><blockquote>
+<p>待分析</p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/" class="category-chain-item">电气与电子工程</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/%E5%B5%8C%E5%85%A5%E5%BC%8F%E8%BD%AF%E4%BB%B6/" class="category-chain-item">嵌入式软件</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/%E5%B5%8C%E5%85%A5%E5%BC%8F%E8%BD%AF%E4%BB%B6/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Linux内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/%E5%B5%8C%E5%85%A5%E5%BC%8F%E8%BD%AF%E4%BB%B6/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%BD%91%E7%BB%9C/" class="category-chain-item">网络</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>桥接</div>
+      <div>https://hermes37.vercel.app/2025/07/02/工科知识库/电气与电子工程/嵌入式软件/Linux内核原理/网络/桥接/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月2日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/02/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/%E5%B5%8C%E5%85%A5%E5%BC%8F%E8%BD%AF%E4%BB%B6/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%92%8C%E6%8E%A5%E5%8F%97/" title="传输和接受">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">传输和接受</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/02/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E7%94%B5%E6%B0%94%E4%B8%8E%E7%94%B5%E5%AD%90%E5%B7%A5%E7%A8%8B/%E5%B5%8C%E5%85%A5%E5%BC%8F%E8%BD%AF%E4%BB%B6/Linux%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E7%BD%91%E7%BB%9C/%E9%82%BB%E5%B1%85%E5%AD%90%E7%B3%BB%E7%BB%9F/" title="邻居子系统">
+                        <span class="hidden-mobile">邻居子系统</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

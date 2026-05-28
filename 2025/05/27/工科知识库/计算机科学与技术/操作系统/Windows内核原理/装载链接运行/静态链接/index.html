@@ -1,0 +1,1175 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="编译与链接使用Gcc编译程序时，往往会为4个步骤,分别是预处理(Prepressing)、编译 (Compilation)、汇编(Assembly)和链接(Linking)  对于编译与汇编过程在我的博客中曾多次谈到过，这里不多介绍。重点看看链接过程。 链接器的由来在并发与句柄 - The Peak Tower谈到：进程也可以理解为是一堆模块组成的,如下图可以看到一个进行需要多个dll模块支持：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="静态链接">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/27/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="编译与链接使用Gcc编译程序时，往往会为4个步骤,分别是预处理(Prepressing)、编译 (Compilation)、汇编(Assembly)和链接(Linking)  对于编译与汇编过程在我的博客中曾多次谈到过，这里不多介绍。重点看看链接过程。 链接器的由来在并发与句柄 - The Peak Tower谈到：进程也可以理解为是一堆模块组成的,如下图可以看到一个进行需要多个dll模块支持：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/8hQgmbCRZryXfPI.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/12/EM2qsxPThHGFLXi.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/nJw78PSIKmrljVL.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/Uymq46ZlHGosIxX.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/S3yL5pWlFXJVqcC.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/xf3w5vtiWeF68BA.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/6A2DSaWlOgtNXmY.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/VW7yTlB9jd3Nox2.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/Pd4Ne6nlChWvkBu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/iDQbVu2jKzwk9Hm.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/Eue5bkRsrTLocUq.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/xsM1piaXqE9JQSk.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/RHcvbxUafVniImN.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/YXFHnp1xdtjr249.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/knqf7JA8yUgrtez.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/Va5b6UQiljhH8fu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/KOjy8tvaXfZrm7g.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/x6FA2n4p7U9yBDR.png">
+<meta property="article:published_time" content="2025-05-27T01:34:31.982Z">
+<meta property="article:modified_time" content="2026-05-28T02:13:49.831Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/05/27/8hQgmbCRZryXfPI.png">
+  
+  
+  
+  <title>静态链接 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="静态链接"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          117 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">静态链接</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="编译与链接"><a href="#编译与链接" class="headerlink" title="编译与链接"></a>编译与链接</h1><p>使用Gcc编译程序时，往往会为4个步骤,分别是预处理(Prepressing)、编译 (Compilation)、汇编(Assembly)和链接(Linking)</p>
+<p><img src="https://s2.loli.net/2025/05/27/8hQgmbCRZryXfPI.png" srcset="/img/loading.gif" lazyload></p>
+<p>对于编译与汇编过程在我的博客中曾多次谈到过，这里不多介绍。重点看看链接过程。</p>
+<h2 id="链接器的由来"><a href="#链接器的由来" class="headerlink" title="链接器的由来"></a>链接器的由来</h2><p>在<a target="_blank" rel="noopener" href="https://restack3.github.io/2025/05/18/%E9%80%86%E5%90%91%E4%B8%8E%E9%A3%8E%E6%8E%A7/Window%E5%B9%B3%E5%8F%B0/%E5%BC%80%E5%8F%91/Win32/%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%8F%A5%E6%9F%84/">并发与句柄 - The Peak Tower</a>谈到：<strong>进程也可以理解为是一堆模块组成的</strong>,如下图可以看到一个进行需要多个dll模块支持：</p>
+<p><img src="https://s2.loli.net/2025/05/12/EM2qsxPThHGFLXi.png" srcset="/img/loading.gif" lazyload></p>
+<p>为什么呢？因为当项目量大起来时，需要复用的模块就越来越多，如果把这些模块单独设计成一个文件，当要使用时直接导入使用就方便很多，事实上动态链接库(Dynamic Link Library, DLL)就是基于这种思想，其是Windows系统中共享代码和资源的核心技术，允许多个程序共享相同的功能模块，减少内存占用并简化更新维护。</p>
+<blockquote>
+<p>软件的规模日渐庞大,这时程序的代码量也已经开始快速地膨胀,导致人们要开始考虑将不同功能的代码以一定的方 式组织起来,使得更加容易阅读和理解,以便于日后修改和重复使用。自然而然,人们开始 将代码按照功能或性质划分,分别形成不同的功能模块,不同的模块之间按照层次结构或其 他结构来组织。,比如在C语言中,最小的单位是变量和函数,若干个变量和函数组成一个模块,存放在一个“.c”的源代码文件里,然后这 些源代码文件按照目录结构来组织。在比较高级的语言中,如Java 中,每个类是一个基本 的模块,若干个类模块组成一个包(Package),若干个包组合成一个程序。</p>
+<p>在现代软件开发过程中,软件的规模往往都很大,动辄数百万行代码,如果都放在一个 模块肯定无法想象。所以现代的大型软件往往拥有成千上万个模块,这些模块之间相互依赖 又相对独立。这种按照层次化及模块化存储和组织源代码有很多好处,比如代码更容易阅读、 理解、重用,每个模块可以单独开发、编译、测试,改变部分代码不需要编译整个程序等。</p>
+<p>在一个程序被分割成多个模块以后,这些模块之间最后如何组合形成一个单一的程序是 须解决的问题。模块之间如何组合的问题可以归结为模块之间如何通信的问题,最常见的属 于静态语言的C&#x2F;C++模块之间通信有两种方式,一种是模块间的函数调用,另外一种是模块 间的变量访问。函数访问须知道目标函数的地址,变量访问也须知道目标变量的地址,所以 这两种方式都可以归结为一种方式,那就是模块间符号的引用。模块间依靠符号来通信类似 于拼图版,定义符号的模块多出一块区域,引用该符号的模块刚好少了那一块区域,两者一 拼接刚好完美组合(见图2-7)。这个模块的拼接过程就是本书的一个主题:链接(Linking)。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/05/27/nJw78PSIKmrljVL.png" srcset="/img/loading.gif" lazyload></p>
+<p>回到最初的问题：<strong>为什么需要链接？</strong>因为编译文件的时候，存在一些无法确定的符号，需要将多个文件凑到一起，才可以找到这些符号确定下来。比如 include 其他头文件，虽然在当前源文件可以使用里面的变量和函数名，但是却无法找到那个符号的具体地址，也就无法跳转到函数符号的地址进行执行。</p>
+<p><img src="https://s2.loli.net/2025/05/27/Uymq46ZlHGosIxX.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="目标文件"><a href="#目标文件" class="headerlink" title="目标文件"></a>目标文件</h1><p>编译器编译源代码后生成的文件叫做目标文件，目标文件从结构上讲,它是已经编译后的可执行文件格式,只是还没有经过链接的过程, 其中可能有些符号或有些地址还没有被调整。其实它本身就是按照可执行文件格式存储的, 只是跟真正的可执行文件在结构上稍有不同。</p>
+<p>其中无论是Window上的PE文件还是Linux上的ELF文件都在前面有进行详细的介绍：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://restack3.github.io/2025/04/15/%E9%80%86%E5%90%91%E4%B8%8E%E9%A3%8E%E6%8E%A7/Window%E5%B9%B3%E5%8F%B0/%E9%80%86%E5%90%91/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">PE文件格式解析 - The Peak Tower</a></li>
+<li><a target="_blank" rel="noopener" href="https://restack3.github.io/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F(%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C)/ELF%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/">ELF文件格式解析 - The Peak Tower</a></li>
+</ul>
+<p>这里简单回顾一下节和链接相关内容。</p>
+<h2 id="节"><a href="#节" class="headerlink" title="节"></a>节</h2><p>主要的几个段 Section 以及其作用</p>
+<ol>
+<li><code>.text</code>(只读) : 机器代码</li>
+<li><code>.data</code>(读写) : 初始化的全局变量(包括普通类型和静态类型)和初始化的局部静态变量</li>
+<li><code>.bss</code>(读写) : 未初始化的全局变量(包括普通类型和静态类型)和未初始化的局部静态变量. 其实他们会被初始化为 0, 但也因此, 他们就没必要放置于 <code>.data</code> 中占据内存空间了. 该段只是为未初始化的全局变量(包括普通类型和静态类型)和未初始化的局部静态变量预留位置, 实际上并没有内容, 不占据空间</li>
+<li><code>.rodata</code>(只读) : 字符串</li>
+<li><code>.dynamic</code> : 动态链接信息</li>
+<li><code>.hash</code> : 符号哈希表</li>
+<li><code>.strtab</code> : 字符串表</li>
+<li><code>.symtab</code> : 符号表</li>
+<li><code>.shstrtab</code> : 段表字符串表</li>
+<li><code>.plt</code>, <code>.got</code> : 动态链接的 跳转表 和 全局入口表</li>
+<li><code>.init</code>, <code>fini</code> : 程序初始化和终结代码段</li>
+<li><code>Section Table</code> : 由文件头标明偏移, 记录各个表的信息(段描述符, 一个 40B), 被编译器和链接器使用, 解析 elf 文件</li>
+</ol>
+<h2 id="符号"><a href="#符号" class="headerlink" title="符号"></a>符号</h2><p>在链接中,目标文件之间相互拼合实际上是目标文件之间对地址的引用,即对函数和变量的地址的引用。比如目 标文件B要用到了目标文件A中的函数“foo”,那么我们就称目标文件A定义(Define) 了函数“foo”,称目标文件B引用(Reference)了目标文件A中的函数“foo”。这两个概念也同样适用于变量。每个函数或变量都有自己独特的名字,才能避免链接过程中不同变量 和函数之间的混淆。<strong>在链接中,我们将函数和变量统称为符号(Symbol),函数名或变量名 就是符号名 (Symbol Name)。</strong></p>
+<p>我们可以将符号看作是链接中的粘合剂,整个链接过程正是基于符号才能够正确完成。 链接过程中很关键的一部分就是符号的管理,每一个目标文件都会有一个相应的符号表 (Symbol Table),这个表里面记录了目标文件中所用到的所有符号。每个定义的符号有一 个对应的值,叫做符号值(Symbol Value),对于变量和函数来说,符号值就是它们的地址。 除了<strong>函数和变量</strong>之外,还存在其他几种不常用到的符号。我们将符号表中所有的符号进行分 类,它们有可能是下面这些类型中的一种: </p>
+<ul>
+<li><strong>定义在本目标文件的全局符号,可以被其他目标文件引用。比如 SimpleSection.o 里面 的“funcl”、“main”和“global_init_var”。</strong></li>
+<li><strong>在本目标文件中引用的全局符号,却没有定义在本目标文件,这一般叫做外部符号 (External Symbol),也就是我们前面所讲的符号引用。比如 SimpleSection.o 里面的 “printf”</strong></li>
+<li>段名,这种符号往往由编译器产生,它的值就是该段的起始地址。比如 SimpleSection.o 里面的“.text”、”data”等。</li>
+<li>局部符号,这类符号只在编译单元内部可见。比如SimpleSection.o 里面的“static_var” 和“static_var2”。调试器可以使用这些符号来分析程序或崩溃时的核心转储文件。这些局部符号对于链接过程没有作用,链接器往往也忽略它们。 </li>
+<li>行号信息,即目标文件指令与源代码中代码行的对应关系,它也是可选的。</li>
+</ul>
+<p>对于我们来说,最值得关注的就是全局符号,即上面分类中的第一类和第二类。因为链 接过程只关心全局符号的相互“粘合”,局部符号、段名、行号等都是次要的,它们对于其他目标文件来说是“不可见”的,在链接过程中也是无关紧要的</p>
+<p>在ELF文件中数据节中有**<code>.symtab</code> 符号表（静态符号表）<strong>和</strong><code>.dynsym</code> 动态符号表<strong>，PE中有IMAGE_SYMBOL,与之相关的有</strong>导入表（IAT）与导出表（EAT）<strong>【虽然不是传统意义的符号表，但记录了动态链接的符号信息】和</strong>重定位表（Relocation Table）**：</p>
+<blockquote>
+<p><strong>存储符号信息</strong>：符号表保存了 ELF 文件中的全局和局部符号（如函数名、变量名）。为调试、链接提供符号信息。动态链接时，解析符号依赖（如函数地址的重定位）。符号表的作用是描述导入和导出符号,这里的符号可以是全局变量,函数,外部引用等，通过符号表和对应的字符串表可以得到符号名,符号大小,符号地址等信息</p>
+</blockquote>
+<h3 id="特殊符号"><a href="#特殊符号" class="headerlink" title="特殊符号"></a>特殊符号</h3><p>当我们使用Id 作为链接器来链接生产可执行文件时,它会为我们定义很多特殊的符号, 这些符号并没有在你的程序中定义,但是你可以直接声明并且引用它,我们称之为特殊符号。链接器会在将程序最终链接成可执行文件的时候将其解析成正确的值,注 意,只有使用Id 链接生产最终可执行文件的时候这些符号才会存在。几个很具有代表性的 特殊符号如下。</p>
+<ul>
+<li>_<em>executable_start,该符号为程序起始地址,注意,不是入口地址,是程序的最开始的 地址。</em></li>
+<li>_ _etext 或_etext 或etext,该符号为代码段结束地址,即代码段最末尾的地址。</li>
+<li>_edata 或edata,该符号为数据段结束地址,即数据段最末尾的地址。 </li>
+<li>_end 或 end,该符号为程序结束地址。 以上地址都为程序被装载时的虚拟地址</li>
+</ul>
+<h3 id="符号修饰与函数命名"><a href="#符号修饰与函数命名" class="headerlink" title="符号修饰与函数命名"></a>符号修饰与函数命名</h3><blockquote>
+<p>约在20世纪70年代以前,编译器编译源代码产生目标文件时,符号名与相应的变量和 函数的名字是一样的。比如一个汇编源代码里面包含了一个函数 foo,那么汇编器将它编译 成目标文件以后,foo 在目标文件中的相对应的符号名也是foo。当后来 UNIX 平台和C语 言发明时,已经存在了相当多的使用汇编编写的库和目标文件。这样就产生了一个问题,那 就是如果一个程序要使用这些库的话,C语言中不可以使用这些库中定义的函数和变量 的名字作为符号名,否则将会跟现有的目标文件冲突。比如有个用汇编编写的库中定义了一 个函数叫做 main,那么我们在C语言里面就不可以再定义一个main 函数或变量了。同样的 道理,如果一个C语言的目标文件要用到一个使用 Fortran 语言编写的目标文件,我们也必 须防止它们的名称冲突。</p>
+</blockquote>
+<h4 id="符号命名冲突与解决历程"><a href="#符号命名冲突与解决历程" class="headerlink" title="符号命名冲突与解决历程"></a><strong>符号命名冲突与解决历程</strong></h4><ol>
+<li><strong>早期汇编时代（1970年代前）</strong><ul>
+<li><strong>规则</strong>：符号名 &#x3D; 源码名（如函数<code>foo</code> → 目标文件符号<code>foo</code>）。</li>
+<li><strong>问题</strong>：汇编库与C语言混合开发时，符号名直接冲突（如<code>main</code>重复定义）。</li>
+</ul>
+</li>
+<li><strong>C语言的临时方案</strong><ul>
+<li><strong>规则</strong>：全局符号前加下划线（如<code>foo</code> → <code>_foo</code>）。</li>
+<li><strong>局限</strong>：仅缓解跨语言冲突，未解决同语言多模块间的命名冲突。</li>
+</ul>
+</li>
+<li><strong>C++的改进</strong><ul>
+<li><strong>方案</strong>：引入命名空间（<code>namespace</code>），彻底隔离符号作用域。</li>
+<li><strong>优势</strong>：支持模块化开发，避免内部符号冲突。</li>
+</ul>
+</li>
+<li><strong>现代编译器的分化</strong><ul>
+<li><strong>Linux&#x2F;GCC</strong>：默认取消下划线前缀（历史遗留问题减少）。</li>
+<li><strong>Windows编译器</strong>：保留传统（如VC++、MinGW的<code>_foo</code>），兼容旧代码。</li>
+<li>GCC参数：<ul>
+<li><code>-fleading-underscore</code>：强制加下划线。</li>
+<li><code>-fno-leading-underscore</code>：禁用下划线。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="C-符号修饰"><a href="#C-符号修饰" class="headerlink" title="C++符号修饰"></a>C++符号修饰</h4><blockquote>
+<p>众所周知,强大而又复杂的C++拥有类、继承、虚机制、重载、名称空间等这些特性, 它们使得符号管理更为复杂。最简单的例子,两个相同名字的函数 func(int)和 func(double), 尽管函数名相同,但是参数列表不同,这是C++里面函数重载的最简单的一种情况,那么编 译器和链接器在链接过程中如何区分这两个函数呢?</p>
+</blockquote>
+<p>了支持C++这些复杂的特性,人们发 明了符号修饰(Name Decoration)或符号改编(Name Mangling)的机制，首先看个例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;              <span class="hljs-comment">// (1) 全局函数</span><br><span class="hljs-function"><span class="hljs-type">float</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">float</span>)</span></span>;          <span class="hljs-comment">// (2) 全局重载函数</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">C</span> &#123;                   <span class="hljs-comment">// (3) 类C</span><br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;          <span class="hljs-comment">// (4) C的成员函数</span><br>    <span class="hljs-keyword">class</span> <span class="hljs-title class_">C2</span> &#123;              <span class="hljs-comment">// (5) 嵌套类C2</span><br>        <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;      <span class="hljs-comment">// (6) C2的成员函数</span><br>    &#125;;<br>&#125;;<br><br><span class="hljs-keyword">namespace</span> N &#123;               <span class="hljs-comment">// (7) 命名空间N</span><br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;          <span class="hljs-comment">// (8) N中的全局函数</span><br>    <span class="hljs-keyword">class</span> <span class="hljs-title class_">C</span> &#123;               <span class="hljs-comment">// (9) N中的类C</span><br>        <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;      <span class="hljs-comment">// (10) N::C的成员函数</span><br>    &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这段代码中有6个同名函数叫 func,只不过它们的返回类型和参数及所在的名称空间不 同。我们引入一个术语叫做<strong>函数签名 (Function Signature)</strong>,函数签名包含了一个函数的信息,包括函数名、它的参数类型、它所在的类和名称空间及其他信息。</p>
+<p>函数签名用于识别不 同的函数,就像签名用于识别不同的人一样,函数的名字只是函数签名的一部分。由于上面 6个同名函数的参数类型及所处的类和名称空间不同,我们可以认为它们的函数签名不同。</p>
+<p>在编译器及链接器处理符号时,它们使用某种名称修饰的方法,使得每个函数签名对应一个 修饰后名称 (Decorated Name)。编译器在将 C++源代码编译成目标文件时,会将函数和 变量的名字进行修饰,形成<strong>符号名</strong>,也就是说,C++的源代码编译后的目标文件中所使用的 符号名是相应的函数和变量的修饰后名称。</p>
+<p><img src="https://s2.loli.net/2025/05/27/S3yL5pWlFXJVqcC.png" srcset="/img/loading.gif" lazyload></p>
+<p>C++编译器和链接器都使用符号来识别和处理函 数和变量,所以对于不同函数签名的函数,即使函数名相同,编译器和链接器都认为它们是不同的函数。</p>
+<blockquote>
+<p>GCC 的基本 C++名称修饰方法如下:所有的符号都以“_Z”开头,对于嵌套的名字(在 名称空间或在类里面的),后面紧跟“N”,然后是各个名称空间和类的名字,每个名字前是 名字字符串长度,再以“E”结尾。比如N::C::func 经过名称修饰以后就是_ZNINIC4funcE。 对于一个函数来说,它的参数列表紧跟在“E”后面,对于int 类型来说,就是字母“”。所 以整个 N::C::func(int)函数签名经过修饰为_ZNINIC4funcEi。更为具体的修饰方法我们在这 里不详细介绍,有兴趣的读者可以参考 GCC 的名称修饰标准</p>
+</blockquote>
+<p>签名和名称修饰机制不光被使用到函数上,C++中的全局变量和静态变量也有同样的机 制。对于全局变量来说,它跟函数一样都是一个全局可见的名称,它也遵循上面的名称修饰 机制,比如一个名称空间 foo 中的全局变量 bar,它修饰后的名字为:ZN3foo3barE。</p>
+<p>值得注意的是,变量的类型并没有被加入到修饰后名称中,所以不论这个变量是整形还是浮点型 甚至是一个全局对象,它的名称都是一样的。 名称修饰机制也被用来防止静态变量的名字冲突。比如main()函数里面有一个静态变量 叫 foo,而func()函数里面也有一个静态变量叫 foo。</p>
+<p>为了区分这两个变量,GCC 会将它们 的符号名分别修饰成两个不同的名字 ZZ4mainE3foo 和_ZZ4funcvE3foo,这样就区分了这两 个变量。 </p>
+<p>不同的编译器厂商的名称修饰方法可能不同,所以不同的编译器对于同一个函数签名可 能对应不同的修饰后名称。比</p>
+<h4 id="extern-“C”"><a href="#extern-“C”" class="headerlink" title="extern “C”"></a>extern “C”</h4><p>在C++中，<code>extern &quot;C&quot;</code> 的作用是告诉编译器按照 <strong>C语言的符号规则</strong> 处理被声明的函数或变量，从而确保与C代码的兼容性。不同编译器对 <code>extern &quot;C&quot;</code> 的处理方式有所不同，尤其是在符号修饰（Name Mangling）和前缀规则上。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> &#123;<br>    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;      <span class="hljs-comment">// C风格的函数声明</span><br>    <span class="hljs-type">int</span> var;            <span class="hljs-comment">// C风格的全局变量</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>作用</strong>：禁止C++的名称修饰（Name Mangling），确保符号名与C代码一致。在链接时，C++代码可以正确调用C库中的函数或访问C变量。</p>
+<p>也可以<strong>单独声明某个函数为C符号</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;  <span class="hljs-comment">// 仅对 func 使用C规则</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-type">int</span> var;        <span class="hljs-comment">// 仅对 var 使用C规c则</span><br></code></pre></td></tr></table></figure>
+
+<p>仅需部分函数或变量与C兼容时使用。</p>
+<p><strong>不同编译器对 <code>extern &quot;C&quot;</code> 的处理</strong>:</p>
+<p><strong>(1) Windows (Visual C++ &#x2F; MinGW)</strong></p>
+<p><strong>默认规则</strong>：</p>
+<p>C语言的符号会被添加下划线前缀（如 <code>func</code> → <code>_func</code>）。即使使用 <code>extern &quot;C&quot;</code>，符号仍然会被修饰为 <code>_func</code> 和 <code>_var</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;  <span class="hljs-comment">// 实际符号名：_func</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-type">int</span> var;        <span class="hljs-comment">// 实际符号名：_var</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>Linux&#x2F;macOS (GCC&#x2F;Clang)</strong></p>
+<p><strong>默认规则</strong>：C语言的符号 <strong>不加下划线</strong>（如 <code>func</code> → <code>func</code>）。<code>extern &quot;C&quot;</code> 的符号名与源码完全一致。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;  <span class="hljs-comment">// 实际符号名：func</span><br><span class="hljs-keyword">extern</span> <span class="hljs-string">&quot;C&quot;</span> <span class="hljs-type">int</span> var;        <span class="hljs-comment">// 实际符号名：var</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="弱符号与强符号"><a href="#弱符号与强符号" class="headerlink" title="弱符号与强符号"></a>弱符号与强符号</h4><blockquote>
+<p>在编程中碰到一种情况叫符号重复定义。多个目标文件中含有相同名字全局符 号的定义,那么这些目标文件链接的时候将会出现符号重复定义的错误。比如我们在目标文 件A和目标文件B都定义了一个全局整形变量 global,并将它们都初始化,那么链接器将A 和B进行链接时会报错.</p>
+</blockquote>
+<p>这种符号的定义可以被称为强符号(Strong Symbol)。有些符号的定义可以被称为弱符 (Weak Symbol)。对于C&#x2F;C++语言来说,编译器默认函数和初始化了的全局变量为强符号,未初始化的全局变量为弱符号。我们也可以通过GCC 的“_attribute ((weak))”来定义任何一个强符号为弱符号。注意,强符号和弱符号都是针对定义来说的,不是针对符号的 引用。</p>
+<h5 id="强符号-vs-弱符号"><a href="#强符号-vs-弱符号" class="headerlink" title="强符号 vs 弱符号"></a><strong>强符号 vs 弱符号</strong></h5><p><strong>强符号</strong>：已初始化的全局变量、函数定义如 <code>int a = 1;</code></p>
+<p><strong>规则</strong>：禁止重复定义（链接报错）。</p>
+<p><strong>弱符号</strong>：未初始化的全局变量，如<code>int b</code>或通过<code>__attribute__((weak))</code>显式声明。</p>
+<p>规则：允许重复定义，按优先级选择：</p>
+<ol>
+<li>优先使用强符号（若存在）。</li>
+<li>若均为弱符号，选择占用空间最大的定义（危险！避免类型不一致）。</li>
+</ol>
+<p>针对强弱符号的概念,链接器就会按如下规则处理与选择被多次定义的全局符号:</p>
+<ul>
+<li>规则1:不允许强符号被多次定义(即不同的目标文件中不能有同名的强符号);如果 有多个强符号定义,则链接器报符号重复定义错误。 </li>
+<li>规则2:如果一个符号在某个目标文件中是强符号,在其他文件中都是弱符号,那么选择强符号。 </li>
+<li>规则3:如果一个符号在所有目标文件中都是弱符号,那么选择其中占用空间最大的一 个。比如目标文件A定义全局变量global 为int 型,占4个字节目标文件 B定义 global 为double 型,占8个字节,那么目标文件A和B链接后,符号 global占8个字节(尽 量不要使用多个不同类型的弱符号,否则容易导致很难发现的程序错误)。</li>
+</ul>
+<h5 id="强引用-vs-弱引用"><a href="#强引用-vs-弱引用" class="headerlink" title="强引用 vs 弱引用"></a><strong>强引用 vs 弱引用</strong></h5><p>前面我们所看到的对外部目标文件的符号引用在目标文件被最终链 接成可执行文件时,它们须要被正确决议,如果没有找到该符号的定义,链接器就会报符号未定义错误,这种被称为强引用(Strong Reference)。与之相对应还有一种弱引用(Weak Reference),在处理弱引用时,如果该符号有定义,则链接器将该符号的引用决议;如果该符号来被定义,则链接器对于该引用不报错。</p>
+<p><strong>强引用</strong>：普通外部符号引用（未定义时报链接错误）。</p>
+<p>弱引用：通过<code>__attribute__((weakref))</code>声明，未定义时不报错（默认置零）。用途：可选功能模块（如多线程库检测）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c">__attribute__((weakref)) <span class="hljs-type">void</span> <span class="hljs-title function_">pthread_create</span><span class="hljs-params">()</span>;<br><span class="hljs-keyword">if</span> (pthread_create) &#123; <span class="hljs-comment">/* 多线程模式 */</span> &#125;<br></code></pre></td></tr></table></figure>
+
+<p>链接器处理强引用和弱引用的过程几乎一样, 只是对于未定义的弱引用,链接器不认为它是一个错误。一般对于未定义的弱引用,链接器 默认其为0,或者是一个特殊的值,以便于程序代码能够识别。弱引用和弱符号主要用于库的链接过程,</p>
+<blockquote>
+<p>我们将在“库”这一章再来详细讲述。弱符号跟链接器的COMMON 块概念 联系很紧密,我们在后面“深入静态链接”这一章中的“COMMON 块”一节还会回顾弱符 号的概念。</p>
+</blockquote>
+<p>这种弱符号和弱引用对于库来说十分有用,比如库中定义的弱符号可以被用户定义的强符号所覆盖,从而使得程序可以使用自定义版本的库函数;或者程序可以对某些扩展功能模 块的引用定义为弱引用,当我们将扩展模块与程序链接在一起时,功能模块就可以正常使用; 如果我们去掉了某些功能模块,那么程序也可以正常链接,只是缺少了相应的功能,这使得 程序的功能更加容易裁剪和组合。</p>
+<h1 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h1><blockquote>
+<p>程序设计的模块化是人们一直在追求的目标,因为当一个系统十分复杂的时候,我们不 得不将一个复杂的系统逐步分割成小的系统以达到各个突破的目的。一个复杂的软件也如 此,人们把每个源代码模块独立地编译,然后按照须要将它们“组装”起来,这个组装模块的过程就是链接 (Linking)。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/05/27/xf3w5vtiWeF68BA.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="基本介绍"><a href="#基本介绍" class="headerlink" title="基本介绍"></a>基本介绍</h2><p>链接的主要内容就是把各个模块之间相互引用的部分都处理好, 使得各个模块之间能够正确地衔接。链接器所要做的工作其实跟前面所描述的“程序员人工\调整地址”本质上没什么两样,只不过现代的高级语言的诸多特性和功能,使得编译器、链接器更为复杂,功能更为强大,但从原理上来讲,它的工作无非就是把一些指令对其他符号 地址的引用加以修正。链接过程主要包括了**地址和空间分配(Address and Storage Allocation)、符号决议(Symbol Resolution)和重定位(Relocation)**等这些步骤。</p>
+<p>最基本的静态链接过程如图2-8所示。每个模块的源代码文件(如.c) 文件经过编译器 编译成目标文件(Object File, 一般扩展名为.o或.obj),目标文件和库(Library)一起链接形成最终可执行文件。而最常见的库就是运行时库(Runtime Library),它是支持程序运行 的基本函数的集合。</p>
+<p><img src="https://s2.loli.net/2025/05/27/6A2DSaWlOgtNXmY.png" srcset="/img/loading.gif" lazyload></p>
+<p>现代的编译和链接过程也并非想象中的那么复杂,它还是一个比较容易理解的概念。比如我们在程序模块 main.c 中使用另外一个模块 func.c 中的函数 foo()。我们在main.c 模块中 每一处调用 foo 的时候都必须确切知道 foo 这个函数的地址,但是由于每个模块都是单独编译的,在编译器编译 main.c 的时候它并不知道 foo 函数的地址,</p>
+<p>所以它暂时把这些调用 foo 的指令的目标地址搁置,等待最后链接的时候由链接器去将这些指令的目标地址修正。如果没有链接器,须要我们手工把每个调用 foo的指令进行修正,则填入正确的foo函数地址。当func.c 模块被重新编译,foo函数的地址有可能改变时,那么我们在main.c 中所有使用到 foo 的地址的指令将要全部重新调整。</p>
+<p>这些繁琐的工作将成为程序员的噩梦。使用链接器, 你可以直接引用其他模块的函数和全局变量而无须知道它们的地址,因为链接器在链接的时 候,会根据你所引用的符号 foo,自动去相应的func.c 模块查找foo 的地址,然后将 main.c 模块中所有引用到foo的指令重新修正,让它们的目标地址为真正的foo函数的地址。</p>
+<p><strong>这就 是静态链接的最基本的过程和作用</strong>。 在链接过程中,对其他定义在目标文件中的函数调用的指令须要被重新调整,对使用其他定义在其他目标文件的变量来说,也存在同样的问题。</p>
+<p>让我们结合具体的CPU 指令来了 解这个过程。假设我们有个全局变量叫做var,它在目标文件A里面。我们在目标文件B里 面要访问这个全局变量,比如我们在目标文件B里面有这么一条指令:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">movl S0x2a, var<br></code></pre></td></tr></table></figure>
+
+<p>这条指令就是给这个var 变量赋值0x2a,相当于C语言里面的语句 var &#x3D; 42。然后我们 编译目标文件B,得到这条指令机器码,如图所示。</p>
+<p><img src="https://s2.loli.net/2025/05/27/VW7yTlB9jd3Nox2.png" srcset="/img/loading.gif" lazyload></p>
+<p>由于在编译目标文件B的时候,编译器并不知道变量 var 的目标地址,所以编译器在没法确定地址的情况下,将这条 mov 指令的目标地址置为0,等待链接器在将目标文件A和B 链接起来的时候再将其修正。\</p>
+<p>我们假设A和B链接后,变量 var 的地址确定下来为0x1000, 那么链接器将会把这个指令的目标地址部分修改成0x10000。<strong>这个地址修正的过程也被叫做 重定位(Relocation)</strong>,每个要被修正的地方叫一个**重定位入口 (Relocation Entry)**。重定位所做的就是给程序中每个这样的绝对地址引用的位置“打补丁”,使它们指向正确的地址。</p>
+<h2 id="空间与地址分配"><a href="#空间与地址分配" class="headerlink" title="空间与地址分配"></a>空间与地址分配</h2><p><img src="https://s2.loli.net/2025/05/27/Pd4Ne6nlChWvkBu.png" srcset="/img/loading.gif" lazyload></p>
+<p>这样编译出来的两个目标文件应该怎样链接呢？</p>
+<blockquote>
+<p>对于链接器来说,整个链接过程中,它就是将几个输入目标文件加工后合并成一个输出 文件。那么在这个例子里,我们的输入就是目标文件“a.o”和“b.o”,输出就是可执行文件 “ab”。我们在前面详细分析了ELF文件的格式,我们知道,<strong>可执行文件中的代码段和数据 段都是由输入的目标文件中合并而来的</strong>。那么我们链接过程就很明显产生了第一个问题:对 于多个输入目标文件,链接器如何将它们的各个段合并到输出文件?或者说,输出文件中的 空间如何分配给输入文件?</p>
+</blockquote>
+<p><strong>目标文件（<code>.o</code>&#x2F;<code>.obj</code>）与可执行文件的关系</strong></p>
+<p>当可执行文件依赖其他目标文件时，链接器（如<code>ld</code>或<code>MSVC</code>的<code>link.exe</code>）会将这些目标文件中的代码段和数据段<strong>直接合并</strong>到最终的可执行文件中。例如：</p>
+<p>目标文件<code>A.o</code>和<code>B.o</code>的<code>.text</code>段会被合并到可执行文件的代码段。数据段（如全局变量）同理。<strong>结果</strong>：生成一个独立的可执行文件，无需运行时加载其他目标文件。</p>
+<blockquote>
+<p>补充说明：<strong>动态链接</strong>（涉及<code>DLL</code>&#x2F;<code>SO</code>）：<br>如果依赖的是动态库（如<code>DLL</code>或<code>.so</code>），则：<strong>代码段不会直接合并到可执行文件</strong>，而是记录动态库的名称和符号引用。<strong>运行时</strong>由操作系统加载器（如<code>ld-linux.so</code>或Windows的<code>PE loader</code>）将动态库映射到进程内存空间。</p>
+<p><strong>动态库（DLL&#x2F;SO）与目标文件的区别</strong></p>
+<p><strong>DLL（Windows PE格式）</strong>和 <strong>.so（Linux ELF格式）</strong>：</p>
+<p>动态库本身是<strong>已链接的可执行代码</strong>，但无法独立运行，需由其他程序加载。链接时仅记录依赖关系（如<code>Import Address Table</code> in PE或<code>.dynamic</code>段 in ELF）。<strong>运行时加载</strong>：操作系统在程序启动时（或通过<code>dlopen</code>&#x2F;<code>LoadLibrary</code>）将动态库的代码和数据加载到内存，并解析符号地址。</p>
+<p><strong>目标文件（<code>.o</code>&#x2F;<code>.obj</code>）</strong>：是未链接的中间文件，包含代码和数据的原始段，需通过链接器合并到可执行文件或静态库（<code>.a</code>&#x2F;<code>.lib</code>）。</p>
+</blockquote>
+<h3 id="按序叠加"><a href="#按序叠加" class="headerlink" title="按序叠加"></a>按序叠加</h3><p>一个最简单的方案就是将输入的目标文件按照次序叠加起来,如：</p>
+<p><img src="https://s2.loli.net/2025/05/27/iDQbVu2jKzwk9Hm.png" srcset="/img/loading.gif" lazyload></p>
+<p>这种做法的确很简单,就是直接将各个目标文件依次合并。但是这样做会造成一个问题：</p>
+<p>在有很多输入文件的情况下,输出文件将会有很多零散的段。比如一个规模稍大的 应用程序可能会有数百个目标文件,如果每个目标文件都分别有.text 段、data 段和.bss 段, 那最后的输出文件将会有成百上千个零散的段。</p>
+<p><strong>这种做法非常浪费空间</strong>,因为每个段都须要有一定的地址和<strong>空间对齐要求</strong>,比如对于x86的硬件来说,段的装载地址和空间的对齐单位是页,也就是4096字节(关于地址和空间对齐,我们在后面还会有专门的章节详细介绍)。 那么就是说如果一个段的长度只有1个字节,它也要在内存中占用4096字节。这样会造成内存空间大量的内部碎片,所以这并不是一个很好的方案。</p>
+<h3 id="相似段合并"><a href="#相似段合并" class="headerlink" title="相似段合并"></a>相似段合并</h3><p>一个更实际的方法是将相同性质的段合并到一起,比如将所有输入文件的“.text”合并 到输出文件的“.text”段,接着是“.data”段、“.bss”段等。</p>
+<p><img src="https://s2.loli.net/2025/05/27/Eue5bkRsrTLocUq.png" srcset="/img/loading.gif" lazyload></p>
+<p>正如我们前文所提到的,<strong>“.bss”段在目标文件和可执行文件中并不占用文件的空间</strong>,但 是它在装载时占用地址空间。所以链接器在合并各个段的同时,也将“bss”合并,并且分配虚拟空间。</p>
+<p><strong>从“.bss”段的空间分配上我们可以思考一个问题,那就是这里的所谓的“空 间分配”到底是什么空间?</strong> </p>
+<p>“链接器为目标文件分配地址和空间”这句话中的“地址和空间”其实有两个含义:</p>
+<ul>
+<li>第 一个是在输出的可执行文件中的空间;</li>
+<li>第二个是在装载后的虚拟地址中的虚拟地址空间。</li>
+</ul>
+<p>对于有实际数据的段,比如“text”和“.data”来说,它们在文件中和虚拟地址中都要分配空间,因为它们在这两者中都存在;而对于“bss”这样的段来说,分配空间的意义只局限于虚拟地址空间,因为它在文件中并没有内容。</p>
+<p>事实上,我们在这里谈到的空间分配只关注于 虚拟地址空间的分配,因为这个关系到链接器后面的关于地址计算的步骤,而可执行文件本身的空间分配与链接过程关系并不是很大。</p>
+<h4 id="两步链接"><a href="#两步链接" class="headerlink" title="两步链接"></a>两步链接</h4><blockquote>
+<p>现在的链接器空间分配的策略基本上都采用上述方法中的第二种,使用这种方法的链接 器一般都采用一种叫两步链接(Two-pass Linking)的方法。也就是说整个链接过程分两步。</p>
+</blockquote>
+<p>第一步，空间与地址分配 扫描所有的输入目标文件,并且获得它们的各个段的长度、 属性和位置,并且将输入目标文件中的符号表中所有的符号定义和符号引用收集起来,统一 放到一个全局符号表。这一步中,链接器将能够获得所有输入目标文件的段长度,并且将它们合并,计算出输出文件中各个段合并后的长度与位置,并建立映射关系。 </p>
+<p>第二步 符号解析与重定位 使用上面第一步中收集到的所有信息,读取输入文件中段 的数据、重定位信息,并且进行符号解析与重定位、调整代码中的地址等。事实上第二步是 链接过程的核心,特别是<strong>重定位过程</strong>。</p>
+<pre><code class=" mermaid">flowchart TD
+    A[开始链接] --&gt; B[第一步: 空间与地址分配]
+    B --&gt; B1[扫描所有输入目标文件 .o/.obj]
+    B1 --&gt; B2[收集段长度/属性/位置]
+    B2 --&gt; B3[合并段: 计算输出文件的段布局]
+    B3 --&gt; B4[生成全局符号表]
+    B4 --&gt; C[第二步: 符号解析与重定位]
+    C --&gt; C1[读取段数据与重定位信息]
+    C1 --&gt; C2[符号解析: 匹配引用与定义]
+    C2 --&gt; C3[重定位: 修正代码/数据中的地址]
+    C3 --&gt; D[生成可执行文件/共享库]
+    D --&gt; E[结束]
+</code></pre>
+
+<h3 id="符号地址的确定"><a href="#符号地址的确定" class="headerlink" title="符号地址的确定"></a>符号地址的确定</h3><blockquote>
+<p>我们还是以“a.o”和“b.o”作为例子,来分析这两个步骤中链接器的工作过程。在第 一步的扫描和空间分配阶段,链接器按照前面介绍的空间分配方法进行分配,这时候输入文 件中的各个段在链接后的虚拟地址就已经确定了,比如“text”段起始地址为0x08048094, “.data”段的起始地址为0x08049108.</p>
+</blockquote>
+<p>当前面一步完成之后,链接器开始计算各个符号的虚拟地址。因为各个符号在段内的相 对位置是固定的,所以这时候其实“main”、“shared”和“swap”的地址也已经是确定的了, 只不过链接器须要给每个符号加上一个偏移量,使它们能够调整到正确的虚拟地址。</p>
+<p>比如我 们假设“a.o”中的“main”函数相对于“a.o”的“text”段的偏移是 X,但是经过链接合 并以后,“a.o”的“text”段位于虚拟地址 0x08048094,那么“main”的地址应该是0x08048094 +X。</p>
+<p>“main”位于“a.o”的“text”段的最开始,也就是偏移为0,所以“main”这个符号在最终的输出文件中的地址应该是 0x08048094 +0,即 0x08048094。</p>
+<p>我们也可以通过完全一样的计算方法得知所有符号的地址,在这个例子里面, 只有三个全局符号,所以链接器在更新全局符号表的符号地址以后,各个符号的最终地址也将确定。</p>
+<p><img src="https://s2.loli.net/2025/05/27/xsM1piaXqE9JQSk.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="符号解析与重定位"><a href="#符号解析与重定位" class="headerlink" title="符号解析与重定位"></a>符号解析与重定位</h2><h4 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h4><p>在完成空间和地址的分配步骤以后,链接器就进入了符号解析与重定位的步骤,这也是 静态链接的核心内容。在分析符号解析和重定位之前,首先让我们来看看“a.o”里面是怎么使用这两个外部符号的,也就是说我们在“a.c”的源程序里面使用了“shared”变量和“swap” 函数,那么编译器在将“a.c”编译成指令时,它如何访问“shared”变量?如何调用“swap” 函数?</p>
+<p><img src="https://s2.loli.net/2025/05/27/RHcvbxUafVniImN.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://s2.loli.net/2025/05/27/YXFHnp1xdtjr249.png" srcset="/img/loading.gif" lazyload></p>
+<p>Near Call是一种x86汇编中的过程调用指令（如<code>call proc_name</code>），用于调用<strong>当前代码段（CS寄存器指向的段）内</strong>的子程序（函数&#x2F;过程）。</p>
+<p>**”Intra-segment call”**（段内调用）：即调用目标和调用指令位于同一个代码段（由<code>CS</code>寄存器定义）。</p>
+<p><strong>关键特点</strong>：</p>
+<ol>
+<li><p><strong>不涉及段切换</strong>：仅修改<code>EIP/RIP</code>（指令指针），不修改<code>CS</code>（代码段寄存器）。</p>
+</li>
+<li><p><strong>操作数</strong>：使用<strong>相对偏移量</strong>（<strong>目标地址与当前<code>EIP</code>的差值</strong>）或<strong>直接地址</strong>（在平坦内存模型下）。</p>
+</li>
+<li><p><strong>常见形式</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">call 0x1234       ; 直接偏移量（16/32/64位模式）<br>call my_function  ; 汇编器自动计算偏移量<br></code></pre></td></tr></table></figure></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="left">调用类型</th>
+<th align="left">目标位置</th>
+<th align="left">修改的寄存器</th>
+<th align="left">示例指令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Near Call</strong></td>
+<td align="left">当前代码段（CS不变）</td>
+<td align="left">EIP&#x2F;RIP</td>
+<td align="left"><code>call 0x1234</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Far Call</strong></td>
+<td align="left">其他代码段（需切换CS）</td>
+<td align="left">CS + EIP&#x2F;RIP</td>
+<td align="left"><code>call 0x5678:0x1234</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Interrupt</strong></td>
+<td align="left">中断服务程序（通过IDT）</td>
+<td align="left">CS + EIP&#x2F;RIP + FLAGS</td>
+<td align="left"><code>int 0x80</code></td>
+</tr>
+</tbody></table>
+<p>反汇编后的代码：</p>
+<p><img src="https://s2.loli.net/2025/05/27/knqf7JA8yUgrtez.png" srcset="/img/loading.gif" lazyload></p>
+<p><code>e8</code>这条指令是一条近址相对位移调用指令(Call near, relative, displacement relative to next instruction),后面4个字节就是被调用函数的相对于调用指令的下一条指 令的偏移量。在没有重定位之前,相对偏移被置为0xFFFFFFFC (小端),它是常量“4” 的补码形式。 </p>
+<p>让我们来仔细看这条指令的含义。紧跟在这条 call 指令后面的那条指令为add 指令, <strong>add 指令的地址为0x2b,而相对于add 指令偏移为“4”的地址即 0x2b-4 &#x3D; 0x27</strong>。所以这条 call 指令的实际调用地址为0x27。我们可以看到0x27存放着并不是swap 函数的地址,跟前 面“shared”一样,“OxFFFFFFFC” 只是一个临时的假地址,因为在编译的时候,编译器并 不知道“swap”的真正地址。</p>
+<p>编译器把这两条指令的地址部分暂时用地址“0x00000000”和“OXFFFFFFFC” 代替着, 把真正的地址计算工作留给了链接器。我们通过前面的空间与地址分配可以得知,链接器在 完成地址和空间分配之后就已经可以确定所有符号的虚拟地址了,那么链接器就可以根据符号的地址对每个需要重定位的指令进行地位修正。</p>
+<h4 id="重定位表"><a href="#重定位表" class="headerlink" title="重定位表"></a>重定位表</h4><blockquote>
+<p>那么链接器是怎么知道哪些指令是要被调整的呢?这些指令的哪些部分要被调整?怎 么调整?比如上面例子中“mov”指令和“call”指令的调整方式就有所不同。事实上在ELF 文件中,有一个叫重定位表(Relocation Table)的结构专门用来保存这些与重定位相关的信息。</p>
+</blockquote>
+<p>对于可重定位的ELF文件来说,它必须包含有重定位表,用来描述如何修改相应的段 里的内容。对于每个要被重定位的ELF 段都有一个对应的重定位表,而一个重定位表往往 就是 ELF 文件中的一个段,所以其实重定位表也可以叫重定位段,我们在这里统一称作重定位表。比如代码段“.text”如有要被重定位的地方,那么会有一个相对应叫“.rel.text”的 段保存了代码段的重定位表;如果代码段“data”有要被重定位的地方,就会有一个相对应 叫“rel.data”的段保存了数据段的重定位</p>
+<p><img src="https://s2.loli.net/2025/05/27/Va5b6UQiljhH8fu.png" srcset="/img/loading.gif" lazyload></p>
+<p>这个命令可以用来查看“a.o”里面要重定位的地方,即“a.o”所有引用到外部符号的 地址。每个要被重定位的地方叫一个重定位入口 (Relocation Entry),我们可以看到“a.o” 里面有两个重定位入口。</p>
+<p>重定位入口的偏移(Offset)表示该入口在要被重定位的段中的位 置,“RELOCATION RECORDS FOR [.text]”表示这个重定位表是代码段的重定位表,所以 偏移表示代码段中须要被调整的位置。</p>
+<p>对于32位的Intel x86 系列处理器来说,重定位表的结构也很简单,它是一个Elf32_Rel 结构的数组,每个数组元素对应一个重定位入口。Elf32_Rel 的定义如下:</p>
+<p><img src="https://s2.loli.net/2025/05/27/KOjy8tvaXfZrm7g.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h4><p>链接时符号未定义。导致这个问题的原因很多,最常见的一般都是链接时缺少了某个库,或者输入目标文件路径不正 确或符号的声明与定义不一样。所以从普通程序员的角度看,符号的解析占据了链接过程的 主要内容。</p>
+<p>重定位过程也伴随着符号的解析过程,每个目标文件都可能定义一些符号, 也可能引用到定义在其他目标文件的符号。重定位的过程中,每个重定位的入口都是对一个 符号的引用,那么当链接器须要对某个符号的引用进行重定位时,它就要确定这个符号的目 标地址。这时候链接器就会去查找由所有输入目标文件的符号表组成的全局符号表,找到相 应的符号后进行重定位。</p>
+<p>“GLOBAL”类型的符号,除了“main”函数是定义在代码段之外,其他两个“shared” 和“swap”都是“UND”,即“undefined”未定义类型,这种未定义的符号都是因为该目标 文件中有关于它们的重定位项。所以在链接器扫描完所有的输入目标文件之后,所有这些未 定义的符号都应该能够在全局符号表中找到,否则链接器就报符号未定义错误。</p>
+<h4 id="指令修正方式"><a href="#指令修正方式" class="headerlink" title="指令修正方式"></a>指令修正方式</h4><p>不同的处理器指令对于地址的格式和方式都不一样。比如对于32位 Intel x86 处理器 来说,转移跳转指令(jmp 指令)、子程序调用指令(call 指令)和数据传送指令(mov 指 令)寻址方式千差万别。</p>
+<h5 id="x86指令寻址模式的复杂性"><a href="#x86指令寻址模式的复杂性" class="headerlink" title="x86指令寻址模式的复杂性"></a><strong>x86指令寻址模式的复杂性</strong></h5><p>Intel x86架构的指令（如<code>jmp</code>、<code>call</code>、<code>mov</code>）支持多种寻址方式，主要差异体现在：</p>
+<ul>
+<li><strong>地址范围</strong>：近址（段内） vs 远址（跨段，需修改<code>CS</code>）。</li>
+<li><strong>地址计算</strong>：绝对地址（直接指定） vs 相对地址（基于当前<code>EIP/RIP</code>的偏移）。</li>
+<li><strong>操作数长度</strong>：8位、16位、32位或64位。</li>
+</ul>
+<h5 id="典型示例"><a href="#典型示例" class="headerlink" title="典型示例"></a>典型示例</h5><ul>
+<li><p><strong><code>jmp</code>指令</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs assembly">jmp 0x1234          ; 绝对近址32位<br>jmp eax             ; 寄存器间接寻址<br>jmp [eax+0x10]      ; 内存间接寻址<br>jmp 0x1234:0x5678   ; 远址（16位模式）<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong><code>call</code>指令</strong>：类似<code>jmp</code>，但会压栈返回地址。</p>
+</li>
+<li><p><strong><code>mov</code>指令</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">mov eax, [ebx+ecx*4+0x10] ; 复杂内存寻址<br>mov ds, ax                 ; 段寄存器操作（远址）<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="ELF重定位的简化设计"><a href="#ELF重定位的简化设计" class="headerlink" title="ELF重定位的简化设计"></a><strong>ELF重定位的简化设计</strong></h4><p>在32位x86的ELF文件中，<strong>重定位入口仅处理两种寻址模式</strong>（与指令集的复杂性形成对比）：</p>
+<table>
+<thead>
+<tr>
+<th align="left">重定位类型</th>
+<th align="left">寻址方式</th>
+<th align="left">修正长度</th>
+<th align="left">应用场景</th>
+<th align="left">指令示例（修正前→后）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>绝对近址32位</strong></td>
+<td align="left">直接使用绝对地址</td>
+<td align="left">4字节</td>
+<td align="left">全局变量、静态函数调用</td>
+<td align="left"><code>mov eax, [0x0]</code> → <code>[0x8048000]</code></td>
+</tr>
+<tr>
+<td align="left"><strong>相对近址32位</strong></td>
+<td align="left">基于当前EIP的偏移量</td>
+<td align="left">4字节</td>
+<td align="left">局部函数调用、条件跳转</td>
+<td align="left"><code>call 0x0</code> → <code>call 0x8048000</code></td>
+</tr>
+</tbody></table>
+<h4 id="关键限制："><a href="#关键限制：" class="headerlink" title="关键限制："></a>关键限制：</h4><ul>
+<li><strong>仅32位</strong>：操作数固定为4字节（兼容32位平坦内存模型）。</li>
+<li><strong>仅近址</strong>：无需处理段间远址（现代OS使用分页而非分段）。</li>
+<li><strong>ELF重定位类型</strong>：通过<code>r_info</code>的低8位标识（如<code>R_386_32</code>绝对寻址、<code>R_386_PC32</code>相对寻址）。</li>
+</ul>
+<h4 id="重定位过程示例"><a href="#重定位过程示例" class="headerlink" title="重定位过程示例"></a><strong>重定位过程示例</strong></h4><p>假设目标文件中有以下代码需重定位：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs assembly">; 原始指令（编译时未确定地址）<br>call 0x00000000   ; 相对近址32位（占位符）<br>mov eax, [0x00000000] ; 绝对近址32位（占位符）<br></code></pre></td></tr></table></figure>
+
+<h5 id="链接器修正步骤"><a href="#链接器修正步骤" class="headerlink" title="链接器修正步骤"></a>链接器修正步骤</h5><ol>
+<li><p><strong>绝对寻址（<code>R_386_32</code>）</strong>：若符号<code>data_var</code>的最终地址为<code>0x8049000</code>，则修正：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">mov eax, [0x8049000] ; 直接替换为绝对地址<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>让我们先看 a.o 的第一个重定位入口,即偏移为0x18的这条 mov 指令 的修正,它的修正方式是R_386_32,即绝对地址修正。对于这个重定位入口,它修正后的 结果应该是S+A    S是符号 shared 的实际地址,即0x3000。 A是被修正位置的值,即0x00000000。 所以最后这个重定位入口修正后地址为:0x3000 + 0x00000000 &#x3D; 0x3000</p>
+</blockquote>
+</li>
+<li><p><strong>相对寻址（<code>R_386_PC32</code>）</strong>：若函数<code>foo</code>的地址为<code>0x8048000</code>，当前指令地址为<code>0x8047000</code>，则：</p>
+<ul>
+<li>偏移量 &#x3D; <code>0x8048000 - (0x8047000 + 5)</code> &#x3D; <code>0xFFB</code>（<code>call</code>指令占5字节）</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">call 0xFFFFFFFB ; 实际编码为相对偏移（运行时计算为EIP + offset）<br></code></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<p><strong>重定位类型</strong>：<code>R_386_PC32</code>（相对32位寻址）</p>
+<p><strong>修正位置</strong>：<code>a.o</code>中偏移<code>0x26</code>处的<code>call</code>指令（占位值为<code>0xFFFFFFFC</code>）</p>
+<p><strong>符号</strong>：<code>swap</code>（目标函数）</p>
+<p><strong>虚拟地址布局</strong>：</p>
+<ul>
+<li><code>a.o</code>的<code>.text</code>段在可执行文件中的基地址：<code>0x1000</code></li>
+<li><code>swap</code>函数的实际地址：<code>0x2000</code></li>
+</ul>
+<p> <code>R_386_PC32</code>的重定位计算公式为：<br><strong>修正后的值 &#x3D; S + A - P</strong><br>其中：</p>
+<ul>
+<li><strong>S</strong>（Symbol Address）：符号的实际地址（<code>swap</code>的地址 <code>0x2000</code>）。</li>
+<li><strong>A</strong>（Addend）：被修正位置的初始值（编译时填充的占位值 <code>0xFFFFFFFC</code>，即<code>-4</code>的补码）。</li>
+<li><strong>P</strong>（Position）：被修正位置的运行时虚拟地址（<code>0x1000 + 0x26 = 0x1026</code>）。</li>
+</ul>
+<p>在x86架构中，<code>call</code>指令的<strong>相对偏移量</strong>是从<code>EIP</code>（下一条指令的地址）开始计算的：</p>
+<p><code>call</code>指令占5字节（操作码<code>0xE8</code> + 4字节偏移量），因此：</p>
+<ul>
+<li><p>下一条指令地址 &#x3D; <code>P + 5</code> &#x3D; <code>0x1027 + 5</code> &#x3D; <code>0x102C</code></p>
+</li>
+<li><p>实际跳转目标 &#x3D; <code>EIP + 偏移量</code> &#x3D; <code>0x102C + 修正后的值</code></p>
+</li>
+<li><p>需要满足：<code>0x102C + 修正后的值 = S</code>（即<code>swap</code>的地址 <code>0x2000</code>）</p>
+</li>
+<li><p>因此：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">修正后的值 = S - (P + 5) = 0x2000 - 0x102C = 0xFD4<br></code></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<h4 id="对比其他架构"><a href="#对比其他架构" class="headerlink" title="对比其他架构"></a><strong>对比其他架构</strong></h4><ul>
+<li><strong>ARM</strong>：使用<code>R_ARM_ABS32</code>（绝对）和<code>R_ARM_REL32</code>（相对），但指令长度可能为16位（Thumb模式）或32位。</li>
+<li><strong>x86-64</strong>：新增<code>R_X86_64_PC32</code>（相对）和<code>R_X86_64_64</code>（绝对64位），支持更大地址空间。</li>
+</ul>
+<h2 id="COMMON块"><a href="#COMMON块" class="headerlink" title="COMMON块"></a>COMMON块</h2><blockquote>
+<p>正如前面提到过的,由于弱符号机制允许同一个符号的定义存在于多个文件中,所以可 能会导致的一个问题是:如果一个弱符号定义在多个目标文件中,而它们的类型又不同,怎 么办?目前的链接器本身并不支持符号的类型,即变量类型对于链接器来说是透明的,它只 知道一个符号的名字,并不知道类型是否一致。那么当我们定义的多个符号定义类型不一致 时,链接器该如何处理呢?</p>
+</blockquote>
+<ul>
+<li>两个或两个以上强符号类型不一致; </li>
+<li>有一个强符号,其他都是弱符号,出现类型不一致; </li>
+<li>两个或两个以上弱符号类型不一致。</li>
+</ul>
+<p>对于上述三种情况,第一种情况是无须额外处理的,因为多个强符号定义本身就是非法 的,链接器会报符号多重定义错误:链接器要处理的就是后两种情况。</p>
+<h3 id="COMMON块机制的起源与作用"><a href="#COMMON块机制的起源与作用" class="headerlink" title="COMMON块机制的起源与作用"></a><strong>COMMON块机制的起源与作用</strong></h3><p><strong>历史背景</strong>：Fortran需要预先分配未初始化的全局空间（COMMON块），不同文件可能声明同一变量但大小不同。</p>
+<p><strong>现代应用</strong>：链接器将弱符号放入<strong>COMMON块</strong>，延迟到链接阶段再决定最终大小和地址。</p>
+<ul>
+<li><strong>关键行为</strong>：若多个弱符号类型不一致（如<code>int</code> vs <code>double</code>），链接器以<strong>最大尺寸</strong>为准，可能导致隐式内存覆盖。</li>
+</ul>
+<h3 id="示例场景"><a href="#示例场景" class="headerlink" title="示例场景"></a><strong>示例场景</strong></h3><p>假设两个目标文件定义同名弱符号：</p>
+<ul>
+<li>**<code>a.c</code>**：<code>double global;</code>（占8字节）</li>
+<li>**<code>b.c</code>**：<code>int global;</code>（占4字节）</li>
+</ul>
+<p><strong>链接器行为</strong>会进行<strong>符号合并</strong>：由于两者均为弱符号，链接器选择<strong>最大尺寸（8字节）</strong>的<code>double</code>类型。最终可执行文件中<code>global</code>的存储空间为8字节。</p>
+<p><strong>潜在风险</strong>：若<code>b.c</code>中按<code>int</code>（4字节）访问<code>global</code>，可能仅修改部分内存（高4字节未定义）。无编译错误，但运行时行为不可预测（<strong>静默错误</strong>）。</p>
+<blockquote>
+<p>这种使用 COMMON 块的方法实际上是一种类似“黑客”的取巧办法,直接导致需要 COMMON 机制的原因是编译器和链接器允许不同类型的弱符号存在,但最本质的原因还是 链接器不支持符号类型,即链接器无法判断各个符号的类型是否一致。</p>
+</blockquote>
+<p><strong>为什么未初始化全局变量不直接放入BSS段？</strong></p>
+<ul>
+<li><strong>局部静态变量</strong>：编译器在编译阶段即可确定其大小，直接分配在目标文件的<code>.bss</code>段。</li>
+<li><strong>未初始化全局变量</strong>：由于可能被其他文件以不同大小重复定义（弱符号机制），编译阶段无法确定最终大小，需延迟到链接阶段解决。</li>
+</ul>
+<p>通过了解链接器处理多个弱符号的过程,我们可以想到,当编译器将一个编译单元编译 成目标文件的时候,如果该编译单元包含了弱符号(未初始化的全局变量就是典型的弱符 号),那么该弱符号最终所占空间的大小在此时是未知的,因为有可能其他编译单元中该符 号所占的空间比本编译单元该符号所占的空间要大。所以编译器此时无法为该弱符号在BSS 段分配空间,因为所须要空间的大小未知。但是链接器在链接过程中可以确定弱符号的大小, 因为当链接器读取所有输入目标文件以后,任何一个弱符号的最终大小都可以确定了,所以 它可以在最终输出文件的BSS 段为其分配空间。所以总体来看,未初始化全局变量最终还 是被放在BSS 段的。</p>
+<h2 id="静态库链接"><a href="#静态库链接" class="headerlink" title="静态库链接"></a>静态库链接</h2><blockquote>
+<p>程序之所以有用,因为它会有输入输出,这些输入输出的对象可以是数据,可以是人, 也可以是另外一个程序,还可以是另外一台计算机,一个没有输入输出的程序没有任何意义。 但是一个程序如何做到输入输出呢?最简单的办法是使用操作系统提供的应用程序编程接 (API, Application Programming Interface)。当然,操作系统也只是一个程序,它怎么 实现跟人机交互设备、跟其他计算机以及其他程序交互呢</p>
+</blockquote>
+<h3 id="程序如何调用操作系统API"><a href="#程序如何调用操作系统API" class="headerlink" title="程序如何调用操作系统API"></a><strong>程序如何调用操作系统API</strong></h3><p>让我们还是先回到一个比较初步的问题,就是程序如何使用操作系统提供的API。在一 般的情况下,一种语言的开发环境往往会附带有语言库(Language Library)。这些库就是 对操作系统的API 的包装,比如我们经典的C语言版“Hello World”程序,它使用C语言 标准库的“printf”函数来输出一个字符串,“printf”函数对字符串进行一些必要的处理以后, 最后会调用操作系统提供的API。各个操作系统下,往终端输出字符串的API都不一样,在 Linux下,它是一个“write”的系统调用,而在 Windows下它是“WriteConsole”系统 API.</p>
+<p>库里面还带有那些很常用的函数,比如C语言标准库里面有很常用一个函数取得一个 字符串的长度叫 strlen(),该函数即遍历整个字符串后返回字符串长度,这个函数并没有调 用任何操作系统的API,也没有做任何输入输出。但是很大一部分库函数都是要调用操作系 统的API 的,比如最常用的往终端输出格式化字符串的printf 就是会调用操作系统,往终端 里面打印一些字符串。</p>
+<h3 id="静态库的本质"><a href="#静态库的本质" class="headerlink" title="静态库的本质"></a><strong>静态库的本质</strong></h3><p><strong>静态库本质</strong>是一组目标文件（<code>.o</code>）的压缩集合（如<code>libc.a</code>），即很多目标文件经过压缩打包后 形成的一个文件</p>
+<p>组成：</p>
+<ul>
+<li>按功能拆分（如<code>printf.o</code>、<code>malloc.o</code>、<code>time.o</code>）。</li>
+<li>工具<code>ar</code>打包并建立索引，便于快速查找符号。</li>
+</ul>
+<p>这里简单地介绍静态库的链接过程。比如我们在Linux 中最常用的C语言静态库 libc 位于&#x2F;usr&#x2F;lib&#x2F;libc.a,它属 于glibc 项目的一部分;像 Windows 这样的平台上,最常使用的C语言库是由集成开发环境 所附带的运行库,这些库一般由编译器厂商提供,比如 Visual C++附带了多个版本的 C&#x2F;C++ 运行库。</p>
+<h3 id="静态库链接的核心流程"><a href="#静态库链接的核心流程" class="headerlink" title="静态库链接的核心流程"></a><strong>静态库链接的核心流程</strong></h3><blockquote>
+<p>我们知道在一个C语言的运行库中,包含了很多跟系统功能相关的代码,比如输入输 出、文件操作、时间日期、内存管理等。glibc 本身是用C语言开发的,它由成百上千个C 语言源代码文件组成,也就是说,编译完成以后有相同数量的目标文件,比如输入输出有 printf.o, scanf.o: 文件操作有 fread.o, fwrite.o; 时间日期有date.o, time.o; 内存管理有malloc.o 等。把这些零散的目标文件直接提供给库的使用者,很大程度上会造成文件传输、管理和组 织方面的不便,于是通常人们使用“ar”压缩程序将这些目标文件压缩到一起,并且对其进行编号和索引,以便于查找和检索,就形成了libc.a </p>
+</blockquote>
+<h4 id="1-符号解析（关键步骤）"><a href="#1-符号解析（关键步骤）" class="headerlink" title="(1) 符号解析（关键步骤）"></a><strong>(1) 符号解析（关键步骤）</strong></h4><p><strong>问题</strong>：目标文件可能依赖其他目标文件的符号（如<code>printf.o</code>需要<code>vfprintf.o</code>和<code>stdio.o</code>）。</p>
+<p>链接器的任务：</p>
+<ol>
+<li>从<code>hello.o</code>出发，递归查找未定义符号（如<code>printf</code>）。</li>
+<li>从<code>libc.a</code>中提取所需目标文件（如<code>printf.o</code> → 发现依赖<code>vfprintf.o</code> → 继续提取）。</li>
+<li><strong>规则</strong>：仅包含被直接或间接引用的目标文件，无关文件不参与链接。</li>
+</ol>
+<h4 id="2-示例：hello-c的链接过程"><a href="#2-示例：hello-c的链接过程" class="headerlink" title="(2) 示例：hello.c的链接过程"></a><strong>(2) 示例：<code>hello.c</code>的链接过程</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// hello.c</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Hello&quot;</span>);  <span class="hljs-comment">// 依赖链: printf → vfprintf → stdout → ...</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>c输入文件</strong>：<code>hello.o</code> + <code>libc.a</code>。</li>
+<li>链接器行为：发现<code>hello.o</code>未定义<code>printf</code> → 从<code>libc.a</code>提取<code>printf.o</code>。<code>printf.o</code>未定义<code>vfprintf</code> → 提取<code>vfprintf.o</code>。循环直至所有符号解析完成。</li>
+</ol>
+<h4 id="3-跨平台差异"><a href="#3-跨平台差异" class="headerlink" title="(3) 跨平台差异"></a><strong>(3) 跨平台差异</strong></h4><ul>
+<li><strong>Linux</strong>：需额外链接<code>crt1.o</code>（入口代码）、<code>libgcc.a</code>（编译器辅助函数）。</li>
+<li><strong>Windows</strong>：需<code>kernel32.lib</code>（系统API）和<code>msvcrt.lib</code>（C运行时库）。</li>
+</ul>
+<blockquote>
+<p>ld 链接器会自动寻找所有须要的符号及它们所在的目标文件,将这些目标文件从“libc.a”中“解压”出来,最终将它们链接在一起成为 一个可执行文件。那么我们可不可以就这么认为:将“hello.o”和“libc.a”链接起来就可以得到可执行文件呢?理论上这样就可以了,实际情况恐怕还是令人失望的,现在Linux系统上的库比我们想象的要复杂。当我们编译和链接一个普通C程序的时候,不仅要用到C语言库 libc.a,而且还有其他一些辅助性质 的目标文件和库。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/05/27/x6FA2n4p7U9yBDR.png" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/tardis/zm/art/111682188?source_id=1005">【读书】《程序员的自我修养》——全书思维导图（上）</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Windows内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>静态链接</div>
+      <div>https://hermes37.vercel.app/2025/05/27/工科知识库/计算机科学与技术/操作系统/Windows内核原理/装载链接运行/静态链接/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月27日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/27/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/%E8%A3%85%E8%BD%BD%E4%B8%8E%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" title="装载与动态链接">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">装载与动态链接</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/26/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%99%9A%E6%8B%9F%E6%9C%BA/Android%E4%B8%8B%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%BC%94%E5%8F%98/" title="Android下虚拟机演变">
+                        <span class="hidden-mobile">Android下虚拟机演变</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

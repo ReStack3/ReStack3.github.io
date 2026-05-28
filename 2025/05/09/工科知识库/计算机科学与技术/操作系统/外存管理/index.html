@@ -1,0 +1,1880 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文旨在提供计算机持久化的知识框架体系，对于一些细节内容并没有过多介绍。  内存的不足内存管理管理方式：在上一篇文章中：内存管理 - The Peak Tower，提到了内存管理：所有的应用程序都需要存储和检索信息。进程运行时，它能够在自己的存储空间内存储一定量的信息。 带来的问题：然而，存储容量受虚拟地址空间大小的限制。对于一些应用程序来说，存储空间的大小是充足的，但是对于其他一些应用程序，比">
+<meta property="og:type" content="article">
+<meta property="og:title" content="外存管理">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%A4%96%E5%AD%98%E7%AE%A1%E7%90%86/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="本文旨在提供计算机持久化的知识框架体系，对于一些细节内容并没有过多介绍。  内存的不足内存管理管理方式：在上一篇文章中：内存管理 - The Peak Tower，提到了内存管理：所有的应用程序都需要存储和检索信息。进程运行时，它能够在自己的存储空间内存储一定量的信息。 带来的问题：然而，存储容量受虚拟地址空间大小的限制。对于一些应用程序来说，存储空间的大小是充足的，但是对于其他一些应用程序，比">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/VK4UMSjxOYlFhpt.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/K9PfI4X1GlNTADR.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/8VoPR9gelTqMHcu.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/PVHza71unBCiIJ8.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/eoLBjYpE2VUkHKA.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/C8mHAvK1BF2kaTz.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/zKfeyVMhHrZuRUD.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/ljZu613kvKyEf8p.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/zF2t6Nip9x7BdOJ.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/vSmqKkoWOUurcBz.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/HnSauTVIk4Le3bM.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/CKL46SdPnqyW1xJ.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/dqhFmucZUt9GaP3.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/2nDUmwNpIYa4yHP.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/3JgNmYFdju81Xfo.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/21/tNaVmgeKGuC5xdQ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/03/YdmZncQXk1Ny9ib.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/03/OIZmf6QMzTNaSyG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/04/DP8JrEHTdAXaUS3.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/04/LP5wZUQ1TOoVm3J.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/04/o4OnLIrsWqEiKfz.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/04/qvDzoaSCGwgyZcF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/04/92R8slSg7VjLwF1.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.249Z">
+<meta property="article:modified_time" content="2026-05-28T02:13:49.761Z">
+<meta property="article:author" content="Ling">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/21/VK4UMSjxOYlFhpt.png">
+  
+  
+  
+  <title>外存管理 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="外存管理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          21k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          174 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">外存管理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本文旨在提供计算机持久化的知识框架体系，对于一些细节内容并没有过多介绍。</p>
+</blockquote>
+<h1 id="内存的不足"><a href="#内存的不足" class="headerlink" title="内存的不足"></a>内存的不足</h1><h2 id="内存管理管理方式："><a href="#内存管理管理方式：" class="headerlink" title="内存管理管理方式："></a>内存管理管理方式：</h2><p>在上一篇文章中：<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/12/19/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理 - The Peak Tower</a>，提到了内存管理：<strong>所有的应用程序都需要<code>存储</code>和<code>检索</code>信息。进程运行时，它能够在自己的存储空间内存储一定量的信息。</strong></p>
+<h2 id="带来的问题："><a href="#带来的问题：" class="headerlink" title="带来的问题："></a>带来的问题：</h2><p>然而，存储容量受<code>虚拟地址空间</code>大小的限制。对于一些应用程序来说，存储空间的大小是充足的，但是对于其他一些应用程序，比如航空订票系统、银行系统、企业记账系统来说，这些容量又显得太小了。</p>
+<p>第二个问题是，当进程终止时信息会丢失。对于一些应用程序（例如数据库），信息会长久保留。在这些进程终止时，相关的信息应该保留下来，是不能丢失的。甚至这些应用程序崩溃后，信息也应该保留下来。</p>
+<p>第三个问题是，通常需要很多进程在同一时刻访问这些信息。解决这种问题的方式是把这些信息单独保留在各自的进程中。</p>
+<h1 id="持久化存储"><a href="#持久化存储" class="headerlink" title="持久化存储"></a>持久化存储</h1><h2 id="管理方式："><a href="#管理方式：" class="headerlink" title="管理方式："></a>管理方式：</h2><p>通过对内存不足的分析，对于长久存储的信息我们有三个基本需求：</p>
+<ul>
+<li><strong>必须要有可能存储的大量的信息</strong></li>
+<li><strong>信息必须能够在进程终止时保留</strong></li>
+<li><strong>必须能够使多个进程同时访问有关信息</strong></li>
+</ul>
+<p>因此可以引入<strong>持久化存储</strong>，例如硬盘、固态硬盘（SSD）等非易失性存储设备。</p>
+<h2 id="带来的问题：-1"><a href="#带来的问题：-1" class="headerlink" title="带来的问题："></a>带来的问题：</h2><p>对于新引入的设备，计算机如何将I&#x2F;O集成进系统中？其中的一般机制是什么？如何让它们变得高效？</p>
+<h1 id="IO接口与设备"><a href="#IO接口与设备" class="headerlink" title="IO接口与设备"></a>IO接口与设备</h1><p>在开始下面的内容前，有必要先简单了解什么是IO接口与设备？</p>
+<p><strong>IO（Input&#x2F;Output）设备</strong>是将数据输入计算机或接收计算机输出的设备。</p>
+<p>鼠标、键盘都属于IO设备，它们所连接到的电脑的接口叫做IO接口（或称为IO控制器）。</p>
+<p>IO接口为了能够充当设备与计算机的桥梁，它需要多个寄存器：</p>
+<ul>
+<li><strong>数据寄存器</strong>：保存设备的输出或计算机的输出。</li>
+<li><strong>控制寄存器</strong>：计算机需要控制设备做出操作，要做的操作存在这里。</li>
+<li><strong>状态寄存器</strong>：设备完成操作后，需要告诉计算机当前的状态。</li>
+</ul>
+<p>这些寄存器对于计算机而言都是<strong>IO端口</strong>——数据端口、状态端口、控制端口。一个IO接口可以对应多个设备，每个设备可以有自己的一组数据、控制、状态寄存器，这样计算机就可以通过控制不同组的寄存器，来控制不同的设备。</p>
+<p><img src="https://s2.loli.net/2024/12/21/VK4UMSjxOYlFhpt.png" srcset="/img/loading.gif" lazyload alt="IO接口"></p>
+<p>计算机通过一条系统总线（包含数据、地址、控制信号线）与IO接口连接，CPU、主存、IO接口都连在上面。cpu可以通过总线直接控制IO接口，也可以让主存与IO接口间传递数据。</p>
+<p><img src="https://s2.loli.net/2024/12/21/K9PfI4X1GlNTADR.png" srcset="/img/loading.gif" lazyload alt="系统总线"></p>
+<p>CPU有两种方式获得数据：</p>
+<ul>
+<li><strong>程序查询方式</strong>：CPU会不断询问键盘的状态寄存器输入是否完成，如果检测到了完成，就会把数据寄存器里的数据拿到主存。</li>
+<li><strong>程序中断方式</strong>：CPU不用询问，IO接口根据状态寄存器来选择是否需要向CPU发送一个中断信号，CPU收到信号会过来收取数据。</li>
+</ul>
+<p>程序查询方式会导致cpu只能一直等着键盘输入，不能做其他事；程序中断方式可以允许CPU先做其他事，等输入完成后过来取到主存。</p>
+<blockquote>
+<p><strong>中断</strong>是计算机中比较重要的内容，在这里与主体内容关联不大，不多赘述，可自自行百度</p>
+</blockquote>
+<p>注意有一种特殊的IO接口——<strong>DMA接口</strong>，它可以用DMA总线与主存直接相连，只要CPU告诉DMA接口要把数据存在主存中的哪个地址，DMA接口就会根据地址把数据放进主存。</p>
+<img src="https://s2.loli.net/2024/12/21/8VoPR9gelTqMHcu.png" srcset="/img/loading.gif" lazyload alt="v2-9b1553f891f5172e314eafd35fca0677_1440w" style="zoom:50%;" />
+
+<p>对于DMA接口而言，CPU还需要告诉它主存地址，如果有多个DMA接口，CPU依旧会很忙碌。为了进一步解放CPU，<strong>通道</strong>可以接替CPU做一些基础操作。</p>
+<img src="https://s2.loli.net/2024/12/21/PVHza71unBCiIJ8.png" srcset="/img/loading.gif" lazyload alt="v2-5054d9430842c23df9b840bddb745f23_1440w" style="zoom:50%;" />
+
+<p>它就像一个低级CPU，有自己的指令系统——<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=178001891&content_type=Article&match_order=1&q=%E9%80%9A%E9%81%93%E6%8C%87%E4%BB%A4&zhida_source=entity">通道指令</a>，能够执行一些有限的操作。当它接受到CPU发出的<strong>IO指令</strong>后，可以按照要求启动IO设备，或者执行通道指令——就像是CPU的小弟。</p>
+<p>IO指令从逻辑上分为三个字段：</p>
+<ul>
+<li>操作码：可以被用作和其他指令的区分，让CPU知道这是一条IO指令。</li>
+<li>命令码：代表了设备要做的具体操作。</li>
+<li>设备码：可以指定对某个设备进行操作，用作区分设备。</li>
+</ul>
+<p>不同设备的IO指令各不相同，同样是设置鼠标侧键、灯光或是灵敏度，不同的品牌都有不同的IO指令。这也是为什么在插上鼠标键盘显卡之类的部件时，如果你想更好的使用它就需要安装驱动的原因。</p>
+<p>键盘的每一次敲击都在向计算机发出中断信号，一般情况下计算机会暂停手上的工作，先处理键盘的输入数据，之后再回到自己之前的工作。</p>
+<h1 id="I-O集成"><a href="#I-O集成" class="headerlink" title="I&#x2F;O集成"></a>I&#x2F;O集成</h1><p>先来观察计算机体系架构：</p>
+<img src="https://s2.loli.net/2024/12/21/eoLBjYpE2VUkHKA.png" srcset="/img/loading.gif" lazyload alt="计算机架构" style="zoom:25%;" />
+
+
+
+<p>CPU通过某种内存总线（memory bus）或互连电缆连接到系统内存。图像或者其他高性能I&#x2F;O设备通过常规的I&#x2F;O总线（I&#x2F;O bus）连接到系统，在许多现代系统中会是PCI或它的衍生形式。最后，更下面是外围总线（peripheral bus），比如SCSI、SATA或者USB。它们将最慢的设备连接到系统，包括磁盘、鼠标及其他类似设备。</p>
+<p>接着续上<em>持久化存储</em>中<strong>计算机如何将I&#x2F;O集成进系统中？</strong>的问题，继续探讨：</p>
+<p>这里要解决的第一个问题便是：</p>
+<h2 id="如何与设备通信"><a href="#如何与设备通信" class="headerlink" title="如何与设备通信?"></a>如何与设备通信?</h2><p><strong>I&#x2F;O指令方式</strong>：通过指令（如 <code>in</code> 和 <code>out</code>）与设备通信，指定寄存器和设备端口，通常为特权指令，仅操作系统可使用，确保安全性。</p>
+<p><strong>内存映射I&#x2F;O</strong>：设备寄存器映射为内存地址，操作系统通过读写这些地址与设备交互，硬件将访问操作转交给设备，而非物理内存。</p>
+<h2 id="设备驱动程序"><a href="#设备驱动程序" class="headerlink" title="设备驱动程序"></a>设备驱动程序</h2><p>每个设备都有非常具体的接口，如何将它们纳入操作系统，而我们希望操作系统尽可能通用?比如：</p>
+<table>
+<thead>
+<tr>
+<th>设备类型</th>
+<th>接口类型</th>
+<th>特殊要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>硬盘</td>
+<td>块设备，协议如 SATA、NVMe</td>
+<td>批量传输数据，支持异步操作，命令格式多样</td>
+</tr>
+<tr>
+<td>显示器</td>
+<td>输出设备，通过显卡接口或协议驱动</td>
+<td>实时更新数据，要求特定的视频信号、刷新率等支持</td>
+</tr>
+</tbody></table>
+<p><strong>本质</strong>是不同设备有不同的寄存器布局、通信协议和操作流程，这些具体接口定义了设备的使用方式，需要操作系统进行抽象和标准化以实现通用性。</p>
+<p>这个问题抽象，在最底层，操作系统的一部分软件清楚地知道设备如何工作，我们将这部分软件称为设备驱动程序（device driver），所有设备交互的细节都封装在其中。</p>
+<p><strong>设备驱动程序</strong>（Device Driver）是操作系统的一部分，负责在操作系统与硬件设备之间建立连接，使操作系统能够控制和管理设备，而无需直接处理设备的底层硬件细节。<br><strong>核心功能</strong>：</p>
+<ul>
+<li><strong>抽象化设备接口</strong>：隐藏硬件的具体实现细节，对操作系统提供统一的访问接口。</li>
+<li><strong>管理硬件资源</strong>：与设备通信，完成初始化、数据传输、资源分配等操作。</li>
+<li><strong>兼容性与扩展性</strong>：通过加载不同的驱动程序，操作系统能够支持多种硬件设备，而无需修改自身核心。</li>
+</ul>
+<p>比如：</p>
+<p>假设有一台打印机，用户希望通过电脑将文档打印出来。不同厂商、型号的打印机可能有完全不同的通信协议和功能设置。那么，操作系统如何支持这些打印机呢？这就是设备驱动程序的作用。</p>
+<p><strong>具体过程</strong>：</p>
+<p><strong>设备驱动的作用</strong>：<br>打印机驱动程序是一个中间层，负责将操作系统的打印请求（如 “打印这份 PDF 文档”）翻译成打印机能理解的具体命令。</p>
+<p><strong>实现过程</strong>：</p>
+<p>用户在电脑上点击“打印”，操作系统将打印内容通过<strong>统一的打印接口</strong>（如 Windows 的打印子系统）发送给打印机驱动程序。</p>
+<p>驱动程序会根据打印机的具体型号和协议，生成打印机可以理解的命令，如：</p>
+<ul>
+<li>将文字和图片数据转换为打印机支持的格式（如 PCL、PostScript 等）。</li>
+<li>设置具体的打印参数（分辨率、纸张类型等）。</li>
+</ul>
+<p>驱动程序与打印机通信，发送这些指令并控制打印过程。</p>
+<p><strong>操作系统的通用性</strong>：</p>
+<ul>
+<li>操作系统本身只需要支持一个通用的打印接口。</li>
+<li>针对不同型号的打印机，只需加载相应的驱动程序。</li>
+</ul>
+<img src="https://s2.loli.net/2024/12/21/C8mHAvK1BF2kaTz.png" srcset="/img/loading.gif" lazyload alt="驱动程序" style="zoom:50%;" />
+
+<p>注意：<strong>设备驱动程序必须实现操作系统定义的接口</strong>，以便操作系统能够通过统一的方式与设备交互，而不关心具体设备的实现细节。常见的比如：<strong>读写操作接口</strong>：<br>驱动程序需要实现设备读写的标准接口。例如：</p>
+<ul>
+<li>在 Linux 中，字符设备驱动实现 <code>read()</code> 和 <code>write()</code> 方法。</li>
+<li>在 Windows 中，驱动程序需实现 I&#x2F;O 请求包（IRP）的处理函数，响应 <code>IRP_MJ_READ</code> 和 <code>IRP_MJ_WRITE</code>。</li>
+</ul>
+<p><strong>这里特别关注的是存储设备，比如磁盘驱动器原理和一系列调度算法</strong>，这里不多介绍，自行百度</p>
+<h1 id="文件和文件系统"><a href="#文件和文件系统" class="headerlink" title="文件和文件系统"></a>文件和文件系统</h1><p>在解决了与设备通信与驱动后，在诸如存储设备（如硬盘、SSD、USB 等），我们不得不面临如何像管理内存那样<strong>组织、存储、管理和检索数据</strong>。就拿磁盘为例：</p>
+<img src="https://s2.loli.net/2024/12/21/zKfeyVMhHrZuRUD.png" srcset="/img/loading.gif" lazyload alt="磁盘" style="zoom:50%;" />
+
+<p>如何对磁盘上的文件进行组织管理？—<strong>文件系统</strong>应运而生：它为存储设备（上的数据提供了一种结构化的方式，使用户和程序能够以文件和目录的形式高效地访问和管理数据。类比内存可以把每个文件都看作一个独立的地址空间</p>
+<table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>将物理存储抽象为逻辑结构</strong></td>
+<td>- <strong>物理存储的复杂性</strong>：硬盘以扇区（如 512 字节）为单位存储数据，直接操作扇区会很不便。 - <strong>文件系统的抽象</strong>：通过“文件”和“目录”来组织和管理数据，屏蔽底层物理细节。</td>
+</tr>
+<tr>
+<td><strong>数据组织和查找</strong></td>
+<td>- <strong>无文件系统的情况</strong>：数据可能存储在任意位置，难以高效查找。 - <strong>文件系统的作用</strong>：通过目录结构（如树形结构）和路径组织文件，便于管理和检索数据。</td>
+</tr>
+<tr>
+<td><strong>数据持久性</strong></td>
+<td>- 文件系统确保数据在存储设备断电或系统重启后仍然可用，实现数据长期保存。</td>
+</tr>
+<tr>
+<td><strong>支持多用户和并发访问</strong></td>
+<td>- 通过权限管理，确保用户只能访问自己授权的数据。 - 处理多个进程同时访问同一文件的冲突，保证数据一致性。</td>
+</tr>
+<tr>
+<td><strong>提高存储效率</strong></td>
+<td>- 通过优化存储分配（如簇、块）和读取方式（如顺序读写、索引）提升性能。 - 提供删除、压缩等功能回收或节省存储空间。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>接下来的问题便是：如何构建一个简单的文件系统？磁盘上需要什么结构？它们需要记录什么？它们如何访问？</p>
+</blockquote>
+<h2 id="构建文件系统"><a href="#构建文件系统" class="headerlink" title="构建文件系统"></a>构建文件系统</h2><blockquote>
+<p>第一个方面是文件系统的数据结构（data structure）。换言之，文件系统在磁盘上使用哪些类型的结构来组织其数据和元数据？</p>
+<p>文件系统的第二个方面是访问方法（access method）。如何将进程发出的调用，如open()、read()、write()等，映射到它的结构上？在执行特定系统调用期间读取哪些结构？改写哪些结构？所有这些步骤的执行效率如何？</p>
+</blockquote>
+<h3 id="文件系统的数据结构"><a href="#文件系统的数据结构" class="headerlink" title="文件系统的数据结构"></a>文件系统的数据结构</h3><p>重点参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/wkfvawl/p/11847413.html#%E4%B8%89%E3%80%81%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95">操作系统——文件系统概述、文件逻辑地址、目录、物理地址 - 王陸 - 博客园</a></p>
+<blockquote>
+<p>用户角度的文件的逻辑结构：</p>
+<table>
+<thead>
+<tr>
+<th><strong>文件逻辑结构</strong></th>
+<th><strong>特点</strong></th>
+<th><strong>应用场景</strong></th>
+<th><strong>访问方式</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>顺序结构</strong></td>
+<td>数据按顺序存储，必须逐个读取</td>
+<td>日志文件、文本文件</td>
+<td>顺序访问</td>
+<td>文本文件，如 <code>.txt</code> 文件</td>
+</tr>
+<tr>
+<td><strong>层次结构</strong></td>
+<td>数据以树状结构组织，具有父子关系</td>
+<td>文件系统的目录结构</td>
+<td>随机访问树中的节点</td>
+<td>文件夹和文件的层级结构</td>
+</tr>
+<tr>
+<td><strong>索引结构</strong></td>
+<td>文件内容与索引表结合存储，支持快速定位数据</td>
+<td>数据库索引、文本搜索</td>
+<td>随机访问，通过索引定位</td>
+<td>数据库的索引文件</td>
+</tr>
+<tr>
+<td><strong>记录结构</strong></td>
+<td>文件由记录组成，每个记录包含多个字段</td>
+<td>数据库文件、表格文件</td>
+<td>随机访问，每次操作记录</td>
+<td>CSV 文件、数据库表</td>
+</tr>
+<tr>
+<td><strong>关系结构</strong></td>
+<td>数据以表格形式存储，支持关系查询</td>
+<td>关系型数据库</td>
+<td>SQL 查询语言随机访问</td>
+<td>MySQL 数据库表</td>
+</tr>
+<tr>
+<td><strong>文本文件</strong></td>
+<td>由字符组成，通常按行或字符组织</td>
+<td>配置文件、源代码、日志文件</td>
+<td>按行或字符操作</td>
+<td><code>.txt</code>、<code>.log</code> 文件</td>
+</tr>
+<tr>
+<td><strong>二进制文件</strong></td>
+<td>由二进制数据组成，不能直接读取为文本</td>
+<td>图像、音频、可执行文件</td>
+<td>通过特定软件操作</td>
+<td><code>.jpg</code>、<code>.mp3</code>、<code>.exe</code> 文件</td>
+</tr>
+<tr>
+<td><strong>目录文件</strong></td>
+<td>存储文件名、大小、存储位置等元数据</td>
+<td>文件系统中的目录管理</td>
+<td>随机访问文件元数据</td>
+<td>操作系统的文件目录结构</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>这里以VSFS文件系统为例：</p>
+<p>1.将磁盘分成块（block）。简单的文件系统只使用一种块大小，这里正是这样做的。我们选择常用的4KB。因此，对构建文件系统的磁盘分区的看法很简单：一系列块，每块大小为4KB。在大小为N个4KB块的分区中，这些块的地址为从0到N−1。假设我们有一个非常小的磁盘，只有64块：</p>
+<img src="https://s2.loli.net/2024/12/21/ljZu613kvKyEf8p.png" srcset="/img/loading.gif" lazyload alt="1" style="zoom:50%;" />
+
+<blockquote>
+<p><strong>文件的逻辑结构(用户角度)：</strong></p>
+<p>具体参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/wkfvawl/p/11847413.html#%E4%B8%89%E3%80%81%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95">操作系统——文件系统概述、文件逻辑地址、目录、物理地址 - 王陸 - 博客园</a></p>
+<p><strong>外存的组织方式(物理结构)：</strong></p>
+<p>文件的数据是要存储在硬盘上面的，数据在磁盘上的存放方式，就像程序在内存中存放的方式那样，有以下两种</p>
+<ul>
+<li>连续空间存放方式</li>
+<li>非连续空间存放方式</li>
+</ul>
+<p>具体可参考：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_34827674/article/details/107992414">一口气搞懂「文件系统」，就靠这 25 张图了-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhouhengzhe/article/details/123320438">操作系统——文件系统_操作系统文件系统-CSDN博客</a></p>
+</blockquote>
+<p>2.文件系统必须记录每个文件的信息。该信息是元数据（metadata）的关键部分，并且记录诸如文件包含哪些数据块（在数据区域中）、文件的大小，其所有者和访问权限、访问和修改时间以及其他类似信息的事情。为了存储这些信息，文件系统通常有一个名为inode的结构</p>
+<img src="https://s2.loli.net/2024/12/21/zF2t6Nip9x7BdOJ.png" srcset="/img/loading.gif" lazyload alt="2" style="zoom:50%;" />
+
+<blockquote>
+<p>文件的存储，注意：多级索引，为了支持更大的文件，文件系统设计者必须在inode中引入不同的结构。一个常见的思路是有一个称为间接指针（indirect pointer）的特殊指针。它不是指向包含用户数据的块，而是指向包含更多指针的块，每个指针指向用户数据。因此，inode可以有一些固定数量（例如 12个）的直接指针和一个间接指针。如果文件变得足够大，则会分配一个间接块（来自磁盘的数据块区域），并将inode的间接指针设置为指向它。</p>
+</blockquote>
+<p>3.还需要某种方法来记录inode或数据块是空闲还是已分配。因此，这种分配结构（allocation structure）是所有文件系统中必需的部分。</p>
+<p><img src="https://s2.loli.net/2024/12/21/vSmqKkoWOUurcBz.png" srcset="/img/loading.gif" lazyload alt="image-20241221143107283"></p>
+<blockquote>
+<p>文件存储空间的管理</p>
+<p>具体参考，<a target="_blank" rel="noopener" href="https://blog.csdn.net/zhouhengzhe/article/details/123320438">操作系统——文件系统_操作系统文件系统-CSDN博客</a></p>
+</blockquote>
+<p>4.还有一块。我们将它保留给超级块（superblock），在下图中用S表示。超级块包含关于该特定文件系统的信息，包括例如文件系统中有多少个inode和数据块（在这个例子中分别为80和56）、inode表的开始位置（块3）等等。它可能还包括一些幻数，来标识文件系统类型（在本例中为VSFS）。</p>
+<p><img src="https://s2.loli.net/2024/12/21/HnSauTVIk4Le3bM.png" srcset="/img/loading.gif" lazyload alt="image-20241221143143501"></p>
+<p>因此，在挂载文件系统时，操作系统将首先读取超级块，初始化各种参数，然后将该卷添加到文件系统树中。当卷中的文件被访问时，系统就会知道在哪里查找所需的磁盘上的结构。</p>
+<p>4.目录项，也就是 <em>dentry</em>，用来记录文件的名字、<strong>索引节点指针</strong>以及与其他目录项的层级关联关系。多个目录项关联起来，就会形成目录结构，但它与索引节点不同的是，<strong>目录项是由内核维护的一个数据结构，不存放于磁盘，而是缓存在内存</strong>。</p>
+<p>目录的组织很简单。一个目录基本上只包含一个二元组（条目名称，inode号）的列表。对于给定目录中的每个文件或目录，目录的数据块中都有一个字符串和一个数字。对于每个字符串，可能还有一个长度（假定采用可变大小的名称）。</p>
+<p>由于索引节点唯一标识一个文件，而目录项记录着文件的名，所以目录项和索引节点的关系是多对一，也就是说，一个文件可以有多个别字。比如，硬链接的实现就是多个目录项中的索引节点指向同一个文件。</p>
+<blockquote>
+<p>注意，目录也是文件，也是用索引节点唯一标识，和普通文件不同的是，普通文件在磁盘里面保存的是文件数据，而目录文件在磁盘里面保存子目录或文件。</p>
+</blockquote>
+<img src="https://s2.loli.net/2024/12/21/CKL46SdPnqyW1xJ.png" srcset="/img/loading.gif" lazyload alt="4" style="zoom:50%;" />
+
+<p>这里继续给出多种不同文件系统的差异：</p>
+<table>
+<thead>
+<tr>
+<th><strong>文件系统</strong></th>
+<th><strong>数据存储方式</strong></th>
+<th><strong>元数据管理方式</strong></th>
+<th><strong>碎片管理机制</strong></th>
+<th><strong>访问效率</strong></th>
+<th><strong>数据保护与可靠性</strong></th>
+<th><strong>特性支持</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>FAT32</strong></td>
+<td>使用链表（FAT 表）记录每个文件的块链表，结构简单，扩展性差</td>
+<td>元数据存储在目录项中，简单，文件属性有限</td>
+<td>没有特别的碎片管理，容易碎片化</td>
+<td>随机访问效率差，大文件查找速度慢</td>
+<td>无日志，不支持数据保护，崩溃时易丢失数据</td>
+<td>支持小文件存储，适合嵌入式系统、U盘等小型存储设备</td>
+</tr>
+<tr>
+<td><strong>NTFS</strong></td>
+<td>使用 B+树结构索引文件数据位置，支持稀疏文件，优化存储空间</td>
+<td>使用 MFT（主文件表）存储文件及其属性，支持复杂属性（如 ACL 权限）</td>
+<td>通过延迟分配减少碎片，但仍需定期碎片整理</td>
+<td>随机读写性能较高，适合桌面和企业级应用</td>
+<td>支持元数据日志，能恢复文件系统结构，防止崩溃数据丢失</td>
+<td>支持文件压缩、加密（EFS）、权限控制等，适合 Windows 系统</td>
+</tr>
+<tr>
+<td><strong>ext4</strong></td>
+<td>使用多级索引表（类似树结构）管理数据块，支持高效的文件存储</td>
+<td>使用 inode 表存储文件和属性，支持文件权限、软硬链接等</td>
+<td>通过延迟分配和预分配减少碎片化，效率较高</td>
+<td>支持顺序和随机读写，适合小文件和大文件的访问</td>
+<td>提供日志功能，确保系统崩溃后不丢失文件元数据</td>
+<td>支持硬链接、软链接、日志功能，适用于 Linux 系统</td>
+</tr>
+<tr>
+<td><strong>XFS</strong></td>
+<td>延迟分配技术，优化数据块分配以减少碎片化</td>
+<td>使用索引节点管理元数据，支持并发访问和高性能读写</td>
+<td>延迟分配技术避免碎片化，适合大文件存储</td>
+<td>对大文件和并发访问优化，适合高负载、高性能需求的环境</td>
+<td>支持元数据日志，确保高可靠性，防止数据丢失</td>
+<td>适合处理大文件和高负载，广泛用于高性能服务器环境</td>
+</tr>
+<tr>
+<td><strong>APFS</strong></td>
+<td>基于 CoW（Copy-on-Write）技术，避免直接覆盖数据，优化 SSD 性能</td>
+<td>支持元数据快照，适合 SSD 存储的快速读写</td>
+<td>通过 CoW 技术避免碎片化，适合 SSD</td>
+<td>快速随机读写，优化 SSD 性能</td>
+<td>基于快照和加密功能，能恢复系统状态，防止数据丢失</td>
+<td>支持 SSD 优化、快照、文件加密、文件克隆等，适合 macOS 环境</td>
+</tr>
+<tr>
+<td><strong>ZFS</strong></td>
+<td>使用块指针树结构管理数据块，支持多级镜像和校验</td>
+<td>使用分层的数据结构存储元数据，支持元数据校验</td>
+<td>CoW 技术避免碎片化，支持数据去重和压缩</td>
+<td>高效的数据读取和写入，适合大数据量顺序访问和高并发环境</td>
+<td>提供端到端数据校验，支持自修复功能，适合大规模存储和企业级应用</td>
+<td>支持数据去重、快照、镜像、动态块分配等功能，适合云存储、企业备份等</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>数据存储方式</strong>：描述文件系统如何组织和存储数据。文件系统使用不同的数据结构（如链表、B+树、块指针树等）来管理数据。</li>
+<li><strong>元数据管理方式</strong>：解释文件系统如何管理文件的元数据（如文件名、权限、时间戳、文件大小等）。</li>
+<li><strong>碎片管理机制</strong>：描述文件系统如何处理碎片化问题。碎片化会降低文件访问效率，一些文件系统通过延迟分配、预分配或 CoW 技术来减少碎片化。</li>
+<li><strong>访问效率</strong>：比较文件系统在数据访问中的效率，尤其是随机访问和大文件的读写性能。</li>
+<li><strong>数据保护与可靠性</strong>：描述文件系统如何保护数据不受损失，防止系统崩溃或断电导致的数据丢失。大多数现代文件系统支持日志记录和数据校验来提高可靠性。</li>
+<li><strong>特性支持</strong>：列出了每种文件系统所支持的特性，如文件加密、压缩、权限管理、快照、去重等。</li>
+</ul>
+<h4 id="虚拟文件系统"><a href="#虚拟文件系统" class="headerlink" title="虚拟文件系统"></a>虚拟文件系统</h4><p>可以看到文件系统的种类众多，而操作系统希望对用户提供一个统一的接口，于是在用户层与文件系统层引入了中间层，这个中间层就称为虚拟文件系统（Virtual File System，VFS）。</p>
+<p>VFS 定义了一组所有文件系统都支持的数据结构和标准接口，这样程序员不需要了解文件系统的工作原理，只需要了解 VFS 提供的统一接口即可。</p>
+<img src="https://s2.loli.net/2024/12/21/dqhFmucZUt9GaP3.png" srcset="/img/loading.gif" lazyload alt="VFS" style="zoom:50%;" />
+
+<p>文件系统首先要先挂载到某个目录才可以正常使用，比如 Linux 系统在启动时，会把文件系统挂载到根目录。</p>
+<h4 id="挂载"><a href="#挂载" class="headerlink" title="挂载"></a>挂载</h4><p><strong>文件系统的挂载（Mounting）</strong> 是将存储设备或分区上的文件系统连接到操作系统的文件层次结构中的一个过程。挂载的目的是使得存储设备上的数据可以被操作系统访问和管理。（指的就是将设备文件中的顶级目录连接到 Linux 根目录下的某一目录（最好是空目录），访问此目录就等同于访问设备文件。）</p>
+<p>Linux 系统中“一切皆文件”，所有文件都放置在以根目录为树根的树形目录结构中。在 inux 看来，任何硬件设备也都是文件，它们各有自己的一套文件系统（文件目录结构）。</p>
+<blockquote>
+<p>因此产生的问题是，当在 Linux 系统中使用这些硬件设备时，只有将Linux本身的文件目录与硬件设备的文件目录合二为一，硬件设备才能为我们所用。合二为一的过程称为“挂载”。</p>
+</blockquote>
+<p>如果不挂载，通过Linux系统中的图形界面系统可以查看找到硬件设备，但命令行方式无法找到。</p>
+<blockquote>
+<p>并不是根目录下任何一个目录都可以作为挂载点，由于挂载操作会使得原有目录中文件被隐藏，因此根目录以及系统原有目录都不要作为挂载点，会造成系统异常甚至崩溃，挂载点最好是新建的空目录。</p>
+</blockquote>
+<h5 id="具体解释："><a href="#具体解释：" class="headerlink" title="具体解释："></a>具体解释：</h5><p>在现代操作系统中，文件系统以树状结构组织数据，这棵树的根节点称为“根目录”（<code>/</code>）。挂载就是将一个存储设备或分区的文件系统（如硬盘、SSD、U盘等）与操作系统的现有文件系统结构中的某个目录连接起来，使得该设备上的文件和目录可以像本地文件一样被访问。</p>
+<h5 id="挂载过程："><a href="#挂载过程：" class="headerlink" title="挂载过程："></a><strong>挂载过程：</strong></h5><ol>
+<li><strong>设备准备</strong>：首先，操作系统会识别并准备好存储设备（如硬盘、SSD、USB设备等）。</li>
+<li><strong>挂载命令</strong>：系统管理员或用户使用挂载命令（在 Linux 中是 <code>mount</code>）指定要挂载的设备和目标目录。</li>
+<li><strong>文件系统关联</strong>：文件系统将设备上的文件系统结构与操作系统文件树中的指定目录进行连接。这使得设备上的文件能够通过目标目录路径访问。</li>
+</ol>
+<blockquote>
+<p>更具体的过程可以参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_47763623/article/details/143710029">深入理解Linux文件系统的挂载过程_文件挂载-CSDN博客</a></p>
+</blockquote>
+<h5 id="挂载点的意义："><a href="#挂载点的意义：" class="headerlink" title="挂载点的意义："></a><strong>挂载点的意义：</strong></h5><p>挂载点是文件系统挂载的具体目录。在挂载完成后，存储设备的文件系统会表现得像是文件树的一部分，可以通过挂载点来访问设备上的数据。挂载点可以是任何空目录，而不仅仅是 <code>/mnt</code> 或 <code>/media</code>。</p>
+<h3 id="文件系统的访问方法"><a href="#文件系统的访问方法" class="headerlink" title="文件系统的访问方法"></a>文件系统的访问方法</h3><h4 id="从磁盘读取文件"><a href="#从磁盘读取文件" class="headerlink" title="从磁盘读取文件"></a>从磁盘读取文件</h4><table>
+<thead>
+<tr>
+<th><strong>步骤</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 用户&#x2F;应用程序发起读取请求</strong></td>
+<td>用户或应用程序通过系统调用（如 <code>open()</code> 和 <code>read()</code>）发起文件读取请求。</td>
+</tr>
+<tr>
+<td><strong>2. 操作系统进行文件查找</strong></td>
+<td>操作系统解析文件路径，查找文件的元数据（如 inode 或 MFT），确定文件的存储位置。</td>
+</tr>
+<tr>
+<td><strong>3. 获取物理块地址</strong></td>
+<td>操作系统根据文件的元数据找到文件数据的物理块位置。</td>
+</tr>
+<tr>
+<td><strong>4. 调用块设备驱动程序</strong></td>
+<td>操作系统将文件的数据块地址传递给磁盘设备驱动程序，驱动程序负责访问磁盘并读取数据块。</td>
+</tr>
+<tr>
+<td><strong>5. 磁盘控制器读取数据</strong></td>
+<td>磁盘控制器根据操作系统的请求，定位并读取物理磁盘上相应的扇区或块，传输数据到内存。</td>
+</tr>
+<tr>
+<td><strong>6. 数据传输到内存</strong></td>
+<td>磁盘控制器将读取的数据传输到内存缓存中，操作系统将数据保存到内存中，准备将其传递给应用程序。</td>
+</tr>
+<tr>
+<td><strong>7. 文件数据返回给应用程序</strong></td>
+<td>操作系统将数据从内存传输到用户空间，应用程序可以对文件数据进行处理。</td>
+</tr>
+<tr>
+<td><strong>8. 缓存和优化</strong></td>
+<td>操作系统和磁盘控制器可能会使用缓存机制（如页面缓存、硬盘缓存）来优化数据访问速度，减少磁盘访问次数。</td>
+</tr>
+</tbody></table>
+<h4 id="写入磁盘"><a href="#写入磁盘" class="headerlink" title="写入磁盘"></a><strong>写入磁盘</strong></h4><table>
+<thead>
+<tr>
+<th><strong>步骤</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 用户&#x2F;应用程序发起写入请求</strong></td>
+<td>用户或应用程序通过系统调用（如 <code>open()</code> 和 <code>write()</code>）发起写入请求，指定要写入的数据内容和目标文件。操作系统获取数据并准备写入磁盘。</td>
+</tr>
+<tr>
+<td><strong>2. 操作系统检查文件描述符</strong></td>
+<td>操作系统检查应用程序提供的文件描述符，确保文件已经被打开并且可以写入。如果文件是可写的，系统会继续处理；如果是只读文件，则会报错。</td>
+</tr>
+<tr>
+<td><strong>3. 获取文件的物理存储位置</strong></td>
+<td>操作系统查找文件的元数据（如 inode），确定文件的存储位置（磁盘上的数据块）。如果文件是新创建的，操作系统可能需要为文件分配新的磁盘块。</td>
+</tr>
+<tr>
+<td><strong>4. 调用块设备驱动程序</strong></td>
+<td>操作系统通过文件系统向块设备驱动程序发出写入请求，传递数据块的地址以及要写入的数据。设备驱动程序准备与磁盘或 SSD 进行交互，确保数据能正确写入。</td>
+</tr>
+<tr>
+<td><strong>5. 数据写入磁盘控制器</strong></td>
+<td>磁盘控制器收到写入请求后，将数据写入到磁盘的特定物理扇区或块中。如果是硬盘，磁头会移动到正确的位置；如果是 SSD，数据直接写入对应的闪存单元。</td>
+</tr>
+<tr>
+<td><strong>6. 数据确认</strong></td>
+<td>写入操作完成后，磁盘控制器向操作系统确认数据已经成功写入。数据也可能被缓存到内存中，以便未来的读取请求。</td>
+</tr>
+<tr>
+<td><strong>7. 更新文件元数据</strong></td>
+<td>操作系统更新文件的元数据（如 inode），以反映文件的最新状态（例如，更新文件大小、修改时间等）。如果数据被追加到文件末尾，操作系统也会更新文件的尾部地址。</td>
+</tr>
+<tr>
+<td><strong>8. 应用程序收到写入结果</strong></td>
+<td>操作系统返回写入操作的结果（如成功或失败），并可能将写入的数据缓存到内存中，以便在后续操作中提高性能。应用程序可以进行进一步处理或关闭文件。</td>
+</tr>
+<tr>
+<td><strong>9. 缓存和优化</strong></td>
+<td>操作系统可能会将写入的数据保留在内存中的缓存中，减少后续的磁盘写入次数，并在合适的时候将数据刷新到磁盘。磁盘控制器也可能使用其内部缓存进行写入操作优化。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<ol>
+<li>文件必须已经打开并且具有写权限。</li>
+<li>操作系统通过文件描述符来标识文件，并管理文件的元数据和数据存储。</li>
+<li>写入过程可能涉及数据缓存，以提高磁盘写入效率。</li>
+</ol>
+</blockquote>
+<h3 id="目录与文件"><a href="#目录与文件" class="headerlink" title="目录与文件"></a>目录与文件</h3><p>和普通文件不同的是，普通文件的块里面保存的是文件数据，而目录文件的块里面保存的是目录里面一项一项的文件信息。</p>
+<p>在目录文件的块中，最简单的保存格式就是列表，就是一项一项地将目录下的文件信息（如文件名、文件 inode、文件类型等）列在表里。</p>
+<p>列表中每一项就代表该目录下的文件的文件名和对应的 inode，通过这个 inode，就可以找到真正的文件。</p>
+<p><img src="https://s2.loli.net/2024/12/21/2nDUmwNpIYa4yHP.png" srcset="/img/loading.gif" lazyload alt="目录"></p>
+<p>目录查询是通过在磁盘上反复搜索完成，需要不断地进行 I&#x2F;O 操作，开销较大。所以，为了减少 I&#x2F;O 操作，把当前使用的文件目录缓存在内存，以后要使用该文件时只要在内存中操作，从而降低了磁盘操作次数，提高了文件系统的访问速度。</p>
+<blockquote>
+<p>这里对文件目录更深入了解可以参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/cxuanBlog/p/12565601.html">简直不要太硬了！一文带你彻底理解文件系统 - 程序员cxuan - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wkfvawl/p/11847413.html#%E4%B8%89%E3%80%81%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95">操作系统——文件系统概述、文件逻辑地址、目录、物理地址 - 王陸 - 博客园</a></p>
+</blockquote>
+<h4 id="软链接和硬链接"><a href="#软链接和硬链接" class="headerlink" title="软链接和硬链接"></a>软链接和硬链接</h4><p>有时候我们希望给某个文件取个别名，那么在 Linux 中可以通过硬链接（Hard Link） 和软链接（Symbolic Link） 的方式来实现，它们都是比较特殊的文件，但是实现方式也是不相同的。</p>
+<p>硬链接是多个目录项中的「索引节点」指向一个文件，也就是指向同一个 inode，但是 inode 是不可能跨越文件系统的，每个文件系统都有各自的 inode 数据结构和列表，所以硬链接是不可用于跨文件系统的。由于多个目录项都是指向一个 inode，那么只有删除文件的所有硬链接以及源文件时，系统才会彻底删除该文件。</p>
+<p><img src="https://s2.loli.net/2024/12/21/3JgNmYFdju81Xfo.png" srcset="/img/loading.gif" lazyload alt="硬链接"></p>
+<p>软链接相当于重新创建一个文件，这个文件有<strong>独立的 inode</strong>，但是这个<strong>文件的内容是另外一个文件的路径</strong>，所以访问软链接的时候，实际上相当于访问到了另外一个文件，所以<strong>软链接是可以跨文件系统的</strong>，甚至<strong>目标文件被删除了，链接文件还是在的，只不过指向的文件找不到了而已。</strong></p>
+<p><img src="https://s2.loli.net/2024/12/21/tNaVmgeKGuC5xdQ.png" srcset="/img/loading.gif" lazyload alt="软链接"></p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><h4 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h4><p>文件描述符（<strong>File Descriptor</strong>，简称 <strong>FD</strong>）是操作系统层面上用于标识打开的文件的一个整数标识符。在操作系统中，文件描述符存在于用户空间和内核空间之间，通常是在 <strong>操作系统的内核层</strong> 中使用的。</p>
+<h5 id="与文件描述符相关的层次和流程："><a href="#与文件描述符相关的层次和流程：" class="headerlink" title="与文件描述符相关的层次和流程："></a><strong>与文件描述符相关的层次和流程：</strong></h5><ol>
+<li>用户空间<ul>
+<li>在用户空间，应用程序通过标准库（如 <code>libc</code>）发起文件操作。库会通过系统调用（如 <code>open()</code>）请求操作系统打开文件。</li>
+<li>应用程序通过文件描述符来与内核交互，使用它来进行文件读写（例如，使用 <code>read()</code>、<code>write()</code> 等函数）。</li>
+</ul>
+</li>
+<li>内核空间<ul>
+<li>操作系统内核使用文件描述符来标识进程打开的文件，并维护与文件相关的状态信息。这些信息通常存储在 <strong>文件表</strong> 中。</li>
+<li>当进程发起文件操作时，内核根据文件描述符查找文件表中的条目，找到文件的元数据并执行实际的文件I&#x2F;O操作。</li>
+<li>每个进程都有一个与之关联的<strong>文件描述符表</strong>，它存储了该进程打开的所有文件的文件描述符以及与这些文件相关的内核信息。</li>
+</ul>
+</li>
+</ol>
+<h1 id="文件共享和文件保护"><a href="#文件共享和文件保护" class="headerlink" title="文件共享和文件保护"></a>文件共享和文件保护</h1><p>具体参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Qmilumilu/article/details/114558347">【操作系统】4.4文件管理（文件共享、文件保护、文件系统层次结构）_文件共享盘管理制度csdn-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/swadian2008/article/details/131695918">操作系统16：文件共享和文件保护_文件共享 操作系统-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_45962068/article/details/120948304">文件管理之文件共享与文件保护_共享文件管理-CSDN博客</a></p>
+<h1 id="磁盘存储器的管理-文件的物理结构"><a href="#磁盘存储器的管理-文件的物理结构" class="headerlink" title="磁盘存储器的管理(文件的物理结构)"></a>磁盘存储器的管理(文件的物理结构)</h1><p>具体参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/linfangnan/p/15139136.html">操作系统：磁盘的组织和空间管理 - 乌漆WhiteMoon - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://geekdaxue.co/read/7hao@juangou/vqt1u6qonc0gt8gz">计算机操作系统 - 第八章：磁盘存储器的管理 - 《计算机专业课笔记》 - 极客文档</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_50833438/article/details/115151317">【操作系统】第八章-磁盘存储器的管理_增量式索引组织方式-CSDN博客</a></p>
+<blockquote>
+<p>外存的组织方式，文件存储空间的管理</p>
+</blockquote>
+<p>参考博客</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/404423676">计算机组成原理笔记-IO接口与设备 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/cxuanBlog/p/12565601.html">简直不要太硬了！一文带你彻底理解文件系统 - 程序员cxuan - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/cangqinglang/p/12170828.html">什么是挂载，Linux挂载如何实现详解 - 苍青浪 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wkfvawl/p/11847413.html">操作系统——文件系统概述、文件逻辑地址、目录、物理地址 - 王陸 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/535265977">操作系统–文件和文件系统 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_67656158/article/details/144544055">【操作系统】一篇带你彻底搞定文件系统-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wkfvawl/p/11847413.html#%E4%B8%89%E3%80%81%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95">操作系统——文件系统概述、文件逻辑地址、目录、物理地址 - 王陸 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/JinyuLi/p/17611239.html">复习笔记|第五章 文件系统《操作系统原理教程》 - LateSpring - 博客园</a></p>
+<h1 id="I-O系统的功能-模型和接口"><a href="#I-O系统的功能-模型和接口" class="headerlink" title="I&#x2F;O系统的功能,模型和接口"></a>I&#x2F;O系统的功能,模型和接口</h1><h2 id="I-O系统的层次结构和模型"><a href="#I-O系统的层次结构和模型" class="headerlink" title="I&#x2F;O系统的层次结构和模型"></a>I&#x2F;O系统的层次结构和模型</h2><p>I&#x2F;O软件的层次结构:</p>
+<table>
+<thead>
+<tr>
+<th><strong>层次</strong></th>
+<th><strong>功能描述</strong></th>
+<th><strong>举例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>用户层 I&#x2F;O 软件</strong></td>
+<td>与用户交互，提供I&#x2F;O请求生成、格式化、排队等功能</td>
+<td><code>read()</code>、<code>write()</code> 系统调用，Spooling 系统</td>
+</tr>
+<tr>
+<td><strong>设备独立性软件</strong></td>
+<td>提供设备抽象，统一设备命令，资源分配与缓冲区管理</td>
+<td>操作系统中与设备独立的驱动接口</td>
+</tr>
+<tr>
+<td><strong>设备驱动程序</strong></td>
+<td>直接控制硬件设备，执行操作命令，数据传输</td>
+<td>磁盘驱动程序，打印机驱动程序</td>
+</tr>
+<tr>
+<td><strong>中断处理程序 (ISR)</strong></td>
+<td>处理硬件中断，保存和恢复现场，执行中断响应</td>
+<td>设备I&#x2F;O完成中断，硬件故障中断处</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2025/01/03/YdmZncQXk1Ny9ib.png" srcset="/img/loading.gif" lazyload alt="image-20250103210526054"></p>
+<p><strong>IO系统各模块之间的层次视图</strong>：</p>
+<p><img src="https://s2.loli.net/2025/01/03/OIZmf6QMzTNaSyG.png" srcset="/img/loading.gif" lazyload alt="image-20250103210726591"></p>
+<h4 id="I-O系统的上下接口"><a href="#I-O系统的上下接口" class="headerlink" title="I&#x2F;O系统的上下接口"></a>I&#x2F;O系统的上下接口</h4><h5 id="上层接口"><a href="#上层接口" class="headerlink" title="上层接口"></a><strong>上层接口</strong></h5><p><strong>与用户或应用程序的接口</strong>，即用户应用程序或操作系统与I&#x2F;O系统的交互接口。上层接口负责接受用户的I&#x2F;O请求，格式化数据、提供操作等，并将这些请求传递到下层。具体而言，用户层会通过操作系统的系统调用向I&#x2F;O控制层发送请求。典型接口：</p>
+<ul>
+<li><strong>系统调用</strong>：如<code>read()</code>、<code>write()</code>、<code>open()</code>、<code>close()</code>等，这些都是用户程序与操作系统间的交互接口，通过这些接口，程序可以发起文件操作、设备操作等。</li>
+<li><strong>文件系统接口</strong>：为用户程序提供抽象的文件操作接口，如打开、读写文件，关闭文件等，文件系统会把这些请求转化为低级的I&#x2F;O请求。</li>
+<li><strong>I&#x2F;O库函数</strong>：例如C标准库中的<code>fopen()</code>, <code>fread()</code>等，提供更高层次的抽象，简化用户的I&#x2F;O操作。</li>
+</ul>
+<h5 id="下层接口"><a href="#下层接口" class="headerlink" title="下层接口"></a><strong>下层接口</strong></h5><p><strong>与硬件或设备驱动的接口</strong>，即I&#x2F;O系统与硬件设备之间的接口。下层接口是操作系统与设备之间的通信桥梁，它接收来自上层的请求并转发至具体的硬件或设备驱动。典型接口：</p>
+<ul>
+<li><strong>设备驱动程序接口</strong>：设备驱动程序通常会提供接口，接收来自I&#x2F;O控制管理层的命令并将其转化为具体的硬件操作。例如，磁盘驱动程序提供的接口可以包括读、写、寻址等功能。</li>
+<li><strong>硬件接口</strong>：这是操作系统与硬件设备之间的低级接口，通过总线和硬件协议与设备进行交互。例如，硬件中断、DMA（直接内存存取）等机制是底层设备与系统进行通信的关键部分。</li>
+<li><strong>中断服务程序（ISR）</strong>：通过中断机制，硬件设备可以向操作系统发出中断信号，中断服务程序负责处理中断并响应硬件设备。</li>
+</ul>
+<h4 id="I-O系统的分层"><a href="#I-O系统的分层" class="headerlink" title="I&#x2F;O系统的分层"></a>I&#x2F;O系统的分层</h4><h5 id="中断处理程序"><a href="#中断处理程序" class="headerlink" title="中断处理程序"></a><strong>中断处理程序</strong></h5><p>中断处理程序位于I&#x2F;O系统的最底层，负责响应硬件设备发出的中断信号。当设备完成I&#x2F;O操作或发生错误时，硬件通过中断信号通知操作系统。ISR会及时响应并进行相应处理。其职责是：</p>
+<ul>
+<li><strong>保存进程状态</strong>：当中断发生时，操作系统需要保存当前执行进程的现场，以便在中断处理后恢复执行。</li>
+<li><strong>处理中断</strong>：ISR会根据中断源的类型执行相应的操作，例如读取设备状态、清除中断标志、向设备发送确认信号等。</li>
+<li><strong>恢复现场</strong>：完成中断服务后，ISR需要恢复被中断程序的执行状态，确保程序从中断发生前的状态继续执行。</li>
+</ul>
+<p>ISR是操作系统与硬件之间的桥梁，负责处理中断事件并启动相应的设备或进程。中断机制能够保证操作系统对外部设备的实时响应。</p>
+<blockquote>
+<p>硬盘完成一次读写操作后，通过中断通知操作系统，ISR将处理该中断，可能进行数据拷贝或更新缓存，然后恢复应用程序的执行。</p>
+</blockquote>
+<hr>
+<h5 id="设备驱动程序-1"><a href="#设备驱动程序-1" class="headerlink" title="设备驱动程序"></a><strong>设备驱动程序</strong></h5><p>设备驱动程序直接与硬件设备交互，实现具体的I&#x2F;O操作。它位于操作系统的较低层次，负责接收I&#x2F;O控制管理层（或者上层）的命令，执行设备的控制指令，并管理设备的数据传输。其职责是：</p>
+<ul>
+<li><strong>硬件操作</strong>：驱动程序实现对硬件的直接控制，如磁盘的读写、网络设备的数据发送等。</li>
+<li><strong>设备初始化与配置</strong>：在设备启用前，驱动程序需要进行初始化配置，设置设备的参数、操作模式等。</li>
+<li><strong>数据传输</strong>：设备驱动程序通过中断或直接内存存取（DMA）将数据从内存传输到设备，或将数据从设备传回内存。</li>
+<li><strong>错误处理</strong>：驱动程序也负责监控设备的工作状态，处理可能出现的硬件错误或通信问题。</li>
+</ul>
+<p>设备驱动程序将操作系统的高层命令转换为硬件可理解的命令，确保硬件设备按照预期执行操作。每个硬件设备通常有一个或多个对应的设备驱动程序。</p>
+<blockquote>
+<p>磁盘驱动程序根据I&#x2F;O请求，向硬盘发出指令（例如读、写命令），并根据硬盘的响应执行相应的操作（例如更新缓冲区或向应用程序返回数据）。</p>
+</blockquote>
+<hr>
+<h5 id="设备独立性软件"><a href="#设备独立性软件" class="headerlink" title="设备独立性软件"></a><strong>设备独立性软件</strong></h5><p>设备独立性软件位于I&#x2F;O系统的中层，提供一个统一的接口，使得操作系统和用户程序能够不关心具体的硬件实现，统一地对外提供设备访问接口。其职责是：</p>
+<ul>
+<li><strong>屏蔽硬件差异</strong>：设备独立性软件的核心任务是屏蔽不同设备之间的差异。操作系统通过这一层抽象接口，统一设备的操作方式。例如，磁盘、打印机和键盘的具体硬件实现不同，但操作系统通过设备独立性层提供统一的I&#x2F;O接口给上层应用。</li>
+<li><strong>设备资源管理</strong>：管理设备的资源（如设备的分配、释放和共享），确保多个进程对同一设备的访问不会发生冲突。</li>
+<li><strong>缓冲区管理</strong>：对输入输出的数据进行缓冲，以提高I&#x2F;O操作的效率。</li>
+<li><strong>任务调度</strong>：设备独立性软件也可能负责设备请求的排队和调度，确保设备能够高效地为多个进程提供服务。</li>
+</ul>
+<p>设备独立性软件将设备硬件的复杂性封装起来，为操作系统和应用程序提供统一的、设备无关的接口，从而使得程序能够不关心设备的具体实现。</p>
+<blockquote>
+<p>操作系统通过设备独立性软件为文件系统提供统一的接口，应用程序可以通过<code>read()</code>和<code>write()</code>进行文件I&#x2F;O操作，而不需要知道是通过磁盘、网络还是其他设备来进行的实际数据传输。</p>
+</blockquote>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-operator">+-------------------------------------+</span><br><span class="hljs-operator">|</span>       应用程序层（<span class="hljs-variable">User</span> <span class="hljs-variable">Layer</span>）       <span class="hljs-operator">|</span>  <span class="hljs-operator">&lt;--</span> 与用户交互，发起<span class="hljs-built_in">I</span><span class="hljs-operator">/</span><span class="hljs-built_in">O</span>请求<br><span class="hljs-operator">+-------------------------------------+</span><br><span class="hljs-operator">|</span>   设备独立性软件层（<span class="hljs-variable">Device</span> <span class="hljs-variable">Independence</span> <span class="hljs-variable">Software</span>）   <span class="hljs-operator">|</span>  <span class="hljs-operator">&lt;--</span> 屏蔽硬件差异，提供统一接口<br><span class="hljs-operator">+-------------------------------------+</span><br><span class="hljs-operator">|</span>         <span class="hljs-built_in">I</span><span class="hljs-operator">/</span><span class="hljs-built_in">O</span>控制管理层（<span class="hljs-built_in">I</span><span class="hljs-operator">/</span><span class="hljs-built_in">O</span> <span class="hljs-built_in">Control</span> <span class="hljs-variable">Layer</span>）         <span class="hljs-operator">|</span>  <span class="hljs-operator">&lt;--</span> 管理设备资源，调度<span class="hljs-built_in">I</span><span class="hljs-operator">/</span><span class="hljs-built_in">O</span>请求<br><span class="hljs-operator">+-------------------------------------+</span><br><span class="hljs-operator">|</span>           设备驱动程序层（<span class="hljs-variable">Device</span> <span class="hljs-variable">Driver</span> <span class="hljs-variable">Layer</span>）    <span class="hljs-operator">|</span>  <span class="hljs-operator">&lt;--</span> 控制硬件设备，进行<span class="hljs-built_in">I</span><span class="hljs-operator">/</span><span class="hljs-built_in">O</span>操作<br><span class="hljs-operator">+-------------------------------------+</span><br><span class="hljs-operator">|</span>           中断处理程序（<span class="hljs-built_in">Interrupt</span> <span class="hljs-variable">Service</span> <span class="hljs-variable">Routine</span>）<span class="hljs-operator">|</span>  <span class="hljs-operator">&lt;--</span> 处理中断，进行硬件控制<br><span class="hljs-operator">+-------------------------------------+</span><br><span class="hljs-operator">|</span>               硬件层（<span class="hljs-variable">Hardware</span> <span class="hljs-variable">Layer</span>）              <span class="hljs-operator">|</span>  <span class="hljs-operator">&lt;--</span> 执行实际<span class="hljs-built_in">I</span><span class="hljs-operator">/</span><span class="hljs-built_in">O</span>操作<br><span class="hljs-operator">+-------------------------------------+</span><br><br></code></pre></td></tr></table></figure>
+
+<h2 id="I-O系统接口"><a href="#I-O系统接口" class="headerlink" title="I&#x2F;O系统接口"></a>I&#x2F;O系统接口</h2><p>I&#x2F;O系统中的接口是操作系统与硬件设备、应用程序之间进行交互的桥梁。不同类型的设备有不同的接口，这些接口可以分为<strong>块设备接口</strong>、<strong>流设备接口</strong>和<strong>网络通信接口</strong>。每种接口适应不同类型的I&#x2F;O设备，提供相应的操作方法和协议。</p>
+<table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>块设备接口（Block Device）</strong></th>
+<th><strong>流设备接口（Character Device）</strong></th>
+<th><strong>网络通信接口（Network Interface）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据存取单位</strong></td>
+<td>块（通常为512字节或4KB）</td>
+<td>字节（按字节流传输数据）</td>
+<td>数据包（按照网络协议进行分组和传输）</td>
+</tr>
+<tr>
+<td><strong>访问类型</strong></td>
+<td>随机访问</td>
+<td>顺序访问</td>
+<td>异步、流式访问（可能是双向或单向）</td>
+</tr>
+<tr>
+<td><strong>使用场景</strong></td>
+<td>硬盘、SSD、光盘等存储设备</td>
+<td>键盘、鼠标、打印机、串口设备等</td>
+<td>网卡、Wi-Fi、蓝牙、互联网连接等</td>
+</tr>
+<tr>
+<td><strong>常用操作</strong></td>
+<td><code>read()</code>, <code>write()</code>, <code>ioctl()</code></td>
+<td><code>read()</code>, <code>write()</code>, <code>ioctl()</code></td>
+<td><code>socket()</code>, <code>send()</code>, <code>recv()</code>, <code>ioctl()</code></td>
+</tr>
+<tr>
+<td><strong>协议&#x2F;规范</strong></td>
+<td>物理设备上的数据块操作</td>
+<td>流式数据传输，没有固定的协议</td>
+<td>基于网络协议栈（如TCP&#x2F;IP、</td>
+</tr>
+</tbody></table>
+<h3 id="块设备接口"><a href="#块设备接口" class="headerlink" title="块设备接口"></a><strong>块设备接口</strong></h3><p>块设备（Block Devices）是指那些支持按块（Block）进行数据访问的设备，数据在这些设备上是按固定大小的块进行组织的。常见的块设备包括硬盘、固态硬盘（SSD）、光盘等。</p>
+<ul>
+<li><strong>数据存取单位</strong>：块设备的存取单位是“块”，通常是512字节或4KB的倍数。</li>
+<li><strong>随机访问</strong>：块设备支持随机访问，允许直接读取或写入任何块。</li>
+<li><strong>持久性</strong>：块设备上的数据通常是持久化存储，即数据在设备断电后仍然存在。</li>
+</ul>
+<p>接口操作：</p>
+<p>块设备的接口通常包括以下几种操作：</p>
+<ul>
+<li><strong>读&#x2F;写操作</strong>：对指定的块进行读写操作。</li>
+<li><strong>寻址操作</strong>：通过设备的逻辑块地址（LBA）来定位和访问数据块。</li>
+<li><strong>设备控制操作</strong>：例如初始化、格式化、修复坏块等。</li>
+</ul>
+<p>示例：</p>
+<ul>
+<li>**<code>read()</code>**：从块设备的指定块中读取数据。</li>
+<li>**<code>write()</code>**：向块设备的指定块写入数据。</li>
+<li>**<code>ioctl()</code>**：用于控制设备的各种命令，如格式化、调整块大小等。</li>
+</ul>
+<p>使用场景：<strong>硬盘、固态硬盘（SSD）</strong>：这些存储设备都采用块存储模型，操作系统通过块设备接口进行读写操作。</p>
+<h3 id="流设备接口"><a href="#流设备接口" class="headerlink" title="流设备接口"></a><strong>流设备接口</strong></h3><p>流设备（Character Devices）是指那些支持按字节流进行数据访问的设备。流设备通常是串行的，数据流通常是连续的，不以块为单位进行存储。常见的流设备包括串口设备、键盘、鼠标、打印机等。</p>
+<ul>
+<li><strong>数据存取单位</strong>：流设备的数据存取单位是字节（byte），数据是顺序读取的，通常是逐个字节地传输。</li>
+<li><strong>顺序访问</strong>：流设备不支持随机访问，数据必须按照顺序进行处理。</li>
+<li><strong>实时性</strong>：流设备的数据传输通常具有实时性要求，操作系统需要及时处理这些数据。</li>
+</ul>
+<p>接口操作：</p>
+<p>流设备的接口通常包括以下几种操作：</p>
+<ul>
+<li><strong>读&#x2F;写操作</strong>：从流设备中读取字节或向流设备写入字节。</li>
+<li><strong>设备控制操作</strong>：流设备可能还包括对设备的控制命令，例如获取设备状态、控制设备开启或关闭等。</li>
+</ul>
+<p>示例：</p>
+<ul>
+<li>**<code>read()</code>**：从流设备中读取一个字节的数据。</li>
+<li>**<code>write()</code>**：向流设备写入一个字节的数据。</li>
+<li>**<code>ioctl()</code>**：控制设备操作，例如设置串口的波特率、打开或关闭设备等。</li>
+</ul>
+<p>使用场景：<strong>串口设备、键盘、鼠标</strong>：这些设备通常处理按字节顺序的数据，操作系统通过流设备接口进行数据交换。</p>
+<h3 id="网络通信接口"><a href="#网络通信接口" class="headerlink" title="网络通信接口"></a><strong>网络通信接口</strong></h3><p>网络通信接口用于处理网络设备（如网卡）和操作系统之间的数据传输。它是通过网络协议栈来实现的，支持通过不同的通信协议进行数据交换。常见的网络接口有以太网、Wi-Fi、蓝牙等。</p>
+<ul>
+<li><strong>基于协议栈</strong>：网络通信接口依赖于协议栈（如TCP&#x2F;IP协议栈）来进行数据的分发、路由和传输。</li>
+<li><strong>支持异步通信</strong>：网络通信通常是异步的，数据可能在不同时间到达，且可能需要重试、流量控制和确认等操作。</li>
+<li><strong>可扩展性</strong>：网络通信接口需要支持不同的协议和网络配置，如IPv4、IPv6、TCP、UDP等。</li>
+</ul>
+<p>接口操作：</p>
+<p>网络通信接口通常支持以下操作：</p>
+<ul>
+<li><strong>发送&#x2F;接收数据</strong>：通过协议栈发送和接收数据包。</li>
+<li><strong>连接管理</strong>：建立、管理和关闭网络连接。</li>
+<li><strong>设备控制</strong>：网络接口的配置、状态查询等。</li>
+</ul>
+<p>示例：</p>
+<ul>
+<li>**<code>socket()</code>**：创建一个套接字，进行网络连接的初始化。</li>
+<li>**<code>send()</code>&#x2F;<code>recv()</code>**：向网络连接发送或接收数据。</li>
+<li>**<code>ioctl()</code>**：设置网络设备的参数，查询设备状态等。</li>
+</ul>
+<p>使用场景：<strong>以太网卡、Wi-Fi适配器</strong>：操作系统通过网络通信接口和网络设备进行数据传输，处理与其他计算机或设备的通信。</p>
+<hr>
+<h1 id="中断机构和中断处理程序"><a href="#中断机构和中断处理程序" class="headerlink" title="中断机构和中断处理程序"></a>中断机构和中断处理程序</h1><p><img src="https://s2.loli.net/2025/01/04/DP8JrEHTdAXaUS3.png" srcset="/img/loading.gif" lazyload alt="image-20250104090411981"></p>
+<p>在<a href="https://hermes37.vercel.app/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/CPU%E8%99%9A%E6%8B%9F%E5%8C%96%E4%B8%8E%E8%BF%9B%E7%A8%8B/">CPU虚拟化与进程 - Hermes</a>我们提到中断是操作系统夺回CPU控制的唯一途径，当中断发生时，就意味着操作系统介入，进行管理工作。正因如此多道程序才能进行并发运行，合理的移交CPU控制权</p>
+<p>我们知道用户态的程序进行系统调用时会触发库函数(并不是每一个库函数都会进行中断)里的中断，进而陷入内核态。</p>
+<blockquote>
+<p>那么当内核态操作系统完成调用时，如何将控制器移交给用户程序呢？</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/01/04/LP5wZUQ1TOoVm3J.png" srcset="/img/loading.gif" lazyload alt="image-20250104084448013"></p>
+<p>流程大体如下：</p>
+<ol>
+<li><strong>用户程序</strong>通过系统调用请求操作系统服务。</li>
+<li><strong>CPU</strong>切换到<strong>内核模式</strong>，操作系统执行相应任务。</li>
+<li><strong>操作系统</strong>执行完成任务，保存内核态的上下文。</li>
+<li>操作系统将<strong>控制权返回到用户态</strong>，并恢复用户程序的上下文。</li>
+<li><strong>返回结果</strong>给用户程序（通常是通过寄存器或内存返回）。</li>
+<li><strong>用户程序</strong>继续执行，使用返回的结果。</li>
+</ol>
+<p>这里简单介绍一下什么是特权指令和非特权指令：</p>
+<table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>特权指令</strong></th>
+<th><strong>非特权指令</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>执行模式</strong></td>
+<td>仅能在<strong>内核模式</strong>下执行</td>
+<td>可以在<strong>用户模式</strong>下执行</td>
+</tr>
+<tr>
+<td><strong>访问权限</strong></td>
+<td>具有对硬件和系统资源的访问权限</td>
+<td>仅能访问用户程序自身的数据和代码</td>
+</tr>
+<tr>
+<td><strong>功能</strong></td>
+<td>操作系统核心功能，如内存管理、中断控制、I&#x2F;O操作等</td>
+<td>一般为普通程序逻辑运算，如算术运算、数据传输等</td>
+</tr>
+<tr>
+<td><strong>示例</strong></td>
+<td>- 修改控制寄存器- 禁用&#x2F;启用中断- I&#x2F;O控制</td>
+<td>- 加法、减法运算- 数据传送（<code>mov</code>）- 跳转（<code>jmp</code>）</td>
+</tr>
+<tr>
+<td><strong>安全性</strong></td>
+<td>执行不当可能破坏系统稳定性，具有潜在风险</td>
+<td>不涉及系统资源，执行不会对系统造成直接风险</td>
+</tr>
+<tr>
+<td><strong>操作系统介入</strong></td>
+<td>需要操作系统或内核来执行，中断或异常处理</td>
+<td>不需要操作系统介入，可以由普通程序执行</td>
+</tr>
+<tr>
+<td><strong>使用场景</strong></td>
+<td>操作系统内部功能、硬件设备的直接控制、进程管理等</td>
+<td>普通应用程序的计算、数据处理、逻辑控制等</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>当执行中断陷入内核态时，操作系统怎么知道哪一个中断触发了它，后续如何处理中断？</p>
+</blockquote>
+<h2 id="中断向量表"><a href="#中断向量表" class="headerlink" title="中断向量表"></a><strong>中断向量表</strong></h2><p>当中断（无论是硬件中断还是软件中断）发生时，操作系统需要确定哪个中断源触发了中断，并执行相应的处理程序。中断向量表是一个数据结构，用于存储所有中断的入口地址（即对应中断服务程序的地址）。</p>
+<p><strong>中断向量表</strong>包含了所有中断的入口地址，处理不同的中断请求（IRQ）。每个中断都有一个对应的向量（即一个唯一的编号），该向量指向相应的<strong>中断服务程序</strong>（ISR）。在中断发生时，CPU会根据中断源的编号查找中断向量表，从而跳转到对应的中断服务程序。</p>
+<p>举例：</p>
+<ul>
+<li><strong>硬件中断</strong>：例如，键盘按键中断、磁盘I&#x2F;O中断等，都有不同的中断向量。</li>
+<li><strong>软件中断（如系统调用）</strong>：在x86架构中，系统调用会通过<code>int 0x80</code>指令触发中断，并跳转到内核模式的系统调用处理程序。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/01/04/o4OnLIrsWqEiKfz.png" srcset="/img/loading.gif" lazyload alt="de06c8c75719a3f2df6e795b673a3a29"></p>
+<blockquote>
+<p>接下来我们需要继续完善中断执行流程</p>
+</blockquote>
+<p><strong>触发中断</strong>：当硬件中断或系统调用发生时，CPU停止当前的指令执行，将当前的状态（程序计数器、寄存器等）保存在堆栈中。</p>
+<ol>
+<li><p><strong>查找中断向量</strong>：CPU根据中断号（或系统调用号）在中断向量表中查找相应的中断服务程序（ISR）地址。对于系统调用，通常会有一个系统调用号，操作系统会根据该号在系统调用表中查找对应的处理函数。</p>
+</li>
+<li><p><strong>执行中断服务程序（ISR）</strong>：操作系统执行相应的中断处理或系统调用的处理程序。</p>
+</li>
+<li><p><strong>保存&#x2F;恢复进程上下文</strong>：在执行中断服务程序之前，操作系统保存当前进程的上下文信息（如寄存器值、程序计数器等）。在中断处理程序结束后，恢复之前保存的上下文，确保用户程序能够继续执行。</p>
+</li>
+<li><p><strong>返回用户态</strong>：操作系统通过<strong>返回中断</strong>指令（如<code>iret</code>或<code>sysret</code>）将控制权交还给用户程序。用户程序继续执行，从发生系统调用或中断的位置开始。</p>
+<blockquote>
+<p>注意：</p>
+<p>操作系统管理每个进程的状态信息，并存储在<strong>进程控制块（PCB）</strong>中。PCB包括了进程的上下文（寄存器状态、程序计数器等），当发生中断时，操作系统会保存当前进程的PCB，并根据中断的类型决定下一步的操作。</p>
+<ul>
+<li>对于<strong>系统调用</strong>，操作系统通过查找当前进程的系统调用号（通常存储在寄存器中）来决定该执行哪个系统调用处理程序。</li>
+<li>对于<strong>硬件中断</strong>，操作系统通过中断向量表查找对应的中断服务程序，执行完相应操作后，恢复进程执行。</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<h2 id="中断的分类"><a href="#中断的分类" class="headerlink" title="中断的分类"></a>中断的分类</h2><table>
+<thead>
+<tr>
+<th><strong>分类标准</strong></th>
+<th><strong>中断类型</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>按触发源分类</strong></td>
+<td><strong>硬件中断</strong></td>
+<td>由外部硬件设备或内部设备触发，通常用于响应外部事件，如I&#x2F;O操作、定时器等。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>软件中断</strong></td>
+<td>由程序通过特定指令（如<code>syscall</code>或<code>int</code>）触发，通常用于系统调用或异常处理。</td>
+</tr>
+<tr>
+<td><strong>按发生时机分类</strong></td>
+<td><strong>同步中断</strong></td>
+<td>中断与当前执行指令密切相关，通常由程序执行中的错误或特定操作触发。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>异步中断</strong></td>
+<td>中断与当前执行的指令无关，通常由外部硬件或外部事件触发，如设备完成数据传输。</td>
+</tr>
+<tr>
+<td><strong>按响应机制分类</strong></td>
+<td><strong>屏蔽中断</strong></td>
+<td>可以被操作系统或CPU屏蔽的中断，通常用于允许某些关键操作不中断。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>非屏蔽中断</strong></td>
+<td>无法被操作系统或CPU屏蔽的中断，通常用于紧急事件，如硬件故障、紧急安全事件等。</td>
+</tr>
+<tr>
+<td><strong>按优先级分类</strong></td>
+<td><strong>可调优先级中断</strong></td>
+<td>中断有不同的优先级，操作系统根据优先级处理高优先级的中断，低优先级的中断可以被打断。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>固定优先级中断</strong></td>
+<td>中断有固定的优先级，通常由硬件设置，优先级不变。</td>
+</tr>
+<tr>
+<td><strong>常见中断类型</strong></td>
+<td><strong>外部中断</strong></td>
+<td>由外部设备或事件触发的中断，如I&#x2F;O设备、定时器中断等。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>内部中断</strong></td>
+<td>程序执行中出现的错误或异常事件，如除零错误、非法内存访问等。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>系统调用中断</strong></td>
+<td>用户程序请求操作系统服务时触发的中断，通过<code>syscall</code>等指令发起。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>硬件故障中断</strong></td>
+<td>硬件故障或错误引发的中断，如内存故障、总线错误等。</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>定时器中断</strong></td>
+<td>定时器触发的中断，通常用于操作系统调度、时间片轮转等。</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2025/01/04/qvDzoaSCGwgyZcF.png" srcset="/img/loading.gif" lazyload alt="image-20250104090449719"></p>
+<h1 id="设备驱动程序-2"><a href="#设备驱动程序-2" class="headerlink" title="设备驱动程序"></a>设备驱动程序</h1><table>
+<thead>
+<tr>
+<th><strong>特点</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>与 I&#x2F;O 进程和设备控制器之间的通信转换</strong></td>
+<td>驱动程序将进程的 I&#x2F;O 请求转换为适合设备控制器的指令，并将设备的状态和 I&#x2F;O 操作完成情况反馈给进程。</td>
+</tr>
+<tr>
+<td><strong>与硬件特性紧密相关</strong></td>
+<td>每种设备或同一类型的设备（由于厂商不同）需要不同的驱动程序，设备驱动程序与硬件设备的特性紧密相关。</td>
+</tr>
+<tr>
+<td><strong>与 I&#x2F;O 控制方式相关</strong></td>
+<td>驱动程序与设备使用的 I&#x2F;O 控制方式相关，如 <strong>中断驱动</strong> 和 <strong>DMA 驱动</strong>，两者的编写方式和处理机制不同。</td>
+</tr>
+<tr>
+<td><strong>部分驱动程序需要汇编语言编写</strong></td>
+<td>由于设备驱动程序需要直接操作硬件，一些底层驱动程序使用汇编语言编写，部分驱动程序已被固化在 <strong>ROM</strong> 中，减少内存消耗。</td>
+</tr>
+<tr>
+<td><strong>支持可重入性</strong></td>
+<td>驱动程序需支持可重入性，即在驱动程序执行过程中可以被再次调用，例如网络驱动程序在处理一个数据包时，可以同时处理另一个数据包的到达。</td>
+</tr>
+<tr>
+<td><strong>不允许直接调用系统调用</strong></td>
+<td>驱动程序不能直接进行普通的系统调用，但可以通过调用内核过程（如内存管理）来进行某些操作，以满足与内核的交互需求。</td>
+</tr>
+</tbody></table>
+<h2 id="设备控制器"><a href="#设备控制器" class="headerlink" title="设备控制器"></a>设备控制器</h2><p>设备控制器是一个硬件组件，它充当了计算机中央处理单元（CPU）与外部设备（如硬盘、打印机、显示器、网络卡等）之间的中介。设备控制器负责管理设备的操作和状态控制，提供设备与CPU之间的通信通道。它的作用是将设备的物理操作转换为计算机可以理解和处理的数字信号，并通过设备驱动程序与操作系统进行交互。</p>
+<p>简言之，设备控制器就是计算机与外部硬件设备之间的“桥梁”，它通过控制设备的输入输出（I&#x2F;O）操作，协调设备的工作。</p>
+<p>确切地说，<strong>设备控制器</strong>的存在正是为了屏蔽不同硬件设备之间的差异，使得操作系统和应用程序可以以统一的方式与不同的硬件进行交互。每种设备（如硬盘、显示器、打印机等）通常会有一个对应的设备控制器组件，该组件负责处理与设备相关的底层操作，简化了操作系统对硬件的管理。下面进一步详细解释这一点。</p>
+<table>
+<thead>
+<tr>
+<th><strong>作用</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>屏蔽硬件差异</strong></td>
+<td>提供统一接口，将不同硬件设备之间的通信协议、数据格式和信号方式等差异抽象化，使操作系统和应用程序无需关心硬件细节。</td>
+<td>操作系统通过相同接口（如文件系统接口）进行硬盘的读写，无论是IDE、SATA硬盘还是SSD，底层控制器处理硬件差异。</td>
+</tr>
+<tr>
+<td><strong>提供统一的操作接口</strong></td>
+<td>操作系统通过设备控制器发出命令，控制设备进行相应的操作。设备控制器将操作系统的高层请求转化为适合硬件的操作。</td>
+<td>操作系统使用通用I&#x2F;O接口进行数据交换（如读&#x2F;写命令），硬盘控制器将高层请求转化为硬盘的具体操作（如数据读取&#x2F;写入）。</td>
+</tr>
+<tr>
+<td><strong>优化硬件资源管理</strong></td>
+<td>管理设备资源，协调多个设备之间的竞争，防止资源冲突，进行资源的合理分配（如内存缓冲、DMA通道等）。</td>
+<td>显卡控制器管理显示缓冲区，硬盘控制器管理数据块分配，确保设备资源不冲突并实现高效数据传输。</td>
+</tr>
+<tr>
+<td><strong>处理设备中断</strong></td>
+<td>接收并处理硬件设备发出的中断请求，当设备完成任务或发生错误时，生成中断信号通知操作系统进行后续处理。</td>
+<td>网络卡控制器接收到数据包后发出中断，操作系统或驱动程序接收并处理这些数据。硬盘控制器在完成数据传输后也会生成中断。</td>
+</tr>
+</tbody></table>
+<p>其中组成部分在<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/01/20/%E5%A4%96%E5%AD%98%E7%AE%A1%E7%90%86/">外存管理 - The Peak Tower</a>有过介绍不多赘述，</p>
+<blockquote>
+<p>那 CPU 是如何与设备的控制寄存器和数据缓冲区进行通信的？</p>
+</blockquote>
+<ul>
+<li><em><strong>端口 I&#x2F;O</strong></em>，每个控制寄存器被分配一个 I&#x2F;O 端口，可以通过特殊的汇编指令操作这些寄存器，比如 <code>in/out</code> 类似的指令。</li>
+<li><em><strong>内存映射 I&#x2F;O</strong></em>，将所有控制寄存器映射到内存空间中，这样就可以像读写内存一样读写数据缓冲区</li>
+</ul>
+<p>I&#x2F;O <strong>控制方式</strong></p>
+<p>在前面我知道，每种设备都有一个设备控制器，控制器相当于一个小 CPU，它可以自己处理一些事情，但有个问题是，当 CPU 给设备发送了一个指令，让设备控制器去读设备的数据，它读完的时候，要怎么通知 CPU 呢？</p>
+<p>在<a href="https://hermes37.vercel.app/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%A4%96%E5%AD%98%E7%AE%A1%E7%90%86/">外存管理 - Hermes</a>同样介绍过，这里简单总结一下</p>
+<table>
+<thead>
+<tr>
+<th><strong>控制方式</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>优缺点</strong></th>
+<th><strong>适用场景</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>轮询（Polling）</strong></td>
+<td>CPU 定期检查设备控制器的状态寄存器，等待设备完成操作并返回结果。</td>
+<td><strong>优点</strong>：实现简单，设备状态查询直观；<strong>缺点</strong>：占用大量 CPU 时间，CPU 需要一直轮询设备，效率低，浪费资源。</td>
+<td>适用于设备操作时间较短且 I&#x2F;O 请求较少的场景。</td>
+</tr>
+<tr>
+<td><strong>中断（Interrupt）</strong></td>
+<td>当设备完成操作时，通过中断机制通知 CPU 停止当前任务并处理中断请求，设备完成 I&#x2F;O 操作后触发中断信号。</td>
+<td><strong>优点</strong>：减少 CPU 空闲时的浪费，CPU 只在有需要时被打断；<strong>缺点</strong>：频繁的中断会导致 CPU 频繁中断当前任务，消耗时间。</td>
+<td>适用于较为复杂、需要响应的设备（如网络卡、打印机等），但不适合频繁 I&#x2F;O 操作的设备。</td>
+</tr>
+<tr>
+<td><strong>DMA（Direct Memory Access）</strong></td>
+<td>设备控制器通过 DMA 控制器将数据直接从设备传输到内存，CPU 只需要在开始和结束时干预，完成数据传输后通过中断通知 CPU。</td>
+<td><strong>优点</strong>：不占用 CPU 处理时间，提升 I&#x2F;O 性能；<strong>缺点</strong>：硬件实现复杂，需要支持 DMA 的设备和 DMA 控制器。</td>
+<td>适用于大规模、高频率的数据传输，如磁盘、网络等，能够减少 CPU 干预，提升整体系统性能。</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2025/01/04/92R8slSg7VjLwF1.png" srcset="/img/loading.gif" lazyload alt="image-20250104092551860"></p>
+<hr>
+<p><strong>引入设备驱动程序</strong>：</p>
+<p>虽然设备控制器屏蔽了设备的众多细节，但每种设备的控制器的寄存器、缓冲区等使用模式都是不同的，所以为了屏蔽「设备控制器」的差异，引入了设备驱动程序。</p>
+<p>设备驱动程序作为操作系统的一部分，它位于操作系统与硬件之间，负责将操作系统的高层请求转换为适合具体硬件的低层命令，并处理硬件设备的控制器寄存器、缓冲区等不同的使用模式。</p>
+<blockquote>
+<p>设备控制器不属于操作系统范畴，它是属于硬件，而设备驱动程序属于操作系统的一部分，操作系统的内核代码可以像本地调用代码一样使用设备驱动程序接口，而设备驱动程序是面向设备控制器的代码，它发出操控设备控制器的指令后，才可以操作设备控制器。</p>
+</blockquote>
+<p><strong>设备驱动程序的功能</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>示例</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>接收命令并转换要求</strong></td>
+<td>设备驱动程序接收来自设备独立性软件的命令和参数，并将命令中的抽象要求转化为具体的硬件指令。例如，磁盘驱动程序将逻辑的磁盘块号转换为物理的盘面、磁道号和扇区号。</td>
+<td>将用户请求中的文件读取操作，转换为具体硬盘的物理寻址操作，如将文件的逻辑块号转化为实际的磁盘块号、盘面号、扇区号。</td>
+</tr>
+<tr>
+<td><strong>检查I&#x2F;O请求的合法性</strong></td>
+<td>设备驱动程序需要检查用户发出的 I&#x2F;O 请求的合法性，确保请求参数正确，同时获取设备当前状态，设置设备的工作模式。</td>
+<td>检查 I&#x2F;O 请求中给定的文件路径是否有效，设备是否空闲，设备是否支持请求的操作（如磁盘是否有足够空间，是否支持特定的读写模式）。</td>
+</tr>
+<tr>
+<td><strong>发出I&#x2F;O命令</strong></td>
+<td>当设备空闲时，驱动程序发出 I&#x2F;O 命令并启动设备完成操作；若设备忙碌，则将请求挂起，等待设备空闲后再执行。</td>
+<td>当用户发出文件读取命令时，如果硬盘空闲，驱动程序立即发出磁盘读取命令；如果硬盘忙碌，驱动程序将该请求加入队列，等待硬盘空闲后再执行。</td>
+</tr>
+<tr>
+<td><strong>响应中断请求</strong></td>
+<td>设备控制器或通道发出的中断信号会通知驱动程序处理设备状态变化或任务完成，驱动程序根据中断类型调用相应的中断处理程序。</td>
+<td>硬盘在完成数据读写后，发送中断信号，驱动程序响应中断，读取硬盘控制器的状态，获取数据，并通知操作系统处理。</td>
+</tr>
+<tr>
+<td><strong>构成通道程序（对于有通道的系统）</strong></td>
+<td>对于支持通道的计算机系统，设备驱动程序根据用户的 I&#x2F;O 请求构成通道程序，指示计算机如何操作设备。</td>
+<td>对于支持 DMA 通道的系统，驱动程序会根据 I&#x2F;O 请求自动生成通道程序，并通过 DMA 控制器将数据从硬盘传输到内存，而无需 CPU 参与。</td>
+</tr>
+</tbody></table>
+<p><strong>设备处理方式</strong>：</p>
+<p>在不同的操作系统中所采用的设备处理方式并不完全相同。根据在设备处理时是否设置进程，以及设置什么样的进程而把设备处理方式分成以下三类：</p>
+<ul>
+<li><p>为每一类设备设置一个进程，专门用于执行这类设备的I&#x2F;O操作。 比如，为所有的交互式终端设置一个交互式终端进程；为同一类型的打印机设置一个打印进程。</p>
+</li>
+<li><p>在整个系统中设置一个I&#x2F;O进程，专门用于执行系统中所有各类设备的I&#x2F;O操作。也可以设置一个输入进程和一个输出进程，分别处理系统中所有各类设备的输入和输出操作。</p>
+</li>
+<li><p>不设置专门的设备处理进程，而只为各类设备设置相应的设备处理程序（模块），供用户进程或系统进程调用。</p>
+</li>
+</ul>
+<p>设备驱动程序处理过程：</p>
+<table>
+<thead>
+<tr>
+<th><strong>步骤</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1）将抽象要求转换为具体要求</strong></td>
+<td>驱动程序将用户和上层软件提出的抽象命令转换为设备控制器能够理解的具体命令。驱动程序负责处理命令、参数和数据，并将它们正确地传递到控制器的寄存器。</td>
+</tr>
+<tr>
+<td><strong>2）检查 I&#x2F;O 请求的合法性</strong></td>
+<td>驱动程序检查用户发出的 I&#x2F;O 请求是否合法，确保请求不超出设备能力范围，避免对设备造成不正常的操作。</td>
+</tr>
+<tr>
+<td><strong>3）读出和检查设备的状态</strong></td>
+<td>驱动程序读取设备的状态信息，判断设备是否处于空闲状态，是否可以接受新的 I&#x2F;O 请求。通常检查设备是否处于 “忙” 状态，避免与其他操作冲突。</td>
+</tr>
+<tr>
+<td><strong>4）传送必要的参数</strong></td>
+<td>对于一些设备（如磁盘等块设备），驱动程序需要将相关参数（如数据传送的字节数、数据存储地址等）传送到设备控制器的相关寄存器中。</td>
+</tr>
+<tr>
+<td><strong>5）工作方式的设置</strong></td>
+<td>设置设备的工作模式，例如确定是同步 I&#x2F;O 还是异步 I&#x2F;O，配置设备的缓冲区、DMA 模式等，以确保设备在合适的工作模式下执行操作。</td>
+</tr>
+<tr>
+<td><strong>6）启动 I&#x2F;O 设备</strong></td>
+<td>向设备控制器发送启动命令，启动 I&#x2F;O 操作。驱动程序之后会将自己阻塞，直到设备完成 I&#x2F;O 操作并通过中断通知驱动程序完成任务。</td>
+</tr>
+</tbody></table>
+<h1 id="与设备无关的I-O软件"><a href="#与设备无关的I-O软件" class="headerlink" title="与设备无关的I&#x2F;O软件"></a>与设备无关的I&#x2F;O软件</h1><p><strong>与设备无关的 I&#x2F;O 软件</strong>是指操作系统中一类不依赖于具体硬件设备的 I&#x2F;O 管理软件模块。它的主要任务是提供一种抽象层，屏蔽不同硬件设备之间的差异，使得上层应用程序和操作系统能够以统一的方式进行 I&#x2F;O 操作，而无需关心具体设备的硬件细节。</p>
+<table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>设备抽象</strong></td>
+<td>与设备无关的 I&#x2F;O 软件提供对设备的抽象，使操作系统和应用程序不直接与硬件设备交互，通过统一的接口（如文件系统接口）访问不同类型的设备（如硬盘、打印机、网络设备等）。</td>
+</tr>
+<tr>
+<td><strong>设备管理</strong></td>
+<td>负责设备的分配、调度和回收。例如，文件系统管理磁盘上的文件，但不直接与硬盘交互，而是通过 I&#x2F;O 软件层实现这一管理功能。</td>
+</tr>
+<tr>
+<td><strong>I&#x2F;O 调度</strong></td>
+<td>根据设备请求进行调度，确保多个 I&#x2F;O 请求按顺序处理。与设备无关的软件负责制定 I&#x2F;O 调度策略，且不关心设备的具体实现。</td>
+</tr>
+<tr>
+<td><strong>统一接口</strong></td>
+<td>提供统一的 API（如读写文件），使得应用程序和操作系统可以通过标准接口进行 I&#x2F;O 操作，这些接口与具体设备实现无关，确保不同硬件设备的兼容性。</td>
+</tr>
+<tr>
+<td><strong>设备驱动模块与 I&#x2F;O 中介</strong></td>
+<td>操作系统通过设备驱动程序与硬件交互，但这些驱动程序由与设备无关的 I&#x2F;O 软件管理，减少应用层对硬件的依赖，使驱动程序专注于硬件操作。</td>
+</tr>
+</tbody></table>
+<p>典型例子：</p>
+<ol>
+<li><strong>文件系统</strong>：文件系统为用户提供了一个统一的接口，使得用户可以通过文件操作命令（如 <code>open</code>、<code>read</code>、<code>write</code>）访问不同类型的存储设备（如硬盘、SSD、网络存储等）。用户无需关心文件存储在何处，如何在磁盘上进行具体的读写操作，这些由与设备无关的 I&#x2F;O 软件处理。</li>
+<li><strong>设备驱动程序接口</strong>：操作系统通过设备驱动程序与具体硬件进行交互，但与设备无关的 I&#x2F;O 软件提供了一个统一的接口给操作系统，操作系统通过这个接口来调用不同的设备驱动程序，而无需关心每种硬件的具体细节。</li>
+<li><strong>标准输入输出流（stdin, stdout, stderr）</strong>：在许多操作系统中，标准输入输出流是由与设备无关的 I&#x2F;O 软件管理的。用户可以通过 <code>printf</code> 输出信息，或通过 <code>scanf</code> 获取输入，而这些操作背后可能会涉及键盘、终端、文件等多种设备，但用户无需了解这些细节。</li>
+</ol>
+<h2 id="设备独立性"><a href="#设备独立性" class="headerlink" title="设备独立性"></a>设备独立性</h2><p>设备独立性（是指操作系统及其应用程序不需要了解底层硬件设备的具体实现细节，而能够通过统一的接口与不同的设备进行交互。通过设备独立性，操作系统提供一个抽象层，屏蔽了硬件的差异，使得应用程序在处理设备时能够实现设备无关操作。</p>
+<p>设备独立性的核心思想是：上层软件（如操作系统和应用程序）通过设备无关的 I&#x2F;O 软件层来与硬件设备交互，而不需要直接控制每个具体硬件的细节。这使得用户可以在不同硬件环境下运行相同的软件，且无需对设备进行修改。</p>
+<p><strong>好处</strong>：</p>
+<ol>
+<li><strong>提高可移植性</strong>：设备独立性使得应用程序和操作系统不依赖于特定的硬件设备。当硬件发生变化时，只需要修改底层的设备驱动程序或硬件抽象层，而不需要更改应用程序或操作系统的其他部分。因此，应用程序可以在不同硬件平台上无缝运行。</li>
+<li><strong>简化应用程序开发</strong>：通过提供统一的接口，开发者不需要了解每个硬件设备的具体细节，如不同硬盘、打印机、显示器等设备的控制方式。开发者只需通过标准的系统调用和接口来进行设备的访问，简化了开发过程。</li>
+<li><strong>增强系统的扩展性</strong>：设备独立性使得系统能够更容易地添加新设备。操作系统只需提供新设备的驱动程序，并将其纳入现有的 I&#x2F;O 软件架构中，无需修改应用程序或核心的其他部分。新的硬件设备可以以最小的代价集成进系统。</li>
+<li><strong>减少硬件依赖性</strong>：在多种硬件平台上，操作系统和应用程序能以相同的方式运行，减少了对特定硬件的依赖。这使得系统能够更好地适应硬件的更新换代，延长软件的生命周期。</li>
+<li><strong>提高兼容性</strong>：设备独立性通过提供统一的接口和抽象，使得不同厂商、不同型号的硬件设备能够与操作系统兼容。用户无需为每个设备配置单独的软件，操作系统能够处理不同硬件设备间的差异，提高了兼容性。</li>
+<li><strong>简化系统维护和更新</strong>：由于硬件与操作系统的关系通过设备驱动程序隔离，系统的维护和更新变得更加容易。如果需要更换或更新硬件，只需更新或替换相关的设备驱动程序，而不需要修改应用程序或操作系统的其他部分。</li>
+</ol>
+<p>设备独立性的实现方式：</p>
+<ol>
+<li><strong>统一的 I&#x2F;O 接口</strong>：操作系统提供统一的 I&#x2F;O 接口，供应用程序进行文件、设备等操作。例如，文件系统通过标准的读写接口来操作硬盘，而不需要关注硬盘的具体型号和工作原理。</li>
+<li><strong>设备抽象层</strong>：操作系统通过设备驱动程序提供对硬件设备的抽象。设备驱动程序将硬件设备的操作抽象为统一的接口，使得上层的软件无需关心设备的具体实现。</li>
+<li><strong>虚拟设备</strong>：操作系统可能使用虚拟设备的方式来实现设备独立性。例如，操作系统会为每种硬件设备创建一个虚拟设备接口，所有硬件设备都通过该虚拟接口与操作系统和应用程序交互。</li>
+</ol>
+<h2 id="I-O-重定向与设备独立性"><a href="#I-O-重定向与设备独立性" class="headerlink" title="I&#x2F;O 重定向与设备独立性"></a>I&#x2F;O 重定向与设备独立性</h2><p><strong>I&#x2F;O 重定向</strong> 是操作系统中一个重要的功能，它允许用户改变标准输入、标准输出和标准错误的默认设备。例如，可以将命令行中的输出重定向到文件，或者将一个程序的输入重定向到另一个程序的输出。通过重定向，用户可以灵活地指定 I&#x2F;O 操作的目标和源，而不必修改程序的代码。</p>
+<p>I&#x2F;O 重定向与设备独立性有紧密关系。由于设备独立性提供了统一的 I&#x2F;O 接口，操作系统和应用程序可以通过标准的文件和设备接口进行交互，I&#x2F;O 重定向正是利用这种抽象能力，允许 I&#x2F;O 操作不受底层硬件或设备的限制。</p>
+<p><strong>I&#x2F;O 重定向如何利用设备独立性</strong>：</p>
+<ol>
+<li><strong>统一的接口</strong>： 设备独立性通过提供统一的文件系统接口，使得 I&#x2F;O 重定向操作可以透明地在不同设备间进行。例如，用户可以通过简单的命令将数据从磁盘重定向到屏幕，或者将标准输出重定向到一个文件。操作系统提供统一的接口来处理这些操作，而不需要考虑设备类型或硬件的具体实现。</li>
+<li><strong>增强的灵活性</strong>： 设备独立性允许操作系统支持多种不同的设备，而 I&#x2F;O 重定向可以使得用户在不改变应用程序代码的情况下，灵活地选择输入输出的目标。这种灵活性是由设备无关的 I&#x2F;O 软件实现的，它通过统一接口屏蔽了硬件差异，使得用户可以根据需要重定向 I&#x2F;O 到不同的设备或文件中。</li>
+<li><strong>简化的应用程序设计</strong>： 设备独立性简化了应用程序的设计，使得应用程序可以忽略硬件设备的细节。应用程序只需要处理标准的输入输出流，而不需要关心数据从哪个设备来或去往哪个设备。因此，I&#x2F;O 重定向在应用程序中变得更加简洁，程序设计不需要为不同的设备编写专门的代码。</li>
+<li><strong>增强的系统可移植性</strong>： 由于设备独立性，程序可以在不同的硬件平台上无缝运行。而 I&#x2F;O 重定向的功能也与设备无关，因此它增强了系统的可移植性。用户可以在不同操作系统或硬件环境中使用相同的 I&#x2F;O 重定向命令，不会受到底层硬件差异的影响。</li>
+</ol>
+<p>具体参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/05-ivyli-19/p/17378319.html">第五章 输入输出系统 5.5 与设备无关的I&#x2F;O软件 - LEE_Minhyung - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38499859/article/details/81172220">操作系统19———IO系统之与设备无关的I&#x2F;O软件&amp;用户层的I&#x2F;O软件_与设备无关性的基本含义是什么? 为什么要设置该层?-CSDN博客</a></p>
+<h1 id="用户层的I-O软件"><a href="#用户层的I-O软件" class="headerlink" title="用户层的I&#x2F;O软件"></a>用户层的I&#x2F;O软件</h1><p>用户层的 I&#x2F;O 软件是操作系统中的一部分，它位于内核层的 I&#x2F;O 子系统与用户程序之间，主要负责向应用程序提供与硬件设备交互的接口。用户层 I&#x2F;O 软件通常提供更高层次的抽象，简化了用户对设备的访问方式，同时也增加了设备访问的灵活性和可移植性。</p>
+<table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>I&#x2F;O 系统调用接口</strong></td>
+<td>提供用户与操作系统之间进行设备交互的接口，包含文件读写、设备控制等常用功能。</td>
+</tr>
+<tr>
+<td><strong>标准 I&#x2F;O 库</strong></td>
+<td>提供易于使用的高层次 API，封装了底层的系统调用，简化了 I&#x2F;O 操作。</td>
+</tr>
+<tr>
+<td><strong>文件系统</strong></td>
+<td>为用户提供统一的文件和目录管理接口，将硬件存储抽象为文件，并支持文件操作、目录操作等。</td>
+</tr>
+<tr>
+<td><strong>设备驱动接口</strong></td>
+<td>提供设备驱动程序的标准接口，用户程序通过这些接口访问硬件设备，而无需关注底层硬件的实现细节。</td>
+</tr>
+<tr>
+<td><strong>设备无关的 I&#x2F;O 软件</strong></td>
+<td>提供设备抽象，屏蔽硬件差异，简化设备的管理和操作，使应用程序与硬件设备无关。</td>
+</tr>
+<tr>
+<td><strong>异步 I&#x2F;O</strong></td>
+<td>允许用户程序在发起 I&#x2F;O 操作时继续执行其他任务，提高了程序的响应性和性能。</td>
+</tr>
+<tr>
+<td><strong>缓存与缓冲区管理</strong></td>
+<td>提供高效的数据缓存和缓冲管理，减少 I&#x2F;O 操作的次数，提高数据访问效率。</td>
+</tr>
+</tbody></table>
+<p>具体参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/tang7mj/article/details/136191815">6.6 用户层的I&#x2F;O软件_用户层软件-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/liyaaixuexi/p/17352046.html">考研408操作系统-SPOOLing技术（假脱机技术） - liya今天学什么 - 博客园</a></p>
+<h1 id="缓冲区管理"><a href="#缓冲区管理" class="headerlink" title="缓冲区管理"></a>缓冲区管理</h1><p>具体参考：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/533321012">操作系统–缓冲管理 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_61888137/article/details/134085322">操作系统缓冲区管理（单缓冲，双缓冲，循环缓冲，缓冲池）_单缓冲区和双缓冲区的问题-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44096670/article/details/121632471">操作系统缓冲区管理（单缓冲、双缓冲、循环缓冲以及缓冲池）_单缓冲区-CSDN博客</a></p>
+<h1 id="磁盘存储器的性能和调度"><a href="#磁盘存储器的性能和调度" class="headerlink" title="磁盘存储器的性能和调度"></a>磁盘存储器的性能和调度</h1><p>具体参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/05-ivyli-19/p/17399022.html">第五章 输入输出系统 5.8 磁盘存储器的性能和调度 - LEE_Minhyung - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_40212930/article/details/105393493">图解五种磁盘调度算法, FCFS, SSTF, SCAN, C-SCAN, LOOK_scan算法-CSDN博客</a></p>
+<blockquote>
+<p>需要留意这里的磁盘调度算法</p>
+</blockquote>
+<hr>
+<p>参考博客</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_26553393/article/details/122239406">1.1.5 中断的概念和作用、内部中断、外部中断、中断机制的基本原理_处理器中断-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_73077810/article/details/136356343">如何理解操作系统中的设备控制与设备驱动程序？_设备驱动程序和设备控制器-CSDN博客</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机科学与技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="print-no-link">#操作系统</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>外存管理</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机科学与技术/操作系统/外存管理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91(%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84)/" title="树(数据结构)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">树(数据结构)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6%E4%B8%8E%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="内存管理">
+                        <span class="hidden-mobile">内存管理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
