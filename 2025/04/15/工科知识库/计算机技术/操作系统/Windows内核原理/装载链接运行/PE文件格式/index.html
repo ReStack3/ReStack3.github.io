@@ -1,0 +1,1196 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="PE文件格式概述PE（Portable Executable）文件格式是Windows操作系统下可执行文件、动态链接库（DLL）和设备驱动程序的标准文件格式，由Microsoft设计并广泛应用于32位（PE32）和64位（PE32+）系统中。 其结构基于COFF（Common Object File Format）规范，通过分层组织将程序代码、数据、资源和元数据整合为单一文件。PE文件以DOS头">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PE文件格式">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/04/15/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="PE文件格式概述PE（Portable Executable）文件格式是Windows操作系统下可执行文件、动态链接库（DLL）和设备驱动程序的标准文件格式，由Microsoft设计并广泛应用于32位（PE32）和64位（PE32+）系统中。 其结构基于COFF（Common Object File Format）规范，通过分层组织将程序代码、数据、资源和元数据整合为单一文件。PE文件以DOS头">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/NaWhZAxPT7EVswj.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/fuCN3ZeGhHVX7gT.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/RD4wqX1nhHauvYP.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/h5yqBCpYWAamVE7.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/5mdNMe7lj4WzwyI.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/6jERFm2cdulhWft.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/J1YbAph7yPzfEdK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/gUDs3qFy9ihQuWd.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/4IajiVPyTZwstOm.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/6U3EwrkvtLCy4Qz.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/Cn4Y7X8SjKaRkuG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/4JxqWI7MLcelBG8.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/DEQdV4B1ZfNztP9.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/sEx38tAdckyZHLw.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/r8zZJu9Uvo2B7TK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/VhtviZJWYQ6aw3f.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/fdqjm53bpe2HtU6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/yxRw4AuDvhSZbYp.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/hAPTkqxJLuzc1Nl.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/16/xZAX6oEFKPhSLBr.png">
+<meta property="article:published_time" content="2025-04-15T13:11:33.998Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:57.776Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/05/16/NaWhZAxPT7EVswj.png">
+  
+  
+  
+  <title>PE文件格式 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PE文件格式"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          50 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PE文件格式</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/05/16/NaWhZAxPT7EVswj.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="PE文件格式概述"><a href="#PE文件格式概述" class="headerlink" title="PE文件格式概述"></a>PE文件格式概述</h1><p>PE（Portable Executable）文件格式是Windows操作系统下可执行文件、动态链接库（DLL）和设备驱动程序的标准文件格式，由Microsoft设计并广泛应用于32位（PE32）和64位（PE32+）系统中。</p>
+<p>其结构基于COFF（Common Object File Format）规范，通过分层组织将程序代码、数据、资源和元数据整合为单一文件。PE文件以DOS头（<code>IMAGE_DOS_HEADER</code>）开头，保留对旧版DOS系统的兼容性，随后通过<code>e_lfanew</code>字段定位到真正的PE头（<code>IMAGE_NT_HEADERS</code>），其中包含签名、文件头（<code>IMAGE_FILE_HEADER</code>）和可选头（<code>IMAGE_OPTIONAL_HEADER</code>）。</p>
+<p>文件头定义机器类型、节表数量等基础属性，而可选头则详细说明入口点、内存对齐、镜像基址、子系统类型及数据目录表（<code>DataDirectory</code>）等关键信息。数据目录表指向16种核心数据结构（如导入表、导出表、资源表、重定位表等），这些结构支撑动态链接、资源管理和地址修正等功能。紧随头部的是节表（<code>IMAGE_SECTION_HEADER</code>），描述各节（如<code>.text</code>、<code>.data</code>、<code>.rsrc</code>等）的名称、内存偏移、文件大小及访问权限（读&#x2F;写&#x2F;执行），最终通过节的实际数据完成代码与数据的物理布局。</p>
+<p>PE格式通过内存映射（Memory-Mapping）机制实现高效加载，结合重定位表和导入&#x2F;导出表支持模块化编程，同时利用资源表管理非代码资产，是Windows生态中程序执行与扩展的基石。</p>
+<p><img src="https://s2.loli.net/2025/05/16/fuCN3ZeGhHVX7gT.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>典型PE文件布局（32位示例）</strong></p>
+<table>
+<thead>
+<tr>
+<th align="center">结构</th>
+<th align="center">偏移</th>
+<th align="center">大小（字节）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">DOS头</td>
+<td align="center">0x00000000</td>
+<td align="center">64</td>
+</tr>
+<tr>
+<td align="center">DOS存根</td>
+<td align="center">0x00000040</td>
+<td align="center">可变（如64）</td>
+</tr>
+<tr>
+<td align="center">PE签名</td>
+<td align="center">0x00000080</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">文件头</td>
+<td align="center">0x00000084</td>
+<td align="center">20</td>
+</tr>
+<tr>
+<td align="center">可选头（32位）</td>
+<td align="center">0x00000098</td>
+<td align="center">224</td>
+</tr>
+<tr>
+<td align="center">节表（3个节）</td>
+<td align="center">0x00000178</td>
+<td align="center">120（3×40）</td>
+</tr>
+<tr>
+<td align="center">.text节数据</td>
+<td align="center">0x00000200</td>
+<td align="center">按对齐填充</td>
+</tr>
+<tr>
+<td align="center">.data节数据</td>
+<td align="center">可变</td>
+<td align="center">按对齐填充</td>
+</tr>
+</tbody></table>
+<h1 id="PE文件的两种状态"><a href="#PE文件的两种状态" class="headerlink" title="PE文件的两种状态"></a>PE文件的两种状态</h1><p>PE文件在生命周期中存在两种状态，分别对应不同的物理形态和用途：</p>
+<h2 id="磁盘存储状态（File-Image）"><a href="#磁盘存储状态（File-Image）" class="headerlink" title="磁盘存储状态（File Image）"></a><strong>磁盘存储状态（File Image）</strong></h2><ul>
+<li>以完整的文件形式保存在硬盘中，按照PE文件格式规范严格排列</li>
+<li>各节区（Section）按文件对齐（File Alignment，通常512字节或4KB）存储</li>
+<li>包含所有头部信息、未解析的导入表和调试符号等辅助数据</li>
+<li>重定位表、资源数据等保持原始RVA（相对虚拟地址）形式</li>
+<li>特征：存在文件头冗余数据（如DOS Stub）、部分节区可能被压缩或加密</li>
+</ul>
+<h2 id="内存运行状态（Memory-Image）"><a href="#内存运行状态（Memory-Image）" class="headerlink" title="内存运行状态（Memory Image）"></a><strong>内存运行状态（Memory Image）</strong></h2><ul>
+<li>由系统加载器映射到进程虚拟地址空间后的形态</li>
+<li>节区按内存对齐（Section Alignment，通常4KB）重新排布</li>
+<li>导入表被解析为实际函数地址（IAT填充），重定位表完成地址修正</li>
+<li>资源数据可通过内存API直接访问，调试信息可能被剥离</li>
+<li>特征：代码段获得执行权限，.bss节区被扩展为可写内存，部分节区（如.reloc）可能被丢弃</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/RD4wqX1nhHauvYP.png" srcset="/img/loading.gif" lazyload></p>
+<p>这两种状态的转换由Windows加载器（Loader）完成，涉及文件映射、地址修正、依赖解析等关键步骤，是PE文件执行的基础机制。</p>
+<h2 id="RVA与FOA的转换"><a href="#RVA与FOA的转换" class="headerlink" title="RVA与FOA的转换"></a>RVA与FOA的转换</h2><p><img src="https://s2.loli.net/2025/05/16/h5yqBCpYWAamVE7.png" srcset="/img/loading.gif" lazyload></p>
+<p>在前面我们知道PE文件有两种状态:</p>
+<ol>
+<li><strong>磁盘状态</strong>：PE文件以紧凑的格式存储在磁盘上，各节(section)按文件对齐方式排列</li>
+<li><strong>内存状态</strong>：PE文件被加载到内存后，各节按内存对齐方式排列，且可能有不同的布局</li>
+</ol>
+<p>由于这两种状态下PE文件的结构不同，导致同一数据在磁盘文件和内存中的位置偏移量不同,那么就存在不同的地址表示形式：</p>
+<ol>
+<li><strong>RVA (Relative Virtual Address，相对虚拟地址)<strong>：相对于PE文件加载到内存后的基地址的偏移量，【</strong>FileAlignment</strong>：磁盘上节的对齐粒度(通常512字节或4KB)】</li>
+<li><strong>FOA (File Offset Address，文件偏移地址)<strong>：PE文件在磁盘上的原始偏移地址。【</strong>SectionAlignment</strong>：内存中节的对齐粒度(通常4KB或64KB)】</li>
+</ol>
+<p>从磁盘状态转化成内存状态就是所谓的<strong>RVA与FOA的转换</strong>:</p>
+<blockquote>
+<p>RVA&#x3D;内存地址-ImageBase</p>
+</blockquote>
+<ol>
+<li><code>SectionAlignment</code>和<code>FileAlignment</code>是否相同，<strong>RVA是否在PE头中</strong>。&#x3D;&#x3D;&#x3D;&gt;如果相同，则 RVA&#x3D;FOA</li>
+<li>判断RVA在哪个节中：[节.VirtualAddress]&lt;&#x3D;ROV&lt;&#x3D;[节.VirtualAddress+当前节内存对齐后的大小(SectionAlignment)]</li>
+<li>FOA&#x3D;节.PointerToRawData+差值(RVA-节.VirtualAddress)</li>
+</ol>
+<h1 id="PE文件整体结构解析"><a href="#PE文件整体结构解析" class="headerlink" title="PE文件整体结构解析"></a>PE文件整体结构解析</h1><p>之前我们已经按照PE文件的整体结构对实际的PE文件进行了大致上的了解了，现在我们需要来看看每个结构的意义和作用。</p>
+<h2 id="DOS头"><a href="#DOS头" class="headerlink" title="DOS头"></a>DOS头</h2><p>DOS头是PE文件结构中最开始的部分，全称为”MS-DOS头部”或”IMAGE_DOS_HEADER”。它是一个固定大小的数据结构，位于PE文件的最开头（偏移0处），主要作用是保持与早期MS-DOS系统的兼容性。DOS 程序包含了一个 DOS 头部和一个 DOS 程序体（ DOS 存根或 DOS 残留）。DOS 头是用来装载 DOS 存根用的。</p>
+<h3 id="MZ-头部"><a href="#MZ-头部" class="headerlink" title="MZ 头部"></a>MZ 头部</h3><p>DOS MZ文件头就是一个结构体IMAGE_DOS_HEADER，其定义如下所示：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_DOS_HEADER</span> &#123;</span>      <span class="hljs-comment">// DOS .EXE header | DOS可执行文件头</span><br>    WORD   e_magic;                     <span class="hljs-comment">// Magic number | 魔术数字 &quot;MZ&quot;(0x5A4D)</span><br>    WORD   e_cblp;                      <span class="hljs-comment">// Bytes on last page of file | 文件最后一页的字节数</span><br>    WORD   e_cp;                        <span class="hljs-comment">// Pages in file | 文件中的页数</span><br>    WORD   e_crlc;                      <span class="hljs-comment">// Relocations | 重定位项数</span><br>    WORD   e_cparhdr;                   <span class="hljs-comment">// Size of header in paragraphs | 头部大小(以段落计)</span><br>    WORD   e_minalloc;                  <span class="hljs-comment">// Minimum extra paragraphs needed | 所需最小额外内存(段落)</span><br>    WORD   e_maxalloc;                  <span class="hljs-comment">// Maximum extra paragraphs needed | 所需最大额外内存(段落)</span><br>    WORD   e_ss;                        <span class="hljs-comment">// Initial (relative) SS value | 初始SS寄存器值(相对)</span><br>    WORD   e_sp;                        <span class="hljs-comment">// Initial SP value | 初始SP寄存器值</span><br>    WORD   e_csum;                      <span class="hljs-comment">// Checksum | 校验和</span><br>    WORD   e_ip;                        <span class="hljs-comment">// Initial IP value | 初始IP寄存器值</span><br>    WORD   e_cs;                        <span class="hljs-comment">// Initial (relative) CS value | 初始CS寄存器值(相对)</span><br>    WORD   e_lfarlc;                    <span class="hljs-comment">// File address of relocation table | 重定位表文件地址</span><br>    WORD   e_ovno;                      <span class="hljs-comment">// Overlay number | 覆盖号</span><br>    WORD   e_res[<span class="hljs-number">4</span>];                    <span class="hljs-comment">// Reserved words | 保留字(4个)</span><br>    WORD   e_oemid;                     <span class="hljs-comment">// OEM identifier (for e_oeminfo) | OEM标识符(用于e_oeminfo)</span><br>    WORD   e_oeminfo;                   <span class="hljs-comment">// OEM information; e_oemid specific | OEM信息(与e_oemid相关)</span><br>    WORD   e_res2[<span class="hljs-number">10</span>];                  <span class="hljs-comment">// Reserved words | 保留字(10个)</span><br>    LONG   e_lfanew;                    <span class="hljs-comment">// File address of new exe header | 新EXE头(PE头)的文件偏移</span><br>&#125; IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;<br></code></pre></td></tr></table></figure>
+
+<p>注意这里的关键字段：</p>
+<ul>
+<li>**e_magic (2字节)**：DOS签名，固定为”MZ”（十六进制0x5A4D），用于标识这是一个有效的DOS可执行文件</li>
+<li>**e_lfanew (4字节)**：最重要的字段，指示PE头（NT头）在文件中的偏移位置，现代PE文件中，这个值通常为0x00000080（128字节）</li>
+<li><strong>其他DOS相关字段</strong>：如e_ss、e_sp、e_ip、e_cs等，用于16位DOS程序的执行，在现代Windows PE文件中这些字段基本不再使用</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/5mdNMe7lj4WzwyI.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="DOS-存根"><a href="#DOS-存根" class="headerlink" title="DOS 存根"></a>DOS 存根</h3><p>在DOS头和PE头之间通常包含一个<strong>DOS存根程序</strong>（DOS Stub）：</p>
+<ul>
+<li>一段小型DOS可执行代码</li>
+<li>当文件在DOS下运行时显示”This program cannot be run in DOS mode”之类的提示</li>
+<li>大小不固定，由链接器决定</li>
+<li>可以通过修改e_lfanew的值来跳过</li>
+</ul>
+<p>这里面的内容可以根据自己的需要随意的修改和添加，并不会影响文件的正常运行。</p>
+<p><img src="https://s2.loli.net/2025/05/16/6jERFm2cdulhWft.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="PE头"><a href="#PE头" class="headerlink" title="PE头"></a>PE头</h2><p>PE头是PE文件结构的核心部分，位于DOS头（通过<code>e_lfanew</code>字段定位）之后，它完整定义了PE文件的执行特征和内存布局。PE头由三个关键部分组成，形成一个层次化的结构体系：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_NT_HEADERS</span> &#123;</span><br>    DWORD Signature; <span class="hljs-comment">// PE标识</span><br>    IMAGE_FILE_HEADER FileHeader; <span class="hljs-comment">// 标准PE头</span><br>    IMAGE_OPTIONAL_HEADER32 OptionalHeader; <span class="hljs-comment">// 扩展PE头</span><br>&#125; IMAG<br></code></pre></td></tr></table></figure>
+
+<p>注意：<strong>PE签名（Signature）</strong></p>
+<ul>
+<li>4字节的魔数标识，固定为”PE\0\0”（十六进制0x00004550）</li>
+<li>作为PE文件的第二重验证标志（第一重是DOS头的”MZ”签名）</li>
+<li>若此签名损坏或不存在，系统会拒绝加载该可执行文件</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/J1YbAph7yPzfEdK.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="标准PE头"><a href="#标准PE头" class="headerlink" title="标准PE头"></a>标准PE头</h3><p>20字节的固定结构，包含PE文件的元信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_FILE_HEADER</span> &#123;</span><br>    WORD    Machine; <span class="hljs-comment">// 指定目标CPU架构（如0x014C=x86，0x8664=x64）</span><br>    WORD    NumberOfSections; <span class="hljs-comment">// 声明节区（section）的数量</span><br>    DWORD   TimeDateStamp; <span class="hljs-comment">// 编译器填写的时间戳</span><br>    DWORD   PointerToSymbolTable; <span class="hljs-comment">//调试符号表偏移（现代PE通常为0）</span><br>    DWORD   NumberOfSymbols; <span class="hljs-comment">// 符号表中符号数量</span><br>    WORD    SizeOfOptionalHeader; <span class="hljs-comment">// 后续扩展头的大小（决定32/64位格式）</span><br>    WORD    Characteristics; <span class="hljs-comment">// 文件属性位掩码（如DLL标志、可执行标志等）</span><br>&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;<br></code></pre></td></tr></table></figure>
+
+<p>二进制表示：</p>
+<p><img src="https://s2.loli.net/2025/05/16/gUDs3qFy9ihQuWd.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>注意这里的<code>SizeOfOptionalHeader</code> 为 <strong>224 字节</strong>（<code>0xE0</code>），对应了扩展头的大小</p>
+</blockquote>
+<h3 id="扩展PE头"><a href="#扩展PE头" class="headerlink" title="扩展PE头"></a>扩展PE头</h3><p>虽然名为”可选”，但实际是所有有效PE文件必须包含的部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_OPTIONAL_HEADER</span> &#123;</span><br>    WORD    Magic; <span class="hljs-comment">// PE32：10B PE32+：20B</span><br>    BYTE    MajorLinkerVersion; <span class="hljs-comment">// 链接器版本号</span><br>    BYTE    MinorLinkerVersion; <span class="hljs-comment">// 链接器版本号</span><br>    DWORD   SizeOfCode; <span class="hljs-comment">// 所有代码节的总和（文件对齐后的大小），编译器填的（没用）</span><br>    DWORD   SizeOfInitializedData; <span class="hljs-comment">// 包含所有已经初始化数据的节的总大小（文件对齐后的大小），编译器填的（没用）</span><br>    DWORD   SizeOfUninitializedData; <span class="hljs-comment">// 包含未初始化数据的节的总大小（文件对齐后的大小），编译器填的（没用）</span><br>    DWORD   AddressOfEntryPoint; <span class="hljs-comment">// 程序入口（RVA）</span><br>    DWORD   BaseOfCode; <span class="hljs-comment">// 代码开始的基址，编译器填的（没用）</span><br>    DWORD   BaseOfData; <span class="hljs-comment">// 数据开始的基址，编译器填的（没用）</span><br>    DWORD   ImageBase; <span class="hljs-comment">// 内存镜像基址,</span><br>    DWORD   SectionAlignment; <span class="hljs-comment">// 内存对齐</span><br>    DWORD   FileAlignment; <span class="hljs-comment">// 文件对齐</span><br>    WORD    MajorOperatingSystemVersion; <span class="hljs-comment">// 标识操作系统版本号，主版本号</span><br>    WORD    MinorOperatingSystemVersion; <span class="hljs-comment">// 标识操作系统版本号，次版本号</span><br>    WORD    MajorImageVersion; <span class="hljs-comment">// PE文件自身的版本号 </span><br>    WORD    MinorImageVersion; <span class="hljs-comment">// PE文件自身的版本号</span><br>    WORD    MajorSubsystemVersion; <span class="hljs-comment">// 运行所需子系统版本号</span><br>    WORD    MinorSubsystemVersion; <span class="hljs-comment">// 运行所需子系统版本号</span><br>    DWORD   Win32VersionValue; <span class="hljs-comment">// 子系统版本的值，必须为0</span><br>    DWORD   SizeOfImage; <span class="hljs-comment">// 内存中整个PE文件的映射的尺寸</span><br>    DWORD   SizeOfHeaders; <span class="hljs-comment">// 所有头加节表按照文件对齐后的大小，否则加载会出错</span><br>    DWORD   CheckSum; <span class="hljs-comment">// 校验和</span><br>    WORD    Subsystem; <span class="hljs-comment">// 子系统，驱动程序(1)、图形界面(2) 、控制台/DLL(3)</span><br>    WORD    DllCharacteristics; <span class="hljs-comment">// 文件特性</span><br>    DWORD   SizeOfStackReserve; <span class="hljs-comment">// 初始化时保留的栈大小 </span><br>    DWORD   SizeOfStackCommit; <span class="hljs-comment">// 初始化时实际提交的大小 </span><br>    DWORD   SizeOfHeapReserve; <span class="hljs-comment">// 初始化时保留的堆大小</span><br>    DWORD   SizeOfHeapCommit; <span class="hljs-comment">// 初始化时实践提交的大小 </span><br>    DWORD   LoaderFlags; <span class="hljs-comment">// 调试相关</span><br>    DWORD   NumberOfRvaAndSizes; <span class="hljs-comment">// 目录项数目</span><br>    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES]; <span class="hljs-comment">// 表，结构体数组</span><br>&#125; IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;<br></code></pre></td></tr></table></figure>
+
+<p>关键字段解析：</p>
+<ul>
+<li><strong>32位版本（224字节）</strong>：Magic值为0x010B</li>
+<li><strong>64位版本（240字节）</strong>：Magic值为0x020B<br>包含关键运行时信息：</li>
+<li><strong>入口点</strong>：AddressOfEntryPoint（4字节）指定程序执行的起始RVA</li>
+<li><strong>内存对齐</strong>：SectionAlignment（4字节）和FileAlignment（4字节）定义内存&#x2F;磁盘对齐规则</li>
+<li><strong>子系统</strong>：Subsystem（2字节）区分GUI&#x2F;CUI&#x2F;驱动等类型</li>
+<li><strong>数据目录</strong>：DataDirectory[16]（每个8字节）指向导入表、导出表、重定位表等关键数据结构</li>
+<li>成员<strong>CheckSum表示校验和，是用来判断文件是否被修改的</strong>，它的计算方法就是文件的两个字节与两个字节相加，最终的值（不考虑溢出情况）就是校验和。</li>
+</ul>
+<p>同时这里面在内存布局有着关键作用，PE头通过多个字段协同定义内存映射规则：</p>
+<ul>
+<li><strong>ImageBase</strong>：建议加载基地址（4&#x2F;8字节）</li>
+<li><strong>SizeOfImage</strong>：整个PE映像占用的虚拟内存大小</li>
+<li><strong>SizeOfHeaders</strong>：所有头结构（DOS头+PE头+节表）的总大小</li>
+<li><strong>数据目录</strong>：16个预定义的数据结构位置（如导入表RVA和大小）</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/4IajiVPyTZwstOm.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p><strong><code>DataDirectory</code> 之前的结构体部分固定占 96 字节。</strong></p>
+</blockquote>
+<h4 id="DataDirectory-数组"><a href="#DataDirectory-数组" class="headerlink" title="DataDirectory 数组"></a><strong>DataDirectory 数组</strong></h4><p>DataDirectory（数据目录）是PE文件结构中最重要的指针系统之一，它位于PE头的OptionalHeader末尾，作为PE文件与操作系统加载器之间的”通信枢纽”，指示了PE文件中关键数据结构的位置和大小。</p>
+<p>DataDirectory是一个包含16个元素的固定数组，每个元素是一个8字节的结构，即每个 <code>IMAGE_DATA_DIRECTORY</code> 条目包含两个字段：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_DATA_DIRECTORY</span> &#123;</span><br>    DWORD VirtualAddress; <span class="hljs-comment">// 数据的起始RVA（相对虚拟地址）</span><br>    DWORD Size;           <span class="hljs-comment">// 数据的大小（字节）</span><br>&#125; IMAGE_DATA_DIRECTORY;<br></code></pre></td></tr></table></figure>
+
+<p>每个数组索引对应特定的数据类型（WinNT.h中定义）：</p>
+<table>
+<thead>
+<tr>
+<th align="left">索引</th>
+<th align="left">宏定义</th>
+<th align="left">用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">0</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_EXPORT</code></td>
+<td align="left"><strong>导出表</strong>（DLL的导出函数信息）</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_IMPORT</code></td>
+<td align="left"><strong>导入表</strong>（依赖的外部DLL和函数）</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_RESOURCE</code></td>
+<td align="left"><strong>资源表</strong>（图标、字符串、版本信息等）</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_EXCEPTION</code></td>
+<td align="left">异常处理表（x64或特定平台）</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_SECURITY</code></td>
+<td align="left">数字签名（证书数据，非内存映射）</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_BASERELOC</code></td>
+<td align="left"><strong>重定位表</strong>（地址修正信息）</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_DEBUG</code></td>
+<td align="left">调试信息（如PDB文件路径）</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_ARCHITECTURE</code></td>
+<td align="left">架构特定数据（通常为0）</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_GLOBALPTR</code></td>
+<td align="left">全局指针寄存器（RVA，已弃用）</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_TLS</code></td>
+<td align="left"><strong>TLS（线程局部存储）表</strong></td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG</code></td>
+<td align="left">加载配置表（安全特性）</td>
+</tr>
+<tr>
+<td align="left">11</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT</code></td>
+<td align="left">绑定导入表（加速DLL加载）</td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_IAT</code></td>
+<td align="left"><strong>导入地址表（IAT）</strong></td>
+</tr>
+<tr>
+<td align="left">13</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT</code></td>
+<td align="left">延迟加载导入表</td>
+</tr>
+<tr>
+<td align="left">14</td>
+<td align="left"><code>IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR</code></td>
+<td align="left">COM运行时信息（.NET程序集）</td>
+</tr>
+<tr>
+<td align="left">15</td>
+<td align="left">（保留）</td>
+<td align="left">未使用</td>
+</tr>
+</tbody></table>
+<h5 id="导出表"><a href="#导出表" class="headerlink" title="导出表"></a>导出表</h5><p>导出表是PE文件中定义模块（通常是DLL）向外部暴露函数和数据的核心数据结构，它使其他程序能够通过名称或序号调用该模块提供的功能。作为PE文件数据目录(DataDirectory)的第一个条目（索引0），导出表在Windows模块动态链接中扮演着关键角色。</p>
+<h6 id="导出目录结构"><a href="#导出目录结构" class="headerlink" title="导出目录结构"></a>导出目录结构</h6><p>导出表基础结构就是导出目录结构（IMAGE_EXPORT_DIRECTORY）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_EXPORT_DIRECTORY</span> &#123;</span><br>    DWORD   Characteristics;      <span class="hljs-comment">// 保留，通常为0</span><br>    DWORD   TimeDateStamp;        <span class="hljs-comment">// 编译时间戳</span><br>    WORD    MajorVersion;         <span class="hljs-comment">// 主版本号（通常为0）</span><br>    WORD    MinorVersion;         <span class="hljs-comment">// 次版本号（通常为0）</span><br>    DWORD   Name;                <span class="hljs-comment">// RVA，指向DLL名称字符串（如&quot;kernel32.dll&quot;）</span><br>    DWORD   Base;                <span class="hljs-comment">// 导出函数的起始序号（通常为1）</span><br>    DWORD   NumberOfFunctions;   <span class="hljs-comment">// 导出函数的总数</span><br>    DWORD   NumberOfNames;       <span class="hljs-comment">// 按名称导出的函数数量（≤NumberOfFunctions）</span><br>    DWORD   AddressOfFunctions;  <span class="hljs-comment">// RVA，指向函数地址数组（每个元素为RVA）</span><br>    DWORD   AddressOfNames;      <span class="hljs-comment">// RVA，指向函数名称数组（每个元素为RVA）</span><br>    DWORD   AddressOfNameOrdinals;<span class="hljs-comment">// RVA，指向函数序号数组（每个元素为WORD）</span><br>&#125; IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;<br></code></pre></td></tr></table></figure>
+
+<h6 id="三表联动机制"><a href="#三表联动机制" class="headerlink" title="三表联动机制"></a><strong>三表联动机制</strong></h6><p>导出表通过三个关键数组实现名称-地址映射：</p>
+<ul>
+<li><strong>函数地址表（EAT）</strong>：存储所有导出函数的RVA</li>
+<li><strong>函数名称表（ENT）</strong>：存储有名称导出的函数名称字符串RVA</li>
+<li><strong>序号表（EOT）</strong>：存储名称对应在EAT中的索引</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/6U3EwrkvtLCy4Qz.png" srcset="/img/loading.gif" lazyload></p>
+<h6 id="导出表查找流程"><a href="#导出表查找流程" class="headerlink" title="导出表查找流程"></a>导出表查找流程</h6><p><img src="https://s2.loli.net/2025/05/16/Cn4Y7X8SjKaRkuG.png" srcset="/img/loading.gif" lazyload></p>
+<p>按名称查找：</p>
+<ol>
+<li>在ENT中二分查找目标名称字符串</li>
+<li>获取对应EOT中的索引值</li>
+<li>通过索引从EAT获取函数RVA</li>
+</ol>
+<p>按序号查找：</p>
+<ol>
+<li>计算EAT索引 &#x3D; 请求序号 - Base</li>
+<li>直接访问EAT获取函数RVA</li>
+<li>若索引超出范围或RVA为0则失败</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/05/16/4JxqWI7MLcelBG8.jpg" srcset="/img/loading.gif" lazyload></p>
+<h5 id="导入表"><a href="#导入表" class="headerlink" title="导入表"></a>导入表</h5><p>导出表是PE文件（特别是DLL）中定义模块对外接口的核心数据结构，它建立了函数名称&#x2F;序号与内存地址之间的映射关系。作为Windows动态链接机制的基础，导出表直接支持<code>GetProcAddress()</code>等关键API的功能实现。</p>
+<h6 id="导出目录头"><a href="#导出目录头" class="headerlink" title="导出目录头"></a>导出目录头</h6><p>导出表核心结构就是 导出目录头（IMAGE_EXPORT_DIRECTORY）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_IMPORT_DESCRIPTOR</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>        DWORD   Characteristics;      <span class="hljs-comment">// 0: 保留字段（旧版PE工具可能使用）</span><br>        DWORD   OriginalFirstThunk;   <span class="hljs-comment">// RVA，指向导入名称表（INT, Import Name Table）</span><br>    &#125;;<br>    DWORD   TimeDateStamp;            <span class="hljs-comment">// 绑定时间戳（未绑定时为0）</span><br>    DWORD   ForwarderChain;           <span class="hljs-comment">// 转发链索引（通常为0）</span><br>    DWORD   Name;                     <span class="hljs-comment">// RVA，指向依赖的DLL名称字符串（如&quot;kernel32.dll&quot;）</span><br>    DWORD   FirstThunk;               <span class="hljs-comment">// RVA，指向导入地址表（IAT, Import Address Table）</span><br>&#125; IMAGE_IMPORT_DESCRIPTOR;<br></code></pre></td></tr></table></figure>
+
+<h6 id="双表机制"><a href="#双表机制" class="headerlink" title="双表机制"></a>双表机制</h6><p>每个导入DLL对应两个关键数组：</p>
+<ul>
+<li><strong>INT（Import Name Table）</strong>：存储函数名称&#x2F;序号信息（只读）</li>
+<li><strong>IAT（Import Address Table）</strong>：运行时被加载器填充为实际地址（可写）</li>
+</ul>
+<p>其工作在磁盘中的结构如下：</p>
+<p><img src="https://s2.loli.net/2025/05/16/DEQdV4B1ZfNztP9.png" srcset="/img/loading.gif" lazyload></p>
+<p>仔细观察上图，会发现：虽然这两个成员指向是不同的表（地址不一样）但是内容却是一样的，我们通过两个成员都可以找到当前所依赖模块中的函数。因此，我们就选择一个成员去寻找到依赖函数即可，我在这里选择了第一个成员OriginalFirstThunk。</p>
+<p>第一个成员指向的就是一个INT，这张表中的成员就是如下结构体，这个结构体中就只有一个联合体，它的宽度就是4字节：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_THUNK_DATA32</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span><br>        DWORD ForwarderString;        <span class="hljs-comment">// 转发字符串的RVA（罕见）</span><br>        DWORD Function;               <span class="hljs-comment">// 函数的内存地址（加载后由系统填充）</span><br>        DWORD Ordinal;                <span class="hljs-comment">// 函数的导出序号（最高位为1时）</span><br>        DWORD AddressOfData;          <span class="hljs-comment">// RVA，指向IMAGE_IMPORT_BY_NAME结构（最高位为0时）</span><br>    &#125; u1;<br>&#125; IMAGE_THUNK_DATA32;<br></code></pre></td></tr></table></figure>
+
+<p>INT里有很多个这种结构体，它与导入表一样，<strong>当遇见与该结构体相同宽度的一段0x00填充的数据则该表就结束了</strong>。同样，在这张表中发现结构体的数量，就表示你依赖该模块的函数数量。</p>
+<p>在解析PE文件的导入表时，对于每个<code>_IMAGE_THUNK_DATA32</code>条目，需要按照以下逻辑处理：</p>
+<p>1.判断导入方式，首先检查<code>_IMAGE_THUNK_DATA32</code>值的最高位(MSB)：</p>
+<ul>
+<li><strong>如果最高位为1</strong>：<strong>表示通过序号导入</strong>。去除最高位后，剩下的31位值就是函数的导出序号，直接使用这个序号在目标DLL的导出表中查找函数</li>
+<li><strong>如果最高位为0</strong>：<strong>表示通过名称导入</strong>。该值是一个RVA(相对虚拟地址)，指向<code>_IMAGE_IMPORT_BY_NAME</code>结构</li>
+</ul>
+<p>2.解析<code>_IMAGE_IMPORT_BY_NAME</code>结构。当通过名称导入时，该结构包含以下信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_IMPORT_BY_NAME</span> &#123;</span><br>    WORD    Hint;                     <span class="hljs-comment">// 导出函数的提示码（可选，用于加速查找）</span><br>    CHAR    Name[<span class="hljs-number">1</span>];                  <span class="hljs-comment">// 函数名称字符串（以NULL结尾，变长）</span><br>&#125; IMAGE_IMPORT_BY_NAME;<br></code></pre></td></tr></table></figure>
+
+<p>具体解析要点：</p>
+<ul>
+<li><strong>Hint字段</strong>（2字节）：可能为0（表示无提示）。如果不为0，它是函数在导出表中的<strong>建议索引</strong>（可加速查找，但不保证正确）</li>
+<li><strong>Name字段</strong>：虽然声明为<code>CHAR Name[1]</code>，但实际上是一个<strong>以NULL结尾的ASCII字符串</strong>，需要从该位置开始读取字符，直到遇到0x00字节为止，这个完整字符串才是要导入的函数名称</li>
+</ul>
+<p>这里注意在PE加载到内存前后导入表会发生如下变化：</p>
+<p>在PE文件<strong>加载前</strong>：IAT（Import Address Table）中存储的是<code>_IMAGE_THUNK_DATA32</code>结构（这些条目可能是函数名称的RVA或函数的导出序号）</p>
+<p>在PE文件<strong>加载后</strong>：PE加载器会解析所有导入函数，将实际的函数内存地址直接写入IAT中的对应位置，此时IAT中的每个条目不再是描述信息，而是真正的函数指针</p>
+<p><img src="https://s2.loli.net/2025/05/16/sEx38tAdckyZHLw.png" srcset="/img/loading.gif" lazyload></p>
+<p>事实上我们在使用依赖模块的函数时，实际上是间接调用，调用MessageBox，汇编指令去调用并不是直接call地址，而是间接的，从内存中找到地址再去call。</p>
+<p>虽然最终只有IAT会被修改为包含实际地址，但PE文件仍然保留了<strong>两个表</strong>：</p>
+<ol>
+<li><strong>IAT（Import Address Table）</strong>：最终会被修改为包含实际函数地址</li>
+<li><strong>INT（Import Name Table，即OriginalFirstThunk指向的表）</strong>：始终保持原始导入信息</li>
+</ol>
+<p><strong>问题来了为什么不只留一张表呢，为什么需要双表设计？</strong></p>
+<p>可能基于以下逻辑：</p>
+<ul>
+<li><strong>原始信息保留</strong>：INT始终保持原始的导入信息（函数名&#x2F;序号），这在调试、反汇编或运行时查询时非常有用</li>
+<li><strong>卸载与重载支持</strong>：当DLL需要卸载时，系统可以根据INT重新构建导入信息，动态加载&#x2F;卸载DLL时不需要重新解析原始PE文件</li>
+<li><strong>安全性验证</strong>：可以比较INT和IAT来检测IAT是否被恶意篡改</li>
+<li><strong>延迟加载优化</strong>：可以先填充部分常用函数的地址，其他函数等到实际使用时再解析</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/r8zZJu9Uvo2B7TK.png" srcset="/img/loading.gif" lazyload></p>
+<h5 id="重定位表"><a href="#重定位表" class="headerlink" title="重定位表"></a>重定位表</h5><p>重定位表是PE文件中处理地址修正的关键数据结构，它使得可执行模块能够被加载到内存任意位置（地址空间布局随机化&#x2F;ASLR的核心支持机制）。</p>
+<p>为什么需要重定位：</p>
+<ol>
+<li><strong>地址空间冲突</strong>：当多个DLL都声明相同的首选基地址时</li>
+<li><strong>ASLR保护</strong>：现代系统的地址空间布局随机化安全机制</li>
+<li><strong>内存管理</strong>：系统需要灵活安排模块加载位置</li>
+</ol>
+<p>典型场景：一个DLL声明ImageBase为0x10000000，但该地址已被其他模块占用，系统将其加载到0x30000000，此时所有绝对地址都需要调整+0x20000000。</p>
+<p><img src="https://s2.loli.net/2025/05/16/VhtviZJWYQ6aw3f.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>重定位表位置：位于PE头的DataDirectory[5]（IMAGE_DIRECTORY_ENTRY_BASERELOC），由多个<code>IMAGE_BASE_RELOCATION</code>块组成链式结构</p>
+</blockquote>
+<h6 id="核心数据结构"><a href="#核心数据结构" class="headerlink" title="核心数据结构"></a>核心数据结构</h6><p>重定位表中有一个结构体，它一共有8字节：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 重定位块头</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_BASE_RELOCATION</span> &#123;</span><br>    DWORD   VirtualAddress;       <span class="hljs-comment">// 当前页的起始RVA（需对齐到4KB）</span><br>    DWORD   SizeOfBlock;          <span class="hljs-comment">// 当前块的总大小（包括头和所有TypeOffset）</span><br>    <span class="hljs-comment">// 紧随其后的是 WORD TypeOffset[...] 数组</span><br>&#125; IMAGE_BASE_RELOCATION, *PIMAGE_BASE_RELOCATION;<br><br><span class="hljs-comment">// TypeOffset 条目（每个WORD）</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> IMAGE_REL_BASED_ABSOLUTE      0  <span class="hljs-comment">// 无作用（用于填充对齐）</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> IMAGE_REL_BASED_HIGHLOW       3  <span class="hljs-comment">// 32位地址重定位（PE32）</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> IMAGE_REL_BASED_DIR64        10  <span class="hljs-comment">// 64位地址重定位（PE32+）</span></span><br></code></pre></td></tr></table></figure>
+
+<p>但是完整的重定位表还包含了很多重定位项，所以整体大小是没有一个统一标准的，需要根据实际情况。该结构体的第一个成员VirtualAddress表示基地址，<strong>第二个成员SizeOfBlock也就是减去当前结构体的大小之后其他的所有重定位项加起来的大小</strong>。这也就表示每一个重定位表是IMAGE_BASE_RELOCATION结构体开始，跟着的就是重定位项。</p>
+<p><img src="https://s2.loli.net/2025/05/16/fdqjm53bpe2HtU6.png" srcset="/img/loading.gif" lazyload></p>
+<p>从理论上来说，重定位表中存储的项应该都是4字节大小的地址，但是这样一旦需要修改的地址多了，就会占用大量的空间，所以重定位表就做了一些优化，假设你现在有这几个地址需要修正。</p>
+<p><img src="https://s2.loli.net/2025/05/16/yxRw4AuDvhSZbYp.png" srcset="/img/loading.gif" lazyload></p>
+<p>重定位表是按照一个物理页（4KB）进行存储的，也就表示一个4KB内存有需要修正的位置，就会有一个重定位块，一个重定位表只管自己当前的物理页的重定位。</p>
+<p>但需要注意的是由于内存对齐的缘故，在重定位表中还是有很多的无用项的，<strong>所以需要判断当前重定位项（2字节）的高四位是否为3，如果是那么低12位就是偏移量，最后的地址也就是VirtualAddress+低12位，如果不是就表示这是无所谓的值</strong>。</p>
+<p> 重定位项编码(基于节省空间的思路)，每个重定位项使用2字节（WORD）存储：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs llvm">高<span class="hljs-number">4</span>位：重定位类型（<span class="hljs-keyword">x</span><span class="hljs-number">86</span>一般为<span class="hljs-number">3</span>，<span class="hljs-keyword">x</span><span class="hljs-number">64</span>一般为A）<br>低<span class="hljs-number">12</span>位：偏移量（相对于VirtualAddress的偏移）<br></code></pre></td></tr></table></figure>
+
+<p>示例：0x3420表示：</p>
+<ul>
+<li>类型：3（IMAGE_REL_BASED_HIGHLOW）</li>
+<li>偏移：0x420（该页内偏移量）</li>
+</ul>
+<p>重定位类型：</p>
+<table>
+<thead>
+<tr>
+<th align="left">类型值</th>
+<th align="left">名称</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">0</td>
+<td align="left">IMAGE_REL_BASED_ABSOLUTE</td>
+<td align="left">填充项，无意义</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">IMAGE_REL_BASED_HIGH</td>
+<td align="left">调整高16位</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">IMAGE_REL_BASED_LOW</td>
+<td align="left">调整低16位</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">IMAGE_REL_BASED_HIGHLOW</td>
+<td align="left">32位完整调整（x86常用）</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">IMAGE_REL_BASED_HIGHADJ</td>
+<td align="left">带符号扩展的调整</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">IMAGE_REL_BASED_MIPS_JMPADDR</td>
+<td align="left">MIPS专用</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="left">IMAGE_REL_BASED_DIR64</td>
+<td align="left">64位调整（x64常用）</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="left">IMAGE_REL_BASED_ARM_MOV32</td>
+<td align="left">ARM专用</td>
+</tr>
+</tbody></table>
+<h2 id="PE节表"><a href="#PE节表" class="headerlink" title="PE节表"></a>PE节表</h2><p>PE节表是PE文件结构中定义各个节（section）属性的关键数据结构，位于PE头（IMAGE_NT_HEADERS）之后，负责描述PE文件中每个节在磁盘和内存中的布局特征。</p>
+<p>每个节表条目是一个40字节的固定结构（IMAGE_SECTION_HEADER），定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">IMAGE_SECTION_HEADER</span> &#123;</span><br>    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME]; <span class="hljs-comment">// ASCII字符串（节名），可自定义，只截取8个字节，可以8个字节都是名字</span><br>    <span class="hljs-class"><span class="hljs-keyword">union</span> &#123;</span> <span class="hljs-comment">// Misc，双字，是该节在没有对齐前的真实尺寸，该值可以不准确</span><br>        DWORD   PhysicalAddress; <span class="hljs-comment">// 真实宽度，这两个值是一个联合结构，可以使用其中的任何一个</span><br>        DWORD   VirtualSize; <span class="hljs-comment">// 一般是取后一个</span><br>    &#125; Misc;					<br>    DWORD   VirtualAddress; <span class="hljs-comment">// 在内存中的偏移地址，加上ImageBase才是在内存中的真正地址</span><br>    DWORD   SizeOfRawData; <span class="hljs-comment">// 节在文件中对齐后的尺寸</span><br>    DWORD   PointerToRawData; <span class="hljs-comment">// 节区在文件中的偏移</span><br>    DWORD   PointerToRelocations; <span class="hljs-comment">// 调试相关</span><br>    DWORD   PointerToLinenumbers; <span class="hljs-comment">// 调试相关 </span><br>    WORD    NumberOfRelocations; <span class="hljs-comment">// 调试相关 </span><br>    WORD    NumberOfLinenumbers; <span class="hljs-comment">// 调试相关 </span><br>    DWORD   Characteristics; <span class="hljs-comment">// 节的属性</span><br>&#125; IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;<br></code></pre></td></tr></table></figure>
+
+<p>PE加载器根据节表信息完成从磁盘到内存的映射：</p>
+<ol>
+<li>计算内存占用：<code>VirtualAddress + max(VirtualSize, SizeOfRawData)</code></li>
+<li>设置内存保护：根据Characteristics设置页属性</li>
+<li>处理差异情况：<ul>
+<li>当VirtualSize &gt; SizeOfRawData：内存中多出部分填零</li>
+<li>当SizeOfRawData &gt; VirtualSize：截断使用（罕见）</li>
+</ul>
+</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/05/16/hAPTkqxJLuzc1Nl.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="节数据"><a href="#节数据" class="headerlink" title="节数据"></a>节数据</h2><p>节数据是PE文件中存储实际内容的二进制数据块，每个节对应一个特定类型的数据，由节表（Section Table）中的条目描述其位置和属性。</p>
+<ul>
+<li><strong>物理存储</strong>：节数据是PE文件中紧接在节表之后的部分，每个节数据在磁盘文件中的位置由<code>PointerToRawData</code>字段指定，大小由<code>SizeOfRawData</code>字段决定（按FileAlignment对齐）</li>
+<li><strong>内存映射</strong>：加载到内存后，节数据的位置由<code>VirtualAddress</code>指定，内存中大小可能不同（由<code>VirtualSize</code>决定）</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/16/xZAX6oEFKPhSLBr.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="标准节（编译器通用）"><a href="#标准节（编译器通用）" class="headerlink" title="标准节（编译器通用）"></a><strong>标准节（编译器通用）</strong></h3><table>
+<thead>
+<tr>
+<th align="left">节名称</th>
+<th align="left">默认属性</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong><code>.text</code></strong></td>
+<td align="left">&#96;CODE</td>
+<td align="left">EXECUTE</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.data</code></strong></td>
+<td align="left">&#96;INITIALIZED_DATA</td>
+<td align="left">READ</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.rdata</code></strong></td>
+<td align="left">&#96;INITIALIZED_DATA</td>
+<td align="left">READ&#96;</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.bss</code></strong></td>
+<td align="left">&#96;UNINITIALIZED_DATA</td>
+<td align="left">READ</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.idata</code></strong></td>
+<td align="left">&#96;INITIALIZED_DATA</td>
+<td align="left">READ&#96;</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.edata</code></strong></td>
+<td align="left">&#96;INITIALIZED_DATA</td>
+<td align="left">READ&#96;</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.reloc</code></strong></td>
+<td align="left">&#96;INITIALIZED_DATA</td>
+<td align="left">READ</td>
+</tr>
+<tr>
+<td align="left"><strong><code>.rsrc</code></strong></td>
+<td align="left">&#96;INITIALIZED_DATA</td>
+<td align="left">READ&#96;</td>
+</tr>
+</tbody></table>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/debug/pe-format#optional-header-image-only">PE 格式 - Win32 apps | Microsoft Learn</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Windows内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PE文件格式</div>
+      <div>https://hermes37.vercel.app/2025/04/15/工科知识库/计算机技术/操作系统/Windows内核原理/装载链接运行/PE文件格式/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/28/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Ollvm/" title="深入理解Ollvm">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解Ollvm</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

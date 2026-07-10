@@ -1,0 +1,1615 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="原理OLLVM（Obfuscator-LLVM）的核心代码混淆 Pass 主要位于以下目录中，具体路径取决于你使用的分支版本（如 llvm-4.0、llvm-5.0 等）。以下是关键目录和文件说明：  1. 核心混淆 Pass 目录路径结构（以 llvm-4.0 分支为例）1234567891011121314obfuscator&#x2F;├── include&#x2F;llvm&#x2F;Transforms&#x2F;Obfus">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解Ollvm">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/04/28/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Ollvm/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="原理OLLVM（Obfuscator-LLVM）的核心代码混淆 Pass 主要位于以下目录中，具体路径取决于你使用的分支版本（如 llvm-4.0、llvm-5.0 等）。以下是关键目录和文件说明：  1. 核心混淆 Pass 目录路径结构（以 llvm-4.0 分支为例）1234567891011121314obfuscator&#x2F;├── include&#x2F;llvm&#x2F;Transforms&#x2F;Obfus">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-28T10:18:01.646Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:58.014Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解Ollvm - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解Ollvm"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          65 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解Ollvm</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>OLLVM（Obfuscator-LLVM）的核心代码混淆 Pass 主要位于以下目录中，具体路径取决于你使用的分支版本（如 <code>llvm-4.0</code>、<code>llvm-5.0</code> 等）。以下是关键目录和文件说明：</p>
+<hr>
+<h3 id="1-核心混淆-Pass-目录"><a href="#1-核心混淆-Pass-目录" class="headerlink" title="1. 核心混淆 Pass 目录"></a><strong>1. 核心混淆 Pass 目录</strong></h3><h4 id="路径结构（以-llvm-4-0-分支为例）"><a href="#路径结构（以-llvm-4-0-分支为例）" class="headerlink" title="路径结构（以 llvm-4.0 分支为例）"></a><strong>路径结构（以 <code>llvm-4.0</code> 分支为例）</strong></h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">obfuscator/<br>├── include/llvm/Transforms/Obfuscation/  <span class="hljs-comment"># 头文件</span><br>│   ├── CryptoUtils.h      <span class="hljs-comment"># 随机数生成器</span><br>│   ├── Substitution.h     <span class="hljs-comment"># 指令替换</span><br>│   ├── BogusControlFlow.h <span class="hljs-comment"># 虚假控制流</span><br>│   ├── Flattening.h       <span class="hljs-comment"># 控制流平坦化</span><br>│   └── ...<br>├── lib/Transforms/Obfuscation/           <span class="hljs-comment"># 实现代码</span><br>│   ├── CryptoUtils.cpp<br>│   ├── Substitution.cpp<br>│   ├── BogusControlFlow.cpp<br>│   ├── Flattening.cpp<br>│   └── CMakeLists.txt     <span class="hljs-comment"># 编译配置</span><br>└── ...<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-主要混淆-Pass-说明"><a href="#2-主要混淆-Pass-说明" class="headerlink" title="2. 主要混淆 Pass 说明"></a><strong>2. 主要混淆 Pass 说明</strong></h3><table>
+<thead>
+<tr>
+<th><strong>Pass 名称</strong></th>
+<th><strong>对应文件</strong></th>
+<th><strong>功能</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>指令替换</strong></td>
+<td><code>Substitution.cpp</code></td>
+<td>将简单指令（如加减）替换为复杂等效形式</td>
+</tr>
+<tr>
+<td><strong>虚假控制流</strong></td>
+<td><code>BogusControlFlow.cpp</code></td>
+<td>插入永假条件分支和不可达代码块</td>
+</tr>
+<tr>
+<td><strong>控制流平坦化</strong></td>
+<td><code>Flattening.cpp</code></td>
+<td>将函数控制流转为单一 switch 结构</td>
+</tr>
+<tr>
+<td><strong>字符串加密</strong></td>
+<td><code>StringObfuscation.cpp</code></td>
+<td>加密字符串常量（部分分支提供）</td>
+</tr>
+<tr>
+<td><strong>算术混淆</strong></td>
+<td><code>ArithmeticObfuscation.cpp</code></td>
+<td>将算术运算转换为混淆表达式</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-如何启用这些-Pass"><a href="#3-如何启用这些-Pass" class="headerlink" title="3. 如何启用这些 Pass"></a><strong>3. 如何启用这些 Pass</strong></h3><h4 id="1-编译时注册-Pass"><a href="#1-编译时注册-Pass" class="headerlink" title="(1) 编译时注册 Pass"></a><strong>(1) 编译时注册 Pass</strong></h4><p>在 <code>lib/Transforms/Obfuscation/CMakeLists.txt</code> 中确保所有 Pass 已加入编译：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cmake">add_llvm_library(LLVMObfuscation<br>  CryptoUtils.cpp<br>  Substitution.cpp<br>  BogusControlFlow.cpp<br>  Flattening.cpp<br>  ...<br>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-在代码中调用"><a href="#2-在代码中调用" class="headerlink" title="(2) 在代码中调用"></a><strong>(2) 在代码中调用</strong></h4><p>通过 <code>clang</code> 命令行参数启用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">clang -mllvm -fla -mllvm -sub -mllvm -bcf file.c -o file<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>-fla</code>: 控制流平坦化  </li>
+<li><code>-sub</code>: 指令替换  </li>
+<li><code>-bcf</code>: 虚假控制流</li>
+</ul>
+<hr>
+<h3 id="4-自定义修改-Pass"><a href="#4-自定义修改-Pass" class="headerlink" title="4. 自定义修改 Pass"></a><strong>4. 自定义修改 Pass</strong></h3><h4 id="示例：修改虚假控制流概率"><a href="#示例：修改虚假控制流概率" class="headerlink" title="示例：修改虚假控制流概率"></a><strong>示例：修改虚假控制流概率</strong></h4><p>编辑 <code>BogusControlFlow.cpp</code> 中的默认参数：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 修改分支注入概率（默认值 30）</span><br><span class="hljs-function"><span class="hljs-type">static</span> cl::opt&lt;<span class="hljs-type">int</span>&gt; <span class="hljs-title">ProbRate</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">    <span class="hljs-string">&quot;bcf_prob&quot;</span>, </span></span><br><span class="hljs-params"><span class="hljs-function">    cl::desc(<span class="hljs-string">&quot;Probability [%] each basic block will be obfuscated&quot;</span>), </span></span><br><span class="hljs-params"><span class="hljs-function">    cl::value_desc(<span class="hljs-string">&quot;probability&quot;</span>), </span></span><br><span class="hljs-params"><span class="hljs-function">    cl::init(<span class="hljs-number">30</span>)  <span class="hljs-comment">// 改为 50 表示 50% 概率</span></span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="5-其他分支的路径差异"><a href="#5-其他分支的路径差异" class="headerlink" title="5. 其他分支的路径差异"></a><strong>5. 其他分支的路径差异</strong></h3><ul>
+<li><strong>LLVM 5.0+ 分支</strong>：路径可能变为 <code>llvm/lib/Transforms/Obfuscation/</code>（代码结构随 LLVM 升级变化）。  </li>
+<li><strong>商业版（如 Hikari）</strong>：可能新增 Pass（如间接跳转混淆）。</li>
+</ul>
+<hr>
+<h3 id="验证-Pass-是否生效"><a href="#验证-Pass-是否生效" class="headerlink" title="验证 Pass 是否生效"></a><strong>验证 Pass 是否生效</strong></h3><p>生成 LLVM IR 检查混淆效果：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">clang -S -emit-llvm -mllvm -fla test.c -o test.ll<br></code></pre></td></tr></table></figure>
+<p>查看 <code>test.ll</code> 中是否出现 <code>switch</code> 结构（平坦化特征）或冗余分支（虚假控制流）。</p>
+<hr>
+<p>通过以上路径和说明，你可以快速定位和修改 OLLVM 的核心混淆逻辑。如果需要扩展新 Pass，需遵循 LLVM Pass 的开发规范。</p>
+<h1 id="指令替换"><a href="#指令替换" class="headerlink" title="指令替换"></a>指令替换</h1><p>这段代码是 <strong>LLVM IR 层面的指令替换</strong>，通过生成新的指令来替换原始的加法操作。下面我将从 <strong>LLVM IR 的构造逻辑</strong>、<strong>指令插入位置的控制</strong> 和 <strong>数据流变化</strong> 三个方面进行详细解析。</p>
+<hr>
+<h2 id="1-LLVM-IR-指令生成详解"><a href="#1-LLVM-IR-指令生成详解" class="headerlink" title="1. LLVM IR 指令生成详解"></a><strong>1. LLVM IR 指令生成详解</strong></h2><h3 id="（1）BinaryOperator-CreateNeg：生成取负指令"><a href="#（1）BinaryOperator-CreateNeg：生成取负指令" class="headerlink" title="（1）BinaryOperator::CreateNeg：生成取负指令"></a><strong>（1）<code>BinaryOperator::CreateNeg</code>：生成取负指令</strong></h3><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">op</span> = BinaryOperator::CreateNeg(bo-&gt;getOperand(<span class="hljs-number">1</span>), <span class="hljs-string">&quot;&quot;</span>, bo)<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>作用</strong>：生成对第二个操作数（<code>b</code>）的取负指令（<code>-b</code>）。</p>
+</li>
+<li><p>参数解析</p>
+<p>：</p>
+<ul>
+<li><code>bo-&gt;getOperand(1)</code>：获取加法指令的第二个操作数（<code>b</code>）。</li>
+<li><code>&quot;&quot;</code>：新指令的名称（空字符串表示由 LLVM 自动生成临时名称，如 <code>%0</code>）。</li>
+<li><code>bo</code>：指定新指令的插入位置（插入到 <code>bo</code> 指令之前）。</li>
+</ul>
+</li>
+<li><p>生成的 IR</p>
+<p>：</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs perl">%neg = <span class="hljs-function"><span class="hljs-keyword">sub</span> <span class="hljs-title">i32</span> 0, %<span class="hljs-title">b</span>   </span>; -b<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="（2）BinaryOperator-Create：生成减法指令"><a href="#（2）BinaryOperator-Create：生成减法指令" class="headerlink" title="（2）BinaryOperator::Create：生成减法指令"></a><strong>（2）<code>BinaryOperator::Create</code>：生成减法指令</strong></h3><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">op</span> = BinaryOperator::Create(Instruction::Sub, bo-&gt;getOperand(<span class="hljs-number">0</span>), op, <span class="hljs-string">&quot;&quot;</span>, bo)<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>作用</strong>：生成减法指令 <code>a - (-b)</code>，等价于原始加法 <code>a + b</code>。</p>
+</li>
+<li><p>参数解析</p>
+<p>：</p>
+<ul>
+<li><code>Instruction::Sub</code>：指定操作类型为减法（<code>Sub</code>）。</li>
+<li><code>bo-&gt;getOperand(0)</code>：加法指令的第一个操作数（<code>a</code>）。</li>
+<li><code>op</code>：上一步生成的取负指令（<code>-b</code>）。</li>
+<li><code>&quot;&quot;</code>：指令名称（自动生成，如 <code>%1</code>）。</li>
+<li><code>bo</code>：插入位置（仍在 <code>bo</code> 之前）。</li>
+</ul>
+</li>
+<li><p>生成的 IR</p>
+<p>：</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs perl">%sum = <span class="hljs-function"><span class="hljs-keyword">sub</span> <span class="hljs-title">i32</span> %<span class="hljs-title">a</span>, %<span class="hljs-title">neg</span>   </span>; a - (-b)<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h2 id="2-指令插入位置的控制"><a href="#2-指令插入位置的控制" class="headerlink" title="2. 指令插入位置的控制"></a><strong>2. 指令插入位置的控制</strong></h2><h3 id="关键点：-和-bo-参数的作用"><a href="#关键点：-和-bo-参数的作用" class="headerlink" title="关键点：&quot;&quot; 和 bo 参数的作用"></a><strong>关键点：<code>&quot;&quot;</code> 和 <code>bo</code> 参数的作用</strong></h3><ul>
+<li><p>**<code>&quot;&quot;</code>**：表示指令的名称由 LLVM 自动分配（如 <code>%0</code>、<code>%1</code>）。如果指定名称（如 <code>&quot;neg_b&quot;</code>），则生成的 IR 会更易读，但混淆时通常避免暴露语义。</p>
+</li>
+<li><p><code>bo</code></p>
+<p>：指定新指令插入到 </p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">bo</span><br></code></pre></td></tr></table></figure>
+
+<p>（原始加法指令）之前，确保数据流正确：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-comment">; 插入前</span><br><span class="hljs-variable">%orig</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">add</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%b</span>   <span class="hljs-comment">; 原始指令（即将被替换）</span><br><br><span class="hljs-comment">; 插入后</span><br><span class="hljs-variable">%neg</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">sub</span> <span class="hljs-type">i32</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%b</span>      <span class="hljs-comment">; -b（新插入）</span><br><span class="hljs-variable">%sum</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">sub</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%neg</span>   <span class="hljs-comment">; a - (-b)（新插入）</span><br><span class="hljs-comment">; 原指令 %orig 的所有引用被替换为 %sum</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="为什么必须插入到-bo-之前？"><a href="#为什么必须插入到-bo-之前？" class="headerlink" title="为什么必须插入到 bo 之前？"></a><strong>为什么必须插入到 <code>bo</code> 之前？</strong></h3><ol>
+<li><strong>数据流依赖</strong>：<br><code>-b</code> 和 <code>a - (-b)</code> 的计算依赖原始操作数 <code>%a</code> 和 <code>%b</code>，必须在 <code>bo</code> 之前生成，否则会导致 <code>%a</code> 或 <code>%b</code> 未定义。</li>
+<li><strong>指令替换的原子性</strong>：<br>新指令必须完全构造并插入后，才能调用 <code>replaceAllUsesWith</code> 替换原指令。</li>
+</ol>
+<hr>
+<h2 id="3-数据流变化分析"><a href="#3-数据流变化分析" class="headerlink" title="3. 数据流变化分析"></a><strong>3. 数据流变化分析</strong></h2><h3 id="原始数据流"><a href="#原始数据流" class="headerlink" title="原始数据流"></a><strong>原始数据流</strong></h3><figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-variable">%result</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">add</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%b</span>   <span class="hljs-comment">; 原始加法</span><br>                          <span class="hljs-comment">; 后续可能有多条指令使用 %result</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="替换后的数据流"><a href="#替换后的数据流" class="headerlink" title="替换后的数据流"></a><strong>替换后的数据流</strong></h3><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs perl">%neg_b = <span class="hljs-function"><span class="hljs-keyword">sub</span> <span class="hljs-title">i32</span> 0, %<span class="hljs-title">b</span>     </span>; <span class="hljs-number">1</span>. 生成 -b<br>%result = <span class="hljs-function"><span class="hljs-keyword">sub</span> <span class="hljs-title">i32</span> %<span class="hljs-title">a</span>, %<span class="hljs-title">neg_b</span> </span>; <span class="hljs-number">2</span>. 生成 a - (-b)<br>                           ; <span class="hljs-number">3</span>. 所有对原始 %result 的引用更新为新 %result<br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  关键变化</p>
+<p>  ：</p>
+<ol>
+<li>原始加法指令 <code>add</code> 被替换为两条指令（<code>sub</code> 和 <code>sub</code>）。</li>
+<li>新指令的数学结果与原始加法完全一致（<code>a + b == a - (-b)</code>）。</li>
+<li><strong>SSA（静态单赋值）保持有效</strong>：<br>LLVM IR 是 SSA 形式，每个变量只赋值一次。新生成的 <code>%neg_b</code> 和 <code>%result</code> 是全新的变量，不会破坏 SSA 规则。</li>
+</ol>
+<hr>
+<h2 id="4-完整示例（从源码到-IR）"><a href="#4-完整示例（从源码到-IR）" class="headerlink" title="4. 完整示例（从源码到 IR）"></a><strong>4. 完整示例（从源码到 IR）</strong></h2><h3 id="原始-C-代码"><a href="#原始-C-代码" class="headerlink" title="原始 C 代码"></a><strong>原始 C 代码</strong></h3><figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">foo</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> </span>&#123;<br>    <span class="hljs-keyword">return</span> a + b;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="原始-LLVM-IR"><a href="#原始-LLVM-IR" class="headerlink" title="原始 LLVM IR"></a><strong>原始 LLVM IR</strong></h3><figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-keyword">define</span> <span class="hljs-type">i32</span> <span class="hljs-title">@foo</span>(<span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%b</span>) &#123;<br>  <span class="hljs-variable">%sum</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">add</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%b</span><br>  <span class="hljs-keyword">ret</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%sum</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="替换后的-LLVM-IR"><a href="#替换后的-LLVM-IR" class="headerlink" title="替换后的 LLVM IR"></a><strong>替换后的 LLVM IR</strong></h3><figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-keyword">define</span> <span class="hljs-type">i32</span> <span class="hljs-title">@foo</span>(<span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%b</span>) &#123;<br>  <span class="hljs-variable">%neg_b</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">sub</span> <span class="hljs-type">i32</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%b</span>       <span class="hljs-comment">; -b</span><br>  <span class="hljs-variable">%sum</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">sub</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%a</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%neg_b</span>    <span class="hljs-comment">; a - (-b)</span><br>  <span class="hljs-keyword">ret</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%sum</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-潜在问题与解决方案"><a href="#5-潜在问题与解决方案" class="headerlink" title="5. 潜在问题与解决方案"></a><strong>5. 潜在问题与解决方案</strong></h2><h3 id="（1）性能开销"><a href="#（1）性能开销" class="headerlink" title="（1）性能开销"></a><strong>（1）性能开销</strong></h3><ul>
+<li><strong>问题</strong>：替换后多了一条指令，可能影响性能。</li>
+<li><strong>解决方案</strong>：<br>在优化阶段（如 <code>-O2</code>），LLVM 可能会将 <code>a - (-b)</code> 重新优化为 <code>a + b</code>。若需避免，可禁用优化或插入更多混淆逻辑。</li>
+</ul>
+<h3 id="（2）浮点数支持"><a href="#（2）浮点数支持" class="headerlink" title="（2）浮点数支持"></a><strong>（2）浮点数支持</strong></h3><ul>
+<li><p><strong>问题</strong>：当前代码注释了浮点数的处理（<code>FAdd</code> → <code>FSub</code>）。</p>
+</li>
+<li><p>解决方案</p>
+<p>：</p>
+<p>取消注释并补充浮点逻辑：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs rust"><span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (bo<span class="hljs-punctuation">-&gt;</span><span class="hljs-title function_ invoke__">getOpcode</span>() == Instruction::FAdd) &#123;<br>    op = BinaryOperator::<span class="hljs-title function_ invoke__">CreateFNeg</span>(bo<span class="hljs-punctuation">-&gt;</span><span class="hljs-title function_ invoke__">getOperand</span>(<span class="hljs-number">1</span>), <span class="hljs-string">&quot;&quot;</span>, bo);<br>    op = BinaryOperator::<span class="hljs-title function_ invoke__">Create</span>(Instruction::FSub, bo<span class="hljs-punctuation">-&gt;</span><span class="hljs-title function_ invoke__">getOperand</span>(<span class="hljs-number">0</span>), op, <span class="hljs-string">&quot;&quot;</span>, bo);<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="（3）溢出语义"><a href="#（3）溢出语义" class="headerlink" title="（3）溢出语义"></a><strong>（3）溢出语义</strong></h3><ul>
+<li><p><strong>问题</strong>：原始加法的溢出标记（<code>nsw</code>、<code>nuw</code>）未被保留。</p>
+</li>
+<li><p>解决方案</p>
+<p>：</p>
+<p>恢复注释的代码：</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs xl"><span class="hljs-function"><span class="hljs-title">op</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">setHasNoSignedWrap</span>(bo-&gt;</span>hasNoSignedWrap());<br><span class="hljs-function"><span class="hljs-title">op</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">setHasNoUnsignedWrap</span>(bo-&gt;</span>hasNoUnsignedWrap());<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a><strong>6. 总结</strong></h2><table>
+<thead>
+<tr>
+<th>关键点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>指令生成</strong></td>
+<td><code>CreateNeg</code> 生成 <code>-b</code>，<code>Create(Sub)</code> 生成 <code>a - (-b)</code>。</td>
+</tr>
+<tr>
+<td><strong>插入位置</strong></td>
+<td>新指令必须插入到原指令之前，确保操作数可用。</td>
+</tr>
+<tr>
+<td><strong>数据流保持</strong></td>
+<td>SSA 形式不变，结果与原始加法等价。</td>
+</tr>
+<tr>
+<td><strong>应用场景</strong></td>
+<td>对抗静态分析，增加逆向复杂度。</td>
+</tr>
+<tr>
+<td><strong>注意事项</strong></td>
+<td>性能开销、浮点数支持、溢出语义需额外处理。</td>
+</tr>
+</tbody></table>
+<p>通过这种替换，简单的加法操作被转换为等价的减法形式，<strong>在不改变程序行为的前提下增加逆向工程难度</strong>，是代码混淆的经典手段。</p>
+<h1 id="虚假控制流"><a href="#虚假控制流" class="headerlink" title="虚假控制流"></a>虚假控制流</h1><p><a target="_blank" rel="noopener" href="http://www.qfrost.com/posts/llvm/llvmbogus%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#0x05-createalteredbasicblock%E5%87%BD%E6%95%B0">OLLVM 之虚假控制流源码学习 – - Qfrost -</a></p>
+<p><a target="_blank" rel="noopener" href="https://jev0n.com/2022/07/08/llvm-2.html">OLLVM混淆学习（2）——虚假控制流（BCF） - 思泉 | Jev0n</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42308741/article/details/114582134">ollvm源码分析之虚假控制流（2）_课时六 虚假控制流-代码实现-CSDN博客</a></p>
+<h1 id="控制流平坦化"><a href="#控制流平坦化" class="headerlink" title="控制流平坦化"></a>控制流平坦化</h1><p><a target="_blank" rel="noopener" href="https://jev0n.com/2022/07/08/ollvm-1.html">OLLVM混淆学习（1）——控制流平坦化（FLA） - 思泉 | Jev0n</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.qfrost.com/posts/llvm/llvmflattening%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#0x02-fixstack%E5%87%BD%E6%95%B0">OLLVM 之控制流平坦化源码学习 – - Qfrost -</a></p>
+<h3 id="为什么需要多次删除和重建跳转？——通过实例详解"><a href="#为什么需要多次删除和重建跳转？——通过实例详解" class="headerlink" title="为什么需要多次删除和重建跳转？——通过实例详解"></a><strong>为什么需要多次删除和重建跳转？——通过实例详解</strong></h3><hr>
+<h4 id="场景假设"><a href="#场景假设" class="headerlink" title="场景假设"></a><strong>场景假设</strong></h4><p>我们有一个简单的函数，包含三个基本块：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-keyword">define</span> void <span class="hljs-title">@example</span>() &#123;<br><span class="hljs-symbol">entry:</span><br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@foo</span>()<br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%bb1</span><br><br>bb<span class="hljs-number">1</span>:<br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@bar</span>()<br>  <span class="hljs-keyword">br</span> <span class="hljs-type">i1</span> <span class="hljs-keyword">undef</span><span class="hljs-punctuation">,</span> label <span class="hljs-variable">%bb2</span><span class="hljs-punctuation">,</span> label <span class="hljs-variable">%bb3</span><br><br>bb<span class="hljs-number">2</span>:<br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@func1</span>()<br>  <span class="hljs-keyword">ret</span> void<br><br>bb<span class="hljs-number">3</span>:<br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@func2</span>()<br>  <span class="hljs-keyword">ret</span> void<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>目标是对其进行控制流平坦化。</p>
+<hr>
+<h3 id="步骤1：初始状态"><a href="#步骤1：初始状态" class="headerlink" title="步骤1：初始状态"></a><strong>步骤1：初始状态</strong></h3><ul>
+<li><strong><code>entry</code> 块</strong>：是 <code>f-&gt;begin()</code>，以 <code>br label %bb1</code> 结尾。</li>
+<li><strong>其他块</strong>：<code>bb1</code>、<code>bb2</code>、<code>bb3</code> 保存在 <code>origBB</code> 列表中。</li>
+</ul>
+<hr>
+<h3 id="步骤2：第一次删除跳转"><a href="#步骤2：第一次删除跳转" class="headerlink" title="步骤2：第一次删除跳转"></a><strong>步骤2：第一次删除跳转</strong></h3><figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">insert-&gt;<span class="hljs-built_in">getTerminator</span>()-&gt;<span class="hljs-built_in">eraseFromParent</span>();  <span class="hljs-comment">// 删除 entry 的 br label %bb1</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>作用</strong>：<br>清除原始控制流，准备插入调度逻辑（如 <code>switchVar</code> 的初始化）。</p>
+</li>
+<li><p>当前 IR</p>
+<p>：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-symbol">entry:</span><br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@foo</span>()<br>  <span class="hljs-comment">; 终止指令已被删除（悬空块）</span><br><br>bb<span class="hljs-number">1</span>: <br>  <span class="hljs-comment">; ...</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="步骤3：插入临时跳转"><a href="#步骤3：插入临时跳转" class="headerlink" title="步骤3：插入临时跳转"></a><strong>步骤3：插入临时跳转</strong></h3><figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arcade">BranchInst::Create(loopEntry, <span class="hljs-built_in">insert</span>);  <span class="hljs-comment">// entry -&gt; loopEntry</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>目的</strong>：<br>防止 <code>entry</code> 成为悬空块，确保 IR 合法性（LLVM IR 要求基本块必须以终止指令结尾）。</p>
+</li>
+<li><p>当前 IR</p>
+<p>：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-symbol">entry:</span><br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@foo</span>()<br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%loopEntry</span>  <span class="hljs-comment">; 临时跳转</span><br><br>loopEntry:<br>  <span class="hljs-comment">; 待插入 switch</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="步骤4：移动基本块后二次删除跳转"><a href="#步骤4：移动基本块后二次删除跳转" class="headerlink" title="步骤4：移动基本块后二次删除跳转"></a><strong>步骤4：移动基本块后二次删除跳转</strong></h3><p>在后续操作中：</p>
+<p>1. </p>
+<p>   移动 <code>entry</code> 块</p>
+<p>   ：</p>
+   <figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">insert-&gt;<span class="hljs-built_in">moveBefore</span>(loopEntry);  <span class="hljs-comment">// 将 entry 移到 loopEntry 之前</span><br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>重建控制流</strong>：<br>此时 <code>entry</code> 的跳转 <code>br label %loopEntry</code> 可能不再符合需求（例如需要直接连接到 <code>switch</code>）。</li>
+</ol>
+<p>- </p>
+<p>  二次删除</p>
+<p>  ：</p>
+  <figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs livescript">f-&gt;begin<span class="hljs-function"><span class="hljs-params">()</span>-&gt;</span>getTerminator<span class="hljs-function"><span class="hljs-params">()</span>-&gt;</span>eraseFromParent();  <span class="hljs-regexp">// 再次删除 entry 的跳转</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>原因</strong>：<br>移动基本块后，原跳转可能失效或需要调整，需重新建立最终控制流。</li>
+</ul>
+<hr>
+<h3 id="步骤5：最终跳转重建"><a href="#步骤5：最终跳转重建" class="headerlink" title="步骤5：最终跳转重建"></a><strong>步骤5：最终跳转重建</strong></h3><figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xl">B<span class="hljs-function"><span class="hljs-title">ranchInst</span>::Create(loopEntry, &amp;*f-&gt;</span><span class="hljs-function"><span class="hljs-title">begin</span>());  // entry -&gt;</span> loopEntry<br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  最终 IR</p>
+<p>  ：</p>
+  <figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-symbol">entry:</span><br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@foo</span>()<br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%loopEntry</span>  <span class="hljs-comment">; 最终跳转</span><br><br>loopEntry:<br>  <span class="hljs-variable">%switchVar</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">load</span> <span class="hljs-type">i32</span><span class="hljs-punctuation">,</span> <span class="hljs-type">i32</span>* <span class="hljs-variable">%switchVar</span><br>  <span class="hljs-keyword">switch</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%switchVar</span><span class="hljs-punctuation">,</span> label <span class="hljs-variable">%default</span> [<br>    <span class="hljs-comment">; cases...</span><br>  ]<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="为什么不能直接简化？"><a href="#为什么不能直接简化？" class="headerlink" title="为什么不能直接简化？"></a><strong>为什么不能直接简化？</strong></h3><p>若仅保留最后一步 <code>BranchInst::Create(loopEntry, &amp;*f-&gt;begin())</code>，可能遇到以下问题：</p>
+<ol>
+<li><strong>IR 不合法</strong>：<br>在 <code>switch</code> 结构构建完成前，<code>entry</code> 块可能因缺少终止指令而违反 IR 规范。</li>
+<li><strong>依赖顺序</strong>：<br>其他操作（如 <code>moveBefore</code>）可能依赖临时跳转的存在。</li>
+</ol>
+<hr>
+<h3 id="类比：盖房子的步骤"><a href="#类比：盖房子的步骤" class="headerlink" title="类比：盖房子的步骤"></a><strong>类比：盖房子的步骤</strong></h3><ol>
+<li><strong>拆掉旧门（第一次删除）</strong>：准备安装新门框。</li>
+<li><strong>临时装一扇门（临时跳转）</strong>：保证房子能正常进出。</li>
+<li><strong>调整门框位置（移动基本块）</strong>：可能需要拆掉临时门。</li>
+<li><strong>安装最终门（最终跳转）</strong>：确保结构正确。</li>
+</ol>
+<p>直接跳到第4步会导致房子在施工期间无法使用（IR 不合法）。</p>
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a><strong>总结</strong></h3><table>
+<thead>
+<tr>
+<th><strong>操作顺序</strong></th>
+<th><strong>目的</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一次删除跳转</td>
+<td>清除原始控制流，准备重构。</td>
+</tr>
+<tr>
+<td>插入临时跳转</td>
+<td>维持 IR 合法性，避免悬空块。</td>
+</tr>
+<tr>
+<td>移动基本块后二次删除</td>
+<td>调整控制流以适应新结构（如 <code>switch</code>）。</td>
+</tr>
+<tr>
+<td>最终跳转重建</td>
+<td>确保函数入口正确连接到平坦化后的主循环。</td>
+</tr>
+</tbody></table>
+<p>这种“先拆后建”的保守操作，是编译器开发中保证 IR 正确性的常见模式。</p>
+<h3 id="深入解析-Switch-结构中的-Default-Case"><a href="#深入解析-Switch-结构中的-Default-Case" class="headerlink" title="深入解析 Switch 结构中的 Default Case"></a><strong>深入解析 Switch 结构中的 Default Case</strong></h3><hr>
+<h4 id="1-Default-Case-的设计矛盾"><a href="#1-Default-Case-的设计矛盾" class="headerlink" title="1. Default Case 的设计矛盾"></a><strong>1. Default Case 的设计矛盾</strong></h4><h5 id="理论上的“完美情况”"><a href="#理论上的“完美情况”" class="headerlink" title="理论上的“完美情况”"></a><strong>理论上的“完美情况”</strong></h5><ul>
+<li><strong>理想假设</strong>：<br>所有后继基本块都已通过 <code>addCase</code> 添加到 <code>switch</code>，每个块都有对应的 case 值，因此 <code>default</code> 分支理论上永远不会执行。</li>
+<li><strong>矛盾点</strong>：<br>如果 <code>default</code> 无用，为何不直接删除它？</li>
+</ul>
+<h5 id="实际代码中的必要性"><a href="#实际代码中的必要性" class="headerlink" title="实际代码中的必要性"></a><strong>实际代码中的必要性</strong></h5><figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs lasso">BasicBlock *swDefault = BasicBlock<span class="hljs-type">::Create</span>(<span class="hljs-params">...</span>, <span class="hljs-string">&quot;switchDefault&quot;</span>, <span class="hljs-params">...</span>, loopEnd);<br>BranchInst<span class="hljs-type">::Create</span>(loopEnd, swDefault);  <span class="hljs-comment">// default -&gt; loopEnd</span><br>SwitchInst<span class="hljs-type">::Create</span>(<span class="hljs-params">...</span>, swDefault, <span class="hljs-params">...</span>); <span class="hljs-comment">// 强制要求 default 块</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>LLVM 的限制</strong>：<br><code>SwitchInst</code> 必须包含一个 <code>default</code> 分支（即使逻辑上不需要），这是由 LLVM IR 的语法规则决定的。</li>
+</ul>
+<hr>
+<h4 id="2-为什么需要判断“无后继-case-值”？"><a href="#2-为什么需要判断“无后继-case-值”？" class="headerlink" title="2. 为什么需要判断“无后继 case 值”？"></a><strong>2. 为什么需要判断“无后继 case 值”？</strong></h4><h5 id="场景模拟"><a href="#场景模拟" class="headerlink" title="场景模拟"></a><strong>场景模拟</strong></h5><p>假设有以下控制流：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs llvm">bb<span class="hljs-number">1</span>:<br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%bb2</span>  <span class="hljs-comment">; 无条件跳转到 bb2</span><br><br>bb<span class="hljs-number">2</span>:<br>  <span class="hljs-keyword">ret</span> void       <span class="hljs-comment">; 无后继块</span><br></code></pre></td></tr></table></figure>
+
+<p>在平坦化时：</p>
+<ol>
+<li><p><strong><code>bb2</code> 的 case 值被随机生成</strong>（如 <code>0x3a2b</code>）。</p>
+</li>
+<li><p><code>bb1</code> 需要更新 <code>switchVar</code> 以跳转到 <code>bb2</code></p>
+<p>：</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs xl">C<span class="hljs-function"><span class="hljs-title">onstantInt</span> *numCase = switchI-&gt;</span>findCaseDest(bb2);  <span class="hljs-comment">// 查找 bb2 的 case 值</span><br><span class="hljs-function"><span class="hljs-title">new</span> StoreInst(numCase, switchVar, bb1);  // bb1 -&gt;</span> bb2<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>问题</strong>：<br>如果 <code>bb2</code> 是终止块（如 <code>ret</code>），它不会被添加到 <code>switch</code> 的 case 中（因为无后继操作），此时 <code>findCaseDest(bb2)</code> 返回 <code>NULL</code>。</p>
+</li>
+</ol>
+<h5 id="Default-的容错作用"><a href="#Default-的容错作用" class="headerlink" title="Default 的容错作用"></a><strong>Default 的容错作用</strong></h5><figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs arcade"><span class="hljs-keyword">if</span> (numCase == <span class="hljs-literal">NULL</span>) &#123;  <span class="hljs-comment">// 若未找到 case 值</span><br>    numCase = scramble32(switchI-&gt;getNumCases() - <span class="hljs-number">1</span>);  <span class="hljs-comment">// 使用默认值</span><br>    <span class="hljs-keyword">new</span> StoreInst(numCase, switchVar, bb1);  <span class="hljs-comment">// 跳转到 default</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>结果</strong>：<br>虽然 <code>default</code> 分支永远不会被执行（因为所有有效块都有 case），但它作为“安全网”存在，避免因代码缺陷导致未定义行为。</li>
+</ul>
+<hr>
+<h4 id="3-为什么说-Default-是“子分发器”？"><a href="#3-为什么说-Default-是“子分发器”？" class="headerlink" title="3. 为什么说 Default 是“子分发器”？"></a><strong>3. 为什么说 Default 是“子分发器”？</strong></h4><h5 id="控制流平坦化的本质"><a href="#控制流平坦化的本质" class="headerlink" title="控制流平坦化的本质"></a><strong>控制流平坦化的本质</strong></h5><ul>
+<li><strong>原始控制流</strong>：<br>基本块通过直接跳转连接（如 <code>bb1 → bb2</code>）。</li>
+<li><strong>平坦化后</strong>：<br>所有跳转被替换为对 <code>switchVar</code> 的赋值，由 <code>switch</code> 统一分发执行。</li>
+</ul>
+<h5 id="Default-的角色"><a href="#Default-的角色" class="headerlink" title="Default 的角色"></a><strong>Default 的角色</strong></h5><ul>
+<li><strong>冗余但必要的分发节点</strong>：<br><code>switch</code> 的语法要求必须覆盖所有可能的 <code>switchVar</code> 值，即使某些值在逻辑上不可能出现。</li>
+<li><strong>类比</strong>：<br>类似编程中的 <code>default: break;</code>，即使 <code>case</code> 已覆盖所有枚举值，仍需保留 <code>default</code> 以满足语法要求。</li>
+</ul>
+<hr>
+<h4 id="4-实例分析"><a href="#4-实例分析" class="headerlink" title="4. 实例分析"></a><strong>4. 实例分析</strong></h4><h5 id="原始函数"><a href="#原始函数" class="headerlink" title="原始函数"></a><strong>原始函数</strong></h5><figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs llvm">bb<span class="hljs-number">1</span>:<br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@foo</span>()<br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%bb2</span><br><br>bb<span class="hljs-number">2</span>:<br>  <span class="hljs-keyword">ret</span> void<br></code></pre></td></tr></table></figure>
+
+<h5 id="平坦化后"><a href="#平坦化后" class="headerlink" title="平坦化后"></a><strong>平坦化后</strong></h5><figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-symbol">switch:</span><br>  <span class="hljs-keyword">switch</span> <span class="hljs-type">i32</span> <span class="hljs-variable">%switchVar</span><span class="hljs-punctuation">,</span> label <span class="hljs-variable">%default</span> [<br>    <span class="hljs-type">i32</span> <span class="hljs-number">0x3a2b</span><span class="hljs-punctuation">,</span> label <span class="hljs-variable">%bb1</span>  <span class="hljs-comment">; bb1 的 case 值</span><br>    <span class="hljs-comment">; bb2 未添加 case（因为它是终止块）</span><br>  ]<br><br>bb<span class="hljs-number">1</span>:<br>  <span class="hljs-keyword">call</span> void <span class="hljs-title">@foo</span>()<br>  <span class="hljs-keyword">store</span> <span class="hljs-type">i32</span> <span class="hljs-number">0xdead</span><span class="hljs-punctuation">,</span> <span class="hljs-type">i32</span>* <span class="hljs-variable">%switchVar</span>  <span class="hljs-comment">; 假设 bb2 应有 case=0xdead，但未添加</span><br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%loopEnd</span><br><span class="hljs-symbol"></span><br><span class="hljs-symbol">default:</span><br>  <span class="hljs-keyword">br</span> label <span class="hljs-variable">%loopEnd</span>  <span class="hljs-comment">; 永远不会执行</span><br></code></pre></td></tr></table></figure>
+
+<p>- </p>
+<p>  执行流程</p>
+<p>  ：</p>
+<ol>
+<li><code>bb1</code> 尝试跳转到 <code>bb2</code>（<code>store 0xdead</code>）。</li>
+<li><code>switch</code> 发现 <code>0xdead</code> 无对应 case，进入 <code>default</code>。</li>
+<li><code>default</code> 无害地跳回 <code>loopEnd</code>，避免崩溃。</li>
+</ol>
+<hr>
+<h4 id="5-总结"><a href="#5-总结" class="headerlink" title="5. 总结"></a><strong>5. 总结</strong></h4><table>
+<thead>
+<tr>
+<th><strong>关键点</strong></th>
+<th><strong>解释</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LLVM 语法要求</strong></td>
+<td><code>SwitchInst</code> 必须包含 <code>default</code> 分支，即使逻辑上不需要。</td>
+</tr>
+<tr>
+<td><strong>容错机制</strong></td>
+<td>处理未预期的 <code>switchVar</code> 值（如未添加 case 的终止块）。</td>
+</tr>
+<tr>
+<td><strong>“子分发器”比喻</strong></td>
+<td><code>default</code> 是控制流的最后保障，确保所有路径都有定义的行为。</td>
+</tr>
+<tr>
+<td><strong>实际影响</strong></td>
+<td>无运行时开销（因 <code>default</code> 永不执行），但维护了 IR 的合法性和鲁棒性。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="最终结论"><a href="#最终结论" class="headerlink" title="最终结论"></a><strong>最终结论</strong></h3><p><code>default</code> 分支的存在是 <strong>LLVM 语法限制</strong> 和 <strong>工程健壮性</strong> 的共同结果。虽然理论上所有有效块都应被 <code>switch</code> 覆盖，但保留 <code>default</code> 可以：</p>
+<ol>
+<li>避免因代码生成缺陷导致未定义行为。</li>
+<li>满足 LLVM IR 对 <code>SwitchInst</code> 的强制性语法要求。</li>
+<li>在极端情况下（如未处理的终止块）提供安全回退路径。</li>
+</ol>
+<h1 id="反混淆"><a href="#反混淆" class="headerlink" title="反混淆"></a>反混淆</h1><h2 id="模拟执行与符号执行"><a href="#模拟执行与符号执行" class="headerlink" title="模拟执行与符号执行"></a>模拟执行与符号执行</h2><p>unicorn模拟执行：核心在于找到<strong>全部真实块</strong>，之后从首个真实块使用unicorn模拟执行混淆的程序，直到运行到下一个真实块，这里需要注意的是真实块中的分支指令需要单独处理。</p>
+<p>angr符号执行解决控制流平坦化：通过符号执行来确定真实块之间的前后关系，真实块之间的前后关系又分为两类：</p>
+<ol>
+<li>有一个确定的后继块</li>
+<li>有两个后继块，跳转到哪个由某个条件决定</li>
+</ol>
+<p>第一种情况非常好处理，我们从一个真实块A开始符号执行，直到碰到下一个真实块B，那么我们就确定了一对基本块的执行顺序A→B。</p>
+<p>第二种情况我们需要先令该条件为True，然后进行符号执行，得到一个后继真实块的地址；再令条件为False，然后进行符号执行，得到另一个后继真实块的地址。思路比较简单，但代码写起来会稍微有点复杂。</p>
+<p><strong>Unicorn（模拟执行）</strong> 和 <strong>Angr（符号执行）</strong> 在解决 OLLVM 控制流平坦化时的核心思路 <strong>高度一致</strong>，均围绕 <strong>识别真实块</strong> 和 <strong>恢复真实控制流</strong> 展开</p>
+<p><strong>核心思路的一致性</strong>:</p>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>步骤</strong></th>
+<th align="center"><strong>Unicorn 模拟执行</strong></th>
+<th align="center"><strong>Angr 符号执行</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>目标</strong></td>
+<td align="center">恢复被平坦化隐藏的真实控制流</td>
+<td align="center">同左</td>
+</tr>
+<tr>
+<td align="center"><strong>关键方法</strong></td>
+<td align="center">动态执行找到真实块间的跳转关系</td>
+<td align="center">符号化分析推导真实块间的可达性</td>
+</tr>
+<tr>
+<td align="center"><strong>处理分支</strong></td>
+<td align="center">强制设置分支条件，观察执行路径</td>
+<td align="center">分情况约束条件（True&#x2F;False）求解路径</td>
+</tr>
+<tr>
+<td align="center"><strong>输出结果</strong></td>
+<td align="center">真实块间的直接跳转边（A→B）</td>
+<td align="center">同左</td>
+</tr>
+</tbody></table>
+<p><strong>共同逻辑</strong>：</p>
+<ol>
+<li><strong>识别真实块</strong>：过滤掉 Dispatcher 和虚假块，保留实际有意义的代码块。</li>
+<li><strong>恢复跳转关系</strong>：通过执行（动态或符号化）确定真实块之间的前后继关系。</li>
+<li><strong>重建 CFG</strong>：基于跳转关系生成简化后的控制流图。</li>
+</ol>
+<p><strong>技术实现的差异</strong>:</p>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>维度</strong></th>
+<th align="center"><strong>Unicorn</strong></th>
+<th align="center"><strong>Angr</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>执行方式</strong></td>
+<td align="center">动态执行（具体输入驱动）</td>
+<td align="center">符号执行（抽象输入覆盖所有路径）</td>
+</tr>
+<tr>
+<td align="center"><strong>速度</strong></td>
+<td align="center">较快（单次执行）</td>
+<td align="center">较慢（需求解约束）</td>
+</tr>
+<tr>
+<td align="center"><strong>路径覆盖</strong></td>
+<td align="center">依赖输入，可能遗漏路径</td>
+<td align="center">理论上覆盖所有可行路径</td>
+</tr>
+<tr>
+<td align="center"><strong>分支处理</strong></td>
+<td align="center">需手动干预分支条件</td>
+<td align="center">自动分情况（True&#x2F;False）探索</td>
+</tr>
+<tr>
+<td align="center"><strong>适用场景</strong></td>
+<td align="center">已知输入或需快速验证</td>
+<td align="center">复杂分支或需全路径分析</td>
+</tr>
+<tr>
+<td align="center"><strong>工具链</strong></td>
+<td align="center">轻量级，适合嵌入自定义工具</td>
+<td align="center">重量级，适合复杂分析</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000037697547">Unicorn反混淆：恢复被OLLVM保护的程序(一) - 个人文章 - SegmentFault 思否</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-266005.htm">原创]利用angr符号执行去除虚假控制流-软件逆向-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p><a target="_blank" rel="noopener" href="https://security.tencent.com/index.php/blog/msg/112">利用符号执行去除控制流平坦化 - 博客 - 腾讯安全应急响应中心</a></p>
+<p><a target="_blank" rel="noopener" href="https://34r7hm4n.me/0x401RevTrain-Tools/angr/10_%E5%88%A9%E7%94%A8angr%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C%E5%8E%BB%E9%99%A4%E6%8E%A7%E5%88%B6%E6%B5%81%E5%B9%B3%E5%9D%A6%E5%8C%96/">利用angr符号执行去除控制流平坦化 - 0x401RevTrain-Tools</a></p>
+<p><a target="_blank" rel="noopener" href="https://drootkit.github.io/MyArticles/Re/%E6%8E%A7%E5%88%B6%E6%B5%81%E5%B9%B3%E5%9D%A6%E5%8C%96.html">反控制流平坦化学习-angr · GitBook</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1114563-1-1.html">Unicorn反ollvm控制流平坦化之bb - 吾爱破解 - 52pojie.cn</a></p>
+<p>利用符号执行去混淆的基本思路是：先找到目标函数的所有基本块，再通过符号执行遍历目标函数所有可达的基本块，剩下的就是不可达的基本块。</p>
+<h2 id="Frida辅助IDATrace分析"><a href="#Frida辅助IDATrace分析" class="headerlink" title="Frida辅助IDATrace分析"></a>Frida辅助IDATrace分析</h2><p>特征：常量很多，用来根据常量跳转到正确的位置。<br>主要是分析<strong>交叉引用</strong>，关注两种数据，一种从<strong>输入参数</strong>开始分析交叉引用，一种是从<strong>输出结果</strong>分析交叉引用。把能使用输入参数的地址都Hook一下。</p>
+<p><a target="_blank" rel="noopener" href="https://python.docs.hex-rays.com/">IDAPython: Welcome to IDAPython API Reference 9.1</a></p>
+<p>核心目标是 <strong>通过动态追踪和交叉引用分析，定位关键算法逻辑并验证其正确性</strong>。以下是具体方法和步骤：</p>
+<h4 id="核心策略"><a href="#核心策略" class="headerlink" title="核心策略"></a><strong>核心策略</strong></h4><ol>
+<li><strong>动态追踪输入参数</strong>：Hook 输入参数的传递过程，记录其如何影响状态变量。</li>
+<li><strong>交叉引用分析</strong>：从输入参数和输出结果双向追踪，定位关键算法块。</li>
+<li><strong>验证逻辑正确性</strong>：对比原始输入和输出，确认算法未被混淆破坏。</li>
+</ol>
+<h3 id="具体实现方法"><a href="#具体实现方法" class="headerlink" title="具体实现方法"></a><strong>具体实现方法</strong></h3><h4 id="1-Hook-输入参数"><a href="#1-Hook-输入参数" class="headerlink" title="(1) Hook 输入参数"></a><strong>(1) Hook 输入参数</strong></h4><p>通过 Frida 拦截目标函数的输入参数，记录其值及传递路径：</p>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs arcade"><span class="hljs-comment">// Frida 脚本示例：Hook 函数入口参数</span><br>Interceptor.attach(targetFunction, &#123;<br>    <span class="hljs-attr">onEnter</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params">args</span>) &#123;<br>        <span class="hljs-built_in">console</span>.<span class="hljs-built_in">log</span>(<span class="hljs-string">`输入参数: arg1=<span class="hljs-subst">$&#123;args[<span class="hljs-number">0</span>]&#125;</span>, arg2=<span class="hljs-subst">$&#123;args[<span class="hljs-number">1</span>]&#125;</span>`</span>);<br>        this.state = args[<span class="hljs-number">0</span>]; <span class="hljs-comment">// 假设第一个参数是状态变量</span><br>    &#125;,<br>    <span class="hljs-attr">onLeave</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params">retval</span>) &#123;<br>        <span class="hljs-built_in">console</span>.<span class="hljs-built_in">log</span>(<span class="hljs-string">`返回值: <span class="hljs-subst">$&#123;retval&#125;</span>`</span>);<br>    &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-追踪状态变量的交叉引用"><a href="#2-追踪状态变量的交叉引用" class="headerlink" title="(2) 追踪状态变量的交叉引用"></a><strong>(2) 追踪状态变量的交叉引用</strong></h4><p>在 IDA 中：</p>
+<ol>
+<li><strong>从输入参数出发</strong>：<ul>
+<li>找到参数初始化的地址，通过交叉引用（Xrefs）追踪所有使用该参数的位置。</li>
+<li>标记这些地址为潜在的真实块。</li>
+</ul>
+</li>
+<li><strong>从输出结果回溯</strong>：<ul>
+<li>定位最终返回值或输出变量的写入点，反向追踪其数据依赖链。</li>
+<li>识别参与计算的关键基本块。</li>
+</ul>
+</li>
+</ol>
+<h4 id="3-动态验证真实块"><a href="#3-动态验证真实块" class="headerlink" title="(3) 动态验证真实块"></a><strong>(3) 动态验证真实块</strong></h4><p>结合 Frida 和 IDA Trace：</p>
+<ol>
+<li><p><strong>Hook 关键地址</strong>：对标记的真实块插入 Frida Hook，记录执行上下文。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// Hook 疑似真实块的指令</span><br><span class="hljs-keyword">const</span> realBlock = <span class="hljs-title function_">ptr</span>(<span class="hljs-number">0x123456</span>);<br><span class="hljs-title class_">Interceptor</span>.<span class="hljs-title function_">attach</span>(realBlock, &#123;<br>    <span class="hljs-attr">onEnter</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) &#123;<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`执行真实块: <span class="hljs-subst">$&#123;<span class="hljs-variable language_">this</span>.context.pc&#125;</span>`</span>);<br>    &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>验证逻辑一致性</strong>：</p>
+<ul>
+<li>输入测试用例（如 <code>input=1</code> 和 <code>input=2</code>），观察输出是否符合预期。</li>
+<li>对比静态分析（IDA）和动态执行（Frida）的结果是否一致。</li>
+</ul>
+</li>
+</ol>
+<h4 id="4-提取算法逻辑"><a href="#4-提取算法逻辑" class="headerlink" title="(4) 提取算法逻辑"></a><strong>(4) 提取算法逻辑</strong></h4><ol>
+<li><strong>过滤虚假块</strong>：动态执行未触发的块可能是混淆引入的噪声。</li>
+<li><strong>重建控制流</strong>：根据真实块的执行顺序，绘制简化后的 CFG。</li>
+<li><strong>导出关键代码</strong>：将真实块对应的指令提取到独立函数中，便于后续分析。</li>
+</ol>
+<hr>
+<h3 id="4-工具链配合"><a href="#4-工具链配合" class="headerlink" title="4. 工具链配合"></a><strong>4. 工具链配合</strong></h3><table>
+<thead>
+<tr>
+<th align="center"><strong>工具</strong></th>
+<th align="center"><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>Frida</strong></td>
+<td align="center">动态 Hook 参数、状态变量和分支条件，验证执行路径。</td>
+</tr>
+<tr>
+<td align="center"><strong>IDA Pro</strong></td>
+<td align="center">静态分析交叉引用，识别真实块和算法逻辑。</td>
+</tr>
+<tr>
+<td align="center"><strong>IDATrace</strong></td>
+<td align="center">记录执行流，辅助定位真实块与虚假块。</td>
+</tr>
+<tr>
+<td align="center"><strong>Python 脚本</strong></td>
+<td align="center">自动化分析 Frida 日志和 IDA 数据库，关联静态与动态结果。</td>
+</tr>
+</tbody></table>
+<h3 id="IDA-Python-的作用与在控制流平坦化解混淆中的应用"><a href="#IDA-Python-的作用与在控制流平坦化解混淆中的应用" class="headerlink" title="IDA Python 的作用与在控制流平坦化解混淆中的应用"></a><strong>IDA Python 的作用与在控制流平坦化解混淆中的应用</strong></h3><hr>
+<h4 id="1-IDA-Python-的核心作用"><a href="#1-IDA-Python-的核心作用" class="headerlink" title="1. IDA Python 的核心作用"></a><strong>1. IDA Python 的核心作用</strong></h4><p>IDA Python 是 IDA Pro 反汇编器内置的脚本接口，允许用户通过 Python 脚本自动化执行以下任务：</p>
+<ul>
+<li><strong>静态分析</strong>：遍历函数、基本块、指令，提取控制流图（CFG）、交叉引用（Xrefs）等。</li>
+<li><strong>动态修改</strong>： Patch 二进制代码、修复符号、修改反汇编结果。</li>
+<li><strong>自动化处理</strong>：批量重命名变量、识别模式（如加密常量）、修复混淆代码。</li>
+<li><strong>插件开发</strong>：扩展 IDA 功能（如自定义反混淆算法）。</li>
+</ul>
+<p><strong>典型应用场景</strong>：</p>
+<ul>
+<li>自动化分析恶意软件</li>
+<li>逆向工程中的重复性任务（如重命名函数）</li>
+<li>解混淆（OLLVM、VMProtect 等）</li>
+</ul>
+<hr>
+<h4 id="2-如何用-IDA-Python-解决控制流平坦化？"><a href="#2-如何用-IDA-Python-解决控制流平坦化？" class="headerlink" title="2. 如何用 IDA Python 解决控制流平坦化？"></a><strong>2. 如何用 IDA Python 解决控制流平坦化？</strong></h4><p>控制流平坦化（Control Flow Flattening）的核心问题是 <strong>隐藏真实控制流</strong>，IDA Python 可通过以下步骤恢复原始逻辑：</p>
+<hr>
+<h5 id="步骤-1：识别-Dispatcher-块"><a href="#步骤-1：识别-Dispatcher-块" class="headerlink" title="步骤 1：识别 Dispatcher 块"></a><strong>步骤 1：识别 Dispatcher 块</strong></h5><ul>
+<li><p><strong>特征</strong>：包含 <code>switch</code>&#x2F;<code>jump table</code> 或密集条件跳转，主导所有基本块的分发。</p>
+</li>
+<li><p>IDA Python 实现：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">find_dispatcher</span>():<br>    <span class="hljs-keyword">for</span> ea <span class="hljs-keyword">in</span> Functions():  <span class="hljs-comment"># 遍历所有函数</span><br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> FlowChart(ea):  <span class="hljs-comment"># 遍历基本块</span><br>            <span class="hljs-keyword">if</span> is_dispatcher(block):<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Found dispatcher at <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(block.start_ea)&#125;</span>&quot;</span>)<br>                <span class="hljs-keyword">return</span> block.start_ea<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h5 id="步骤-2：标记真实块与虚假块"><a href="#步骤-2：标记真实块与虚假块" class="headerlink" title="步骤 2：标记真实块与虚假块"></a><strong>步骤 2：标记真实块与虚假块</strong></h5><ul>
+<li><p><strong>真实块</strong>：包含实际逻辑（如算术运算、函数调用）。</p>
+</li>
+<li><p><strong>虚假块</strong>：仅用于状态跳转（如 <code>state = next_state; goto dispatcher</code>）。</p>
+</li>
+<li><p>IDA Python 实现：</p>
+<figure class="highlight maxima"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs maxima">def classify_blocks(dispatcher_ea):<br>    real_blocks = []<br>    <span class="hljs-keyword">for</span> <span class="hljs-built_in">block</span> <span class="hljs-keyword">in</span> FlowChart(dispatcher_ea):<br>        <span class="hljs-keyword">if</span> has_meaningful_instructions(<span class="hljs-built_in">block</span>):<br>            real_blocks.<span class="hljs-built_in">append</span>(<span class="hljs-built_in">block</span>.start_ea)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-built_in">print</span>(f<span class="hljs-string">&quot;Fake block at &#123;hex(block.start_ea)&#125;&quot;</span>)<br>    <span class="hljs-built_in">return</span> real_blocks<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h5 id="步骤-3：重建控制流"><a href="#步骤-3：重建控制流" class="headerlink" title="步骤 3：重建控制流"></a><strong>步骤 3：重建控制流</strong></h5><ul>
+<li><p><strong>绕过 Dispatcher</strong>：直接连接真实块之间的跳转。</p>
+</li>
+<li><p>IDA Python 实现：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs scss">def <span class="hljs-built_in">rebuild_cfg</span>(real_blocks):<br>    for block_ea in real_blocks:<br>        succs = <span class="hljs-built_in">list</span>(<span class="hljs-built_in">FlowChart</span>(block_ea).<span class="hljs-built_in">succs</span>())  # 获取后继块<br>        for succ in succs:<br>            if succ.start_ea in real_blocks:<br>                # 直接跳转到真实块，绕过 Dispatcher<br>                <span class="hljs-built_in">patch_jump</span>(block_ea, succ.start_ea)<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h5 id="步骤-4：清理无效代码"><a href="#步骤-4：清理无效代码" class="headerlink" title="步骤 4：清理无效代码"></a><strong>步骤 4：清理无效代码</strong></h5><ul>
+<li><p><strong>删除虚假块</strong>：移除未被标记为真实块的部分。</p>
+</li>
+<li><p>IDA Python 实现：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">def remove_fake_blocks(real_blocks):<br>    for <span class="hljs-keyword">block </span>in FlowChart(<span class="hljs-keyword">dispatcher_ea):</span><br><span class="hljs-keyword"></span>        if <span class="hljs-keyword">block.start_ea </span>not in real_blocks:<br>            idc.del_items(<span class="hljs-keyword">block.start_ea) </span> <span class="hljs-comment"># 删除虚假块</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h4 id="3-完整脚本示例"><a href="#3-完整脚本示例" class="headerlink" title="3. 完整脚本示例"></a><strong>3. 完整脚本示例</strong></h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> idc, idautils, idaapi<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">is_dispatcher</span>(<span class="hljs-params">block</span>):<br>    <span class="hljs-comment"># 检查是否包含密集跳转（如 switch）</span><br>    <span class="hljs-keyword">return</span> count_branches(block) &gt; <span class="hljs-number">3</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">has_meaningful_instructions</span>(<span class="hljs-params">block</span>):<br>    <span class="hljs-comment"># 检查是否包含实际逻辑（非单纯跳转）</span><br>    <span class="hljs-keyword">for</span> head <span class="hljs-keyword">in</span> Heads(block.start_ea, block.end_ea):<br>        <span class="hljs-keyword">if</span> idc.print_insn_mnem(head) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">&quot;jmp&quot;</span>, <span class="hljs-string">&quot;mov&quot;</span>, <span class="hljs-string">&quot;ret&quot;</span>]:<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">patch_jump</span>(<span class="hljs-params">src_ea, dst_ea</span>):<br>    <span class="hljs-comment"># 修改跳转指令（示例：替换为直接 jmp）</span><br>    idc.PatchByte(src_ea, <span class="hljs-number">0xE9</span>)  <span class="hljs-comment"># JMP opcode</span><br>    idc.PatchDword(src_ea + <span class="hljs-number">1</span>, dst_ea - src_ea - <span class="hljs-number">5</span>)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">deobfuscate</span>():<br>    dispatcher_ea = find_dispatcher()<br>    real_blocks = classify_blocks(dispatcher_ea)<br>    rebuild_cfg(real_blocks)<br>    remove_fake_blocks(real_blocks)<br><br>deobfuscate()<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="4-技术优势与局限性"><a href="#4-技术优势与局限性" class="headerlink" title="4. 技术优势与局限性"></a><strong>4. 技术优势与局限性</strong></h4><table>
+<thead>
+<tr>
+<th><strong>优势</strong></th>
+<th><strong>局限性</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>无需动态执行</strong>：纯静态分析</td>
+<td>对动态计算的跳转（如解密地址）无效</td>
+</tr>
+<tr>
+<td><strong>精准控制反汇编</strong>：直接操作 IDA 数据库</td>
+<td>需手动适配不同架构（x86&#x2F;ARM）</td>
+</tr>
+<tr>
+<td><strong>可集成到自动化流程</strong></td>
+<td>复杂混淆（如 VMProtect）需结合动态工具</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="5-结合其他工具增强效果"><a href="#5-结合其他工具增强效果" class="headerlink" title="5. 结合其他工具增强效果"></a><strong>5. 结合其他工具增强效果</strong></h4><ul>
+<li><strong>Frida&#x2F;Unicorn</strong>：动态验证真实块执行路径。</li>
+<li><strong>angr</strong>：符号执行辅助分析分支条件。</li>
+<li><strong>Binary Ninja API</strong>：跨平台反混淆（若需迁移分析环境）。</li>
+</ul>
+<hr>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a><strong>总结</strong></h3><ul>
+<li><strong>IDA Python 的核心作用</strong>：自动化静态分析 + 修改二进制文件。</li>
+<li>解决控制流平坦化的关键：<ol>
+<li>识别 Dispatcher 和状态变量</li>
+<li>分离真实块与虚假块</li>
+<li>重建原始控制流</li>
+<li>清理无效代码</li>
+</ol>
+</li>
+<li><strong>适用场景</strong>：OLLVM、部分商业混淆工具，需配合动态分析处理复杂情况。</li>
+</ul>
+<p>通过脚本化处理，可大幅提升逆向效率，尤其适合批量处理同类型混淆的二进制文件。</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/iBinary/p/14642662.html">IDAPython入门教程 基于IDA7.5_Python3 第一讲 简介与地址获取 - iBinary - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.yunyawu.com/2020/06/28/ida-python%E5%AD%A6%E4%B9%A0/">IDA系列教程：IDA Python | 云涯历险记</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1117330-1-1.html">总结idapython在逆向中的应用 - 吾爱破解 - 52pojie.cn</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-269643.htm">原创]IDA从入门到乞讨之IDAPython Script 与 plugin-软件逆向-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p>IDA Python 的主要功能基于 <strong>静态反汇编</strong>，包括：</p>
+<ul>
+<li><strong>反汇编与CFG生成</strong>：解析二进制文件，生成控制流图（CFG）、函数列表、交叉引用等。</li>
+<li><strong>数据流分析</strong>：追踪寄存器&#x2F;内存值的变化（需手动实现或结合插件）。</li>
+<li><strong>模式识别</strong>：通过脚本批量识别加密常量、跳转表等。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>维度</strong></th>
+<th align="center"><strong>IDA Python</strong></th>
+<th align="center"><strong>动态工具（GDB&#x2F;Frida&#x2F;Unicorn）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>执行环境</strong></td>
+<td align="center">依赖静态反汇编结果，无真实进程上下文</td>
+<td align="center">需运行目标程序或模拟器</td>
+</tr>
+<tr>
+<td align="center"><strong>内存访问</strong></td>
+<td align="center">仅能操作静态内存快照</td>
+<td align="center">可实时读写进程内存</td>
+</tr>
+<tr>
+<td align="center"><strong>代码覆盖率</strong></td>
+<td align="center">仅限已反汇编的代码区域</td>
+<td align="center">可探索未反汇编的动态生成代码</td>
+</tr>
+<tr>
+<td align="center"><strong>典型用途</strong></td>
+<td align="center">修复反汇编、批量重命名、半自动反混淆</td>
+<td align="center">实时Hook、脱壳、动态行为分析</td>
+</tr>
+</tbody></table>
+<p>IDA Python 和 angr 虽然都用于二进制分析，但它们在 <strong>设计目标、技术实现</strong> 和 <strong>适用场景</strong> 上有显著区别。以下是详细对比：</p>
+<hr>
+<h3 id="1-核心定位与设计目标"><a href="#1-核心定位与设计目标" class="headerlink" title="1. 核心定位与设计目标"></a><strong>1. 核心定位与设计目标</strong></h3><table>
+<thead>
+<tr>
+<th><strong>工具</strong></th>
+<th><strong>定位</strong></th>
+<th><strong>设计目标</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IDA Python</strong></td>
+<td>反汇编器的扩展脚本接口</td>
+<td>增强 IDA Pro 的静态分析能力，支持人工逆向工程中的自动化操作（如重命名、模式识别）。</td>
+</tr>
+<tr>
+<td><strong>angr</strong></td>
+<td>全自动二进制分析框架</td>
+<td>通过符号执行和静态分析实现自动化漏洞挖掘、路径探索和反混淆。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-技术实现对比"><a href="#2-技术实现对比" class="headerlink" title="2. 技术实现对比"></a><strong>2. 技术实现对比</strong></h3><h4 id="1-静态分析能力"><a href="#1-静态分析能力" class="headerlink" title="(1) 静态分析能力"></a><strong>(1) 静态分析能力</strong></h4><table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>IDA Python</strong></th>
+<th><strong>angr</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>控制流分析</strong></td>
+<td>基于反汇编结果生成 CFG，依赖人工校验</td>
+<td>自动构建精确的 CFG，支持符号执行探索路径</td>
+</tr>
+<tr>
+<td><strong>数据流分析</strong></td>
+<td>有限（需手动实现）</td>
+<td>内置强大的数据流跟踪（如变量传播、污点分析）</td>
+</tr>
+<tr>
+<td><strong>符号执行</strong></td>
+<td>不支持</td>
+<td>核心功能，可处理复杂分支和约束求解</td>
+</tr>
+<tr>
+<td><strong>反混淆能力</strong></td>
+<td>需手动编写脚本（如识别平坦化）</td>
+<td>内置反混淆策略（如去除无效分支、简化控制流）</td>
+</tr>
+</tbody></table>
+<h4 id="2-代码处理层次"><a href="#2-代码处理层次" class="headerlink" title="(2) 代码处理层次"></a><strong>(2) 代码处理层次</strong></h4><table>
+<thead>
+<tr>
+<th><strong>层次</strong></th>
+<th><strong>IDA Python</strong></th>
+<th><strong>angr</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>反汇编</strong></td>
+<td>直接操作 IDA 的反汇编结果（线性扫描+递归下降）</td>
+<td>基于 VEX IR（中间表示），支持多架构统一处理</td>
+</tr>
+<tr>
+<td><strong>指令语义</strong></td>
+<td>依赖 IDA 的解析（如 <code>idc.print_insn_mnem</code>）</td>
+<td>通过 VEX IR 抽象化指令语义</td>
+</tr>
+<tr>
+<td><strong>动态修改</strong></td>
+<td>可实时 Patch 二进制（<code>idc.PatchByte</code>）</td>
+<td>主要针对符号化状态，不直接修改原始文件</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-适用场景对比"><a href="#3-适用场景对比" class="headerlink" title="3. 适用场景对比"></a><strong>3. 适用场景对比</strong></h3><h4 id="IDA-Python-更适合："><a href="#IDA-Python-更适合：" class="headerlink" title="IDA Python 更适合："></a><strong>IDA Python 更适合：</strong></h4><ul>
+<li><p><strong>人工辅助逆向</strong></p>
+<ul>
+<li>快速重命名函数&#x2F;变量、注释关键逻辑。</li>
+<li>修复反汇编错误（如识别跳转表）。</li>
+<li>解混淆（如 OLLVM 平坦化）的 <strong>半自动化处理</strong>。</li>
+</ul>
+</li>
+<li><p><strong>示例场景</strong>：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs scss"># IDA Python：批量重命名函数前缀<br>for ea in <span class="hljs-built_in">Functions</span>():<br>    name = idc.<span class="hljs-built_in">get_func_name</span>(ea)<br>    if name.<span class="hljs-built_in">startswith</span>(<span class="hljs-string">&quot;sub_&quot;</span>):<br>        idc.<span class="hljs-built_in">set_name</span>(ea, <span class="hljs-string">&quot;func_&quot;</span> + name[<span class="hljs-number">4</span>:])<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="angr-更适合："><a href="#angr-更适合：" class="headerlink" title="angr 更适合："></a><strong>angr 更适合：</strong></h4><ul>
+<li><p><strong>自动化分析</strong></p>
+<ul>
+<li>漏洞挖掘（如符号执行找溢出）。</li>
+<li>路径探索（求解到达特定代码的条件）。</li>
+<li><strong>全自动反混淆</strong>（如恢复 VMProtect 的原始逻辑）。</li>
+</ul>
+</li>
+<li><p><strong>示例场景</strong>：</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs pf"><span class="hljs-comment"># angr：求解输入使程序输出 &quot;Hello&quot;</span><br>proj = angr.Project(<span class="hljs-string">&quot;target&quot;</span>)<br><span class="hljs-keyword">state</span> = proj.factory.entry_state()<br>simgr = proj.factory.simulation_manager(<span class="hljs-keyword">state</span>)<br>simgr.explore(find=lambda s: b<span class="hljs-string">&quot;Hello&quot;</span> <span class="hljs-keyword">in</span> s.posix.dumps(<span class="hljs-number">1</span>))<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="4-性能与复杂度"><a href="#4-性能与复杂度" class="headerlink" title="4. 性能与复杂度"></a><strong>4. 性能与复杂度</strong></h3><table>
+<thead>
+<tr>
+<th><strong>维度</strong></th>
+<th><strong>IDA Python</strong></th>
+<th><strong>angr</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>运行速度</strong></td>
+<td>快（直接操作内存中的反汇编数据）</td>
+<td>慢（符号执行需约束求解，路径爆炸问题）</td>
+</tr>
+<tr>
+<td><strong>学习曲线</strong></td>
+<td>简单（与 IDA 交互直观）</td>
+<td>陡峭（需理解符号执行、VEX IR 等概念）</td>
+</tr>
+<tr>
+<td><strong>扩展性</strong></td>
+<td>依赖 IDA 环境</td>
+<td>独立框架，可集成其他工具（如 Binary Ninja）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="5-结合使用的典型案例"><a href="#5-结合使用的典型案例" class="headerlink" title="5. 结合使用的典型案例"></a><strong>5. 结合使用的典型案例</strong></h3><h4 id="控制流平坦化解混淆"><a href="#控制流平坦化解混淆" class="headerlink" title="控制流平坦化解混淆"></a><strong>控制流平坦化解混淆</strong></h4><ol>
+<li><strong>IDA Python 预处理</strong>：<ul>
+<li>识别 Dispatcher 块和状态变量。</li>
+<li>标记可疑跳转（如 <code>switch</code> 驱动的分支）。</li>
+</ul>
+</li>
+<li><strong>angr 符号执行</strong>：<ul>
+<li>对标记的块进行路径探索，验证真实后继。</li>
+<li>生成简化后的 CFG。</li>
+</ul>
+</li>
+<li><strong>IDA Python 后处理</strong>：<ul>
+<li>根据 angr 结果 Patch 二进制，移除虚假块。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="6-总结-1"><a href="#6-总结-1" class="headerlink" title="6. 总结"></a><strong>6. 总结</strong></h3><table>
+<thead>
+<tr>
+<th><strong>工具</strong></th>
+<th><strong>优势</strong></th>
+<th><strong>劣势</strong></th>
+<th><strong>推荐场景</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IDA Python</strong></td>
+<td>实时交互、精准修改二进制、适合人工逆向</td>
+<td>静态分析能力有限</td>
+<td>半自动化逆向工程、解混淆辅助</td>
+</tr>
+<tr>
+<td><strong>angr</strong></td>
+<td>全自动符号执行、强大路径分析、适合复杂逻辑推理</td>
+<td>性能开销大、需深入理解底层机制</td>
+<td>漏洞挖掘、全自动反混淆、条件求解</td>
+</tr>
+</tbody></table>
+<p><strong>选择建议</strong>：</p>
+<ul>
+<li>需要 <strong>快速交互式分析</strong> → IDA Python。</li>
+<li>需要 <strong>处理复杂混淆或自动化探索</strong> → angr。</li>
+<li>最佳实践：<strong>两者结合</strong>（IDA 定位关键点 + angr 深度分析）。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://blog.51cto.com/lilongsy/5456836">Frida和IDA分析OLLVM控制流程平坦化_小龙在山东的技术博客_51CTO博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38154820/article/details/136347555">【总结】对大量函数进行trace调用流程+国际AIS3题_ida trace-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1488350-1-1.html">基于IDA Python的OLLVM反混淆(一) 手动去混淆 - 吾爱破解 - 52pojie.cn</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/linchaolong/article/details/146719518">使用 Frida Stalker 反 OLLVM 算法还原_frida stalker用法-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/news/6353">使用IDA microcode去除ollvm混淆(上)-先知社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/linchaolong/article/details/146719518">使用 Frida Stalker 反 OLLVM 算法还原_frida stalker用法-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://huhu0706.github.io/2020/06/05/2020-06-05-Frida%E8%BE%85%E5%8A%A9%E5%88%86%E6%9E%90OLLVM%E6%B7%B7%E6%B7%86%E7%9A%84%E7%AE%97%E6%B3%95/">2020-06-05-Frida辅助分析OLLVM混淆的算法 | huhu’s blog</a></p>
+<h2 id="反编译后LLVM优化"><a href="#反编译后LLVM优化" class="headerlink" title="反编译后LLVM优化"></a>反编译后LLVM优化</h2><blockquote>
+<p><code>AntiOllvm</code> 使用 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/elink@8f8K9s2c8@1M7s2y4Q4x3@1q4Q4x3V1k6Q4x3V1k6Y4K9i4c8Z5N6h3u0Q4x3X3g2U0L8%243#2Q4x3V1k6S2N6X3q4K6N6q4">retdec</a>9J5c8Y4u0W2N6r3c8W2j5H3<code>.</code>.) 将二进制文件还原为 <code>LLVM IR</code></p>
+<ul>
+<li>使用 <code>LLVM</code> 中的内部优化，将 <code>IR</code> 码优化为较高可读性的代码，这期间部分指令替换以及不可达代码就已经优化掉了</li>
+<li>定制 <code>Pass</code> 去除掉函数内部的 虚假控制流和平坦化</li>
+<li>最后通过 <code>LLVM</code> 将代码重新编译回汇编并回填文件</li>
+</ul>
+</blockquote>
+<p><code>AntiOllvm</code> 的核心思路是 <strong>利用 LLVM 的优化能力去除 OLLVM 的控制流平坦化和虚假控制流</strong>，最终还原出可读性较高的代码。</p>
+<pre><code class=" mermaid">graph LR
+    A[原始二进制文件] --&gt; B[RetDec 反编译为 LLVM IR]
+    B --&gt; C[LLVM 内置优化]
+    C --&gt; D[定制 Pass 去混淆]
+    D --&gt; E[LLVM 重新编译为汇编]
+    E --&gt; F[回填到原文件]
+</code></pre>
+
+<p>[<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-268112.htm">原创]AntiOllvm 去除二进制文件Ollvm混淆并编译回二进制文件-Android安全-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p><strong>关键步骤解析：</strong></p>
+<h3 id="1-RetDec-反编译为-LLVM-IR"><a href="#1-RetDec-反编译为-LLVM-IR" class="headerlink" title="(1) RetDec 反编译为 LLVM IR"></a><strong>(1) RetDec 反编译为 LLVM IR</strong></h3><ul>
+<li><p><strong>工具</strong>：RetDec（支持 Mach-O、ELF、PE 等格式）</p>
+</li>
+<li><p><strong>作用</strong>：将二进制文件转换为 <strong>LLVM IR</strong>（中间表示），便于后续优化。</p>
+</li>
+<li><p>命令示例：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">retdec-decompiler --cleanup --<span class="hljs-built_in">config</span> decompiler-<span class="hljs-built_in">config</span>.<span class="hljs-keyword">json </span>target_binary<br></code></pre></td></tr></table></figure>
+
+<p>输出：<code>target_binary.ll</code>（LLVM IR 文件）</p>
+</li>
+</ul>
+<hr>
+<h3 id="2-LLVM-内置优化"><a href="#2-LLVM-内置优化" class="headerlink" title="(2) LLVM 内置优化"></a><strong>(2) LLVM 内置优化</strong></h3><p>LLVM 自带的优化器 (<code>opt</code>) 可以执行以下优化：</p>
+<ul>
+<li><strong>指令简化</strong>：如 <code>add x, 0</code> → <code>x</code></li>
+<li>**不可达代码删除 (DCE)**：移除无用的基本块</li>
+<li><strong>常量传播</strong>：替换已知常量</li>
+<li>**控制流简化 (simplifycfg)**：合并冗余分支</li>
+</ul>
+<p><strong>优化命令</strong>：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs vim"><span class="hljs-keyword">opt</span> -S -O3 -dce -simplifycfg target_binary.<span class="hljs-keyword">ll</span> -<span class="hljs-keyword">o</span> optimized.<span class="hljs-keyword">ll</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-O3</code>：启用最高级别优化</li>
+<li><code>-dce</code>：删除死代码</li>
+<li><code>-simplifycfg</code>：简化控制流</li>
+</ul>
+<hr>
+<h3 id="3-定制-Pass-去混淆"><a href="#3-定制-Pass-去混淆" class="headerlink" title="(3) 定制 Pass 去混淆"></a><strong>(3) 定制 Pass 去混淆</strong></h3><p>针对 <strong>控制流平坦化</strong> 和 <strong>虚假控制流</strong>，需编写自定义 LLVM Pass：</p>
+<h4 id="目标"><a href="#目标" class="headerlink" title="目标"></a><strong>目标</strong></h4><ul>
+<li><strong>识别 Dispatcher 块</strong>（状态机驱动的分发逻辑）</li>
+<li><strong>恢复原始控制流</strong>（绕过虚假跳转）</li>
+<li><strong>删除无用块</strong>（不可达代码）</li>
+</ul>
+<h4 id="示例-Pass-逻辑"><a href="#示例-Pass-逻辑" class="headerlink" title="示例 Pass 逻辑"></a><strong>示例 Pass 逻辑</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 伪代码：识别并修复平坦化</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">runOnFunction</span><span class="hljs-params">(Function &amp;F)</span> </span>&#123;<br>    <span class="hljs-comment">// 1. 找到 Dispatcher 块（包含 switch/状态变量）</span><br>    BasicBlock *Dispatcher = <span class="hljs-built_in">findDispatcher</span>(F);<br>    <br>    <span class="hljs-comment">// 2. 标记真实块（含实际逻辑的块）</span><br>    SmallVector&lt;BasicBlock*&gt; RealBlocks = <span class="hljs-built_in">filterRealBlocks</span>(F);<br>    <br>    <span class="hljs-comment">// 3. 重建控制流（绕过 Dispatcher）</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> *BB : RealBlocks) &#123;<br>        BasicBlock *TrueSucc = <span class="hljs-built_in">findTrueSuccessor</span>(BB);<br>        BasicBlock *FalseSucc = <span class="hljs-built_in">findFalseSuccessor</span>(BB);<br>        <span class="hljs-built_in">redirectBranch</span>(BB, Dispatcher, TrueSucc, FalseSucc);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 4. 删除 Dispatcher 和无效块</span><br>    <span class="hljs-built_in">removeUnusedBlocks</span>(F, Dispatcher);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="编译-运行-Pass"><a href="#编译-运行-Pass" class="headerlink" title="编译 &amp; 运行 Pass"></a><strong>编译 &amp; 运行 Pass</strong></h4><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">clang++ -shared -fPIC CustomPass<span class="hljs-selector-class">.cpp</span> -o CustomPass<span class="hljs-selector-class">.so</span> `llvm-config <span class="hljs-attr">--cxxflags</span> <span class="hljs-attr">--ldflags</span> <span class="hljs-attr">--libs</span>`<br>opt -load ./CustomPass<span class="hljs-selector-class">.so</span> -custom-pass optimized<span class="hljs-selector-class">.ll</span> -o deobfuscated.ll<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-LLVM-重新编译为汇编"><a href="#4-LLVM-重新编译为汇编" class="headerlink" title="(4) LLVM 重新编译为汇编"></a><strong>(4) LLVM 重新编译为汇编</strong></h3><p>将优化后的 IR 编译回可执行的汇编代码：</p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elm"><span class="hljs-title">llc</span> -<span class="hljs-type">O3</span> -file<span class="hljs-keyword">type</span>=asm deobfuscated.ll -o output.s<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-filetype=asm</code>：输出汇编格式</li>
+<li><code>-O3</code>：启用优化</li>
+</ul>
+<hr>
+<h3 id="5-回填到原文件"><a href="#5-回填到原文件" class="headerlink" title="(5) 回填到原文件"></a><strong>(5) 回填到原文件</strong></h3><p>将生成的汇编代码重新插入原始二进制文件：</p>
+<ul>
+<li><p><strong>工具</strong>：<code>objcopy</code>、<code>patchelf</code> 或手动修改（需处理重定位）</p>
+</li>
+<li><p>示例（替换.text段）：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">objcopy <span class="hljs-params">--update-section</span> <span class="hljs-string">.text=output.s</span> target_binary<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<p>参考：</p>
+<p>[<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-268112.htm">原创]AntiOllvm 去除二进制文件Ollvm混淆并编译回二进制文件-Android安全-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000037697547#item-2-1">Unicorn反混淆：恢复被OLLVM保护的程序(一) - 个人文章 - SegmentFault 思否</a></p>
+<p><a target="_blank" rel="noopener" href="https://oacia.dev/ollvm-study/">ollvm三种混淆模式的反混淆思路 | oacia &#x3D; oaciaのBbBlog~ &#x3D; DEVIL or SWEET</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/665411416">(69 封私信 &#x2F; 95 条消息) 反编译工具retdec的使用介绍 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/392381317">(69 封私信 &#x2F; 95 条消息) LLVM IR 的第一个 Pass：上手官方文档 Hello Pass - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/h2zZhou/p/6637890.html">反混淆：恢复被OLLVM保护的程序 - h2z - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/" class="category-chain-item">体系结构</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/%E7%BC%96%E8%AF%91%E5%99%A8/" class="category-chain-item">编译器</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解Ollvm</div>
+      <div>https://hermes37.vercel.app/2025/04/28/工科知识库/计算机技术/体系结构/编译器/深入理解Ollvm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/28/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/%E7%BC%96%E8%AF%91%E5%99%A8/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3LLVM/" title="深入理解LLVM">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解LLVM</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/15/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/" title="PE文件格式">
+                        <span class="hidden-mobile">PE文件格式</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

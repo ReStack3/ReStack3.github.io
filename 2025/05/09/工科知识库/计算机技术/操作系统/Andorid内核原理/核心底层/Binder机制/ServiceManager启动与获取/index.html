@@ -1,0 +1,1087 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="站在巨人的肩膀上： Binder系列4—获取ServiceManager - Gityuan博客 | 袁辉辉的技术博客 Binder系列3—启动ServiceManager - Gityuan博客 | 袁辉辉的技术博客  前置知识引入在前面Binder驱动 - The Peak Tower和缘起Binder - The Peak Tower两篇文章中简单谈到了Binder驱动实现了IPC并在其基">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ServiceManager启动与获取">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/ServiceManager%E5%90%AF%E5%8A%A8%E4%B8%8E%E8%8E%B7%E5%8F%96/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="站在巨人的肩膀上： Binder系列4—获取ServiceManager - Gityuan博客 | 袁辉辉的技术博客 Binder系列3—启动ServiceManager - Gityuan博客 | 袁辉辉的技术博客  前置知识引入在前面Binder驱动 - The Peak Tower和缘起Binder - The Peak Tower两篇文章中简单谈到了Binder驱动实现了IPC并在其基">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/W8L9VC5PStxufa6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/08/ZsxpAf8lUdWSI5O.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/09/VcFDiz3IuP6Cpv4.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/09/cs5ExtNOnCJ31Vd.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/09/9xyifMQvkSAE7nP.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/03/09/ZFWwDXArflGB8Op.jpg">
+<meta property="article:published_time" content="2025-05-09T07:31:42.465Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:57.963Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/03/W8L9VC5PStxufa6.png">
+  
+  
+  
+  <title>ServiceManager启动与获取 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ServiceManager启动与获取"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          71 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ServiceManager启动与获取</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>站在巨人的肩膀上：</p>
+<p><a target="_blank" rel="noopener" href="https://gityuan.com/2015/11/08/binder-get-sm/">Binder系列4—获取ServiceManager - Gityuan博客 | 袁辉辉的技术博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://gityuan.com/2015/11/07/binder-start-sm/">Binder系列3—启动ServiceManager - Gityuan博客 | 袁辉辉的技术博客</a></p>
+</blockquote>
+<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>在前面<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/06/08/Binder%E9%A9%B1%E5%8A%A8/">Binder驱动 - The Peak Tower</a>和<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/06/01/%E7%BC%98%E8%B5%B7Binder/">缘起Binder - The Peak Tower</a>两篇文章中简单谈到了Binder驱动实现了IPC并在其基础上构建了RPC通信框架，也就是两个进程目前可以通过Binder驱动进行相互通信和调用方法了。当然和普通的RPC所面临的难题一样，当服务实例数量增长时，如何让通信双方可以准确而不费力的找到对方就变成一个至关重要的问题了，也正因如此，在微服务(<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/09/16/%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C/">服务注册与发现(consul注册中心) - The Peak Tower</a>)中引入了诸如像consul之类的服务注册中心。</p>
+<p>先观察一下微服务网络应用中所谓的注册中心架构：</p>
+<p><img src="https://s2.loli.net/2025/02/03/W8L9VC5PStxufa6.png" srcset="/img/loading.gif" lazyload></p>
+<p>注意这个注册中心和整体服务发现过程，都与后文的ServiceManager有着异曲同工之处。</p>
+<p>类比来看，在android架构中是否也有相似的思想呢？</p>
+<p><strong>问题</strong>：在Android系统中，有许多系统服务（如ActivityManagerService、PackageManagerService等）需要被多个应用程序或其他服务访问。如果没有一个中心化的机制，每个服务都需要自行管理如何被其他进程发现和访问，这将导致复杂性和混乱。</p>
+<p><strong>解决方案</strong>：ServiceManager作为一个<strong>服务注册中心</strong>，允许系统服务在启动时将自己注册到ServiceManager中，其他进程可以通过ServiceManager查询并获取这些服务的Binder引用。这样，服务的发现和访问变得统一和简单。</p>
+<p>通过还带来了诸多好处：</p>
+<ul>
+<li>提供了一个统一的接口来获取服务引用，隐藏了Binder通信的底层细节（如Binder对象的创建、引用传递等）。开发者只需要通过ServiceManager获取服务的Binder引用，而不需要关心Binder通信的具体实现。</li>
+<li>确保这些系统服务是单例的，并且所有进程都通过ServiceManager获取同一个Binder引用，避免了多个实例的创建和资源浪费。</li>
+<li>ServiceManager负责管理这些系统服务的生命周期。它确保服务在系统启动时被正确初始化，并在需要时提供对这些服务的访问。</li>
+</ul>
+<p>所以有必要探讨一下ServiceManager到底是什么了。</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><blockquote>
+<p>ServiceManager是Binder IPC通信过程中的守护进程，本身也是一个Binder服务。</p>
+</blockquote>
+<p>原先进程A和进程B可以直接通过Binder驱动直接通信，当引入ServiceManager之后，让我们重新审视一下整个过程：</p>
+<p>（1）<strong>进程 B 注册服务</strong></p>
+<ul>
+<li>进程 B 启动后，将自己的 Binder 服务（例如 <code>MyService</code>）注册到 ServiceManager 中。</li>
+<li>注册时，进程 B 会通过 Binder 驱动将服务的 Binder 引用和名称（例如 <code>&quot;com.example.MyService&quot;</code>）发送给 ServiceManager。</li>
+<li>ServiceManager 将这些信息存储在自己的服务列表中。</li>
+</ul>
+<p>（2）<strong>进程 A 获取服务</strong></p>
+<ul>
+<li>进程 A 需要与进程 B 通信时，首先通过 Binder 驱动向 ServiceManager 发送查询请求，请求获取服务 <code>&quot;com.example.MyService&quot;</code> 的 Binder 引用。</li>
+<li>ServiceManager 收到请求后，从服务列表中查找对应的 Binder 引用，并通过 Binder 驱动将其返回给进程 A。</li>
+</ul>
+<p>（3）<strong>进程 A 与进程 B 通信</strong></p>
+<ul>
+<li>进程 A 拿到进程 B 的 Binder 引用后，就可以通过 Binder 驱动直接与进程 B 通信了。</li>
+<li>进程 A 发送的请求会通过 Binder 驱动传递给进程 B，进程 B 处理完请求后，将结果通过 Binder 驱动返回给进程 A。</li>
+</ul>
+<p><strong>可以看出：引入 ServiceManager 后，进程 A 并不是直接与进程 B 通信，而是通过 Binder 驱动与 ServiceManager 通信，间接获取进程 B 的 Binder 引用，然后通过 Binder 驱动与进程 B 通信。</strong></p>
+<p>所以ServiceManager 作为一个被固定的中间人守护进程，势必在系统启动就需要达到所谓的“自启”。并同Binder驱动联系。</p>
+<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/cmds/servicemanager/binder.c#147">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;cmds&#x2F;servicemanager&#x2F;binder.c</a></p>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/kernel_3.18/xref/drivers/staging/android/binder.c#binder_new_node">Cross Reference: &#x2F;drivers&#x2F;staging&#x2F;android&#x2F;binder.c</a></p>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/cmds/servicemanager/service_manager.c">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;cmds&#x2F;servicemanager&#x2F;service_manager.c</a></p>
+<h4 id="（1）Binder-驱动的初始化"><a href="#（1）Binder-驱动的初始化" class="headerlink" title="（1）Binder 驱动的初始化"></a>（1）<strong>Binder 驱动的初始化</strong></h4><ul>
+<li>在系统启动时，Binder 驱动会被加载并初始化。Binder 驱动在内核中创建一个特殊的 Binder 上下文（context），用于管理进程间的通信。</li>
+<li>Binder 驱动会为每个进程分配一个唯一的 Binder 标识符（Binder ID），用于标识进程。</li>
+</ul>
+<h4 id="（2）ServiceManager-的启动"><a href="#（2）ServiceManager-的启动" class="headerlink" title="（2）ServiceManager 的启动"></a>（2）<strong>ServiceManager 的启动</strong></h4><ul>
+<li>ServiceManager 是 Android 系统中第一个使用 Binder 驱动的进程。它在启动时会调用 <code>binder_open()</code> 打开 Binder 驱动，并通过 <code>binder_become_context_manager()</code> 将自己注册为 Binder 的上下文管理器（Context Manager）。</li>
+<li>注册成功后，ServiceManager 成为 Binder 通信的中心枢纽，负责管理所有系统服务的 Binder 引用。</li>
+</ul>
+<h4 id="（3）ServiceManager-的特殊-Binder-引用"><a href="#（3）ServiceManager-的特殊-Binder-引用" class="headerlink" title="（3）ServiceManager 的特殊 Binder 引用"></a>（3）<strong>ServiceManager 的特殊 Binder 引用</strong></h4><ul>
+<li>ServiceManager 在 Binder 驱动中有一个特殊的 Binder 引用，其值为 <code>0</code>。这个引用是固定的，所有进程都可以通过这个引用与 ServiceManager 通信。</li>
+<li>当其他进程需要获取系统服务的 Binder 引用时，它们会通过 Binder 驱动向 ServiceManager 发送请求，ServiceManager 会返回相应的 Binder 引用。</li>
+</ul>
+</blockquote>
+<p>ServiceManager是由init进程通过解析init.rc文件而创建的。详细可看：<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/01/03/Android%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#android%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E5%9B%BE">android系统启动流程 - The Peak Tower</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java">ervice servicemanager /system/bin/servicemanager<br>    <span class="hljs-keyword">class</span> <span class="hljs-title class_">core</span><br>    user system<br>    group system<br>    critical<br>    onrestart restart healthd<br>    onrestart restart zygote<br>    onrestart restart media<br>    onrestart restart surfaceflinger<br>    onrestart restart drm<br></code></pre></td></tr></table></figure>
+
+<p>其所对应的可执行程序&#x2F;system&#x2F;bin&#x2F;servicemanager，所对应的源文件是service_manager.c，进程名为&#x2F;system&#x2F;bin&#x2F;servicemanager。启动Service Manager的入口函数是service_manager.c中的main()方法</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> **argv)</span> &#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_state</span> *<span class="hljs-title">bs</span>;</span><br><br>    <span class="hljs-comment">// 打开 Binder 驱动，申请 128KB 的内存空间</span><br>    <span class="hljs-comment">// binder_open() 函数会打开 `/dev/binder` 设备文件，并调用 mmap() 映射一块内存空间</span><br>    <span class="hljs-comment">// 这块内存用于 Binder 通信的缓冲区，大小为 128KB</span><br>    bs = binder_open(<span class="hljs-number">128</span>*<span class="hljs-number">1024</span>);<br>    <span class="hljs-keyword">if</span> (!bs) &#123;<br>        <span class="hljs-comment">// 如果打开 Binder 驱动失败，直接退出</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 将当前进程（ServiceManager）注册为 Binder 的上下文管理者（Context Manager）</span><br>    <span class="hljs-comment">// 上下文管理者是 Binder 通信的核心枢纽，负责管理所有服务的 Binder 引用</span><br>    <span class="hljs-comment">// 如果注册失败，返回 -1</span><br>    <span class="hljs-keyword">if</span> (binder_become_context_manager(bs)) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 检查 SELinux 是否启用</span><br>    <span class="hljs-comment">// SELinux 是 Android 的安全模块，用于增强系统的安全性</span><br>    selinux_enabled = is_selinux_enabled();<br><br>    <span class="hljs-comment">// 获取 SELinux 的服务上下文句柄</span><br>    <span class="hljs-comment">// 这个句柄用于后续的权限检查</span><br>    sehandle = selinux_android_service_context_handle();<br><br>    <span class="hljs-comment">// 打开 SELinux 状态文件，用于监听 SELinux 的状态变化</span><br>    selinux_status_open(<span class="hljs-literal">true</span>);<br><br>    <span class="hljs-comment">// 如果 SELinux 已启用</span><br>    <span class="hljs-keyword">if</span> (selinux_enabled &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">// 检查是否成功获取 SELinux 句柄</span><br>        <span class="hljs-keyword">if</span> (sehandle == <span class="hljs-literal">NULL</span>) &#123;<br>            <span class="hljs-built_in">abort</span>(); <span class="hljs-comment">// 如果获取失败，直接终止程序</span><br>        &#125;<br><br>        <span class="hljs-comment">// 获取当前进程（ServiceManager）的 SELinux 上下文</span><br>        <span class="hljs-comment">// 这个上下文用于权限检查</span><br>        <span class="hljs-keyword">if</span> (getcon(&amp;service_manager_context) != <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-built_in">abort</span>(); <span class="hljs-comment">// 如果获取失败，直接终止程序</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 进入无限循环，处理客户端发来的请求</span><br>    <span class="hljs-comment">// binder_loop() 是一个阻塞式循环，它会不断从 Binder 驱动读取请求，并调用 svcmgr_handler 处理</span><br>    <span class="hljs-comment">// svcmgr_handler 是请求处理函数，负责解析请求并执行相应的操作（如注册服务、查询服务等）</span><br>    binder_loop(bs, svcmgr_handler);<br><br>    <span class="hljs-comment">// 正常情况下，binder_loop() 不会返回，因此这里的 return 0 只是为了语法完整性</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>其中binder_open()在Binder驱动中已经做过详细介绍了。</p>
+<p>再次回顾一下关键结构体：</p>
+<p><img src="https://s2.loli.net/2025/03/08/ZsxpAf8lUdWSI5O.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="binder-become-context-manager"><a href="#binder-become-context-manager" class="headerlink" title="binder_become_context_manager"></a>binder_become_context_manager</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">binder_become_context_manager</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_state *bs)</span><br>&#123;<br>    <span class="hljs-comment">// 使用 ioctl() 系统调用，将当前进程注册为 Binder 的上下文管理者（Context Manager）</span><br>    <span class="hljs-comment">// - bs-&gt;fd: Binder 驱动文件的文件描述符，通过 binder_open() 打开</span><br>    <span class="hljs-comment">// - BINDER_SET_CONTEXT_MGR: ioctl 的命令，表示将当前进程设置为上下文管理者</span><br>    <span class="hljs-comment">// - 0: 传递给 ioctl() 的参数，这里没有额外参数，因此传入 0</span><br>    <span class="hljs-keyword">return</span> ioctl(bs-&gt;fd, BINDER_SET_CONTEXT_MGR, <span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在Binder驱动也介绍过了<code>ioctl</code>：</p>
+<p><img src="https://s2.loli.net/2025/03/09/VcFDiz3IuP6Cpv4.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="binder-ioctl-set-ctx-mgr"><a href="#binder-ioctl-set-ctx-mgr" class="headerlink" title="binder_ioctl_set_ctx_mgr"></a>binder_ioctl_set_ctx_mgr</h3><p>负责将当前进程设置为 Binder 的上下文管理者,其中：</p>
+<p>**<code>binder_proc</code>**：</p>
+<ul>
+<li>表示一个进程的 Binder 相关数据，包括进程的 Binder 节点、引用计数等。</li>
+</ul>
+<p>**<code>binder_context_mgr_node</code>**：</p>
+<ul>
+<li>表示上下文管理者的 Binder 节点。系统中只能有一个上下文管理者。</li>
+</ul>
+<p>**<code>binder_context_mgr_uid</code>**：</p>
+<ul>
+<li>表示上下文管理者的用户 ID（UID）。用于权限检查。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">binder_ioctl_set_ctx_mgr</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> file *filp)</span><br>&#123;<br>    <span class="hljs-type">int</span> ret = <span class="hljs-number">0</span>; <span class="hljs-comment">// 返回值，初始化为 0</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_proc</span> *<span class="hljs-title">proc</span> =</span> filp-&gt;private_data; <span class="hljs-comment">// 获取当前进程的 binder_proc 结构</span><br>    <span class="hljs-type">kuid_t</span> curr_euid = current_euid(); <span class="hljs-comment">// 获取当前进程的有效用户 ID (EUID)</span><br><br>    <span class="hljs-comment">// 检查是否已经存在上下文管理者</span><br>    <span class="hljs-keyword">if</span> (binder_context_mgr_node != <span class="hljs-literal">NULL</span>) &#123;<br>        pr_err(<span class="hljs-string">&quot;BINDER_SET_CONTEXT_MGR already set\n&quot;</span>); <span class="hljs-comment">// 如果已经存在，打印错误日志</span><br>        ret = -EBUSY; <span class="hljs-comment">// 返回 -EBUSY 错误码，表示资源忙</span><br>        <span class="hljs-keyword">goto</span> out; <span class="hljs-comment">// 跳转到 out 标签，直接返回</span><br>    &#125;<br><br>    <span class="hljs-comment">// 检查是否有有效的上下文管理者 UID</span><br>    <span class="hljs-keyword">if</span> (uid_valid(binder_context_mgr_uid)) &#123;<br>        <span class="hljs-comment">// 如果当前进程的 EUID 不等于上下文管理者的 UID，返回权限错误</span><br>        <span class="hljs-keyword">if</span> (!uid_eq(binder_context_mgr_uid, curr_euid)) &#123;<br>            pr_err(<span class="hljs-string">&quot;BINDER_SET_CONTEXT_MGR bad uid %d != %d\n&quot;</span>,<br>                   from_kuid(&amp;init_user_ns, curr_euid), <span class="hljs-comment">// 打印当前进程的 EUID</span><br>                   from_kuid(&amp;init_user_ns, binder_context_mgr_uid)); <span class="hljs-comment">// 打印上下文管理者的 UID</span><br>            ret = -EPERM; <span class="hljs-comment">// 返回 -EPERM 错误码，表示权限不足</span><br>            <span class="hljs-keyword">goto</span> out; <span class="hljs-comment">// 跳转到 out 标签，直接返回</span><br>        &#125;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 如果上下文管理者的 UID 未设置，则设置为当前进程的 EUID</span><br>        binder_context_mgr_uid = curr_euid;<br>    &#125;<br><br>    <span class="hljs-comment">// 创建一个新的 Binder 节点作为上下文管理者</span><br>    binder_context_mgr_node = binder_new_node(proc, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (binder_context_mgr_node == <span class="hljs-literal">NULL</span>) &#123;<br>        ret = -ENOMEM; <span class="hljs-comment">// 如果创建失败，返回 -ENOMEM 错误码，表示内存不足</span><br>        <span class="hljs-keyword">goto</span> out; <span class="hljs-comment">// 跳转到 out 标签，直接返回</span><br>    &#125;<br><br>    <span class="hljs-comment">// 增加上下文管理者节点的引用计数</span><br>    binder_context_mgr_node-&gt;local_weak_refs++; <span class="hljs-comment">// 增加弱引用计数</span><br>    binder_context_mgr_node-&gt;local_strong_refs++; <span class="hljs-comment">// 增加强引用计数</span><br>    binder_context_mgr_node-&gt;has_strong_ref = <span class="hljs-number">1</span>; <span class="hljs-comment">// 标记为有强引用</span><br>    binder_context_mgr_node-&gt;has_weak_ref = <span class="hljs-number">1</span>; <span class="hljs-comment">// 标记为有弱引用</span><br><br>out:<br>    <span class="hljs-keyword">return</span> ret; <span class="hljs-comment">// 返回结果</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="binder-new-node"><a href="#binder-new-node" class="headerlink" title="binder_new_node"></a>binder_new_node</h4><p>该函数用于创建一个新的 <code>binder_node</code> 结构，并将其插入到指定进程的红黑树中。<code>binder_node</code> 是 Binder 驱动中表示一个 Binder 实体的数据结构，用于管理 Binder 对象的生命周期和引用。通过红黑树的管理，Binder 驱动能够高效地查找和操作 Binder 对象。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-keyword">struct</span> binder_node *<span class="hljs-title function_">binder_new_node</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_proc *proc,</span><br><span class="hljs-params">                                          <span class="hljs-type">binder_uintptr_t</span> ptr,</span><br><span class="hljs-params">                                          <span class="hljs-type">binder_uintptr_t</span> cookie)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rb_node</span> **<span class="hljs-title">p</span> =</span> &amp;proc-&gt;nodes.rb_node; <span class="hljs-comment">// 获取红黑树的根节点指针</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">rb_node</span> *<span class="hljs-title">parent</span> =</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 父节点指针，初始化为 NULL</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_node</span> *<span class="hljs-title">node</span>;</span> <span class="hljs-comment">// 用于存储新创建的 Binder 节点</span><br><br>    <span class="hljs-comment">// 在红黑树中查找合适的位置插入新节点</span><br>    <span class="hljs-keyword">while</span> (*p) &#123;<br>        parent = *p; <span class="hljs-comment">// 记录当前节点的父节点</span><br>        node = rb_entry(parent, <span class="hljs-keyword">struct</span> binder_node, rb_node); <span class="hljs-comment">// 获取当前节点的 binder_node 结构</span><br><br>        <span class="hljs-comment">// 根据 ptr 的值决定向左子树还是右子树查找</span><br>        <span class="hljs-keyword">if</span> (ptr &lt; node-&gt;ptr)<br>            p = &amp;(*p)-&gt;rb_left; <span class="hljs-comment">// 如果 ptr 小于当前节点的 ptr，向左子树查找</span><br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ptr &gt; node-&gt;ptr)<br>            p = &amp;(*p)-&gt;rb_right; <span class="hljs-comment">// 如果 ptr 大于当前节点的 ptr，向右子树查找</span><br>        <span class="hljs-keyword">else</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 如果 ptr 等于当前节点的 ptr，说明节点已存在，返回 NULL</span><br>    &#125;<br><br>    <span class="hljs-comment">// 分配内存创建新的 binder_node 结构</span><br>    node = kzalloc(<span class="hljs-keyword">sizeof</span>(*node), GFP_KERNEL);<br>    <span class="hljs-keyword">if</span> (node == <span class="hljs-literal">NULL</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 如果内存分配失败，返回 NULL</span><br><br>    <span class="hljs-comment">// 更新 Binder 统计信息，记录创建的节点数量</span><br>    binder_stats_created(BINDER_STAT_NODE);<br><br>    <span class="hljs-comment">// 将新节点插入红黑树</span><br>    rb_link_node(&amp;node-&gt;rb_node, parent, p); <span class="hljs-comment">// 将新节点链接到红黑树</span><br>    rb_insert_color(&amp;node-&gt;rb_node, &amp;proc-&gt;nodes); <span class="hljs-comment">// 调整红黑树的颜色，保持平衡</span><br><br>    <span class="hljs-comment">// 初始化新节点的字段</span><br>    node-&gt;debug_id = ++binder_last_id; <span class="hljs-comment">// 分配一个唯一的调试 ID</span><br>    node-&gt;proc = proc; <span class="hljs-comment">// 设置节点所属的进程</span><br>    node-&gt;ptr = ptr; <span class="hljs-comment">// 设置节点的 ptr 字段</span><br>    node-&gt;cookie = cookie; <span class="hljs-comment">// 设置节点的 cookie 字段</span><br>    node-&gt;work.type = BINDER_WORK_NODE; <span class="hljs-comment">// 设置工作项类型为 BINDER_WORK_NODE</span><br>    INIT_LIST_HEAD(&amp;node-&gt;work.entry); <span class="hljs-comment">// 初始化工作项的链表头</span><br>    INIT_LIST_HEAD(&amp;node-&gt;async_todo); <span class="hljs-comment">// 初始化异步任务链表头</span><br><br>    <span class="hljs-comment">// 打印调试信息，记录节点的创建</span><br>    binder_debug(BINDER_DEBUG_INTERNAL_REFS,<br>                 <span class="hljs-string">&quot;%d:%d node %d u%016llx c%016llx created\n&quot;</span>,<br>                 proc-&gt;pid, current-&gt;pid, node-&gt;debug_id,<br>                 (u64)node-&gt;ptr, (u64)node-&gt;cookie);<br><br>    <span class="hljs-keyword">return</span> node; <span class="hljs-comment">// 返回新创建的节点</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在Binder驱动层创建binder_node结构体对象，并将当前binder_proc加入到<code>binder_node</code>的<code>node-&gt;proc</code>。并创建binder_node的async_todo和binder_work两个队列。</p>
+<p><img src="https://s2.loli.net/2025/03/09/cs5ExtNOnCJ31Vd.png" srcset="/img/loading.gif" lazyload></p>
+<p>还记得在main中的<code>binder_loop(bs, svcmgr_handler);</code>接下来来看一看svcmgr_handler这个参数：</p>
+<h3 id="svcmgr-handler"><a href="#svcmgr-handler" class="headerlink" title="svcmgr_handler"></a>svcmgr_handler</h3><p><strong><code>svcmgr_handler</code></strong> 函数是 ServiceManager 的请求处理函数，负责处理客户端发来的各种请求。它支持获取服务、添加服务、列出服务等操作，并结合 SELinux 进行权限检查。该函数是 ServiceManager 实现服务管理的核心部分。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">svcmgr_handler</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_state *bs,</span><br><span class="hljs-params">                   <span class="hljs-keyword">struct</span> binder_transaction_data *txn,</span><br><span class="hljs-params">                   <span class="hljs-keyword">struct</span> binder_io *msg,</span><br><span class="hljs-params">                   <span class="hljs-keyword">struct</span> binder_io *reply)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">svcinfo</span> *<span class="hljs-title">si</span>;</span> <span class="hljs-comment">// 用于遍历服务链表的指针</span><br>    <span class="hljs-type">uint16_t</span> *s; <span class="hljs-comment">// 用于存储字符串的指针</span><br>    <span class="hljs-type">size_t</span> len; <span class="hljs-comment">// 字符串长度</span><br>    <span class="hljs-type">uint32_t</span> handle; <span class="hljs-comment">// 服务的句柄</span><br>    <span class="hljs-type">uint32_t</span> strict_policy; <span class="hljs-comment">// 严格模式策略</span><br>    <span class="hljs-type">int</span> allow_isolated; <span class="hljs-comment">// 是否允许隔离进程访问</span><br>    <span class="hljs-type">uint32_t</span> dumpsys_priority; <span class="hljs-comment">// 服务的 dumpsys 优先级</span><br><br>    <span class="hljs-comment">// 检查目标对象是否为 ServiceManager</span><br>    <span class="hljs-keyword">if</span> (txn-&gt;target.ptr != BINDER_SERVICE_MANAGER)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-comment">// 如果是 PING 事务，直接返回成功</span><br>    <span class="hljs-keyword">if</span> (txn-&gt;code == PING_TRANSACTION)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">// 从消息中读取严格模式策略</span><br>    strict_policy = bio_get_uint32(msg);<br>    <span class="hljs-comment">// 从消息中读取接口名称</span><br>    s = bio_get_string16(msg, &amp;len);<br>    <span class="hljs-keyword">if</span> (s == <span class="hljs-literal">NULL</span>) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 如果读取失败，返回错误</span><br>    &#125;<br><br>    <span class="hljs-comment">// 检查接口名称是否合法</span><br>    <span class="hljs-keyword">if</span> ((len != (<span class="hljs-keyword">sizeof</span>(svcmgr_id) / <span class="hljs-number">2</span>)) ||<br>        <span class="hljs-built_in">memcmp</span>(svcmgr_id, s, <span class="hljs-keyword">sizeof</span>(svcmgr_id))) &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>,<span class="hljs-string">&quot;invalid id %s\n&quot;</span>, str8(s, len)); <span class="hljs-comment">// 打印错误日志</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 返回错误</span><br>    &#125;<br><br>    <span class="hljs-comment">// 如果 SELinux 状态更新，重新加载 SELinux 句柄</span><br>    <span class="hljs-keyword">if</span> (sehandle &amp;&amp; selinux_status_updated() &gt; <span class="hljs-number">0</span>) &#123;<br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> VENDORSERVICEMANAGER</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">selabel_handle</span> *<span class="hljs-title">tmp_sehandle</span> =</span> selinux_android_vendor_service_context_handle();<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">selabel_handle</span> *<span class="hljs-title">tmp_sehandle</span> =</span> selinux_android_service_context_handle();<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>        <span class="hljs-keyword">if</span> (tmp_sehandle) &#123;<br>            selabel_close(sehandle); <span class="hljs-comment">// 关闭旧的 SELinux 句柄</span><br>            sehandle = tmp_sehandle; <span class="hljs-comment">// 更新为新的 SELinux 句柄</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 根据事务代码进行处理</span><br>    <span class="hljs-keyword">switch</span>(txn-&gt;code) &#123;<br>    <span class="hljs-keyword">case</span> SVC_MGR_GET_SERVICE: <span class="hljs-comment">// 获取服务</span><br>    <span class="hljs-keyword">case</span> SVC_MGR_CHECK_SERVICE: <span class="hljs-comment">// 检查服务</span><br>        s = bio_get_string16(msg, &amp;len); <span class="hljs-comment">// 从消息中读取服务名称</span><br>        <span class="hljs-keyword">if</span> (s == <span class="hljs-literal">NULL</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 如果读取失败，返回错误</span><br>        &#125;<br>        handle = do_find_service(s, len, txn-&gt;sender_euid, txn-&gt;sender_pid); <span class="hljs-comment">// 查找服务</span><br>        <span class="hljs-keyword">if</span> (!handle)<br>            <span class="hljs-keyword">break</span>; <span class="hljs-comment">// 如果未找到服务，跳出 switch</span><br>        bio_put_ref(reply, handle); <span class="hljs-comment">// 将服务句柄写入回复</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// 返回成功</span><br><br>    <span class="hljs-keyword">case</span> SVC_MGR_ADD_SERVICE: <span class="hljs-comment">// 添加服务</span><br>        s = bio_get_string16(msg, &amp;len); <span class="hljs-comment">// 从消息中读取服务名称</span><br>        <span class="hljs-keyword">if</span> (s == <span class="hljs-literal">NULL</span>) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 如果读取失败，返回错误</span><br>        &#125;<br>        handle = bio_get_ref(msg); <span class="hljs-comment">// 从消息中读取服务句柄</span><br>        allow_isolated = bio_get_uint32(msg) ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>; <span class="hljs-comment">// 读取是否允许隔离进程访问</span><br>        dumpsys_priority = bio_get_uint32(msg); <span class="hljs-comment">// 读取服务的 dumpsys 优先级</span><br>        <span class="hljs-keyword">if</span> (do_add_service(bs, s, len, handle, txn-&gt;sender_euid, allow_isolated, dumpsys_priority,<br>                           txn-&gt;sender_pid))<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 如果添加服务失败，返回错误</span><br>        <span class="hljs-keyword">break</span>;<br><br>    <span class="hljs-keyword">case</span> SVC_MGR_LIST_SERVICES: &#123; <span class="hljs-comment">// 列出服务</span><br>        <span class="hljs-type">uint32_t</span> n = bio_get_uint32(msg); <span class="hljs-comment">// 读取请求的服务索引</span><br>        <span class="hljs-type">uint32_t</span> req_dumpsys_priority = bio_get_uint32(msg); <span class="hljs-comment">// 读取请求的 dumpsys 优先级</span><br><br>        <span class="hljs-comment">// 检查调用者是否有权限列出服务</span><br>        <span class="hljs-keyword">if</span> (!svc_can_list(txn-&gt;sender_pid, txn-&gt;sender_euid)) &#123;<br>            ALOGE(<span class="hljs-string">&quot;list_service() uid=%d - PERMISSION DENIED\n&quot;</span>,<br>                    txn-&gt;sender_euid); <span class="hljs-comment">// 打印错误日志</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 返回错误</span><br>        &#125;<br>        si = svclist; <span class="hljs-comment">// 获取服务链表的头节点</span><br>        <span class="hljs-comment">// 遍历服务链表，跳过不支持请求优先级的服务</span><br>        <span class="hljs-keyword">while</span> (si) &#123;<br>            <span class="hljs-keyword">if</span> (si-&gt;dumpsys_priority &amp; req_dumpsys_priority) &#123;<br>                <span class="hljs-keyword">if</span> (n == <span class="hljs-number">0</span>) <span class="hljs-keyword">break</span>; <span class="hljs-comment">// 找到目标服务</span><br>                n--;<br>            &#125;<br>            si = si-&gt;next; <span class="hljs-comment">// 移动到下一个服务节点</span><br>        &#125;<br>        <span class="hljs-keyword">if</span> (si) &#123;<br>            bio_put_string16(reply, si-&gt;name); <span class="hljs-comment">// 将服务名称写入回复</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// 返回成功</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 如果未找到服务，返回错误</span><br>    &#125;<br><br>    <span class="hljs-keyword">default</span>: <span class="hljs-comment">// 未知事务代码</span><br>        ALOGE(<span class="hljs-string">&quot;unknown code %d\n&quot;</span>, txn-&gt;code); <span class="hljs-comment">// 打印错误日志</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 返回错误</span><br>    &#125;<br><br>    bio_put_uint32(reply, <span class="hljs-number">0</span>); <span class="hljs-comment">// 将 0 写入回复</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>; <span class="hljs-comment">// 返回成功</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>各个详细的处理源代码见：<a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/cmds/servicemanager/service_manager.c#svcmgr_handler">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;cmds&#x2F;servicemanager&#x2F;service_manager.c</a></p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>函数</strong></th>
+<th align="left"><strong>功能</strong></th>
+<th align="left"><strong>输入参数</strong></th>
+<th align="left"><strong>返回值</strong></th>
+<th align="left"><strong>关键逻辑</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>do_add_service</code></td>
+<td align="left">注册服务到 ServiceManager</td>
+<td align="left">服务名称、句柄、权限、优先级等</td>
+<td align="left"><code>0</code> 或 <code>-1</code></td>
+<td align="left">检查服务是否存在，创建 <code>svcinfo</code> 结构并添加到链表。</td>
+</tr>
+<tr>
+<td align="left"><code>do_find_service</code></td>
+<td align="left">查找服务的 Binder 句柄</td>
+<td align="left">服务名称、调用者 UID 和 PID</td>
+<td align="left">句柄或 <code>0</code></td>
+<td align="left">遍历服务链表，检查权限，返回服务句柄。</td>
+</tr>
+<tr>
+<td align="left"><code>binder_link_to_death</code></td>
+<td align="left">注册 Binder 对象的死亡通知</td>
+<td align="left">Binder 句柄、死亡通知结构</td>
+<td align="left"><code>0</code> 或 <code>-1</code></td>
+<td align="left">向 Binder 驱动注册死亡通知，添加到死亡通知链表。</td>
+</tr>
+<tr>
+<td align="left"><code>binder_send_reply</code></td>
+<td align="left">向客户端发送事务的回复</td>
+<td align="left">回复数据、事务缓冲区、状态</td>
+<td align="left"><code>0</code> 或 <code>-1</code></td>
+<td align="left">构造回复数据，发送 <code>BC_REPLY</code> 命令，释放缓冲区。</td>
+</tr>
+</tbody></table>
+<h2 id="binder-loop"><a href="#binder-loop" class="headerlink" title="binder_loop"></a>binder_loop</h2><p>该函数是 Binder 通信的核心循环，用于处理从 Binder 驱动传递过来的请求。它通过 <code>ioctl</code> 与 Binder 驱动进行交互，并调用 <code>binder_parse</code> 解析和处理请求。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">binder_loop</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_state *bs, binder_handler func)</span><br>&#123;<br>    <span class="hljs-type">int</span> res; <span class="hljs-comment">// 用于存储函数调用的返回值</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_write_read</span> <span class="hljs-title">bwr</span>;</span> <span class="hljs-comment">// 用于与 Binder 驱动通信的结构体</span><br>    <span class="hljs-type">uint32_t</span> readbuf[<span class="hljs-number">32</span>]; <span class="hljs-comment">// 读取数据的缓冲区</span><br><br>    <span class="hljs-comment">// 初始化 binder_write_read 结构体的写相关字段</span><br>    bwr.write_size = <span class="hljs-number">0</span>; <span class="hljs-comment">// 写缓冲区大小为 0</span><br>    bwr.write_consumed = <span class="hljs-number">0</span>; <span class="hljs-comment">// 写缓冲区已消耗大小为 0</span><br>    bwr.write_buffer = <span class="hljs-number">0</span>; <span class="hljs-comment">// 写缓冲区指针为 NULL</span><br><br>    <span class="hljs-comment">// 向 Binder 驱动发送 BC_ENTER_LOOPER 命令，表示当前线程进入循环模式</span><br>    readbuf[<span class="hljs-number">0</span>] = BC_ENTER_LOOPER; <span class="hljs-comment">// 将 BC_ENTER_LOOPER 命令写入 readbuf</span><br>    binder_write(bs, readbuf, <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">uint32_t</span>)); <span class="hljs-comment">// 调用 binder_write 发送命令</span><br><br>    <span class="hljs-comment">// 进入无限循环，处理 Binder 驱动传递过来的请求</span><br>    <span class="hljs-keyword">for</span> (;;) &#123;<br>        <span class="hljs-comment">// 初始化 binder_write_read 结构体的读相关字段</span><br>        bwr.read_size = <span class="hljs-keyword">sizeof</span>(readbuf); <span class="hljs-comment">// 设置读缓冲区大小</span><br>        bwr.read_consumed = <span class="hljs-number">0</span>; <span class="hljs-comment">// 设置已消耗的读缓冲区大小为 0</span><br>        bwr.read_buffer = (<span class="hljs-type">uintptr_t</span>) readbuf; <span class="hljs-comment">// 设置读缓冲区指针</span><br><br>        <span class="hljs-comment">// 调用 ioctl 与 Binder 驱动通信，执行 BINDER_WRITE_READ 操作</span><br>        res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);<br><br>        <span class="hljs-comment">// 检查 ioctl 是否成功</span><br>        <span class="hljs-keyword">if</span> (res &lt; <span class="hljs-number">0</span>) &#123;<br>            ALOGE(<span class="hljs-string">&quot;binder_loop: ioctl failed (%s)\n&quot;</span>, strerror(errno)); <span class="hljs-comment">// 打印错误日志</span><br>            <span class="hljs-keyword">break</span>; <span class="hljs-comment">// 退出循环</span><br>        &#125;<br><br>        <span class="hljs-comment">// 解析从 Binder 驱动读取的数据</span><br>        res = binder_parse(bs, <span class="hljs-number">0</span>, (<span class="hljs-type">uintptr_t</span>) readbuf, bwr.read_consumed, func);<br>        <span class="hljs-keyword">if</span> (res == <span class="hljs-number">0</span>) &#123;<br>            ALOGE(<span class="hljs-string">&quot;binder_loop: unexpected reply?!\n&quot;</span>); <span class="hljs-comment">// 如果解析结果为 0，打印错误日志</span><br>            <span class="hljs-keyword">break</span>; <span class="hljs-comment">// 退出循环</span><br>        &#125;<br>        <span class="hljs-keyword">if</span> (res &lt; <span class="hljs-number">0</span>) &#123;<br>            ALOGE(<span class="hljs-string">&quot;binder_loop: io error %d %s\n&quot;</span>, res, strerror(errno)); <span class="hljs-comment">// 如果解析结果小于 0，打印错误日志</span><br>            <span class="hljs-keyword">break</span>; <span class="hljs-comment">// 退出循环</span><br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在往后的调用链：binder_write—&gt; binder_ioctl—&gt;binder_ioctl_write_read—&gt;binder_thread_write</p>
+<h3 id="binder-parse"><a href="#binder-parse" class="headerlink" title="binder_parse"></a>binder_parse</h3><p>该函数用于解析从 Binder 驱动读取的数据，并根据命令类型执行相应的操作。它是 Binder 通信的核心部分，负责处理事务、回复、死亡通知等命令。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">binder_parse</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> binder_state *bs, <span class="hljs-keyword">struct</span> binder_io *bio,</span><br><span class="hljs-params">                 <span class="hljs-type">uintptr_t</span> ptr, <span class="hljs-type">size_t</span> size, binder_handler func)</span><br>&#123;<br>    <span class="hljs-type">int</span> r = <span class="hljs-number">1</span>; <span class="hljs-comment">// 返回值，初始化为 1</span><br>    <span class="hljs-type">uintptr_t</span> end = ptr + (<span class="hljs-type">uintptr_t</span>) size; <span class="hljs-comment">// 计算数据结束位置</span><br><br>    <span class="hljs-comment">// 循环解析从 Binder 驱动读取的数据</span><br>    <span class="hljs-keyword">while</span> (ptr &lt; end) &#123;<br>        <span class="hljs-type">uint32_t</span> cmd = *(<span class="hljs-type">uint32_t</span> *) ptr; <span class="hljs-comment">// 读取当前命令</span><br>        ptr += <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">uint32_t</span>); <span class="hljs-comment">// 移动指针到下一个位置</span><br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> TRACE</span><br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>,<span class="hljs-string">&quot;%s:\n&quot;</span>, cmd_name(cmd)); <span class="hljs-comment">// 如果启用 TRACE，打印命令名称</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><br>        <span class="hljs-comment">// 根据命令类型进行处理</span><br>        <span class="hljs-keyword">switch</span>(cmd) &#123;<br>        <span class="hljs-keyword">case</span> BR_NOOP: <span class="hljs-comment">// 空操作命令</span><br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> BR_TRANSACTION_COMPLETE: <span class="hljs-comment">// 事务完成命令</span><br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> BR_INCREFS: <span class="hljs-comment">// 增加引用计数命令</span><br>        <span class="hljs-keyword">case</span> BR_ACQUIRE: <span class="hljs-comment">// 获取强引用命令</span><br>        <span class="hljs-keyword">case</span> BR_RELEASE: <span class="hljs-comment">// 释放强引用命令</span><br>        <span class="hljs-keyword">case</span> BR_DECREFS: <span class="hljs-comment">// 减少引用计数命令</span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> TRACE</span><br>            <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>,<span class="hljs-string">&quot;  %p, %p\n&quot;</span>, (<span class="hljs-type">void</span> *)ptr, (<span class="hljs-type">void</span> *)(ptr + <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">void</span> *))); <span class="hljs-comment">// 打印调试信息</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>            ptr += <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> binder_ptr_cookie); <span class="hljs-comment">// 移动指针，跳过 binder_ptr_cookie 结构</span><br>            <span class="hljs-keyword">break</span>;<br><br>        <span class="hljs-keyword">case</span> BR_TRANSACTION: &#123; <span class="hljs-comment">// 事务命令</span><br>            <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_transaction_data</span> *<span class="hljs-title">txn</span> =</span> (<span class="hljs-keyword">struct</span> binder_transaction_data *) ptr; <span class="hljs-comment">// 获取事务数据</span><br>            <span class="hljs-keyword">if</span> ((end - ptr) &lt; <span class="hljs-keyword">sizeof</span>(*txn)) &#123; <span class="hljs-comment">// 检查事务数据是否完整</span><br>                ALOGE(<span class="hljs-string">&quot;parse: txn too small!\n&quot;</span>); <span class="hljs-comment">// 如果数据不完整，打印错误日志</span><br>                <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 返回错误</span><br>            &#125;<br>            binder_dump_txn(txn); <span class="hljs-comment">// 打印事务数据（调试用）</span><br>            <span class="hljs-keyword">if</span> (func) &#123; <span class="hljs-comment">// 如果传入了处理函数</span><br>                <span class="hljs-type">unsigned</span> rdata[<span class="hljs-number">256</span>/<span class="hljs-number">4</span>]; <span class="hljs-comment">// 用于存储回复数据的缓冲区</span><br>                <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_io</span> <span class="hljs-title">msg</span>;</span> <span class="hljs-comment">// 用于存储请求数据的 binder_io 结构</span><br>                <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_io</span> <span class="hljs-title">reply</span>;</span> <span class="hljs-comment">// 用于存储回复数据的 binder_io 结构</span><br>                <span class="hljs-type">int</span> res; <span class="hljs-comment">// 存储处理函数的返回值</span><br><br>                <span class="hljs-comment">// 初始化 reply 结构</span><br>                bio_init(&amp;reply, rdata, <span class="hljs-keyword">sizeof</span>(rdata), <span class="hljs-number">4</span>);<br>                <span class="hljs-comment">// 从事务数据初始化 msg 结构</span><br>                bio_init_from_txn(&amp;msg, txn);<br>                <span class="hljs-comment">// 调用处理函数处理请求</span><br>                res = func(bs, txn, &amp;msg, &amp;reply);<br>                <span class="hljs-keyword">if</span> (txn-&gt;flags &amp; TF_ONE_WAY) &#123; <span class="hljs-comment">// 如果是单向事务</span><br>                    binder_free_buffer(bs, txn-&gt;data.ptr.buffer); <span class="hljs-comment">// 释放缓冲区</span><br>                &#125; <span class="hljs-keyword">else</span> &#123; <span class="hljs-comment">// 如果是双向事务</span><br>                    binder_send_reply(bs, &amp;reply, txn-&gt;data.ptr.buffer, res); <span class="hljs-comment">// 发送回复</span><br>                &#125;<br>            &#125;<br>            ptr += <span class="hljs-keyword">sizeof</span>(*txn); <span class="hljs-comment">// 移动指针，跳过事务数据</span><br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">case</span> BR_REPLY: &#123; <span class="hljs-comment">// 回复命令</span><br>            <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_transaction_data</span> *<span class="hljs-title">txn</span> =</span> (<span class="hljs-keyword">struct</span> binder_transaction_data *) ptr; <span class="hljs-comment">// 获取事务数据</span><br>            <span class="hljs-keyword">if</span> ((end - ptr) &lt; <span class="hljs-keyword">sizeof</span>(*txn)) &#123; <span class="hljs-comment">// 检查事务数据是否完整</span><br>                ALOGE(<span class="hljs-string">&quot;parse: reply too small!\n&quot;</span>); <span class="hljs-comment">// 如果数据不完整，打印错误日志</span><br>                <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 返回错误</span><br>            &#125;<br>            binder_dump_txn(txn); <span class="hljs-comment">// 打印事务数据（调试用）</span><br>            <span class="hljs-keyword">if</span> (bio) &#123; <span class="hljs-comment">// 如果传入了 binder_io 结构</span><br>                bio_init_from_txn(bio, txn); <span class="hljs-comment">// 从事务数据初始化 binder_io 结构</span><br>                bio = <span class="hljs-number">0</span>; <span class="hljs-comment">// 清空 bio 指针</span><br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-comment">/* todo FREE BUFFER */</span> <span class="hljs-comment">// 需要释放缓冲区（未实现）</span><br>            &#125;<br>            ptr += <span class="hljs-keyword">sizeof</span>(*txn); <span class="hljs-comment">// 移动指针，跳过事务数据</span><br>            r = <span class="hljs-number">0</span>; <span class="hljs-comment">// 设置返回值为 0</span><br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">case</span> BR_DEAD_BINDER: &#123; <span class="hljs-comment">// Binder 对象死亡通知</span><br>            <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">binder_death</span> *<span class="hljs-title">death</span> =</span> (<span class="hljs-keyword">struct</span> binder_death *)(<span class="hljs-type">uintptr_t</span>) *(<span class="hljs-type">binder_uintptr_t</span> *)ptr; <span class="hljs-comment">// 获取死亡通知数据</span><br>            ptr += <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">binder_uintptr_t</span>); <span class="hljs-comment">// 移动指针，跳过死亡通知数据</span><br>            death-&gt;func(bs, death-&gt;ptr); <span class="hljs-comment">// 调用死亡通知的回调函数</span><br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">case</span> BR_FAILED_REPLY: <span class="hljs-comment">// 回复失败</span><br>            r = <span class="hljs-number">-1</span>; <span class="hljs-comment">// 设置返回值为 -1</span><br>            <span class="hljs-keyword">break</span>;<br><br>        <span class="hljs-keyword">case</span> BR_DEAD_REPLY: <span class="hljs-comment">// 回复死亡</span><br>            r = <span class="hljs-number">-1</span>; <span class="hljs-comment">// 设置返回值为 -1</span><br>            <span class="hljs-keyword">break</span>;<br><br>        <span class="hljs-keyword">default</span>: <span class="hljs-comment">// 未知命令</span><br>            ALOGE(<span class="hljs-string">&quot;parse: OOPS %d\n&quot;</span>, cmd); <span class="hljs-comment">// 打印错误日志</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>; <span class="hljs-comment">// 返回错误</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> r; <span class="hljs-comment">// 返回解析结果</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>ServiceManger集中管理系统内的所有服务，通过权限控制进程是否有权注册服务,通过字符串名称来查找对应的Service; 由于ServiceManger进程建立跟所有向其注册服务的死亡通知, 那么当服务所在进程死亡后, 会只需告知ServiceManager. 每个Client通过查询ServiceManager可获取Server进程的情况，降低所有Client进程直接检测会导致负载过重。</p>
+<p><strong>ServiceManager启动流程：</strong></p>
+<ol>
+<li>打开binder驱动，并调用mmap()方法分配128k的内存映射空间：binder_open();</li>
+<li>通知binder驱动使其成为守护进程：binder_become_context_manager()；</li>
+<li>验证selinux权限，判断进程是否有权注册或查看指定服务；</li>
+<li>进入循环状态，等待Client端的请求：binder_loop()。</li>
+<li>注册服务的过程，根据服务名称，但同一个服务已注册，重新注册前会先移除之前的注册信息；</li>
+<li>死亡通知: 当binder所在进程死亡后,会调用binder_release方法,然后调用binder_node_release.这个过程便会发出死亡通知的回调.</li>
+</ol>
+<p>ServiceManager最核心的两个功能为查询和注册服务：</p>
+<ul>
+<li>注册服务：记录服务名和handle信息，保存到svclist列表；</li>
+<li>查询服务：根据服务名查询相应的的handle信息。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/03/09/9xyifMQvkSAE7nP.jpg" srcset="/img/loading.gif" lazyload></p>
+<h1 id="获取"><a href="#获取" class="headerlink" title="获取"></a>获取</h1><p>通过前面的ServiceManager启动，此时ServiceManager已然成为Binder通信的大管家。现在问题又来了，进程A想要同ServiceManager直接使用 Binder 驱动通信需要做什么呢：</p>
+<ul>
+<li>序列化和反序列化数据。</li>
+<li>管理 Binder 引用和线程池。</li>
+<li>处理跨进程调用的同步和异步问题。</li>
+</ul>
+<p>可以看到直接用Binder驱动进行通信是很粗糙的，需要开发者处理大量底层细节。为了简化使用，Binder 机制通过 <strong>代理对象（BinderProxy）</strong> 封装了底层通信的细节。</p>
+<p><strong>什么是代理对象？</strong></p>
+<p><strong>代理对象</strong> 是 Binder 机制的上层封装，它依赖于 Binder 驱动进行通信。当代理对象收到方法调用时，它会将请求封装成 Binder 协议数据，并通过 Binder 驱动发送给远程进程。远程进程处理请求后，将结果通过 Binder 驱动返回给代理对象。</p>
+<p>也就是是说<strong>代理对象</strong> 是一个本地对象，它代表远程的 <strong>Service Manager</strong>，当开发者调用代理对象的方法时，代理对象会将请求通过 Binder 驱动发送给 <strong>Service Manager</strong> 进程，并等待返回结果。<strong>隐藏底层通信的复杂性，使得开发者可以像调用本地方法一样调用远程服务。</strong></p>
+<hr>
+<blockquote>
+<p>获取Service Manager是通过<code>defaultServiceManager()</code>方法来完成，当进程注册服务或 获取服务的过程之前，都需要先调用defaultServiceManager()方法来获取<code>gDefaultServiceManager</code>对象。对于gDefaultServiceManager对象，如果存在则直接返回；如果不存在则创建该对象，创建过程包括调用open()打开binder驱动设备，利用mmap()映射内核的地址空间。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 获取默认的 Service Manager 实例</span><br>sp&lt;IServiceManager&gt; <span class="hljs-title function_">defaultServiceManager</span><span class="hljs-params">()</span><br>&#123;<br>    <span class="hljs-comment">// 检查 gDefaultServiceManager 是否已经存在</span><br>    <span class="hljs-keyword">if</span> (gDefaultServiceManager != <span class="hljs-literal">NULL</span>) <span class="hljs-keyword">return</span> gDefaultServiceManager;<br><br>    <span class="hljs-comment">// 加锁，确保多线程安全</span><br>    &#123;<br>        AutoMutex _l(gDefaultServiceManagerLock);<br><br>        <span class="hljs-comment">// 如果 gDefaultServiceManager 仍然为 NULL，则进入循环</span><br>        <span class="hljs-keyword">while</span> (gDefaultServiceManager == <span class="hljs-literal">NULL</span>) &#123;<br>            <span class="hljs-comment">// 获取 Service Manager 的代理对象</span><br>            gDefaultServiceManager = interface_cast&lt;IServiceManager&gt;(<br>                ProcessState::self()-&gt;getContextObject(<span class="hljs-literal">NULL</span>));<br><br>            <span class="hljs-comment">// 如果获取失败，则等待 1 秒后重试</span><br>            <span class="hljs-keyword">if</span> (gDefaultServiceManager == <span class="hljs-literal">NULL</span>)<br>                sleep(<span class="hljs-number">1</span>);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 返回 gDefaultServiceManager 实例</span><br>    <span class="hljs-keyword">return</span> gDefaultServiceManager;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>获取ServiceManager对象采用<strong>单例模式</strong>【不必解释，因为大管家只有一个】，当gDefaultServiceManager存在，则直接返回，否则创建一个新对象。 </p>
+<p>gDefaultServiceManager的创建过程,可分解为以下3个步骤：</p>
+<p>**<code>ProcessState::self()</code>**：</p>
+<ul>
+<li>每个进程有且只有一个 <code>ProcessState</code> 对象，用于管理 Binder 驱动的文件描述符和内存映射。</li>
+<li>如果 <code>ProcessState</code> 对象不存在，则调用构造函数创建一个新的对象。</li>
+</ul>
+<p>**<code>getContextObject()</code>**：</p>
+<ul>
+<li>获取 <code>handle=0</code> 的 <code>BpBinder</code> (<code>BpBinder</code> 的全称是 <strong>Binder Proxy Binder</strong>，表示它是一个代理对象，封装了与远程 Binder 对象通信的细节。)对象，用于与 ServiceManager 通信。</li>
+<li>如果 <code>BpBinder</code> 对象不存在，则创建一个新的对象。</li>
+</ul>
+<p>**<code>interface_cast&lt;IServiceManager&gt;()</code>**：</p>
+<ul>
+<li>将 <code>BpBinder</code> 对象转换为 <code>IServiceManager</code> 接口。</li>
+<li>如果 <code>BpBinder</code> 对象尚未包装为 <code>BpServiceManager</code>，则创建一个新的 <code>BpServiceManager</code> 对象。</li>
+</ul>
+<p>通过上述三个步骤创建的，确保了每个进程只有一个 <code>ProcessState</code> 对象和一个 <code>BpServiceManager</code> 对象。</p>
+<blockquote>
+<p><code>BpBinder</code>：客户端进程中的代理对象，用于与远程 Binder 对象通信。</p>
+<p><code>BBinder</code>：服务端进程中的 Binder 对象，用于处理客户端的请求。</p>
+</blockquote>
+<p>还有一些关于<code>ProcessState</code>  的疑问回答如下：</p>
+<p><strong><code>ProcessState</code> 的作用</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>功能</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>管理 Binder 驱动</strong></td>
+<td>- 负责打开 Binder 驱动设备（通常是 <code>/dev/binder</code>）。<br>- 维护 Binder 驱动的文件描述符（<code>mDriverFD</code>），用于与 Binder 驱动进行交互。</td>
+</tr>
+<tr>
+<td><strong>管理内存映射</strong></td>
+<td>- 使用 <code>mmap()</code> 将内核的地址空间映射到用户空间，以便进程可以通过内存映射的方式与 Binder 驱动进行高效通信。</td>
+</tr>
+<tr>
+<td><strong>管理 Binder 线程池</strong></td>
+<td>- 维护一个线程池，用于处理来自其他进程的 Binder 请求。<br>- 线程池中的线程会从 Binder 驱动中读取请求，并调用相应的 <code>onTransact()</code> 方法进行处理。</td>
+</tr>
+<tr>
+<td><strong>提供上下文对象</strong></td>
+<td>- 提供 <code>getContextObject()</code> 方法，用于获取与 Binder 驱动通信的上下文对象（<code>BpBinder</code>）。</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>为什么要获取 <code>ProcessState</code> 对象？</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>原因</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>初始化 Binder 驱动</strong></td>
+<td>- 在进程首次使用 Binder 机制时，需要初始化 Binder 驱动。<br><code>ProcessState</code> 负责打开 Binder 驱动设备并映射内存。</td>
+</tr>
+<tr>
+<td><strong>管理 Binder 资源</strong></td>
+<td>- <code>ProcessState</code> 管理了当前进程与 Binder 驱动的所有资源，包括文件描述符、内存映射和线程池。<br>获取 <code>ProcessState</code> 对象可以确保这些资源被正确初始化和管理。</td>
+</tr>
+<tr>
+<td><strong>获取 Binder 代理对象</strong></td>
+<td>- 通过 <code>ProcessState::getContextObject()</code>，可以获取与 Binder 驱动通信的上下文对象（<code>BpBinder</code>），用于与远程 Binder 对象通信。</td>
+</tr>
+<tr>
+<td><strong>单例模式</strong></td>
+<td>- <code>ProcessState</code> 是一个单例类，每个进程有且只有一个 <code>ProcessState</code> 对象。<br>获取 <code>ProcessState</code> 对象可以确保全局资源的一致性，并避免重复初始化。</td>
+</tr>
+</tbody></table>
+<h2 id="获取ProcessState对象"><a href="#获取ProcessState对象" class="headerlink" title="获取ProcessState对象"></a>获取ProcessState对象</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/libs/binder/ProcessState.cpp">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;libs&#x2F;binder&#x2F;ProcessState.cpp</a></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 获取当前进程的 ProcessState 对象（单例模式）</span><br>sp&lt;ProcessState&gt; <span class="hljs-title function_">ProcessState::self</span><span class="hljs-params">()</span><br>&#123;<br>    <span class="hljs-comment">// 加锁，确保多线程安全</span><br>    Mutex::Autolock _l(gProcessMutex);<br><br>    <span class="hljs-comment">// 检查 gProcess 是否已经存在</span><br>    <span class="hljs-keyword">if</span> (gProcess != <span class="hljs-literal">NULL</span>) &#123;<br>        <span class="hljs-comment">// 如果已经存在，则直接返回现有的对象</span><br>        <span class="hljs-keyword">return</span> gProcess;<br>    &#125;<br><br>    <span class="hljs-comment">// 如果 gProcess 不存在，则创建一个新的 ProcessState 对象</span><br>    gProcess = new ProcessState(<span class="hljs-string">&quot;/dev/binder&quot;</span>);<br><br>    <span class="hljs-comment">// 返回新创建的 ProcessState 对象</span><br>    <span class="hljs-keyword">return</span> gProcess;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="ProcessState"><a href="#ProcessState" class="headerlink" title="ProcessState()"></a>ProcessState()</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// ProcessState 构造函数</span><br>ProcessState::<span class="hljs-built_in">ProcessState</span>(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *driver)<br>    : <span class="hljs-built_in">mDriverName</span>(<span class="hljs-built_in">String8</span>(driver))                     <span class="hljs-comment">// 初始化 Binder 驱动设备名称</span><br>    , <span class="hljs-built_in">mDriverFD</span>(<span class="hljs-built_in">open_driver</span>(driver))                   <span class="hljs-comment">// 打开 Binder 驱动设备，获取文件描述符</span><br>    , <span class="hljs-built_in">mVMStart</span>(MAP_FAILED)                             <span class="hljs-comment">// 初始化内存映射地址为 MAP_FAILED</span><br>    , <span class="hljs-built_in">mThreadCountLock</span>(PTHREAD_MUTEX_INITIALIZER)      <span class="hljs-comment">// 初始化线程计数锁</span><br>    , <span class="hljs-built_in">mThreadCountDecrement</span>(PTHREAD_COND_INITIALIZER)   <span class="hljs-comment">// 初始化线程计数条件变量</span><br>    , <span class="hljs-built_in">mExecutingThreadsCount</span>(<span class="hljs-number">0</span>)                         <span class="hljs-comment">// 初始化当前执行的线程数为 0</span><br>    , <span class="hljs-built_in">mMaxThreads</span>(DEFAULT_MAX_BINDER_THREADS)          <span class="hljs-comment">// 初始化最大线程数为默认值</span><br>    , <span class="hljs-built_in">mStarvationStartTimeMs</span>(<span class="hljs-number">0</span>)                        <span class="hljs-comment">// 初始化线程饥饿开始时间为 0</span><br>    , <span class="hljs-built_in">mManagesContexts</span>(<span class="hljs-literal">false</span>)                          <span class="hljs-comment">// 初始化上下文管理标志为 false</span><br>    , <span class="hljs-built_in">mBinderContextCheckFunc</span>(<span class="hljs-literal">NULL</span>)                    <span class="hljs-comment">// 初始化 Binder 上下文检查函数为 NULL</span><br>    , <span class="hljs-built_in">mBinderContextUserData</span>(<span class="hljs-literal">NULL</span>)                     <span class="hljs-comment">// 初始化 Binder 上下文用户数据为 NULL</span><br>    , <span class="hljs-built_in">mThreadPoolStarted</span>(<span class="hljs-literal">false</span>)                         <span class="hljs-comment">// 初始化线程池启动标志为 false</span><br>    , <span class="hljs-built_in">mThreadPoolSeq</span>(<span class="hljs-number">1</span>)                                <span class="hljs-comment">// 初始化线程池序列号为 1</span><br>&#123;<br>    <span class="hljs-comment">// 如果成功打开 Binder 驱动设备</span><br>    <span class="hljs-keyword">if</span> (mDriverFD &gt;= <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">// 使用 mmap 映射 Binder 驱动的内存空间</span><br>        mVMStart = <span class="hljs-built_in">mmap</span>(<span class="hljs-number">0</span>, BINDER_VM_SIZE, PROT_READ, MAP_PRIVATE | MAP_NORESERVE, mDriverFD, <span class="hljs-number">0</span>);<br><br>        <span class="hljs-comment">// 如果内存映射失败</span><br>        <span class="hljs-keyword">if</span> (mVMStart == MAP_FAILED) &#123;<br>            <span class="hljs-comment">// 输出错误日志</span><br>            <span class="hljs-built_in">ALOGE</span>(<span class="hljs-string">&quot;Using %s failed: unable to mmap transaction memory.\n&quot;</span>, mDriverName.<span class="hljs-built_in">c_str</span>());<br><br>            <span class="hljs-comment">// 关闭 Binder 驱动设备</span><br>            <span class="hljs-built_in">close</span>(mDriverFD);<br>            mDriverFD = <span class="hljs-number">-1</span>;<br><br>            <span class="hljs-comment">// 清空驱动设备名称</span><br>            mDriverName.<span class="hljs-built_in">clear</span>();<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 如果 Binder 驱动设备未能成功打开，则终止进程</span><br>    <span class="hljs-built_in">LOG_ALWAYS_FATAL_IF</span>(mDriverFD &lt; <span class="hljs-number">0</span>, <span class="hljs-string">&quot;Binder driver could not be opened.  Terminating.&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="获取BpBinder对象"><a href="#获取BpBinder对象" class="headerlink" title="获取BpBinder对象"></a>获取BpBinder对象</h2><h3 id="getContextObject"><a href="#getContextObject" class="headerlink" title="getContextObject"></a>getContextObject</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 获取与 Binder 驱动通信的上下文对象</span><br><span class="hljs-function">sp&lt;IBinder&gt; <span class="hljs-title">ProcessState::getContextObject</span><span class="hljs-params">(<span class="hljs-type">const</span> sp&lt;IBinder&gt;&amp; <span class="hljs-comment">/*caller*/</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// 调用 getStrongProxyForHandle(0) 获取 handle=0 的 Binder 代理对象</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">getStrongProxyForHandle</span>(<span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="getStrongProxyForHandle"><a href="#getStrongProxyForHandle" class="headerlink" title="getStrongProxyForHandle"></a>getStrongProxyForHandle</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 获取指定 handle 的 Binder 代理对象（强引用）</span><br><span class="hljs-function">sp&lt;IBinder&gt; <span class="hljs-title">ProcessState::getStrongProxyForHandle</span><span class="hljs-params">(<span class="hljs-type">int32_t</span> handle)</span></span><br><span class="hljs-function"></span>&#123;<br>    sp&lt;IBinder&gt; result;  <span class="hljs-comment">// 用于存储返回的 Binder 代理对象</span><br><br>    <span class="hljs-comment">// 加锁，确保多线程安全</span><br>    AutoMutex _l(mLock);<br><br>    <span class="hljs-comment">// 查找指定 handle 的 handle_entry 对象</span><br>    handle_entry* e = <span class="hljs-built_in">lookupHandleLocked</span>(handle);<br><br>    <span class="hljs-comment">// 如果 handle_entry 对象存在</span><br>    <span class="hljs-keyword">if</span> (e != <span class="hljs-literal">NULL</span>) &#123;<br>        <span class="hljs-comment">// 获取 handle_entry 中的 Binder 对象</span><br>        IBinder* b = e-&gt;binder;<br><br>        <span class="hljs-comment">// 如果 Binder 对象不存在，或者无法增加弱引用</span><br>        <span class="hljs-keyword">if</span> (b == <span class="hljs-literal">NULL</span> || !e-&gt;refs-&gt;<span class="hljs-built_in">attemptIncWeak</span>(<span class="hljs-keyword">this</span>)) &#123;<br>            <span class="hljs-comment">// 特殊处理 handle=0 的情况（Context Manager）</span><br>            <span class="hljs-keyword">if</span> (handle == <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-comment">// 对于 Context Manager，需要确保它在创建 BpBinder 之前已经注册</span><br>                <span class="hljs-comment">// 通过发送一个虚拟事务（PING_TRANSACTION）来确认 Context Manager 是否存在</span><br>                Parcel data;<br>                <span class="hljs-type">status_t</span> status = IPCThreadState::<span class="hljs-built_in">self</span>()-&gt;<span class="hljs-built_in">transact</span>(<br>                        <span class="hljs-number">0</span>, IBinder::PING_TRANSACTION, data, <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>);<br><br>                <span class="hljs-comment">// 如果 Context Manager 不存在，则返回 NULL</span><br>                <span class="hljs-keyword">if</span> (status == DEAD_OBJECT)<br>                    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>            &#125;<br><br>            <span class="hljs-comment">// 创建一个新的 BpBinder 对象</span><br>            b = BpBinder::<span class="hljs-built_in">create</span>(handle);<br>            e-&gt;binder = b;  <span class="hljs-comment">// 将新创建的 Binder 对象存储到 handle_entry 中</span><br><br>            <span class="hljs-comment">// 如果 Binder 对象创建成功，则获取其弱引用对象</span><br>            <span class="hljs-keyword">if</span> (b) e-&gt;refs = b-&gt;<span class="hljs-built_in">getWeakRefs</span>();<br><br>            <span class="hljs-comment">// 将新创建的 Binder 对象赋值给 result</span><br>            result = b;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-comment">// 如果 Binder 对象存在且可以增加弱引用，则直接使用该对象</span><br>            result.force_set(b);  <span class="hljs-comment">// 强制设置 result 为 b</span><br>            e-&gt;refs-&gt;<span class="hljs-built_in">decWeak</span>(<span class="hljs-keyword">this</span>);  <span class="hljs-comment">// 减少弱引用计数</span><br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 返回获取到的 Binder 代理对象</span><br>    <span class="hljs-keyword">return</span> result;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>获取指定 <code>handle</code> 的 Binder 代理对象（<code>BpBinder</code>）。它通过查找 <code>handle_entry</code> 对象，并根据需要创建新的 <code>BpBinder</code> 对象，确保了与远程 Binder 对象的通信。</p>
+<p><strong><code>IServiceManager</code> 是什么？</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>项目</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>功能</strong></td>
+<td align="left">定义了与 ServiceManager 交互的接口，包括注册服务、查找服务、列出服务等操作。</td>
+</tr>
+<tr>
+<td align="left"><strong>使用场景</strong></td>
+<td align="left">- 服务提供者：通过 <code>addService()</code> 注册服务。 - 服务使用者：通过 <code>getService()</code> 或 <code>checkService()</code> 查找服务。 - 系统管理：通过 <code>listServices()</code> 列出所有服务。</td>
+</tr>
+<tr>
+<td align="left"><strong>实现类</strong></td>
+<td align="left">- <code>BpServiceManager</code>: 客户端代理类，用于与 ServiceManager 通信。 - <code>BnServiceManager</code>: 服务端实现类，ServiceManager 的实际实现。</td>
+</tr>
+</tbody></table>
+<p><strong><code>IServiceManager</code></strong> 是 Android Binder 框架中用于与 ServiceManager 交互的核心接口。它定义了注册服务、查找服务、列出服务等操作，提供了高层次的抽象和类型安全的接口。</p>
+<h2 id="获取BpServiceManager"><a href="#获取BpServiceManager" class="headerlink" title="获取BpServiceManager"></a>获取BpServiceManager</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/include/binder/IInterface.h">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;include&#x2F;binder&#x2F;IInterface.h</a></p>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/include/binder/IServiceManager.h">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;include&#x2F;binder&#x2F;IServiceManager.h</a></p>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/native/libs/binder/IServiceManager.cpp">Cross Reference: &#x2F;frameworks&#x2F;native&#x2F;libs&#x2F;binder&#x2F;IServiceManager.cpp</a></p>
+</blockquote>
+<p>BpServiceManager又是个什么东西？上文不是提到BpBinder就封装了与Binder驱动通信的细节了吗？答案是再次封装。</p>
+<ul>
+<li><strong><code>BpBinder</code></strong> 是一个通用的代理对象，它只提供了 <code>transact()</code> 方法，开发者需要手动处理事务的序列化和反序列化。</li>
+<li><strong><code>BpServiceManager</code></strong> 封装了这些细节，实现了 <strong><code>IServiceManager</code></strong> 接口，使得开发者可以通过接口调用远程服务（如 <code>getService()</code> 和 <code>addService()</code>），使得开发者可以更方便地使用 <strong>ServiceManager</strong>。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>对象</strong></th>
+<th align="left"><strong>作用</strong></th>
+<th align="left"><strong>优点</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>BpBinder</code></td>
+<td align="left">底层的 Binder 代理对象，用于与远程 Binder 对象通信。</td>
+<td align="left">直接控制事务数据，灵活性高。</td>
+</tr>
+<tr>
+<td align="left"><code>BpServiceManager</code></td>
+<td align="left">高层次的 Binder 代理对象，封装了与 ServiceManager 的交互逻辑。</td>
+<td align="left">简化开发、提高安全性、代码复用、易于维护。</td>
+</tr>
+</tbody></table>
+<p><strong><code>BpServiceManager</code></strong> 继承了 <strong><code>BpBinder</code><strong>，并实现了 <strong><code>IServiceManager</code></strong> 接口。</strong><code>BpServiceManager</code></strong> 通过 <strong><code>BpBinder</code></strong> 与 Binder 驱动进行通信，但将通信细节封装在接口方法中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 模板函数：将 IBinder 对象转换为指定接口类型的智能指针</span><br>template&lt;typename INTERFACE&gt;<br><span class="hljs-keyword">inline</span> sp&lt;INTERFACE&gt; <span class="hljs-title function_">interface_cast</span><span class="hljs-params">(<span class="hljs-type">const</span> sp&lt;IBinder&gt;&amp; obj)</span><br>&#123;<br>    <span class="hljs-comment">// 调用指定接口类型的静态方法 asInterface，将 IBinder 对象转换为接口类型的智能指针</span><br>    <span class="hljs-keyword">return</span> INTERFACE::asInterface(obj);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="asInterface"><a href="#asInterface" class="headerlink" title="asInterface"></a>asInterface</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//位于IServiceManager.h文件 </span><br>DECLARE_META_INTERFACE(ServiceManager)<br><span class="hljs-comment">//位于IServiceManager.cpp文件 </span><br>IMPLEMENT_META_INTERFACE(ServiceManager,<span class="hljs-string">&quot;android.os.IServiceManager&quot;</span>)<br>    <br></code></pre></td></tr></table></figure>
+
+<p>接着一步步跟就会发现IServiceManager::asInterface()<code>等价于</code>new BpServiceManager()。在这里，更确切地说应该是new BpServiceManager(BpBinder)。</p>
+<h4 id="BpServiceManager实例化"><a href="#BpServiceManager实例化" class="headerlink" title="BpServiceManager实例化"></a>BpServiceManager实例化</h4><h4 id="1-BpServiceManager-初始化"><a href="#1-BpServiceManager-初始化" class="headerlink" title="1. BpServiceManager 初始化"></a><strong>1. <code>BpServiceManager</code> 初始化</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">BpServiceManager</span>(<span class="hljs-type">const</span> sp&lt;IBinder&gt;&amp; impl)<br>    : <span class="hljs-built_in">BpInterface</span>&lt;IServiceManager&gt;(impl)<br>&#123; &#125;<br></code></pre></td></tr></table></figure>
+<p><code>BpServiceManager</code> 的构造函数，初始化父<code>BpInterface&lt;IServiceManager&gt;</code>。</p>
+<p>其中<strong>参数</strong><code>impl</code>是<code>IBinder</code> 对象，通常是一个 <code>BpBinder</code> 对象。</p>
+<p><code>BpServiceManager</code> 继承自 <code>BpInterface&lt;IServiceManager&gt;</code>，并调用父类的构造函数进行初始化。</p>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, Binder机制]</li>
+</ul>
+<hr>
+<h4 id="2-BpInterface-初始化"><a href="#2-BpInterface-初始化" class="headerlink" title="2. BpInterface 初始化"></a><strong>2. <code>BpInterface</code> 初始化</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">inline</span> BpInterface&lt;INTERFACE&gt;::<span class="hljs-built_in">BpInterface</span>(<span class="hljs-type">const</span> sp&lt;IBinder&gt;&amp; remote)<br>    : <span class="hljs-built_in">BpRefBase</span>(remote)<br>&#123; &#125;<br></code></pre></td></tr></table></figure>
+<p><code>BpInterface</code> 的构造函数，初始化父类 <code>BpRefBase</code>。<strong>参数</strong>是<code>remote</code>：<code>IBinder</code> 对象，通常是一个 <code>BpBinder</code> 对象。</p>
+<p><code>BpInterface</code> 继承自 <code>BpRefBase</code>，并调用父类的构造函数进行初始化。</p>
+<hr>
+<h4 id="3-BpRefBase-初始化"><a href="#3-BpRefBase-初始化" class="headerlink" title="3. BpRefBase 初始化"></a><strong>3. <code>BpRefBase</code> 初始化</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp">BpRefBase::<span class="hljs-built_in">BpRefBase</span>(<span class="hljs-type">const</span> sp&lt;IBinder&gt;&amp; o)<br>    : <span class="hljs-built_in">mRemote</span>(o.<span class="hljs-built_in">get</span>()), <span class="hljs-built_in">mRefs</span>(<span class="hljs-literal">NULL</span>), <span class="hljs-built_in">mState</span>(<span class="hljs-number">0</span>)<br>&#123;<br>    <span class="hljs-built_in">extendObjectLifetime</span>(OBJECT_LIFETIME_WEAK);<br><br>    <span class="hljs-keyword">if</span> (mRemote) &#123;<br>        mRemote-&gt;<span class="hljs-built_in">incStrong</span>(<span class="hljs-keyword">this</span>);<br>        mRefs = mRemote-&gt;<span class="hljs-built_in">createWeak</span>(<span class="hljs-keyword">this</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>BpRefBase</code> 的构造函数，初始化成员变量并管理 <code>IBinder</code> 对象的引用计数。</p>
+<p><strong>参数</strong>是<code>o</code>：<code>IBinder</code> 对象，通常是一个 <code>BpBinder</code> 对象。</p>
+<p>注意：</p>
+<ul>
+<li>**<code>mRemote</code>**：指向 <code>IBinder</code> 对象（通常是 <code>BpBinder</code>），用于与远程 Binder 对象通信。</li>
+<li>**<code>mRefs</code>**：<code>IBinder</code> 对象的弱引用对象。</li>
+<li>**<code>extendObjectLifetime(OBJECT_LIFETIME_WEAK)</code>**：将对象的生命周期扩展为弱引用。</li>
+<li>**<code>mRemote-&gt;incStrong(this)</code>**：增加 <code>IBinder</code> 对象的强引用计数。</li>
+<li>**<code>mRemote-&gt;createWeak(this)</code>**：创建 <code>IBinder</code> 对象的弱引用</li>
+</ul>
+<p>总结来看：</p>
+<p><code>BpServiceManager</code> 的实例化过程主要包括以下步骤：</p>
+<ol>
+<li><strong><code>BpServiceManager</code> 初始化</strong>：调用父类 <code>BpInterface&lt;IServiceManager&gt;</code> 的构造函数。</li>
+<li><strong><code>BpInterface</code> 初始化</strong>：调用父类 <code>BpRefBase</code> 的构造函数。</li>
+<li><strong><code>BpRefBase</code> 初始化</strong>：<ul>
+<li>初始化 <code>mRemote</code>，指向 <code>IBinder</code> 对象（通常是 <code>BpBinder</code>）。</li>
+<li>管理 <code>IBinder</code> 对象的引用计数和生命周期。</li>
+</ul>
+</li>
+</ol>
+<p>最终，<code>BpServiceManager</code> 通过 <code>mRemote</code> 与 <strong>ServiceManager</strong> 进行通信，实现了对系统服务的注册和获取。</p>
+<hr>
+<p>总结</p>
+<p>defaultServiceManager 等价于 new BpServiceManager(new BpBinder(0));</p>
+<p>ProcessState::self()主要工作：</p>
+<ul>
+<li>调用open()，打开&#x2F;dev&#x2F;binder驱动设备；</li>
+<li>再利用mmap()，创建大小为<code>1M-8K</code>的内存地址空间；</li>
+<li>设定当前进程最大的最大并发Binder线程个数为<code>16</code>。</li>
+</ul>
+<p>BpServiceManager巧妙将通信层与业务层逻辑合为一体，</p>
+<ul>
+<li>通过继承接口<code>IServiceManager</code>实现了接口中的业务逻辑函数；</li>
+<li>通过成员变量<code>mRemote</code>&#x3D; new BpBinder(0)进行Binder通信工作。</li>
+<li>BpBinder通过handler来指向所对应BBinder, 在整个Binder系统中<code>handle=0</code>代表ServiceManager所对应的BBinder。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/03/09/ZFWwDXArflGB8Op.jpg" srcset="/img/loading.gif" lazyload alt="get_servicemanager"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/" class="category-chain-item">核心底层</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/" class="category-chain-item">Binder机制</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ServiceManager启动与获取</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机技术/操作系统/Andorid内核原理/核心底层/Binder机制/ServiceManager启动与获取/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/%E6%B3%A8%E5%86%8C%E4%B8%8E%E8%8E%B7%E5%8F%96%E6%9C%8D%E5%8A%A1/" title="注册与获取服务">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">注册与获取服务</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Binder%E6%9C%BA%E5%88%B6/Binder%E9%A9%B1%E5%8A%A8/" title="Binder驱动">
+                        <span class="hidden-mobile">Binder驱动</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

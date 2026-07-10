@@ -1,0 +1,1021 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="线程在Android中是一个很重要的概念，从用途上来说，线程分为主线程和子线程，主线程主要处理和界面相关的事情，而子线程则往往用于执行耗时操作。由于Android的特性，如果在主线程中执行耗时操作那么就会导致程序无法及时地响应，因此耗时操作必须放在子线程中去执行。  主线程和子线程主线程（UI 线程）主线程是进程所拥有的默认线程，在 Java 和 Android 中，一个进程默认只有一个主线程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="线程池">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="线程在Android中是一个很重要的概念，从用途上来说，线程分为主线程和子线程，主线程主要处理和界面相关的事情，而子线程则往往用于执行耗时操作。由于Android的特性，如果在主线程中执行耗时操作那么就会导致程序无法及时地响应，因此耗时操作必须放在子线程中去执行。  主线程和子线程主线程（UI 线程）主线程是进程所拥有的默认线程，在 Java 和 Android 中，一个进程默认只有一个主线程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-05-09T07:31:42.479Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:57.883Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>线程池 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="线程池"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          55 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">线程池</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>线程在Android中是一个很重要的概念，从用途上来说，线程分为主线程和子线程，主线程主要处理和界面相关的事情，而子线程则往往用于执行耗时操作。由于Android的特性，如果在主线程中执行耗时操作那么就会导致程序无法及时地响应，因此耗时操作必须放在子线程中去执行。</p>
+</blockquote>
+<h1 id="主线程和子线程"><a href="#主线程和子线程" class="headerlink" title="主线程和子线程"></a>主线程和子线程</h1><h2 id="主线程（UI-线程）"><a href="#主线程（UI-线程）" class="headerlink" title="主线程（UI 线程）"></a><strong>主线程（UI 线程）</strong></h2><p>主线程是进程所拥有的默认线程，在 Java 和 Android 中，一个进程默认只有一个主线程。主线程的<strong>主要职责</strong>是</p>
+<ul>
+<li>处理与界面交互相关的逻辑，如 UI 更新、事件响应等。</li>
+<li>运行四大组件（Activity、Service、BroadcastReceiver、ContentProvider）并处理它们与用户的交互。</li>
+</ul>
+<p>其必须保持高响应速度，以确保用户界面的流畅性。如果在主线程中执行耗时操作，会导致界面卡顿，甚至触发 <strong>ANR（Application Not Responding）</strong>。</p>
+<p>注意：从 Android 3.0 开始，系统强制要求网络访问必须在子线程中进行，否则会抛出 <strong>NetworkOnMainThreadException</strong> 异常。</p>
+<hr>
+<h2 id="子线程（工作线程）"><a href="#子线程（工作线程）" class="headerlink" title="子线程（工作线程）"></a><strong>子线程（工作线程）</strong></h2><p>除了主线程以外的线程都是子线程。其<strong>主要职责</strong>是执行耗时任务，如网络请求、I&#x2F;O 操作、数据库访问、复杂计算等。</p>
+<p>子线程不会阻塞主线程，确保主线程的高响应速度。子线程的执行结果通常需要通过 <code>Handler</code> 或 <code>AsyncTask</code> 等机制传递到主线程，以更新 UI。</p>
+<p><strong>使用场景主要集中在：</strong></p>
+<ul>
+<li>网络请求（如 HTTP 请求、Socket 通信）。</li>
+<li>文件读写（如加载大文件、保存数据）。</li>
+<li>数据库操作（如查询、插入、更新）。</li>
+<li>复杂计算（如图像处理、数据分析）。<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, 线程与线程池浅析]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="主线程与子线程的协作"><a href="#主线程与子线程的协作" class="headerlink" title="主线程与子线程的协作"></a><strong>主线程与子线程的协作</strong></h2><p><strong>耗时操作必须放在子线程</strong>：</p>
+<p>主线程中执行耗时操作会导致界面卡顿，甚至触发 ANR。子线程负责执行耗时任务，确保主线程的流畅性。</p>
+<p><strong>子线程与主线程的通信</strong>：</p>
+<p>子线程执行完任务后，通常需要将结果传递到主线程以更新 UI。常用的通信机制包括：</p>
+<ul>
+<li><strong>Handler</strong>：通过消息队列实现线程间通信。</li>
+<li><strong>AsyncTask</strong>：封装了线程池和 <code>Handler</code>，方便在子线程中执行任务并更新 UI。</li>
+<li><strong>LiveData</strong> 和 <strong>ViewModel</strong>：基于观察者模式，实现数据驱动的 UI 更新。</li>
+<li><strong>RxJava</strong>：通过响应式编程实现线程切换和数据传递。</li>
+</ul>
+<h1 id="Android线程创建"><a href="#Android线程创建" class="headerlink" title="Android线程创建"></a>Android线程创建</h1><blockquote>
+<p>补充深入了解参考：<a target="_blank" rel="noopener" href="https://gityuan.com/2016/09/24/android-thread/">理解Android线程创建流程 - Gityuan博客 | 袁辉辉的技术博客</a></p>
+<p><strong>虚拟机线程</strong>：由 Android 虚拟机管理，能够运行 Java 代码，底层是 Linux 线程。</p>
+<p><strong>Native 线程</strong>：由 C&#x2F;C++ 代码创建，分为可以访问 Java 代码和不能访问 Java 代码的线程。</p>
+<p><strong>Linux 线程</strong>：操作系统级别的线程，虚拟机线程和 Native 线程的底层实现。</p>
+</blockquote>
+<h2 id="Android-中的线程模型"><a href="#Android-中的线程模型" class="headerlink" title="Android 中的线程模型"></a><strong>Android 中的线程模型</strong></h2><p><strong>沿用 Java 的线程模型</strong>：Android 的线程模型基于 Java，分为主线程和子线程。</p>
+<p><strong>主线程的特殊性</strong>：主线程是唯一可以直接更新 UI 的线程。主线程的运行机制基于 <code>Looper</code> 和 <code>Handler</code>，通过消息循环处理事件。</p>
+<p><strong>子线程的多样性</strong>：子线程可以通过多种形式实现，如 <code>Thread</code>、<code>AsyncTask</code>、<code>HandlerThread</code>、<code>IntentService</code> 等。子线程的执行通常依赖于线程池，以提高线程的复用率和系统性能。</p>
+<h2 id="Android中的线程形态"><a href="#Android中的线程形态" class="headerlink" title="Android中的线程形态"></a>Android中的线程形态</h2><h3 id="AsyncTask"><a href="#AsyncTask" class="headerlink" title="AsyncTask"></a>AsyncTask</h3><blockquote>
+<p>AsyncTask是一种轻量级的异步任务类，它可以在线程池中执行后台任务，然后把执行的进度和最终结果传递给主线程并在主线程中更新UI。从实现上来说，AsyncTask封装了Thread和Handler，通过AsyncTask可以更加方便地执行后台任务以及在主线程中访问UI，但是AsyncTask并不适合进行特别耗时的后台任务，对于特别耗时的任务来说，建议使用线程池。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onCreate</span><span class="hljs-params">(Bundle savedInstanceState)</span> &#123;<br>        <span class="hljs-built_in">super</span>.onCreate(savedInstanceState);<br>      setContentView(R.layout.activity_main);<br>        <span class="hljs-comment">// 初始化视图</span><br>        btnStart = findViewById(R.id.btn_start);<br>        progressBar = findViewById(R.id.progress_bar);<br>        tvResult = findViewById(R.id.tv_result);<br>        <span class="hljs-comment">// 设置按钮点击事件</span><br>        btnStart.setOnClickListener(<span class="hljs-keyword">new</span> <span class="hljs-title class_">View</span>.OnClickListener() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onClick</span><span class="hljs-params">(View v)</span> &#123;<br>                <span class="hljs-comment">// 启动 AsyncTask</span><br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyAsyncTask</span>().execute();<br>            &#125;<br>        &#125;);<br>        <br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>AsyncTask是一个抽象的泛型类，它提供了Params、Progress和Result这三个泛型参数，其中Params表示参数的类型，Progress表示后台任务的执行进度的类型，而Result则表示后台任务的返回结果的类型，如果AsyncTask确实不需要传递具体的参数，那么这三个泛型参数可以用Void来代替。AsyncTask这个类的声明如下所示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyAsyncTask</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">AsyncTask</span>&lt;Void, Integer, String&gt; &#123;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onPreExecute</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-comment">// 任务开始前的准备工作（在主线程执行）</span><br>            progressBar.setVisibility(View.VISIBLE);<br>            tvResult.setText(<span class="hljs-string">&quot;Task started...&quot;</span>);<br>        &#125;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> String <span class="hljs-title function_">doInBackground</span><span class="hljs-params">(Void... voids)</span> &#123;<br>            <span class="hljs-comment">// 模拟耗时任务（在子线程执行）</span><br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;= <span class="hljs-number">100</span>; i++) &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    Thread.sleep(<span class="hljs-number">50</span>); <span class="hljs-comment">// 模拟耗时操作</span><br>                &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>                publishProgress(i); <span class="hljs-comment">// 更新进度</span><br>            &#125;<br>            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Task completed!&quot;</span>; <span class="hljs-comment">// 返回任务结果</span><br>        &#125;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onProgressUpdate</span><span class="hljs-params">(Integer... values)</span> &#123;<br>            <span class="hljs-comment">// 更新任务进度（在主线程执行）</span><br>            progressBar.setProgress(values[<span class="hljs-number">0</span>]);<br>        &#125;<br><br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onPostExecute</span><span class="hljs-params">(String result)</span> &#123;<br>            <span class="hljs-comment">// 任务完成后的处理（在主线程执行）</span><br>            progressBar.setVisibility(View.GONE);<br>            tvResult.setText(result);<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>注意以下是 <code>AsyncTask</code> 核心方法：</p>
+<table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>调用时机</strong></th>
+<th><strong>执行线程</strong></th>
+<th><strong>作用</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>onPreExecute()</code></strong></td>
+<td>在异步任务执行之前调用</td>
+<td>主线程（UI 线程）</td>
+<td>用于任务开始前的准备工作，例如显示进度条、初始化 UI 等。</td>
+</tr>
+<tr>
+<td><strong><code>doInBackground()</code></strong></td>
+<td>在 <code>onPreExecute()</code> 执行完毕后调用</td>
+<td>子线程（后台线程）</td>
+<td>执行耗时任务，例如网络请求、文件读写等。通过 <code>publishProgress()</code> 更新进度。</td>
+</tr>
+<tr>
+<td><strong><code>onProgressUpdate()</code></strong></td>
+<td>在 <code>doInBackground()</code> 中调用 <code>publishProgress()</code> 时触发</td>
+<td>主线程（UI 线程）</td>
+<td>更新任务进度，例如更新进度条、显示进度百分比等。</td>
+</tr>
+<tr>
+<td><strong><code>onPostExecute()</code></strong></td>
+<td>在 <code>doInBackground()</code> 执行完毕后调用</td>
+<td>主线程（UI 线程）</td>
+<td>处理任务结果，例如隐藏进度条、显示结果等。</td>
+</tr>
+<tr>
+<td><strong><code>onCancelled()</code></strong></td>
+<td>当异步任务被取消时调用</td>
+<td>主线程（UI 线程）</td>
+<td>处理任务被取消的情况，例如清理资源、更新 UI 等。</td>
+</tr>
+</tbody></table>
+<p><strong>补充说明</strong></p>
+<p><strong>执行顺序</strong>：</p>
+<p><code>onPreExecute()</code> → <code>doInBackground()</code> → <code>onProgressUpdate()</code>（可选） → <code>onPostExecute()</code>。</p>
+<p>如果任务被取消，<code>onCancelled()</code> 会被调用，而 <code>onPostExecute()</code> 不会执行。</p>
+<p><strong>注意事项</strong>：</p>
+<p><strong>生命周期问题</strong>：<code>AsyncTask</code> 的生命周期与 Activity 或 Fragment 无关，可能导致内存泄漏。</p>
+<p><strong>版本差异</strong>：从 Android 4.0 开始，<code>AsyncTask</code> 默认是串行执行的，可通过 <code>executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)</code> 实现并行执行。</p>
+<p><strong>弃用</strong>：<code>AsyncTask</code> 已被标记为弃用，建议使用 <code>LiveData</code>、<code>ViewModel</code>、<code>RxJava</code> 或 <code>Coroutine</code> 替代。</p>
+<p>在使用asyncTask中还需注意：</p>
+<table>
+<thead>
+<tr>
+<th><strong>条件</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>注意事项</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AsyncTask 的类必须在主线程中加载</strong></td>
+<td>第一次访问 <code>AsyncTask</code> 必须发生在主线程，Android 4.1 及以上版本已由系统自动完成。</td>
+<td>在 Android 5.0 中，<code>ActivityThread</code> 的 <code>main</code> 方法会调用 <code>AsyncTask</code> 的 <code>init</code> 方法。</td>
+</tr>
+<tr>
+<td><strong>AsyncTask 的对象必须在主线程中创建</strong></td>
+<td><code>AsyncTask</code> 的实例化必须在主线程中进行。</td>
+<td>在子线程中创建 <code>AsyncTask</code> 对象会导致运行时异常。</td>
+</tr>
+<tr>
+<td><strong><code>execute</code> 方法必须在 UI 线程调用</strong></td>
+<td>调用 <code>execute</code> 方法启动任务时，必须在主线程中调用。</td>
+<td>在子线程中调用 <code>execute</code> 方法会导致运行时异常。</td>
+</tr>
+<tr>
+<td><strong>不要直接调用 <code>onPreExecute()</code>、<code>onPostExecute()</code>、<code>doInBackground()</code> 和 <code>onProgressUpdate()</code></strong></td>
+<td>这些方法是 <code>AsyncTask</code> 内部自动调用的，开发者不应直接调用。</td>
+<td>直接调用这些方法会导致逻辑错误或异常。</td>
+</tr>
+<tr>
+<td><strong>一个 <code>AsyncTask</code> 对象只能执行一次</strong></td>
+<td>每个 <code>AsyncTask</code> 对象只能调用一次 <code>execute</code> 方法，否则会报运行时异常。</td>
+<td>如果需要多次执行任务，必须创建新的 <code>AsyncTask</code> 对象。</td>
+</tr>
+<tr>
+<td><strong>Android 1.6 之前：串行执行任务</strong></td>
+<td>在 Android 1.6 之前，<code>AsyncTask</code> 是串行执行任务的。</td>
+<td>适用于简单任务，但效率较低。</td>
+</tr>
+<tr>
+<td><strong>Android 1.6 到 2.3：并行执行任务</strong></td>
+<td>在 Android 1.6 到 2.3 中，<code>AsyncTask</code> 使用线程池并行执行任务。</td>
+<td>提高了任务执行效率，但可能引发并发错误。</td>
+</tr>
+<tr>
+<td><strong>Android 3.0 及以后：默认串行执行任务</strong></td>
+<td>从 Android 3.0 开始，为了避免并发错误，<code>AsyncTask</code> 默认使用单个线程串行执行任务。</td>
+<td>可以通过 <code>executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)</code> 方法实现并行执行任务。</td>
+</tr>
+</tbody></table>
+<h4 id="AsyncTask的工作原理"><a href="#AsyncTask的工作原理" class="headerlink" title="AsyncTask的工作原理"></a>AsyncTask的工作原理</h4><p>我们从它的execute方法开始分析:</p>
+<p>在主线程中启动 <code>AsyncTask</code>，执行异步任务。默认使用串行执行器（<code>sDefaultExecutor</code>），即任务按顺序执行。</p>
+<h5 id="execute"><a href="#execute" class="headerlink" title="execute"></a>execute</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 在主线程中执行异步任务。</span><br><span class="hljs-comment"> * 这是 `AsyncTask` 的默认执行方法，使用默认的串行执行器（sDefaultExecutor）。</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> params 任务的输入参数，类型为泛型 `Params`。</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@return</span> 返回当前 `AsyncTask` 实例，以便支持链式调用。</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> IllegalStateException 如果任务已经在执行或已执行完毕。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">@MainThread</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="hljs-title function_">execute</span><span class="hljs-params">(Params... params)</span> &#123;<br>    <span class="hljs-comment">// 调用 executeOnExecutor 方法，使用默认的串行执行器（sDefaultExecutor）执行任务</span><br>    <span class="hljs-keyword">return</span> executeOnExecutor(sDefaultExecutor, params);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>execute方法又会调用executeOnExecutor方法</p>
+<h5 id="executeOnExecutor"><a href="#executeOnExecutor" class="headerlink" title="executeOnExecutor"></a>executeOnExecutor</h5><p>在指定的执行器（<code>Executor</code>）上执行异步任务。并管理任务状态，确保任务只能执行一次。调用 <code>onPreExecute()</code> 方法，执行任务开始前的准备工作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 在指定的执行器（Executor）上执行异步任务。</span><br><span class="hljs-comment"> * 这是 `AsyncTask` 的核心方法，用于启动任务并管理任务状态。</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> exec  用于执行任务的执行器（Executor）。</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> params 任务的输入参数，类型为泛型 `Params`。</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@return</span> 返回当前 `AsyncTask` 实例，以便支持链式调用。</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> IllegalStateException 如果任务已经在执行或已执行完毕。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">@MainThread</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="hljs-title function_">executeOnExecutor</span><span class="hljs-params">(Executor exec, Params... params)</span> &#123;<br>    <span class="hljs-comment">// 检查任务状态，确保任务处于 PENDING 状态</span><br>    <span class="hljs-keyword">if</span> (mStatus != Status.PENDING) &#123;<br>        <span class="hljs-keyword">switch</span> (mStatus) &#123;<br>            <span class="hljs-keyword">case</span> RUNNING:<br>                <span class="hljs-comment">// 如果任务正在运行，抛出异常</span><br>                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalStateException</span>(<span class="hljs-string">&quot;Cannot execute task:&quot;</span><br>                        + <span class="hljs-string">&quot; the task is already running.&quot;</span>);<br>            <span class="hljs-keyword">case</span> FINISHED:<br>                <span class="hljs-comment">// 如果任务已经执行完毕，抛出异常</span><br>                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalStateException</span>(<span class="hljs-string">&quot;Cannot execute task:&quot;</span><br>                        + <span class="hljs-string">&quot; the task has already been executed &quot;</span><br>                        + <span class="hljs-string">&quot;(a task can be executed only once)&quot;</span>);<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// 将任务状态设置为 RUNNING</span><br>    mStatus = Status.RUNNING;<br>    <span class="hljs-comment">// 在主线程中执行任务开始前的准备工作</span><br>    onPreExecute();<br>    <span class="hljs-comment">// 将输入参数传递给后台任务</span><br>    mWorker.mParams = params;<br>    <span class="hljs-comment">// 使用指定的执行器执行任务</span><br>    exec.execute(mFuture);<br>    <span class="hljs-comment">// 返回当前 AsyncTask 实例，支持链式调用</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>sDefaultExecutor实际上是一个串行的线程池，一个进程中所有的AsyncTask全部在这个串行的线程池中排队执行，这个排队执行的过程后面会再进行分析。在executeOnExecutor方法中，AsyncTask的onPreExecute方法最先执行，然后线程池开始执行。</p>
+</blockquote>
+<h5 id="sDefaultExecutor"><a href="#sDefaultExecutor" class="headerlink" title="sDefaultExecutor"></a>sDefaultExecutor</h5><p><code>SerialExecutor</code> 是 <code>AsyncTask</code> 的默认执行器，用于按顺序执行任务。它通过任务队列和线程池的结合，确保任务按 FIFO 顺序执行，同时利用线程池提高执行效率。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 默认的执行器，使用串行执行器（SerialExecutor）</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">volatile</span> <span class="hljs-type">Executor</span> <span class="hljs-variable">sDefaultExecutor</span> <span class="hljs-operator">=</span> SERIAL_EXECUTOR;<br><br><span class="hljs-comment">// 标记为弃用的串行执行器（SerialExecutor）</span><br><span class="hljs-meta">@Deprecated</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Executor</span> <span class="hljs-variable">SERIAL_EXECUTOR</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SerialExecutor</span>();<br><br><span class="hljs-comment">// 串行执行器的实现类</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SerialExecutor</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Executor</span> &#123;<br>    <span class="hljs-comment">// 任务队列，用于存储待执行的任务</span><br>    <span class="hljs-keyword">final</span> ArrayDeque&lt;Runnable&gt; mTasks = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayDeque</span>&lt;Runnable&gt;();<br><br>    <span class="hljs-comment">// 当前正在执行的任务</span><br>    Runnable mActive;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 将任务添加到任务队列中，并确保任务按顺序执行。</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> r 需要执行的任务（Runnable）</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">synchronized</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Runnable r)</span> &#123;<br>        <span class="hljs-comment">// 将任务包装为一个新的 Runnable，确保任务执行后调用 scheduleNext()</span><br>        mTasks.offer(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">// 执行任务</span><br>                    r.run();<br>                &#125; <span class="hljs-keyword">finally</span> &#123;<br>                    <span class="hljs-comment">// 任务执行完毕后，调度下一个任务</span><br>                    scheduleNext();<br>                &#125;<br>            &#125;<br>        &#125;);<br><br>        <span class="hljs-comment">// 如果当前没有正在执行的任务，立即调度下一个任务</span><br>        <span class="hljs-keyword">if</span> (mActive == <span class="hljs-literal">null</span>) &#123;<br>            scheduleNext();<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 从任务队列中取出下一个任务并执行。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">synchronized</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">scheduleNext</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 从队列中取出下一个任务</span><br>        <span class="hljs-keyword">if</span> ((mActive = mTasks.poll()) != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-comment">// 使用线程池执行任务</span><br>            THREAD_POOL_EXECUTOR.execute(mActive);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>AsyncTask</code> 的构造函数用于初始化任务相关的组件，包括 <code>Handler</code>、<code>WorkerRunnable</code> 和 <code>FutureTask</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * AsyncTask 的构造函数，用于初始化任务相关的组件。</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> callbackLooper 用于处理任务结果的 Looper。如果为 null 或主线程的 Looper，则使用主线程的 Handler。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-title function_">AsyncTask</span><span class="hljs-params">(<span class="hljs-meta">@Nullable</span> Looper callbackLooper)</span> &#123;<br>    <span class="hljs-comment">// 初始化 Handler，用于将任务结果传递到指定的线程</span><br>    mHandler = callbackLooper == <span class="hljs-literal">null</span> || callbackLooper == Looper.getMainLooper()<br>        ? getMainHandler() <span class="hljs-comment">// 使用主线程的 Handler</span><br>        : <span class="hljs-keyword">new</span> <span class="hljs-title class_">Handler</span>(callbackLooper); <span class="hljs-comment">// 使用指定 Looper 的 Handler</span><br><br>    <span class="hljs-comment">// 初始化 WorkerRunnable，用于在后台执行任务</span><br>    mWorker = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WorkerRunnable</span>&lt;Params, Result&gt;() &#123;<br>        <span class="hljs-keyword">public</span> Result <span class="hljs-title function_">call</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>            <span class="hljs-comment">// 标记任务已被调用</span><br>            mTaskInvoked.set(<span class="hljs-literal">true</span>);<br>            <span class="hljs-type">Result</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-comment">// 设置线程优先级为后台线程</span><br>                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);<br>                <span class="hljs-comment">// 执行后台任务，并获取结果</span><br>                result = doInBackground(mParams);<br>                <span class="hljs-comment">// 刷新 Binder 命令，确保任务执行完毕</span><br>                Binder.flushPendingCommands();<br>            &#125; <span class="hljs-keyword">catch</span> (Throwable tr) &#123;<br>                <span class="hljs-comment">// 如果发生异常，标记任务为已取消</span><br>                mCancelled.set(<span class="hljs-literal">true</span>);<br>                <span class="hljs-keyword">throw</span> tr;<br>            &#125; <span class="hljs-keyword">finally</span> &#123;<br>                <span class="hljs-comment">// 无论任务是否成功，都将结果传递到主线程</span><br>                postResult(result);<br>            &#125;<br>            <span class="hljs-keyword">return</span> result;<br>        &#125;<br>    &#125;;<br><br>    <span class="hljs-comment">// 初始化 FutureTask，用于管理任务的执行状态</span><br>    mFuture = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FutureTask</span>&lt;Result&gt;(mWorker) &#123;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">done</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-comment">// 如果任务未被调用，手动传递结果</span><br>                postResultIfNotInvoked(get());<br>            &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                <span class="hljs-comment">// 记录中断异常</span><br>                android.util.Log.w(LOG_TAG, e);<br>            &#125; <span class="hljs-keyword">catch</span> (ExecutionException e) &#123;<br>                <span class="hljs-comment">// 抛出执行异常，表示 doInBackground() 中发生了错误</span><br>                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">&quot;An error occurred while executing doInBackground()&quot;</span>,<br>                        e.getCause());<br>            &#125; <span class="hljs-keyword">catch</span> (CancellationException e) &#123;<br>                <span class="hljs-comment">// 如果任务被取消，传递 null 结果</span><br>                postResultIfNotInvoked(<span class="hljs-literal">null</span>);<br>            &#125;<br>        &#125;<br>    &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>注意由于FutureTask的run方法会调用mWorker的call方法，因此mWorker的call方法最终会在线程池中执行。</p>
+<p>在mWorker的call方法中，首先将mTaskInvoked设为true，表示当前任务已经被调用过了，然后执行AsyncTask的doInBackground方法，接着将其返回值传递给postResult方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 将任务结果通过 Handler 传递到主线程。</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> result 后台任务的结果，类型为泛型 `Result`。</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@return</span> 返回传递的结果。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> Result <span class="hljs-title function_">postResult</span><span class="hljs-params">(Result result)</span> &#123;<br>    <span class="hljs-comment">// 创建一个消息，携带任务结果</span><br>    <span class="hljs-meta">@SuppressWarnings(&quot;unchecked&quot;)</span><br>    <span class="hljs-type">Message</span> <span class="hljs-variable">message</span> <span class="hljs-operator">=</span> getHandler().obtainMessage(MESSAGE_POST_RESULT,<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">AsyncTaskResult</span>&lt;Result&gt;(<span class="hljs-built_in">this</span>, result));<br><br>    <span class="hljs-comment">// 将消息发送到 Handler 的目标线程（通常是主线程）</span><br>    message.sendToTarget();<br><br>    <span class="hljs-comment">// 返回传递的结果</span><br>    <span class="hljs-keyword">return</span> result;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>postResult()</code> 是 <code>AsyncTask</code> 的核心方法之一，用于将后台任务的结果通过 <code>Handler</code> 传递到主线程。它通过封装 <code>AsyncTaskResult</code> 和发送 <code>Message</code>，实现了线程间的通信，最终触发 <code>onPostExecute()</code> 方法以处理任务结果。</p>
+<p>在上面的代码中，postResult方法会通过sHandler发送一个MESSAGE_POST_RESULT的消息，这个sHandler的定义如下所示。</p>
+<blockquote>
+<p><code>InternalHandler</code> 是 <code>AsyncTask</code> 的核心组件之一，用于处理任务结果和进度更新的消息。它通过 <code>handleMessage()</code> 方法，将任务结果传递给 <code>finish()</code> 方法，最终触发 <code>onPostExecute()</code>；将进度更新数据传递给 <code>onProgressUpdate()</code> 方法，确保 UI 更新的安全性。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 静态的 InternalHandler 实例，用于处理 AsyncTask 的消息</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">InternalHandler</span> <span class="hljs-variable">sHandler</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InternalHandler</span>();<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * InternalHandler 是 AsyncTask 的内部类，继承自 Handler，用于处理任务结果和进度更新。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InternalHandler</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Handler</span> &#123;<br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 处理消息，根据消息类型执行相应的操作。</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> msg 接收到的消息，包含任务结果或进度更新数据。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@SuppressWarnings(&#123;&quot;unchecked&quot;, &quot;RawUseOfParameterizedType&quot;&#125;)</span><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleMessage</span><span class="hljs-params">(Message msg)</span> &#123;<br>        <span class="hljs-comment">// 从消息中取出 AsyncTaskResult 对象</span><br>        <span class="hljs-type">AsyncTaskResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> (AsyncTaskResult) msg.obj;<br><br>        <span class="hljs-comment">// 根据消息类型执行不同的操作</span><br>        <span class="hljs-keyword">switch</span> (msg.what) &#123;<br>            <span class="hljs-keyword">case</span> MESSAGE_POST_RESULT:<br>                <span class="hljs-comment">// 处理任务结果</span><br>                result.mTask.finish(result.mData[<span class="hljs-number">0</span>]); <span class="hljs-comment">// 调用 finish() 方法</span><br>                <span class="hljs-keyword">break</span>;<br>            <span class="hljs-keyword">case</span> MESSAGE_POST_PROGRESS:<br>                <span class="hljs-comment">// 处理进度更新</span><br>                result.mTask.onProgressUpdate(result.mData); <span class="hljs-comment">// 调用 onProgressUpdate() 方法</span><br>                <span class="hljs-keyword">break</span>;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以发现，sHandler是一个静态的Handler对象，为了能够将执行环境切换到主线程，这就要求sHandler这个对象必须在主线程中创建。由于静态成员会在加载类的时候进行初始化，因此这就变相要求AsyncTask的类必须在主线程中加载，否则同一个进程中的AsyncTask都将无法正常工作。sHandler收到MESSAGE_POST_RESULT这个消息后会调用AsyncTask的finish方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 完成任务，根据任务是否被取消调用相应的回调方法。</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> result 后台任务的结果，类型为泛型 `Result`。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">finish</span><span class="hljs-params">(Result result)</span> &#123;<br>    <span class="hljs-comment">// 检查任务是否被取消</span><br>    <span class="hljs-keyword">if</span> (isCancelled()) &#123;<br>        <span class="hljs-comment">// 如果任务被取消，调用 onCancelled() 方法</span><br>        onCancelled(result);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 如果任务正常完成，调用 onPostExecute() 方法</span><br>        onPostExecute(result);<br>    &#125;<br><br>    <span class="hljs-comment">// 将任务状态设置为 FINISHED</span><br>    mStatus = Status.FINISHED;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>从 <strong>Android 3.0（API 11）</strong> 开始，默认情况下 <code>AsyncTask</code> 是<strong>串行执行任务</strong>的</p>
+<h3 id="HandlerThread"><a href="#HandlerThread" class="headerlink" title="HandlerThread"></a>HandlerThread</h3><p><code>HandlerThread</code> 是 Android 提供的一个特殊线程类，它继承了 <code>Thread</code>，并在内部实现了消息队列和消息循环机制，使得可以在该线程中使用 <code>Handler</code>。以下是关于 <code>HandlerThread</code> 的详细解析：</p>
+<hr>
+<h4 id="HandlerThread-的核心特点"><a href="#HandlerThread-的核心特点" class="headerlink" title="HandlerThread 的核心特点"></a><strong>HandlerThread 的核心特点</strong></h4><ul>
+<li>**继承自 <code>Thread</code>**：<code>HandlerThread</code> 是一个线程类，具备普通线程的所有特性。</li>
+<li><strong>内部实现消息队列</strong>：通过 <code>Looper.prepare()</code> 和 <code>Looper.loop()</code> 创建消息队列并开启消息循环。</li>
+<li>**支持 <code>Handler</code>**：可以在 <code>HandlerThread</code> 中创建 <code>Handler</code>，并通过 <code>Handler</code> 发送消息来执行任务。</li>
+<li><strong>无限循环</strong>：<code>run()</code> 方法是一个无限循环，直到调用 <code>quit()</code> 或 <code>quitSafely()</code> 方法终止线程。</li>
+</ul>
+<h4 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a><strong>源码分析</strong></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">HandlerThread</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Thread</span> &#123;<br>    Looper mLooper; <span class="hljs-comment">// 线程的 Looper</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-meta">@Nullable</span> Handler mHandler; <span class="hljs-comment">// 线程的 Handler</span><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">HandlerThread</span><span class="hljs-params">(String name)</span> &#123;<br>        <span class="hljs-built_in">super</span>(name); <span class="hljs-comment">// 调用父类构造方法，设置线程名称</span><br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>        Looper.prepare(); <span class="hljs-comment">// 创建消息队列</span><br>        <span class="hljs-keyword">synchronized</span> (<span class="hljs-built_in">this</span>) &#123;<br>            mLooper = Looper.myLooper(); <span class="hljs-comment">// 获取当前线程的 Looper</span><br>            notifyAll(); <span class="hljs-comment">// 通知等待线程</span><br>        &#125;<br>        Looper.loop(); <span class="hljs-comment">// 开启消息循环</span><br>    &#125;<br><br>    <span class="hljs-keyword">public</span> Looper <span class="hljs-title function_">getLooper</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">if</span> (!isAlive()) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>        &#125;<br>        <span class="hljs-keyword">synchronized</span> (<span class="hljs-built_in">this</span>) &#123;<br>            <span class="hljs-keyword">while</span> (isAlive() &amp;&amp; mLooper == <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    wait(); <span class="hljs-comment">// 等待 Looper 创建完成</span><br>                &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">return</span> mLooper; <span class="hljs-comment">// 返回 Looper</span><br>    &#125;<br><br>    <span class="hljs-keyword">public</span> Handler <span class="hljs-title function_">getThreadHandler</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">if</span> (mHandler == <span class="hljs-literal">null</span>) &#123;<br>            mHandler = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Handler</span>(getLooper()); <span class="hljs-comment">// 创建 Handler</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> mHandler;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">quit</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">Looper</span> <span class="hljs-variable">looper</span> <span class="hljs-operator">=</span> getLooper();<br>        <span class="hljs-keyword">if</span> (looper != <span class="hljs-literal">null</span>) &#123;<br>            looper.quit(); <span class="hljs-comment">// 终止消息循环</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">quitSafely</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">Looper</span> <span class="hljs-variable">looper</span> <span class="hljs-operator">=</span> getLooper();<br>        <span class="hljs-keyword">if</span> (looper != <span class="hljs-literal">null</span>) &#123;<br>            looper.quitSafely(); <span class="hljs-comment">// 安全终止消息循环</span><br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, 线程与线程池浅析]</li>
+</ul>
+<hr>
+<h4 id="HandlerThread-与普通-Thread-的区别"><a href="#HandlerThread-与普通-Thread-的区别" class="headerlink" title="HandlerThread 与普通 Thread 的区别"></a>HandlerThread 与普通 Thread 的区别</h4><table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>HandlerThread</strong></th>
+<th><strong>普通 Thread</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>消息队列</strong></td>
+<td>内部实现了消息队列和消息循环。</td>
+<td>无消息队列，直接执行 <code>run()</code> 方法。</td>
+</tr>
+<tr>
+<td><strong>任务执行方式</strong></td>
+<td>通过 <code>Handler</code> 发送消息来执行任务。</td>
+<td>直接在 <code>run()</code> 方法中执行任务。</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>需要按顺序执行任务的场景（如 <code>IntentService</code>）。</td>
+<td>执行一次性耗时任务。</td>
+</tr>
+<tr>
+<td><strong>线程终止</strong></td>
+<td>需要调用 <code>quit()</code> 或 <code>quitSafely()</code> 终止。</td>
+<td>任务执行完毕后自动终止。</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="HandlerThread-的使用场景"><a href="#HandlerThread-的使用场景" class="headerlink" title="HandlerThread 的使用场景"></a><strong>HandlerThread 的使用场景</strong></h4><p>**<code>IntentService</code>**：<code>IntentService</code> 内部使用 <code>HandlerThread</code> 来处理后台任务。任务按顺序执行，适合执行短期的后台任务。</p>
+<p><strong>按顺序执行任务</strong>：当需要按顺序执行任务时，可以使用 <code>HandlerThread</code> 确保任务按 FIFO（先进先出）的顺序执行。</p>
+<p><strong>线程间通信</strong>：通过 <code>Handler</code> 发送消息到 <code>HandlerThread</code>，实现线程间通信。</p>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, 线程与线程池浅析]</li>
+</ul>
+<hr>
+<h4 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a><strong>使用示例</strong></h4><h5 id="创建-HandlerThread"><a href="#创建-HandlerThread" class="headerlink" title="创建 HandlerThread"></a>创建 HandlerThread</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">HandlerThread</span> <span class="hljs-variable">handlerThread</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HandlerThread</span>(<span class="hljs-string">&quot;MyHandlerThread&quot;</span>);<br>handlerThread.start(); <span class="hljs-comment">// 启动线程</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="创建-Handler"><a href="#创建-Handler" class="headerlink" title="创建 Handler"></a><strong>创建 Handler</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Handler</span> <span class="hljs-variable">handler</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Handler</span>(handlerThread.getLooper());<br></code></pre></td></tr></table></figure>
+
+<h5 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a><strong>发送消息</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java">handler.post(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 在 HandlerThread 中执行任务</span><br>        Log.d(<span class="hljs-string">&quot;HandlerThread&quot;</span>, <span class="hljs-string">&quot;Task executed&quot;</span>);<br>    &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<h5 id="终止线程"><a href="#终止线程" class="headerlink" title="终止线程"></a><strong>终止线程</strong></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">handlerThread.quit(); <span class="hljs-comment">// 立即终止</span><br>handlerThread.quitSafely(); <span class="hljs-comment">// 安全终止</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="IntentService"><a href="#IntentService" class="headerlink" title="IntentService"></a>IntentService</h3><p><code>IntentService</code> 是 Android 提供的一种特殊的 <code>Service</code>，用于在后台执行耗时任务。它的特点是任务执行完毕后会自动停止，并且由于它是 <code>Service</code>，其优先级比普通线程高，不容易被系统杀死。然而，在 Android 8.0 及以上版本中，建议使用 <code>JobIntentService</code> 或 <code>WorkManager</code> 替代 <code>IntentService</code>。</p>
+<hr>
+<h4 id="创建-IntentService-子类"><a href="#创建-IntentService-子类" class="headerlink" title="创建 IntentService 子类"></a><strong>创建 IntentService 子类</strong></h4><p><code>IntentService</code> 是一个抽象类，因此必须创建它的子类才能使用。以下是一个简单的示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyIntentService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IntentService</span> &#123;<br><br>    <span class="hljs-comment">// 必须提供无参构造函数</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">MyIntentService</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-built_in">super</span>(<span class="hljs-string">&quot;MyIntentService&quot;</span>); <span class="hljs-comment">// 传入线程名称</span><br>    &#125;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 处理任务的核心方法，在子线程中执行。</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> intent 传递过来的 Intent，包含任务数据。</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onHandleIntent</span><span class="hljs-params">(<span class="hljs-meta">@Nullable</span> Intent intent)</span> &#123;<br>        <span class="hljs-comment">// 从 Intent 中获取数据</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">taskName</span> <span class="hljs-operator">=</span> intent.getStringExtra(<span class="hljs-string">&quot;task_name&quot;</span>);<br><br>        <span class="hljs-comment">// 模拟耗时任务</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) &#123;<br>            Log.d(<span class="hljs-string">&quot;MyIntentService&quot;</span>, <span class="hljs-string">&quot;Executing task: &quot;</span> + taskName + <span class="hljs-string">&quot;, progress: &quot;</span> + i);<br>            <span class="hljs-keyword">try</span> &#123;<br>                Thread.sleep(<span class="hljs-number">1000</span>); <span class="hljs-comment">// 模拟耗时操作</span><br>            &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                e.printStackTrace();<br>            &#125;<br>        &#125;<br><br>        Log.d(<span class="hljs-string">&quot;MyIntentService&quot;</span>, <span class="hljs-string">&quot;Task completed: &quot;</span> + taskName);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, 线程与线程池浅析]</li>
+</ul>
+<hr>
+<h4 id="启动-IntentService"><a href="#启动-IntentService" class="headerlink" title="启动 IntentService"></a><strong>启动 IntentService</strong></h4><p>通过 <code>Intent</code> 启动 <code>IntentService</code>，并传递任务数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 创建 Intent，指定要启动的 IntentService</span><br><span class="hljs-type">Intent</span> <span class="hljs-variable">intent</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Intent</span>(<span class="hljs-built_in">this</span>, MyIntentService.class);<br><br><span class="hljs-comment">// 传递任务数据</span><br>intent.putExtra(<span class="hljs-string">&quot;task_name&quot;</span>, <span class="hljs-string">&quot;DownloadFile&quot;</span>);<br><br><span class="hljs-comment">// 启动 IntentService</span><br>startService(intent);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="IntentService-的特点"><a href="#IntentService-的特点" class="headerlink" title="IntentService 的特点"></a><strong>IntentService 的特点</strong></h4><p><strong>自动停止</strong>：<code>IntentService</code> 在执行完任务后会自动停止，无需手动调用 <code>stopSelf()</code>。</p>
+<p><strong>任务队列</strong>：如果多次启动 <code>IntentService</code>，任务会按顺序执行（通过 <code>HandlerThread</code> 实现）。</p>
+<p><strong>高优先级</strong>：由于 <code>IntentService</code> 是 <code>Service</code>，其优先级比普通线程高，不容易被系统杀死。</p>
+<p><strong>子线程执行</strong>：<code>onHandleIntent()</code> 方法在子线程中执行，适合执行耗时任务。</p>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, 线程与线程池浅析]</li>
+</ul>
+<hr>
+<h4 id="IntentService-的源码分析"><a href="#IntentService-的源码分析" class="headerlink" title="IntentService 的源码分析"></a><strong>IntentService 的源码分析</strong></h4><p><code>IntentService</code> 的核心实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onCreate</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-built_in">super</span>.onCreate();<br><br>    <span class="hljs-comment">// 创建 HandlerThread，用于执行任务</span><br>    <span class="hljs-type">HandlerThread</span> <span class="hljs-variable">thread</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HandlerThread</span>(<span class="hljs-string">&quot;IntentService[&quot;</span> + mName + <span class="hljs-string">&quot;]&quot;</span>);<br>    thread.start();<br><br>    <span class="hljs-comment">// 获取 HandlerThread 的 Looper</span><br>    mServiceLooper = thread.getLooper();<br><br>    <span class="hljs-comment">// 创建 Handler，用于处理消息</span><br>    mServiceHandler = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServiceHandler</span>(mServiceLooper);<br>&#125;<br><br><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onStart</span><span class="hljs-params">(<span class="hljs-meta">@Nullable</span> Intent intent, <span class="hljs-type">int</span> startId)</span> &#123;<br>    <span class="hljs-comment">// 将任务封装为 Message 并发送到 Handler</span><br>    <span class="hljs-type">Message</span> <span class="hljs-variable">msg</span> <span class="hljs-operator">=</span> mServiceHandler.obtainMessage();<br>    msg.arg1 = startId;<br>    msg.obj = intent;<br>    mServiceHandler.sendMessage(msg);<br>&#125;<br><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ServiceHandler</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Handler</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">ServiceHandler</span><span class="hljs-params">(Looper looper)</span> &#123;<br>        <span class="hljs-built_in">super</span>(looper);<br>    &#125;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleMessage</span><span class="hljs-params">(Message msg)</span> &#123;<br>        <span class="hljs-comment">// 调用 onHandleIntent() 方法执行任务</span><br>        onHandleIntent((Intent) msg.obj);<br>        <span class="hljs-comment">// 任务执行完毕后停止 Service</span><br>        stopSelf(msg.arg1);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>**<code>HandlerThread</code>**：用于在子线程中执行任务。</li>
+<li>**<code>ServiceHandler</code>**：处理任务消息，并调用 <code>onHandleIntent()</code> 方法。</li>
+<li><strong>自动停止</strong>：任务执行完毕后调用 <code>stopSelf()</code> 停止 <code>Service</code>。</li>
+</ul>
+<hr>
+<h4 id="IntentService-的生命周期"><a href="#IntentService-的生命周期" class="headerlink" title="IntentService 的生命周期"></a>IntentService 的生命周期</h4><p><strong>(1) <code>onCreate()</code></strong></p>
+<p>当 <code>IntentService</code> 第一次启动时调用。创建一个 <code>HandlerThread</code>，用于在子线程中执行任务。并使用 <code>HandlerThread</code> 的 <code>Looper</code> 构造一个 <code>Handler</code> 对象（<code>mServiceHandler</code>）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onCreate</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-built_in">super</span>.onCreate();<br>    <span class="hljs-type">HandlerThread</span> <span class="hljs-variable">thread</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HandlerThread</span>(<span class="hljs-string">&quot;IntentService[&quot;</span> + mName + <span class="hljs-string">&quot;]&quot;</span>);<br>    thread.start();<br>    mServiceLooper = thread.getLooper();<br>    mServiceHandler = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServiceHandler</span>(mServiceLooper);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>(2) <code>onStartCommand()</code></strong></p>
+<p>每次启动 <code>IntentService</code> 时调用。调用 <code>onStart()</code> 方法，将任务 <code>Intent</code> 封装为消息并发送到 <code>HandlerThread</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">onStartCommand</span><span class="hljs-params">(<span class="hljs-meta">@Nullable</span> Intent intent, <span class="hljs-type">int</span> flags, <span class="hljs-type">int</span> startId)</span> &#123;<br>    onStart(intent, startId);<br>    <span class="hljs-keyword">return</span> mRedelivery ? START_REDELIVER_INTENT : START_NOT_STICKY;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>(3) <code>onStart()</code></strong></p>
+<p>在 <code>onStartCommand()</code> 中调用。将任务 <code>Intent</code> 封装为 <code>Message</code>，并通过 <code>mServiceHandler</code> 发送到 <code>HandlerThread</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onStart</span><span class="hljs-params">(<span class="hljs-meta">@Nullable</span> Intent intent, <span class="hljs-type">int</span> startId)</span> &#123;<br>    <span class="hljs-type">Message</span> <span class="hljs-variable">msg</span> <span class="hljs-operator">=</span> mServiceHandler.obtainMessage();<br>    msg.arg1 = startId;<br>    msg.obj = intent;<br>    mServiceHandler.sendMessage(msg);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>(4) <code>onHandleIntent()</code></strong></p>
+<p>在 <code>HandlerThread</code> 中处理消息时调用。执行具体的后台任务，任务逻辑由开发者实现。任务执行完毕后，调用 <code>stopSelf(int startId)</code> 尝试停止服务。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@WorkerThread</span><br><span class="hljs-keyword">protected</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onHandleIntent</span><span class="hljs-params">(<span class="hljs-meta">@Nullable</span> Intent intent)</span>;<br></code></pre></td></tr></table></figure>
+
+<p><strong>(5) <code>stopSelf(int startId)</code></strong></p>
+<p>在 <code>onHandleIntent()</code> 执行完毕后调用。尝试停止服务，但会等待所有消息处理完毕后才真正停止。使用 <code>startId</code> 判断是否所有任务都已完成。</p>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, 线程与线程池浅析]</li>
+</ul>
+<hr>
+<h4 id="任务执行机制"><a href="#任务执行机制" class="headerlink" title="任务执行机制"></a><strong>任务执行机制</strong></h4><p><strong>(1) 任务队列</strong></p>
+<p><code>IntentService</code> 内部通过 <code>HandlerThread</code> 实现任务队列，任务按 FIFO（先进先出）顺序执行。每次启动 <code>IntentService</code>，任务 <code>Intent</code> 会被封装为 <code>Message</code> 并发送到 <code>HandlerThread</code> 的消息队列中。</p>
+<p><strong>(2) 顺序执行</strong></p>
+<p><code>HandlerThread</code> 的 <code>Looper</code> 会顺序处理消息，因此 <code>IntentService</code> 也是顺序执行任务的。如果有多个后台任务，这些任务会按照启动顺序排队执行。</p>
+<p><strong>(3) 自动停止</strong></p>
+<p>当 <code>onHandleIntent()</code> 执行完毕后，<code>IntentService</code> 会调用 <code>stopSelf(int startId)</code> 尝试停止服务。<code>stopSelf(int startId)</code> 会等待所有消息处理完毕后才真正停止服务。</p>
+<h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4><p><strong>任务顺序执行</strong>：<code>IntentService</code> 的任务是按顺序执行的，如果任务之间没有依赖关系，可以考虑使用 <code>JobScheduler</code> 或 <code>WorkManager</code>。</p>
+<p><strong>Android 8.0 及以上版本</strong>：在 Android 8.0（API 26）及以上版本中，<code>startService()</code> 会抛出异常，建议使用 <code>JobIntentService</code> 或 <code>WorkManager</code>。</p>
+<p><strong>任务耗时限制</strong>：如果任务耗时过长，可能会导致 ANR（应用无响应），建议将任务拆分为多个小任务。</p>
+<h1 id="Android中的线程池"><a href="#Android中的线程池" class="headerlink" title="Android中的线程池"></a>Android中的线程池</h1><p>在操作系统中，线程是操作系统调度的最小单元，同时线程又是一种受限的系统资源，即线程不可能无限制地产生，并且线程的创建和销毁都会有相应的开销。当系统中存在大量的线程时，系统会通过时间片轮转的方式调度每个线程，因此线程不可能做到绝对的并行，除非线程数量小于等于CPU的核心数，一般来说这是不可能的。试想一下，如果在一个进程中频繁地创建和销毁线程，这显然不是高效的做法。正确的做法是采用线程池，一个线程池中会缓存一定数量的线程，通过线程池就可以避免因为频繁创建和销毁线程所带来的系统开销。Android中的线程池来源于Java，主要是通过Executor来派生特定类型的线程池</p>
+<blockquote>
+<p>深入参考：</p>
+<p><a target="_blank" rel="noopener" href="https://gityuan.com/2016/10/29/binder-thread-pool/">进程的Binder线程池工作过程 - Gityuan博客 | 袁辉辉的技术博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1667323">全面理解：Android中的线程及线程池-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1966863">全方位解析-Android中的线程池-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<h1 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h1><h2 id="JobScheduler-和-WorkManager"><a href="#JobScheduler-和-WorkManager" class="headerlink" title="JobScheduler 和 WorkManager"></a><strong>JobScheduler 和 WorkManager</strong></h2><blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2443755">Android后台网络任务：从WorkManager到JobScheduler的全面解析-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<h3 id="JobScheduler"><a href="#JobScheduler" class="headerlink" title="JobScheduler"></a>JobScheduler</h3><p><strong>JobScheduler</strong> 是 Android 5.0（API 21）引入的框架，主要用于在特定条件下执行后台任务。它允许开发者设定任务执行的条件，例如设备充电时、网络连接时或设备空闲时。JobScheduler 会自动管理任务的调度，确保任务在满足条件时执行，同时尽量减少对电池的影响。它适合处理一些需要延迟执行或条件触发的任务，比如数据同步或日志上传。</p>
+<h3 id="WorkManager"><a href="#WorkManager" class="headerlink" title="WorkManager"></a>WorkManager</h3><p><strong>WorkManager</strong> 是 Android Jetpack 的一部分，旨在提供一种更兼容和可靠的方式来执行后台任务。它兼容 Android 4.0（API 14）及以上版本，并能够在不同设备状态下（包括设备重启后）保证任务的执行。WorkManager 结合了 JobScheduler、AlarmManager 和 BroadcastReceiver 的优点，支持一次性任务和周期性任务。它还提供了链式任务、任务约束（如网络连接、充电状态）等功能，适合处理需要可靠执行的后台任务，例如数据备份或定期同步。</p>
+<h2 id="RxJava"><a href="#RxJava" class="headerlink" title="RxJava"></a><strong>RxJava</strong></h2><blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1035917">彻底搞清楚 RxJava 是什么东西-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p><strong>RxJava</strong> 是一个基于观察者模式的异步编程库，主要用于简化复杂的异步任务和事件流处理。它通过提供丰富的操作符，允许开发者以声明式的方式处理数据流和事件流。RxJava 的核心概念是 <strong>Observable</strong>（被观察者）和 <strong>Observer</strong>（观察者），Observable 发出数据流，Observer 订阅并处理这些数据。RxJava 支持线程切换、错误处理、背压控制等功能，适合处理网络请求、数据库操作、UI 事件等异步场景。由于其强大的灵活性和可组合性，RxJava 在 Android 开发中被广泛用于管理复杂的异步逻辑。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/" class="category-chain-item">核心底层</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>线程池</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机技术/操作系统/Andorid内核原理/核心底层/线程池/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/View%E6%9C%BA%E5%88%B6/View%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%92%8Cremoteview/" title="View工作原理和remoteview">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">View工作原理和remoteview</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/Handler/" title="Handler">
+                        <span class="hidden-mobile">Handler</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,804 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="核心组件神经元神经网络其实就是按照一定规则连接起来的多个神经元。上图展示了一个**全连接(full connected, FC)**神经网络，通过观察上面的图，我们可以发现它的规则包括：  神经元按照层来布局。最左边的层叫做输入层，负责接收输入数据；最右边的层叫输出层，我们可以从这层获取神经网络输出数据。输入层和输出层之间的层叫做隐藏层，因为它们对于外部来说是不可见的。 同一层的神经元之间没有连">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全连接与残差神经网络">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/07/06/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E5%85%A8%E8%BF%9E%E6%8E%A5%E4%B8%8E%E6%AE%8B%E5%B7%AE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="核心组件神经元神经网络其实就是按照一定规则连接起来的多个神经元。上图展示了一个**全连接(full connected, FC)**神经网络，通过观察上面的图，我们可以发现它的规则包括：  神经元按照层来布局。最左边的层叫做输入层，负责接收输入数据；最右边的层叫输出层，我们可以从这层获取神经网络输出数据。输入层和输出层之间的层叫做隐藏层，因为它们对于外部来说是不可见的。 同一层的神经元之间没有连">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/11/10/ao3tzeu4LYVhIRv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/10/nf7DRq8KrZlXyEF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/10/BSX14FvP3EKsZA5.png">
+<meta property="og:image" content="https://s2.loli.net/2025/11/30/kJsI2eDn8xUauoz.png">
+<meta property="article:published_time" content="2025-07-06T11:55:48.674Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:58.127Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/11/10/ao3tzeu4LYVhIRv.png">
+  
+  
+  
+  <title>全连接与残差神经网络 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="全连接与残差神经网络"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">全连接与残差神经网络</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/11/10/ao3tzeu4LYVhIRv.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="核心组件"><a href="#核心组件" class="headerlink" title="核心组件"></a>核心组件</h1><h2 id="神经元"><a href="#神经元" class="headerlink" title="神经元"></a><strong>神经元</strong></h2><p>神经网络其实就是按照<strong>一定规则</strong>连接起来的多个<strong>神经元</strong>。上图展示了一个**全连接(full connected, FC)**神经网络，通过观察上面的图，我们可以发现它的规则包括：</p>
+<ul>
+<li>神经元按照<strong>层</strong>来布局。最左边的层叫做<strong>输入层</strong>，负责接收输入数据；最右边的层叫<strong>输出层</strong>，我们可以从这层获取神经网络输出数据。输入层和输出层之间的层叫做<strong>隐藏层</strong>，因为它们对于外部来说是不可见的。</li>
+<li>同一层的神经元之间没有连接。</li>
+<li>第N层的每个神经元和第N-1层的<strong>所有</strong>神经元相连(这就是full connected的含义)，第N-1层神经元的输出就是第N层神经元的输入。</li>
+<li>每个连接都有一个<strong>权值</strong>。</li>
+</ul>
+<p>上面这些规则定义了全连接神经网络的结构。事实上还存在很多其它结构的神经网络，比如卷积神经网络(CNN)、循环神经网络(RNN)，他们都具有不同的连接规则。</p>
+<p>神经网络实际上就是一个输入向量x到输出向量y的函数</p>
+<h2 id="层次结构"><a href="#层次结构" class="headerlink" title="层次结构"></a><strong>层次结构</strong></h2><h1 id="核心过程"><a href="#核心过程" class="headerlink" title="核心过程"></a>核心过程</h1><p>我们需要知道一个神经网络的每个连接上的权值是如何得到的。我们可以说神经网络是一个<strong>模型</strong>，那么这些权值就是模型的<strong>参数</strong>，也就是模型要学习的东西。然而，一个神经网络的连接方式、网络的层数、每层的节点数这些参数，则不是学习出来的，而是人为事先设置的。对于这些人为设置的参数，我们称之为<strong>超参数</strong>。神经网络的工作可以分为两个主要阶段：前向传播和反向传播。</p>
+<h2 id="前向传播"><a href="#前向传播" class="headerlink" title="前向传播"></a>前向传播</h2><p><strong>前向传播</strong>是神经网络进行推理或预测的核心过程，它描述了输入数据从网络的第一层（输入层）流经所有中间层（隐藏层），最终到达最后一层（输出层）的完整路径。这个过程是“前向”的，因为数据单向流动，没有循环或反馈，其核心目标是基于当前网络的参数（权重和偏置）计算出一个输出值。</p>
+<blockquote>
+<p>可以将前向传播类比于人脑识别物体的过程：</p>
+<ul>
+<li><strong>输入</strong>：看到一张猫的图片（原始像素数据）。</li>
+<li><strong>层层抽象</strong>：大脑先识别边缘和轮廓（底层特征），再组合成眼睛、鼻子等部件（中层特征），最后综合判断为“猫”（高级概念）。</li>
+<li><strong>输出</strong>：得出“这是猫”的结论。</li>
+</ul>
+</blockquote>
+<p>神经网络的前向传播正是对这一过程的数学建模：<strong>通过一系列嵌套的线性变换与非线性的激活函数，将原始的、低级的输入数据，逐步转换为高级的、抽象的特征表示，并最终映射到所需的输出空间（如分类概率或回归值）。</strong></p>
+<h3 id="数学本质"><a href="#数学本质" class="headerlink" title="数学本质"></a>数学本质</h3><p>前向传播的数学本质可以分解为两个在每一层重复进行的操作：</p>
+<ol>
+<li><p><strong>线性变换</strong>：对上一层的输出进行加权求和并加上偏置。<br><code>Z = W · A_prev + b</code><br>这里，<code>W</code>是权重矩阵，<code>A_prev</code>是上一层的激活输出，<code>b</code>是偏置向量。此操作实现了特征的线性组合。</p>
+</li>
+<li><p><strong>非线性激活</strong>：将线性变换的结果通过一个激活函数。<br><code>A = f(Z)</code><br>激活函数<code>f</code>（如ReLU, Sigmoid, Tanh）引入了非线性，使得神经网络能够学习并模拟复杂的非线性关系。没有它，无论网络多深，都等价于一个线性模型。</p>
+</li>
+</ol>
+<h2 id="反向传播"><a href="#反向传播" class="headerlink" title="反向传播"></a>反向传播</h2><p>接下来，我们将要介绍神经网络的训练算法：反向传播算法</p>
+<p>它是一种高效计算损失函数相对于网络所有权重和偏置参数梯度的方法。如果说前向传播是网络根据当前参数进行“猜测”的过程，那么反向传播就是网络根据“猜测”与真实答案之间的差距进行“反思”并“自我修正”的过程。</p>
+<p>这个过程始于前向传播完成之后，此时网络已产生预测输出，通过损失函数量化其与真实标签的差异；随后，反向传播算法系统性地将总损失分解并分配至每一个连接权重和每一个神经元偏置，计算出梯度向量，这个梯度指明了为减少损失，每个参数需要调整的方向和幅度。</p>
+<p>最终，优化器利用这些梯度信息，通过梯度下降等策略更新网络参数，使得网络在下一次迭代中能够做出更准确的预测。反向传播的魅力在于其高效性，它通过巧妙的递归计算避免了重复运算，使得即使面对深度网络中数百万的参数，也能在合理时间内完成梯度计算，从而解决了深度神经网络训练的核心瓶颈。</p>
+<p><strong>过程</strong>：</p>
+<ul>
+<li>计算损失：首先，根据网络的预测输出与真实标签之间的差异，计算<strong>损失函数（如均方误差、交叉熵）</strong>的值。</li>
+<li>误差反传：<strong>从输出层开始，计算损失函数对输出层参数的梯度</strong>。</li>
+<li>逐层回溯：利用链式法则，将误差信号（梯度）逐层向前传递，计算每一隐藏层中所有参数的梯度。</li>
+<li>参数更新：一旦获得了所有参数的梯度，就会使用梯度下降（Gradient Descent）或其优化算法（如 Adam、RMSprop、SGD 等）来更新网络的<strong>权重</strong>和<strong>偏置</strong>，以<strong>最小化损失函数</strong>。</li>
+</ul>
+<h3 id="数学本质-1"><a href="#数学本质-1" class="headerlink" title="数学本质"></a><strong>数学本质</strong></h3><p>其核心思想源于微积分中的链式法则，通过从输出层开始，逐层向后传播误差信号，从而精确计算出每个参数对于最终误差应负的责任程度。</p>
+<p><img src="https://s2.loli.net/2025/11/10/nf7DRq8KrZlXyEF.png" srcset="/img/loading.gif" lazyload></p>
+<p>反向传播的数学本质可以概括为一句话：<strong>它是在神经网络这个复合函数的特定结构上，高效应用链式法则来计算梯度的一套递归算法。</strong></p>
+<p>链式法则是微积分中用于计算复合函数导数的规则。如果有一个复合函数 ( y &#x3D; f(g(x)) )，那么 ( y ) 关于 ( x ) 的导数为：<br>$$<br>\frac{dy}{dx} &#x3D; \frac{dy}{dg} \cdot \frac{dg}{dx}<br>$$<br><img src="https://s2.loli.net/2025/11/10/BSX14FvP3EKsZA5.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="优化与学习"><a href="#优化与学习" class="headerlink" title="优化与学习"></a>优化与学习</h1><p>现在，我们需要知道一个神经网络的每baoz个连接上的权值是如何得到的。我们可以说神经网络是一个模型，那么这些权值就是模型的参数，也就是 模型要学习的东西。然而，一个神经网络的连接方式、网络的层数、每层的节点数这些参数，则不是学习出来的，而是人为事先设置的。对于这 些人为设置的参数，我们称之为超参数(Hyper-Parameters) 。</p>
+<blockquote>
+<p>损失函数—梯度下降算法——随机梯度下降—非凸优化—-(动量随机下降—学习率—-自动调整学习率)—adam算法</p>
+<p>归一化&#x2F;初始化—梯度消失&#x2F;梯度爆炸</p>
+</blockquote>
+<h1 id="非线性与特征学习"><a href="#非线性与特征学习" class="headerlink" title="非线性与特征学习"></a>非线性与特征学习</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/abaelhe/p/18729316">SciTech-EECS-BigDataAIML-NN(神经网络): 常用的18种Activation(激活函数) - abaelhe - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://myedgetech.com/100-deep-learning-terms/term-2/">激活函数 (Activation Function) - MyEdgeTech</a></p>
+</blockquote>
+<p>当面对的数据集不是<strong>线性可分</strong>的时候，『感知器规则』可能无法收敛，这意味着我们永远也无法完成一个感知器的训练。为了解决这个问题，我们使用一个<strong>可导</strong>的<strong>线性函数</strong>(激活函数)来替代感知器的<strong>阶跃函数</strong>，这种感知器就叫做<strong>线性单元</strong>。线性单元在面对线性不可分的数据集时，会收敛到一个最佳的近似上。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 导入PyTorch库</span><br><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn<br><br><span class="hljs-comment"># 定义输入层大小、隐藏层大小、输出层大小和批量大小</span><br>n_in, n_h, n_out, batch_size = <span class="hljs-number">10</span>, <span class="hljs-number">5</span>, <span class="hljs-number">1</span>, <span class="hljs-number">10</span><br><br><span class="hljs-comment"># 创建虚拟输入数据和目标数据</span><br>x = torch.randn(batch_size, n_in)  <span class="hljs-comment"># 随机生成输入数据</span><br>y = torch.tensor([[<span class="hljs-number">1.0</span>], [<span class="hljs-number">0.0</span>], [<span class="hljs-number">0.0</span>], <br>                 [<span class="hljs-number">1.0</span>], [<span class="hljs-number">1.0</span>], [<span class="hljs-number">1.0</span>], [<span class="hljs-number">0.0</span>], [<span class="hljs-number">0.0</span>], [<span class="hljs-number">1.0</span>], [<span class="hljs-number">1.0</span>]])  <span class="hljs-comment"># 目标输出数据</span><br><br><span class="hljs-comment"># 创建顺序模型，包含线性层、ReLU激活函数和Sigmoid激活函数</span><br>model = nn.Sequential(<br>   nn.Linear(n_in, n_h),  <span class="hljs-comment"># 输入层到隐藏层的线性变换</span><br>   nn.ReLU(),            <span class="hljs-comment"># 隐藏层的ReLU激活函数</span><br>   nn.Linear(n_h, n_out),  <span class="hljs-comment"># 隐藏层到输出层的线性变换</span><br>   nn.Sigmoid()           <span class="hljs-comment"># 输出层的Sigmoid激活函数</span><br>)<br><br><span class="hljs-comment"># 定义均方误差损失函数和随机梯度下降优化器</span><br>criterion = torch.nn.MSELoss()<br>optimizer = torch.optim.SGD(model.parameters(), lr=<span class="hljs-number">0.01</span>)  <span class="hljs-comment"># 学习率为0.01</span><br><br><span class="hljs-comment"># 执行梯度下降算法进行模型训练</span><br><span class="hljs-keyword">for</span> epoch <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">50</span>):  <span class="hljs-comment"># 迭代50次</span><br>   y_pred = model(x)  <span class="hljs-comment"># 前向传播，计算预测值</span><br>   loss = criterion(y_pred, y)  <span class="hljs-comment"># 计算损失</span><br>   <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;epoch: &#x27;</span>, epoch, <span class="hljs-string">&#x27;loss: &#x27;</span>, loss.item())  <span class="hljs-comment"># 打印损失值</span><br><br>   optimizer.zero_grad()  <span class="hljs-comment"># 清零梯度</span><br>   loss.backward()  <span class="hljs-comment"># 反向传播，计算梯度</span><br>   optimizer.step()  <span class="hljs-comment"># 更新模型参数</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="残差网络详解"><a href="#残差网络详解" class="headerlink" title="残差网络详解"></a>残差网络详解</h1><p>残差网络通过简单的<strong>快捷连接</strong>机制，巧妙地解决了深度神经网络的训练难题。其核心价值在于：<strong>让网络专注于学习输入与输出之间的变化部分，而非重复学习已经存在的特征表示</strong>。</p>
+<p><img src="https://s2.loli.net/2025/11/30/kJsI2eDn8xUauoz.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="深度神经网络的核心问题"><a href="#深度神经网络的核心问题" class="headerlink" title="深度神经网络的核心问题"></a>深度神经网络的核心问题</h3><p>在残差网络提出之前，深度神经网络面临一个严峻的<strong>退化问题</strong>：随着网络层数不断增加，模型的性能不仅没有提升，反而出现下降。</p>
+<p><strong>实验观察：</strong></p>
+<ul>
+<li>20层网络：训练误差 8%，测试误差 12%</li>
+<li>56层网络：训练误差 27%，测试误差 33% （性能更差！）</li>
+</ul>
+<p><strong>关键洞察：</strong> 这不是过拟合问题（因为训练误差也在上升），而是<strong>优化困难</strong>——深层网络变得极其难以训练。</p>
+<h3 id="残差网络的核心思想"><a href="#残差网络的核心思想" class="headerlink" title="残差网络的核心思想"></a><strong>残差网络的核心思想</strong></h3><p>残差网络的革命性创新在于引入了<strong>残差学习</strong>概念：</p>
+<p><strong>不再让网络直接学习目标映射 H(x)，而是学习目标映射与输入x之间的差值（残差）F(x) &#x3D; H(x) - x，然后通过快捷连接实现 H(x) &#x3D; F(x) + x。</strong></p>
+<h3 id="残差块的结构设计"><a href="#残差块的结构设计" class="headerlink" title="残差块的结构设计"></a><strong>残差块的结构设计</strong></h3><h4 id="传统网络层："><a href="#传统网络层：" class="headerlink" title="传统网络层："></a><strong>传统网络层：</strong></h4><figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs 1c">输出 = f(输入)  <span class="hljs-meta"># 直接学习复杂的映射关系</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="残差块："><a href="#残差块：" class="headerlink" title="残差块："></a><strong>残差块：</strong></h4><figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs llvm">输入 <span class="hljs-keyword">x</span><br>    ↓<br>    ┌───────── 权重层 ─────────┐<br>    ↓                        ↓<br>卷积/全连接 → 激活函数 → 卷积/全连接 → F(<span class="hljs-keyword">x</span>)<br>    ↓                        ↓ (+)<br>    └───────── 快捷连接 ─────────┘<br>    ↓<br>输出 <span class="hljs-operator">=</span> F(<span class="hljs-keyword">x</span>) + <span class="hljs-keyword">x</span><br>    ↓<br>激活函数<br></code></pre></td></tr></table></figure>
+
+<h3 id="为什么残差连接如此有效？"><a href="#为什么残差连接如此有效？" class="headerlink" title="为什么残差连接如此有效？"></a><strong>为什么残差连接如此有效？</strong></h3><h4 id="解决梯度消失问题："><a href="#解决梯度消失问题：" class="headerlink" title="解决梯度消失问题："></a><strong>解决梯度消失问题：</strong></h4><p>在反向传播时，梯度计算发生根本变化：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs llvm">传统网络：∂loss/∂<span class="hljs-keyword">x</span> <span class="hljs-operator">=</span> ∂loss/∂y · ∂y/∂<span class="hljs-keyword">x</span><br>残差网络：∂loss/∂<span class="hljs-keyword">x</span> <span class="hljs-operator">=</span> ∂loss/∂y · (∂F/∂<span class="hljs-keyword">x</span> + <span class="hljs-number">1</span>)<br><br>由于存在 <span class="hljs-string">&quot;+1&quot;</span> 项，即使 ∂F/∂<span class="hljs-keyword">x</span> 趋近于<span class="hljs-number">0</span>，梯度也不会完全消失<br></code></pre></td></tr></table></figure>
+
+<h4 id="恒等映射的保障机制："><a href="#恒等映射的保障机制：" class="headerlink" title="恒等映射的保障机制："></a><strong>恒等映射的保障机制：</strong></h4><ul>
+<li>如果某个残差块是多余的，网络可以轻松学习到 F(x) &#x3D; 0</li>
+<li>此时输出 &#x3D; 0 + x &#x3D; x （相当于跳过该层）</li>
+<li>网络获得了<strong>自动选择深度</strong>的能力</li>
+</ul>
+<h3 id="残差网络的数学表达"><a href="#残差网络的数学表达" class="headerlink" title="残差网络的数学表达"></a><strong>残差网络的数学表达</strong></h3><p><strong>基本残差块：</strong></p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">y</span> = F(x, &#123;W_i&#125;) + x<br></code></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><code>x</code>：输入特征</li>
+<li><code>y</code>：输出特征</li>
+<li><code>F(x, &#123;W_i&#125;)</code>：需要学习的残差映射函数</li>
+<li><code>+ x</code>：快捷连接（恒等映射）</li>
+</ul>
+<p><strong>维度不匹配时的处理：</strong></p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">y</span> = F(x, &#123;W_i&#125;) + W_s · x<br></code></pre></td></tr></table></figure>
+
+<p>通过投影矩阵 <code>W_s</code> 来调整输入维度。</p>
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.zybuluo.com/hanbingtao/note/476663">零基础入门深度学习(3) - 神经网络和反向传播算法 - 作业部落 Cmd Markdown 编辑阅读器</a></p>
+<p><a target="_blank" rel="noopener" href="https://zh.d2l.ai/chapter_deep-learning-computation/index.html">5. 深度学习计算 — 动手学深度学习 2.0.0 documentation</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1qB4y1e7GJ?spm_id_from=333.788.videopod.sections&vd_source=c7eb02093a12168065eed3a57c6ec35c">5分钟深度学习] #03 激活函数_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV16x411V7Qg/?spm_id_from=333.1391.0.0&p=2">下篇 反向传播的微积分原理_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Ds4y1M7MM/?spm_id_from=333.1391.0.0">【深度学习】感知机，神经网络，反向传播算法，梯度下降法等，用人话讲一些深度学习最简单最基础的内容_哔哩哔哩_bilibili</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1yG411x7Cc/?spm_id_from=333.1391.0.0">5分钟深度学习] #02 反向传播算法_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/charlotte77/p/5629865.html">一文弄懂神经网络中的反向传播法——BackPropagation - Charlotte77 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/115571464">(83 封私信 &#x2F; 94 条消息) 深度学习 | 反向传播详解 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1QAjmzCEgx/?spm_id_from=333.337.search-card.all.click&vd_source=c7eb02093a12168065eed3a57c6ec35c">快速学会BP神经网络正向传播与反向传播数学过程(考虑偏置系数与sigmoid非线性变换) 梯度下降_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/447113449">【深度学习篇】：前向传播（forward）和反向传播（backward） - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/ShenGuanXiang/FeedforwardNeuralNetwork">ShenGuanXiang&#x2F;FeedforwardNeuralNetwork: 手搓神经网络</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1bV41177ap/?spm_id_from=333.337.search-card.all.click&vd_source=c7eb02093a12168065eed3a57c6ec35c">29 残差网络 ResNet【动手学深度学习v2】_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1m4rsYdENF/?spm_id_from=333.337.search-card.all.click&vd_source=c7eb02093a12168065eed3a57c6ec35c">一个视频彻底搞懂残差网络ResNet_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1vb4y1k7BV/?spm_id_from=333.337.search-card.all.click&vd_source=c7eb02093a12168065eed3a57c6ec35c">【精读AI论文】ResNet深度残差网络_哔哩哔哩_bilibili</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="category-chain-item">人工智能</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="category-chain-item">深度学习</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>全连接与残差神经网络</div>
+      <div>https://hermes37.vercel.app/2025/07/06/工科知识库/人工智能/深度学习/全连接与残差神经网络/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/06/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" title="卷积神经网络">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">卷积神经网络</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/06/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/" title="支持向量机">
+                        <span class="hidden-mobile">支持向量机</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

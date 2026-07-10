@@ -1,0 +1,2127 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="服务注册演化历史在前面的gRPC框架 - The Peak Tower中我们简单谈到了有关gRPC的静态注册（手动配置IP和端口），诸如：  可以看到grpc示例程序之所以成功的有限制条件：  我们知道服务端已经正常启动 我们知道了服务端的ip和端口  但随着网站规模的逐渐扩大，微服务之间的关联度日渐复杂：  传统 gRPC 静态注册服务的局限性：  新加一个服务  在传统的 gRPC 静态注册模">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务全解">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/05/25/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/DevOps/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%85%A8%E8%A7%A3/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="服务注册演化历史在前面的gRPC框架 - The Peak Tower中我们简单谈到了有关gRPC的静态注册（手动配置IP和端口），诸如：  可以看到grpc示例程序之所以成功的有限制条件：  我们知道服务端已经正常启动 我们知道了服务端的ip和端口  但随着网站规模的逐渐扩大，微服务之间的关联度日渐复杂：  传统 gRPC 静态注册服务的局限性：  新加一个服务  在传统的 gRPC 静态注册模">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/qS9gijZv374Qcwb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/rHlDXpySfstd4P9.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/LRFYoyXh1ldsnfz.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/CPOeHVW53wGASQq.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/W8L9VC5PStxufa6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/ZV7l96nM1K285ih.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/NDLBkiO9o3vFZHE.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/IeDMbLmdi2WEJkc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/qGXRBjhFQInJLHg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/IWA1QrviezLamwt.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/EJdKngBHRP5ZqXO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/c4doWfGwPsKJ8Qq.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/zYMulJTK2rnGOd3.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/JgoWwvxNiKR629l.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/Nu6AltQfhVKpEHv.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/iqQtZE8kor74pvU.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/05/OGZlDKzwHnBoN1y.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/05/Y4wrGyp9jB5H7sK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/05/TQrJ68dMk1fBUNc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/05/LKZx2gVsqMtum47.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/05/TCY3O7KoR18UBrD.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/aWtLgQ8cMON7oHu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/qvQ9PTdLpch1Gis.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/X1YKOLfTN7uCRQk.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/C1GXo5TaELtOlu6.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/yOnslfkFL1TJUXj.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/iQb2mr95aoOqBHN.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/AWDPzkULK97Gg3v.png">
+<meta property="og:image" content="https://s2.loli.net/2025/01/20/93r2wbmFQLENUSs.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/f8GKhkvwPBIiqZo.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/Cev5pGuf3MSD4Hb.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/S2zOYPECidXB8FM.png">
+<meta property="og:image" content="https://ucc.alicdn.com/pic/developer-ecology/980d85723fe44d8b8516694c6a94b8f4.gif">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/MXY5fbuSQKPdRzJ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/GNK5hp2ErMDjxJS.jpg">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/ZCS521DBIGgLARF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/odbNzM3vHeAI8Rp.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/diLU5BqgOEAH6Co.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/KOzdL2fbsEJxVSg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/cVsESRyjvNa2tZH.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/lpYWVI2qLZhD81a.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/YWm4rI9iBwKQXnZ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/IrVfhKPSoRbGsni.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/EOeor6YW1talJqS.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/sXqzVtMBnvA3GEp.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/CDAsxtTyujbi7F1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/PK9kp12ndAmZNI4.png">
+<meta property="og:image" content="https://s2.loli.net/2025/03/20/sFiRYDXlMT7Ckbn.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/MP2BfWgcNQd8JvU.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/meb84d2vZtnBVHx.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/481HAmjDlLP2swM.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/9AbSsc3Rj6VCXzG.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/03/tJgUGp3h4sefdnu.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/x4t2hPv3N8zrRqE.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/rgMUVWtS4ByXIsO.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/MdhfJgTKXjHR59v.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/DromZhUyBNaPSve.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/fDZgTpetK6hlMmH.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/iAOQPLrGKou2RHZ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/Q8IhwNxu54PGcAg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/02/04/XWbQB58LUcixvFE.png">
+<meta property="article:published_time" content="2026-05-25T13:39:03.133Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:57.451Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/03/qS9gijZv374Qcwb.png">
+  
+  
+  
+  <title>微服务全解 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="微服务全解"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          30k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          254 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">微服务全解</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="服务注册"><a href="#服务注册" class="headerlink" title="服务注册"></a>服务注册</h1><h2 id="演化历史"><a href="#演化历史" class="headerlink" title="演化历史"></a>演化历史</h2><p>在前面的<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/09/18/gRPC%E6%A1%86%E6%9E%B6/">gRPC框架 - The Peak Tower</a>中我们简单谈到了有关gRPC的静态注册（手动配置IP和端口），诸如：</p>
+<p><img src="https://s2.loli.net/2025/02/03/qS9gijZv374Qcwb.png" srcset="/img/loading.gif" lazyload alt="image-20250203153741325"></p>
+<p>可以看到grpc示例程序之所以成功的有限制条件：</p>
+<ul>
+<li>我们知道服务端已经正常启动</li>
+<li>我们知道了服务端的ip和端口</li>
+</ul>
+<p>但随着网站规模的逐渐扩大，微服务之间的关联度日渐复杂：</p>
+<p><img src="https://s2.loli.net/2025/02/03/rHlDXpySfstd4P9.png" srcset="/img/loading.gif" lazyload alt="image-20250203154311595"></p>
+<p><strong>传统 gRPC 静态注册服务的局限性：</strong></p>
+<ol>
+<li><strong>新加一个服务</strong></li>
+</ol>
+<p>在传统的 gRPC 静态注册模式下，如果想增加一个新的服务实例，需要手动配置该服务实例的<strong>IP地址和端口</strong>。这种方式有一些显著的局限性：</p>
+<ul>
+<li><strong>手动配置的复杂性</strong>：每当新增一个服务实例时，你需要手动更新客户端的配置或者服务端的配置。假设服务是跨多台机器部署的，每台机器的IP和端口都需要手动配置到客户端。这种做法显然是非常繁琐的，尤其是在服务规模较大的情况下。</li>
+<li><strong>IP 地址变化的挑战</strong>：服务实例的 IP 地址和端口是动态分配的，尤其是在容器化、云环境或者微服务架构中。每次服务实例新增时，它的 IP 地址可能发生变化，导致客户端无法获取到正确的服务地址。你必须在客户端手动更新这些信息。</li>
+<li><strong>缺乏动态性</strong>：一旦服务实例启动并被静态配置，客户端无法自动感知服务的变化。如果服务的 IP 或端口发生了变化，客户端需要重新配置，这种静态配置不能适应服务的伸缩、故障恢复等动态场景。</li>
+</ul>
+<p><strong>示例</strong>： 假设有一个微服务架构，某个服务的实例需要动态增加。当新增实例时，原本的客户端或其他服务可能并不了解新的实例存在，必须手动更新客户端的配置。假如服务实例多且频繁增加，这种方式就会变得难以管理。</p>
+<ol start="2">
+<li><strong>并发度过高（添加同一服务的机器）</strong></li>
+</ol>
+<p>当有多个服务实例需要处理大量的并发请求时，<strong>服务实例的添加</strong>与<strong>负载均衡</strong>会成为一个难题。静态注册的方式在这个场景下也存在显著的局限性：</p>
+<ul>
+<li><strong>负载均衡问题</strong>：传统的静态注册方式通常会在客户端或者服务端进行负载均衡。这要求客户端提前知道所有的服务实例地址，才能进行请求的分发。然而，随着服务实例的不断增加，维护一个包含所有服务实例的静态配置会变得越来越困难。当并发度过高时，新的服务实例会不断加入，原有的负载均衡机制可能无法实时适应这些变化，导致请求没有被均匀地分发。</li>
+<li><strong>更新滞后</strong>：当服务实例的数量发生变化时，静态配置无法及时更新，导致客户端或负载均衡器没有及时感知到新的服务实例，进而影响系统的性能。假设多个新的服务实例同时启动，且负载均衡策略未能及时更新，原本的请求可能会集中到部分实例上，导致资源过载，影响系统的可用性和稳定性。</li>
+<li><strong>并发请求的处理瓶颈</strong>：假设有大量的并发请求需要处理，而系统是基于静态注册的。如果服务的实例数不足以满足并发请求量，那么在高并发的场景下，静态注册无法进行动态扩展和缩放。你必须手动增加服务实例，并更新所有客户端的配置，而当并发量继续增加时，这种手动更新的过程可能导致系统出现<strong>瓶颈</strong>。</li>
+</ul>
+<p><strong>示例</strong>： 假设有一个微服务架构中的订单服务，它是一个高并发的服务。每当请求量增加，你需要手动添加新的服务实例，并在客户端手动配置服务实例的地址。这种方式不仅增加了运维的负担，而且每当新增的服务实例无法实时生效时，会导致请求集中到有限的几个服务实例上，影响系统的负载均衡和响应时间。</p>
+<h2 id="consul注册中心的引入"><a href="#consul注册中心的引入" class="headerlink" title="consul注册中心的引入"></a>consul注册中心的引入</h2><p><img src="https://s2.loli.net/2025/02/03/LRFYoyXh1ldsnfz.png" srcset="/img/loading.gif" lazyload alt="image-20250203163402659"></p>
+<blockquote>
+<p><strong>Consul</strong> 是一个开源的工具，用于<strong>服务发现</strong>、<strong>配置管理</strong>和<strong>健康检查</strong>。它主要用于帮助管理大规模的分布式系统，特别是微服务架构中的服务注册与发现。</p>
+</blockquote>
+<p>从上面可以看到静态注册的许多不便，而consul便是解决这些问题的一种解决方案。</p>
+<p>举个直白的例子：想象一下你想去一家餐厅预定座位，这里有两种预定方式，一种是传统的电话预定（对应 <strong>gRPC 静态注册</strong>），另一种是使用现代化的餐厅预定平台（对应 <strong>Consul</strong>）。</p>
+<p>在传统的电话预定方式中：</p>
+<ul>
+<li><strong>餐厅地址和电话是固定的</strong>：你必须知道餐厅的准确地址和电话（服务的 IP 地址和端口），然后通过电话确认座位。如果是多个餐厅，每个餐厅有固定的地址和电话，你需要手动记住或者查找这些信息。</li>
+<li><strong>服务实例增加复杂</strong>：如果有新的餐厅开业，或者某个餐厅增加了新分店，你需要手动更新每个餐厅的电话和地址，确保这些信息能够被客户知道。并且，当餐厅的座位数发生变化时，客户需要重新拨打电话确认，服务端也需要手动更新这些信息。</li>
+<li><strong>动态变化无法自动感知</strong>：如果某个餐厅因为装修或其他原因暂时关闭，你需要再次拨打电话确认是否有空位，这样的过程增加了很多人工干预。服务的动态变化（如服务实例增加、健康检查等）需要你手动调整。</li>
+</ul>
+<p>而在现代的餐厅预定平台中，系统会自动处理所有的预定流程：</p>
+<ul>
+<li><strong>服务发现和自动更新</strong>：你不需要记住餐厅的地址和电话。所有餐厅的信息（如地址、座位数、健康状况等）都集中在平台中，平台会自动更新。当餐厅新增分店或者变动时，平台会自动更新其信息，客户可以立即查询到最新的餐厅数据。</li>
+<li><strong>健康检查与动态调整</strong>：平台会自动检查每个餐厅的可用性。如果餐厅的座位数满了，或者因为某种原因暂时关闭，平台会实时调整并排除不可用的餐厅，确保你不会预定到满员或关闭的餐厅。</li>
+<li><strong>负载均衡与扩展性</strong>：如果你想预定座位，平台会根据实时情况推荐可用的餐厅，并自动分配空闲的座位。如果某个餐厅突然增加了更多座位，平台会及时更新，客户无需关心具体的餐厅地址和座位数变动，系统会自动处理服务实例的负载均衡。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/03/CPOeHVW53wGASQq.png" srcset="/img/loading.gif" lazyload alt="image-20250203160213835"></p>
+<h2 id="服务的注册与发现"><a href="#服务的注册与发现" class="headerlink" title="服务的注册与发现"></a>服务的注册与发现</h2><p>微服务注册与发现类似于生活中的”电话通讯录”的概念，它记录了通讯录服务和电话的映射关系。在分布式架构中，服务会注册进去，当服务需要调用其它服务时，就这里找到服务的地址，进行调用。</p>
+<p>步骤如下：</p>
+<ol>
+<li>你先要把”好友某某”记录在通讯录中。</li>
+<li>拨打电话的时候通过通讯录中找到”好友某某”，并拨通回电话。</li>
+<li>当好友某某电话号码更新的时候，需要通知到你，并修改通讯录服务中的号码。</li>
+</ol>
+<p>从这个过程中我们看到了一些特点：</p>
+<p>1、把 “好友某某” 的电话号码写入通讯录中，统一在通讯录中维护，后续号码变更也是更新到通讯录中，<strong>这个过程就是服务注册的过程。</strong></p>
+<p>2、后续我们通过”好友某某”就可以定位到通讯录中的电话号码，并拨通电话，<strong>这个过程理解为服务发现的过程。</strong></p>
+<p>而我们微服务架构中的服务注册与发现结构如下图所示：</p>
+<p><img src="https://s2.loli.net/2025/02/03/W8L9VC5PStxufa6.png" srcset="/img/loading.gif" lazyload alt="image-20250203162227496"></p>
+<p>图片中是一个典型的微服务架构，这个结构中主要涉及到三大角色：</p>
+<ul>
+<li>provider - 服务提供者</li>
+<li>consumer - 服务消费者</li>
+<li>register center - 注册中心</li>
+</ul>
+<p>它们之间的关系大致如下：</p>
+<ul>
+<li>每个微服务在启动时，将自己的网络地址等信息（微服务的ServiceName、IP、Port、MetaData等）注册到注册中心，注册中心存储这些数据。</li>
+<li>服务消费者从注册中心查询服务提供者的地址，并通过该地址调用服务提供者的接口。</li>
+<li>各个微服务与注册中心使用一定机制（例如心跳）通信。如果注册中心与某微服务长时间无法通信，就会注销该实例。</li>
+</ul>
+<p>优点如下：</p>
+<ul>
+<li>解耦：服务消费者跟服务提供者解耦，各自变化，不互相影响</li>
+<li>扩展：服务消费者和服务提供者增加和删除新的服务，对于双方没有任何影响</li>
+<li>中介者设计模式：用一个中介对象来封装一系列的对象交互，这是一种多对多关系的中介者模式。</li>
+</ul>
+<p>从功能上拆开主要有三块：服务注册、服务发现，和注册中心。我们一个一个来看。</p>
+<h3 id="服务注册-1"><a href="#服务注册-1" class="headerlink" title="服务注册"></a>服务注册</h3><p>如图中，为Register注册中心注册一个服务信息，会将服务的信息：ServiceName、IP、Port以及服务实例MetaData元数据信息写入到注册中心。当服务发生变化的时候，也可以更新到注册中心。可以认为服务实例是一个真正的实体的载体，服务是对这些相同能力或者相同功能服务实例的一个抽象。</p>
+<p><img src="https://s2.loli.net/2025/02/03/ZV7l96nM1K285ih.png" srcset="/img/loading.gif" lazyload alt="image-20250203162604963"></p>
+<p>代码示例：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs golang"><span class="hljs-comment">// service_register.go</span><br><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;log&quot;</span><br>	<span class="hljs-string">&quot;os&quot;</span><br>	<span class="hljs-string">&quot;time&quot;</span><br><br>	<span class="hljs-string">&quot;github.com/hashicorp/consul/api&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-comment">// 创建Consul客户端配置</span><br>	config := &amp;api.Config&#123;<br>		Address: <span class="hljs-string">&quot;127.0.0.1:8500&quot;</span>, <span class="hljs-comment">// Consul的地址</span><br>	&#125;<br><br>	<span class="hljs-comment">// 连接到Consul</span><br>	client, err := api.NewClient(config)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;连接到Consul失败: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 服务注册</span><br>	registration := &amp;api.AgentServiceRegistration&#123;<br>		ID:      <span class="hljs-string">&quot;my-service-id&quot;</span>,             <span class="hljs-comment">// 服务ID</span><br>		Name:    <span class="hljs-string">&quot;my-service&quot;</span>,                <span class="hljs-comment">// 服务名称</span><br>		Tags:    []<span class="hljs-type">string</span>&#123;<span class="hljs-string">&quot;example&quot;</span>, <span class="hljs-string">&quot;golang&quot;</span>&#125;, <span class="hljs-comment">// 服务标签</span><br>		Port:    <span class="hljs-number">8080</span>,                        <span class="hljs-comment">// 服务端口</span><br>		Address: <span class="hljs-string">&quot;127.0.0.1&quot;</span>,                 <span class="hljs-comment">// 服务地址</span><br>		Check: &amp;api.AgentServiceCheck&#123;<br>			HTTP:     <span class="hljs-string">&quot;http://127.0.0.1:8080/health&quot;</span>, <span class="hljs-comment">// 健康检查地址</span><br>			Interval: <span class="hljs-string">&quot;10s&quot;</span>,                         <span class="hljs-comment">// 健康检查间隔</span><br>		&#125;,<br>	&#125;<br><br>	<span class="hljs-comment">// 向Consul注册服务</span><br>	err = client.Agent().ServiceRegister(registration)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;注册服务失败: %v&quot;</span>, err)<br>	&#125;<br><br>	fmt.Println(<span class="hljs-string">&quot;服务已成功注册到 Consul&quot;</span>)<br><br>	<span class="hljs-comment">// 保持服务运行</span><br>	<span class="hljs-keyword">select</span> &#123;&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h3><p>服务发现实际就是我们查询已经注册好的服务提供者，比如 p-&gt;p.queryService(serviceName)，通过服务名称查询某个服务是否存在，如果存在，返回它的所有实例信息，即一组包含ip 、 port 、metadata元数据信息的endpoints信息。这一组endpoints信息一般会被缓存在本地，如果注册中心挂掉，可保证段时间内依旧可用，这是去中心化的做法。</p>
+<p>服务发现的方式一般有两种：</p>
+<ul>
+<li>拉取的方式：服务消费方（Consumer）主动向注册中心发起服务查询的请求。</li>
+<li>推送的方式：服务订阅&#x2F;通知变更（下发）：服务消费方（Consumer）主动向注册中心订阅某个服务，当注册中心中该服务信息发生变更时，注册中心主动通知消费者。</li>
+</ul>
+<p>拉取与推送方式的比较：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>拉取方式</th>
+<th>推送方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主动性</strong></td>
+<td>消费者主动查询服务信息</td>
+<td>注册中心主动通知服务信息变化</td>
+</tr>
+<tr>
+<td><strong>查询频率</strong></td>
+<td>定期查询，查询频率由消费者控制</td>
+<td>注册中心通知时触发更新，实时性强</td>
+</tr>
+<tr>
+<td><strong>负载</strong></td>
+<td>消费者需要定期发起请求，增加注册中心的负担</td>
+<td>减少了对注册中心的频繁查询，降低负载</td>
+</tr>
+<tr>
+<td><strong>实现复杂性</strong></td>
+<td>简单，易于实现</td>
+<td>较为复杂，可能需要使用长连接、消息队列等机制</td>
+</tr>
+</tbody></table>
+<p><strong>拉取方式</strong>适用于服务信息变化不频繁或服务消费者不需要实时获取服务信息更新的场景，通常比较简单。</p>
+<p><strong>推送方式</strong>适用于需要实时感知服务信息变化的场景，可以确保服务消费者获取最新的服务地址和实例信息，但实现较为复杂。</p>
+<p>代码示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// service_discovery.go</span><br><br><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;log&quot;</span><br>	<span class="hljs-string">&quot;time&quot;</span><br><br>	<span class="hljs-string">&quot;github.com/hashicorp/consul/api&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-comment">// 创建Consul客户端配置</span><br>	config := &amp;api.Config&#123;<br>		Address: <span class="hljs-string">&quot;127.0.0.1:8500&quot;</span>, <span class="hljs-comment">// Consul地址</span><br>	&#125;<br><br>	<span class="hljs-comment">// 连接到Consul</span><br>	client, err := api.NewClient(config)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;连接到Consul失败: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 获取所有服务的列表</span><br>	services, err := client.Catalog().Services(<span class="hljs-literal">nil</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;获取服务列表失败: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 打印服务信息</span><br>	fmt.Println(<span class="hljs-string">&quot;从Consul获取到的服务列表：&quot;</span>)<br>	<span class="hljs-keyword">for</span> serviceName, serviceTags := <span class="hljs-keyword">range</span> services &#123;<br>		fmt.Printf(<span class="hljs-string">&quot;服务名称: %s, 标签: %v\n&quot;</span>, serviceName, serviceTags)<br>	&#125;<br><br>	<span class="hljs-comment">// 获取 my-service 服务的详细信息</span><br>	serviceEntries, _, err := client.Catalog().Service(<span class="hljs-string">&quot;my-service&quot;</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-literal">nil</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;获取服务实例失败: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 打印服务实例信息</span><br>	fmt.Println(<span class="hljs-string">&quot;从Consul获取到的服务实例：&quot;</span>)<br>	<span class="hljs-keyword">for</span> _, entry := <span class="hljs-keyword">range</span> serviceEntries &#123;<br>		fmt.Printf(<span class="hljs-string">&quot;服务地址: %s, 服务端口: %d\n&quot;</span>, entry.ServiceAddress, entry.ServicePort)<br>	&#125;<br><br>	<span class="hljs-comment">// 模拟访问服务</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(serviceEntries) &gt; <span class="hljs-number">0</span> &#123;<br>		serviceAddress := serviceEntries[<span class="hljs-number">0</span>].ServiceAddress<br>		servicePort := serviceEntries[<span class="hljs-number">0</span>].ServicePort<br>		fmt.Printf(<span class="hljs-string">&quot;尝试访问服务 %s:%d\n&quot;</span>, serviceAddress, servicePort)<br>		<span class="hljs-comment">// 在这里可以使用 http 请求或者 grpc 调用实际的服务</span><br>	&#125;<br><br>	<span class="hljs-comment">// 保持程序运行</span><br>	<span class="hljs-keyword">select</span> &#123;&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="健康检查"><a href="#健康检查" class="headerlink" title="健康检查"></a>健康检查</h2><p><strong>Consul的健康检查</strong>是确保微服务健康运行的重要功能。它通过监控服务实例的健康状态，帮助保证只有健康的服务实例能够接收请求，而不健康的实例会被从负载均衡池中移除，防止客户端调用失败。</p>
+<p><strong>健康检查的必要性：</strong></p>
+<p>假设我们有一个电子商务系统，包含多个微服务，如<strong>订单服务</strong>、<strong>支付服务</strong>、<strong>库存服务</strong>等。这些服务可能部署在多个服务器或容器中，而这些服务可能会在运行过程中出现故障或性能下降。例如，支付服务可能因为数据库连接问题而不可用，或者库存服务由于高并发导致超时。</p>
+<p>健康检查的基本思想是<strong>让服务提供者定期报告自己的健康状态</strong>，然后注册中心根据这些报告来决定是否将服务实例从可用列表中移除。</p>
+<h3 id="健康检查的原理"><a href="#健康检查的原理" class="headerlink" title="健康检查的原理"></a>健康检查的原理</h3><ol>
+<li><strong>服务注册时定义健康检查</strong>：在服务注册到Consul时，服务提供者可以指定健康检查的配置。健康检查可以是<strong>HTTP检查</strong>、<strong>TCP检查</strong>、<strong>脚本检查</strong>等，Consul会定期执行这些健康检查。</li>
+<li><strong>健康检查定期运行</strong>：Consul通过健康检查来定期检测服务实例的可用性。如果健康检查成功（如HTTP返回状态码200），则认为服务健康；如果失败（如HTTP返回状态码500或TCP连接失败），则认为服务不健康。</li>
+<li><strong>健康状态反馈</strong>：每次健康检查的结果会更新服务在Consul中的健康状态。健康的服务实例仍然可以接受请求，而不健康的服务实例会从负载均衡池中移除。</li>
+</ol>
+<h3 id="服务注册时配置健康检查"><a href="#服务注册时配置健康检查" class="headerlink" title="服务注册时配置健康检查"></a>服务注册时配置健康检查</h3><p>当服务注册到Consul时，可以配置健康检查。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>    <span class="hljs-string">&quot;fmt&quot;</span><br>    <span class="hljs-string">&quot;log&quot;</span><br>    <span class="hljs-string">&quot;github.com/hashicorp/consul/api&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>    <span class="hljs-comment">// 创建Consul客户端配置</span><br>    config := &amp;api.Config&#123;<br>        Address: <span class="hljs-string">&quot;127.0.0.1:8500&quot;</span>, <span class="hljs-comment">// Consul 地址</span><br>    &#125;<br><br>    <span class="hljs-comment">// 连接到Consul</span><br>    client, err := api.NewClient(config)<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        log.Fatalf(<span class="hljs-string">&quot;连接到Consul失败: %v&quot;</span>, err)<br>    &#125;<br><br>    <span class="hljs-comment">// 配置健康检查</span><br>    check := &amp;api.AgentServiceCheck&#123;<br>        HTTP:     <span class="hljs-string">&quot;http://localhost:8080/health&quot;</span>,  <span class="hljs-comment">// 健康检查的URL</span><br>        Interval: <span class="hljs-string">&quot;10s&quot;</span>,                           <span class="hljs-comment">// 健康检查的间隔时间</span><br>    &#125;<br><br>    <span class="hljs-comment">// 注册服务到Consul</span><br>    serviceRegistration := &amp;api.AgentServiceRegistration&#123;<br>        ID:      <span class="hljs-string">&quot;my-service-id&quot;</span>,<br>        Name:    <span class="hljs-string">&quot;my-service&quot;</span>,<br>        Address: <span class="hljs-string">&quot;localhost&quot;</span>,<br>        Port:    <span class="hljs-number">8080</span>,<br>        Check:   check,  <span class="hljs-comment">// 将健康检查配置加入服务注册信息</span><br>    &#125;<br><br>    <span class="hljs-comment">// 将服务注册到Consul</span><br>    err = client.Agent().ServiceRegister(serviceRegistration)<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        log.Fatalf(<span class="hljs-string">&quot;服务注册失败: %v&quot;</span>, err)<br>    &#125;<br><br>    fmt.Println(<span class="hljs-string">&quot;服务已成功注册到Consul&quot;</span>)<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>在上面的例子中，<code>my-service</code> 通过HTTP健康检查（<code>http://localhost:8080/health</code>）注册到Consul。如果健康检查失败，Consul会自动标记该服务为“不健康”，并且在负载均衡时会将其排除。</p>
+<h1 id="分布式配置中心"><a href="#分布式配置中心" class="headerlink" title="分布式配置中心"></a>分布式配置中心</h1><h2 id="配置中心引入"><a href="#配置中心引入" class="headerlink" title="配置中心引入"></a>配置中心引入</h2><p>现在有一个项目使用gin进行开发的，配置文件config.yaml会在项目启动的时候被加载到内存中进行使用的。当单个实例服务时修改配置文件使用viper会很方便。</p>
+<p><img src="https://s2.loli.net/2025/02/03/NDLBkiO9o3vFZHE.png" srcset="/img/loading.gif" lazyload alt="image-20250203174112883"></p>
+<p>但当实例服务逐渐变多时，就会出现麻烦：</p>
+<p><img src="https://s2.loli.net/2025/02/03/IeDMbLmdi2WEJkc.png" srcset="/img/loading.gif" lazyload alt="image-20250203174155552"></p>
+<p>由于分布式系统的复杂，是时候引入同一的配置中心了</p>
+<p><img src="https://s2.loli.net/2025/02/03/qGXRBjhFQInJLHg.png" srcset="/img/loading.gif" lazyload alt="image-20250203174234386"></p>
+<p>分布式配置中心的好处：</p>
+<table>
+<thead>
+<tr>
+<th><strong>需求</strong></th>
+<th><strong>问题</strong></th>
+<th><strong>解决方案</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>集中管理配置</strong></td>
+<td>在微服务架构中，多个服务的配置文件管理复杂，尤其是配置变更时需要保持一致性。</td>
+<td>使用分布式配置中心（如 Nacos）集中管理配置，服务从 Nacos 拉取配置信息，简化配置管理。</td>
+</tr>
+<tr>
+<td><strong>动态配置更新</strong></td>
+<td>配置变更后需要手动重启服务，导致服务中断或配置不同步。</td>
+<td>分布式配置中心提供动态更新功能，服务可实时感知配置变化并自动刷新，避免服务中断。</td>
+</tr>
+<tr>
+<td><strong>多环境支持</strong></td>
+<td>在不同环境中（如开发、测试、生产）配置不同，手动管理易出错。</td>
+<td>分布式配置中心支持为不同环境配置不同的设置，保证各环境配置一致性并快速切换环境。</td>
+</tr>
+<tr>
+<td><strong>配置与服务解耦</strong></td>
+<td>配置与服务紧密耦合，配置变更需要修改代码或重新部署服务，增加了部署复杂性。</td>
+<td>将配置与服务解耦，服务动态获取配置，减少配置变更对服务的影响，简化部署过程。</td>
+</tr>
+<tr>
+<td><strong>高可用与容错</strong></td>
+<td>配置文件丢失或无法访问时，可能导致服务无法启动或无法正常工作，影响系统稳定性。</td>
+<td>使用集群部署提供高可用，保障配置中心稳定。Nacos 支持配置版本管理和历史记录，增强容错性。</td>
+</tr>
+<tr>
+<td><strong>动态服务发现</strong></td>
+<td>服务实例地址经常变化，如何及时获取服务实例信息并保证服务调用的正确性是一个挑战。</td>
+<td>Nacos 提供服务发现与注册功能，服务动态注册和注销，客户端可自动发现服务实例，实现自动负载均衡。</td>
+</tr>
+<tr>
+<td><strong>简化运维</strong></td>
+<td>微服务数量增加时，每个服务的配置更新繁琐，容易出错并导致配置不一致。</td>
+<td>集中管理配置，运维人员只需在配置中心更新配置，无需手动更新每个服务实例，简化运维工作。</td>
+</tr>
+</tbody></table>
+<h2 id="配置中心选型"><a href="#配置中心选型" class="headerlink" title="配置中心选型"></a>配置中心选型</h2><p>在微服务架构中，配置中心是非常重要的组件，它负责集中管理和动态更新服务的配置信息。在选择配置中心时，考虑的因素通常包括系统的复杂性、可靠性、性能要求以及与其他组件的集成能力等。常见的配置中心有 Nacos、Spring Cloud Config、Apollo 和 Consul 等，每种配置中心都有其特点和适用场景。</p>
+<p>这里由于是Golang开发重点关注apollo与nacos</p>
+<p><img src="https://s2.loli.net/2025/02/03/IWA1QrviezLamwt.png" srcset="/img/loading.gif" lazyload alt="image-20250203174634988"></p>
+<h2 id="Nacos简单使用"><a href="#Nacos简单使用" class="headerlink" title="Nacos简单使用"></a>Nacos简单使用</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://nacos.io/docs/next/quickstart/quick-start/">Nacos 快速开始 | Nacos 官网</a></p>
+</blockquote>
+<blockquote>
+<p>如何将nacos中的配置映射成go的struct</p>
+<p><a target="_blank" rel="noopener" href="https://www.bairesdev.com/tools/json2yaml/">JSON to YAML Online Converter</a></p>
+</blockquote>
+<p>参考文章：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_40905284/article/details/134291867">Go-服务注册和发现，负载均衡，配置中心_go 服务-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2487270">Nacos 工作原理-服务注册、服务发现区别和作用-腾讯云开发者社区-腾讯云</a></p>
+<h1 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h1><h2 id="什么是负载均衡"><a href="#什么是负载均衡" class="headerlink" title="什么是负载均衡"></a>什么是负载均衡</h2><p>在<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/09/16/%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C/#%E6%BC%94%E5%8C%96%E5%8E%86%E5%8F%B2">服务注册与发现(consul注册中心) - The Peak Tower</a>我们简单提到过负载均衡，这里将详细了解到底什么是负载均衡：</p>
+<p><img src="https://s2.loli.net/2025/02/03/EJdKngBHRP5ZqXO.png" srcset="/img/loading.gif" lazyload alt="image-20250203172457541"></p>
+<blockquote>
+<p><strong>微服务的负载均衡</strong>是指在微服务架构中，通过某种算法将流量或请求合理地分配到多个服务实例，以确保系统的高可用性、稳定性和性能。微服务架构中，一个服务通常会有多个实例（如部署在多个机器或容器上），负载均衡通过智能地分配流量，使得每个实例的负载尽可能均衡，从而避免某些实例过载或空闲，提升系统整体的处理能力和容错能力。</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/02/03/c4doWfGwPsKJ8Qq.png" srcset="/img/loading.gif" lazyload alt="image-20250203171339490"></p>
+<h3 id="微服务负载均衡的关键点："><a href="#微服务负载均衡的关键点：" class="headerlink" title="微服务负载均衡的关键点："></a>微服务负载均衡的关键点：</h3><ol>
+<li><strong>服务实例多样性</strong>：微服务通常会在多个实例上运行，而每个实例可能有不同的网络地址（IP地址和端口）。</li>
+<li><strong>流量分配策略</strong>：负载均衡会根据不同的算法或规则将请求分发到这些实例中。</li>
+<li><strong>动态调整</strong>：微服务系统中，服务实例的数量可能会随时变化（例如，服务扩展、缩减或故障转移），负载均衡需要实时适应这些变化。</li>
+</ol>
+<h3 id="微服务负载均衡的工作原理："><a href="#微服务负载均衡的工作原理：" class="headerlink" title="微服务负载均衡的工作原理："></a>微服务负载均衡的工作原理：</h3><ol>
+<li><strong>服务注册与发现</strong>：<ul>
+<li>在微服务架构中，每个服务实例都会在启动时将自己的信息（如IP地址、端口）注册到服务注册中心（如Consul、Eureka等）。</li>
+<li>服务消费者（调用方）通过服务发现机制查询到目标服务的多个实例，并获取到最新的服务实例信息。</li>
+</ul>
+</li>
+<li><strong>负载均衡的实现</strong>：<ul>
+<li>负载均衡通常由服务网关、API网关、或者服务代理（如Nginx、HAProxy）来实现。</li>
+<li>这些组件根据选定的负载均衡算法（如轮询、最小连接数、加权轮询等）将请求分发到不同的服务实例上。</li>
+</ul>
+</li>
+<li><strong>健康检查与故障转移</strong>：<ul>
+<li>在负载均衡中，健康检查是一个重要的环节。负载均衡器定期检查服务实例的健康状态，确保流量不会发送到已停止或故障的实例。</li>
+<li>当某个实例不可用时，负载均衡器会自动将流量转发到健康的服务实例上，保证系统的高可用性。</li>
+</ul>
+</li>
+</ol>
+<h3 id="负载均衡的类型："><a href="#负载均衡的类型：" class="headerlink" title="负载均衡的类型："></a>负载均衡的类型：</h3><ul>
+<li><strong>客户端负载均衡</strong>：客户端通过查询服务注册中心，获取可用服务实例列表，然后根据负载均衡算法选择目标实例进行调用。客户端负载均衡通常由客户端代码或客户端库（如Spring Cloud的Ribbon）来实现。</li>
+<li><strong>服务器端负载均衡</strong>：负载均衡器位于服务端，负责接收所有的客户端请求，并根据负载均衡算法将请求转发给合适的服务实例。常见的服务器端负载均衡工具包括Nginx、HAProxy、Envoy等。</li>
+</ul>
+<h2 id="负载均衡策略"><a href="#负载均衡策略" class="headerlink" title="负载均衡策略"></a>负载均衡策略</h2><h3 id="集中式load-balance"><a href="#集中式load-balance" class="headerlink" title="集中式load balance"></a>集中式load balance</h3><p>集中式LB方案，如下图。首先，服务的消费方和提供方不直接耦合，而是在服务消费者和服务提供者之间有一个独立的LB（LB通常是专门的硬件设备如F5，或者基于软件如LVS，HAproxy等实现）。</p>
+<p><img src="https://s2.loli.net/2025/02/03/zYMulJTK2rnGOd3.png" srcset="/img/loading.gif" lazyload alt="image-20250203170827330"></p>
+<p>LB上有所有服务的地址映射表，通常由运维配置注册，当服务消费方调用某个目标服务时，它向LB发起请求，由LB以某种策略（比如Round-Robin）做负载均衡后将请求转发到目标服务。</p>
+<p>服务消费方如何发现LB呢？通常的做法是通过DNS，运维人员为服务配置一个DNS域名，这个域名指向LB。<br>这种方案基本可以否决，因为它有致命的缺点：所有服务调用流量都经过load balance服务器，所以load balance服务器成了系统的单点，一旦LB发生故障对整个系统的影响是灾难性的。为了解决这个问题，必然需要对这个load balance部件做分布式处理（部署多个实例，冗余，然后解决一致性问题等全家桶解决方案），但这样做会徒增非常多的复杂度。</p>
+<h3 id="进程内load-balance"><a href="#进程内load-balance" class="headerlink" title="进程内load balance"></a>进程内load balance</h3><blockquote>
+<p>绝大多数使用这一种策略</p>
+</blockquote>
+<p>进程内load balance。将load balance的功能和算法以sdk的方式实现在客户端进程内。先看架构图：</p>
+<p><img src="https://s2.loli.net/2025/02/03/JgoWwvxNiKR629l.png" srcset="/img/loading.gif" lazyload alt="image-20250203170910243"></p>
+<p>可看到引入了第三方：服务注册中心。它做两件事：</p>
+<p>维护服务提供方的节点列表，并检测这些节点的健康度。检测的方式是：每个节点部署成功，都通知服务注册中心；然后一直和注册中心保持心跳。<br>允许服务调用方注册感兴趣的事件，把服务提供方的变化情况推送到服务调用方。这种方案下，整个load balance的过程是这样的：</p>
+<ol>
+<li>服务注册中心维护所有节点的情况。</li>
+<li>任何一个节点想要订阅其他服务提供方的节点列表，向服务注册中心注册。</li>
+<li>服务注册中心将服务提供方的列表（以长连接的方式）推送到消费方。</li>
+<li>消费方接收到消息后，在本地维护一份这个列表，并自己做load balance。</li>
+</ol>
+<p>可见，服务注册中心充当什么角色？它是唯一一个知道整个集群内部所有的节点情况的中心。所以对它的可用性要求会非常高，这个组件可以用Zookeeper实现。<br>这种方案的缺点是：每个语言都要研究一套sdk，如果公司内的服务使用的语言五花八门的话，这方案的成本会很高。第二点是：后续如果要对客户库进行升级，势必要求服务调用方修改代码并重新发布，所以该方案的升级推广有不小的阻力。</p>
+<p><img src="https://s2.loli.net/2025/02/03/Nu6AltQfhVKpEHv.png" srcset="/img/loading.gif" lazyload alt="image-20250203170621000"></p>
+<h3 id="独立进程load-balance"><a href="#独立进程load-balance" class="headerlink" title="独立进程load balance"></a>独立进程load balance</h3><p>该方案是针对第二种方案的不足而提出的一种折中方案，原理和第二种方案基本类似，不同之处是，他将LB和服务发现功能从进程内移出来，变成主机上的一个独立进程，主机上的一个或者多个服务要访问目标服务时，他们都通过同一主机上的独立LB进程做服务发现和负载均衡。如图</p>
+<p><img src="https://s2.loli.net/2025/02/03/iqQtZE8kor74pvU.png" srcset="/img/loading.gif" lazyload alt="image-20250203171037398"></p>
+<p>这个方案解决了上一种方案的问题，不需要为不同语言开发客户库，LB的升级不需要服务调用方改代码。<br>但新引入的问题是：这个组件本身的可用性谁来维护？还要再写一个watchdog去监控这个组件？另外，多了一个环节，就多了一个出错的可能，线上出问题了，也多了一个需要排查的环节。</p>
+<h2 id="常见的负载均衡算法"><a href="#常见的负载均衡算法" class="headerlink" title="常见的负载均衡算法"></a>常见的负载均衡算法</h2><p>负载均衡算法用于分配网络流量或请求到多个服务器或服务实例，确保各个服务器或服务实例之间的负载尽可能均衡，从而提高系统的可用性、可靠性和性能。常见的负载均衡算法包括以下几种：</p>
+<h3 id="1-轮询"><a href="#1-轮询" class="headerlink" title="1. 轮询"></a>1. <strong>轮询</strong></h3><p>轮询是最简单的负载均衡算法，它将请求依次分发到每个服务实例，按顺序轮流选择目标服务器。</p>
+<p><strong>工作原理</strong>：客户端请求会依次发送到下一个服务器，直到循环完成，开始从第一个服务器重新发送请求。</p>
+<h3 id="2-加权轮询"><a href="#2-加权轮询" class="headerlink" title="2. 加权轮询"></a>2. <strong>加权轮询</strong></h3><p>加权轮询是对轮询算法的扩展，允许根据每个服务器的权重来决定分配的请求数量。权重较大的服务器会承担更多的请求。</p>
+<p><strong>工作原理</strong>：每个服务器根据其权重（如性能、处理能力等）分配请求。例如，服务器A的权重为2，服务器B的权重为1，则A每接受两个请求，B接受一个请求。</p>
+<h3 id="3-最小连接数"><a href="#3-最小连接数" class="headerlink" title="3. 最小连接数"></a>3. <strong>最小连接数</strong></h3><p>该算法根据当前连接数最少的服务器进行请求分配，适用于请求处理时间差异较大的场景。</p>
+<p><strong>工作原理</strong>：每次请求都会分配给当前连接数最少的服务器。服务器处理请求时，连接数增加，处理完成时，连接数减少。</p>
+<h3 id="4-最小响应时间"><a href="#4-最小响应时间" class="headerlink" title="4. 最小响应时间"></a>4. <strong>最小响应时间</strong></h3><p>最小响应时间算法将请求分发到响应时间最短的服务实例。</p>
+<p><strong>工作原理</strong>：通过实时监测各个服务实例的响应时间，选择响应时间最短的实例来处理请求。</p>
+<h3 id="5-IP哈希"><a href="#5-IP哈希" class="headerlink" title="5. IP哈希"></a>5. <strong>IP哈希</strong></h3><p>IP哈希算法通过客户端IP地址的哈希值来选择服务实例，确保同一客户端的请求始终被发送到同一台服务器。</p>
+<p><strong>工作原理</strong>：客户端的IP地址经过哈希算法处理后，映射到服务器池中的一个特定服务器上。通过哈希算法，固定客户端与服务器之间的映射关系。</p>
+<h3 id="6-加权最小连接数"><a href="#6-加权最小连接数" class="headerlink" title="6. 加权最小连接数"></a>6. <strong>加权最小连接数</strong></h3><p>这是最小连接数算法的扩展，允许服务实例根据其权重（处理能力）接受不同数量的连接。</p>
+<p><strong>工作原理</strong>：根据每个服务器的权重，选择连接数最少的服务器。权重较大的服务器可以处理更多的连接，而权重较小的服务器则较少。</p>
+<h3 id="7-随机"><a href="#7-随机" class="headerlink" title="7. 随机"></a>7. <strong>随机</strong></h3><p>随机算法会随机选择一个服务实例来处理每个请求，简单且高效。</p>
+<p><strong>工作原理</strong>：每个请求都会随机选择一个服务器进行处理。</p>
+<h3 id="8-一致性哈希"><a href="#8-一致性哈希" class="headerlink" title="8. 一致性哈希"></a>8. <strong>一致性哈希</strong></h3><p>一致性哈希算法解决了分布式系统中的负载均衡问题，尤其是在节点增减时，可以尽量减少数据的迁移。</p>
+<p><strong>工作原理</strong>：通过一致性哈希算法，服务请求会被映射到一个虚拟的哈希环上，每个服务实例也会被映射到哈希环的某个位置。请求会被路由到与其哈希值最接近的服务实例。</p>
+<p><strong>负载均衡算法的优缺点：</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>算法</strong></th>
+<th><strong>优点</strong></th>
+<th><strong>缺点</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>轮询（Round Robin）</strong></td>
+<td>- 实现简单，易于理解。- 配置简单，无需动态监控。</td>
+<td>- 对服务实例性能不均衡时，可能导致负载不均。- 不能自动适应服务器的性能差异。</td>
+</tr>
+<tr>
+<td><strong>加权轮询（Weighted Round Robin）</strong></td>
+<td>- 适应服务器性能差异，权重大的服务器承担更多流量。- 负载分配更加灵活。</td>
+<td>- 需要手动设置服务器权重。- 如果权重设置不合理，负载可能不均衡。</td>
+</tr>
+<tr>
+<td><strong>最小连接数（Least Connections）</strong></td>
+<td>- 能有效避免请求分配到连接数过多的服务器，避免过载。- 适合处理长连接或处理时间较长的请求。</td>
+<td>- 需要实时监控每个服务器的连接数。- 对于短连接的服务不适用。</td>
+</tr>
+<tr>
+<td><strong>最小响应时间（Least Response Time）</strong></td>
+<td>- 对于响应时间较长的服务，能够更快将流量分配给健康、响应快的实例。- 对服务的负载波动较为敏感，能够实时调整。</td>
+<td>- 需要持续监测每个实例的响应时间，计算较复杂。- 如果多个实例响应时间差距小，可能无法有效提升性能。</td>
+</tr>
+<tr>
+<td><strong>IP哈希（IP Hash）</strong></td>
+<td>- 保证同一客户端的请求始终分发到同一个服务实例（适用于会话保持）。- 不需要额外的状态保持。</td>
+<td>- 客户端IP变化时，可能导致不均衡。- 不适合客户端IP变化频繁的场景。</td>
+</tr>
+<tr>
+<td><strong>加权最小连接数（Weighted Least Connections）</strong></td>
+<td>- 结合了加权轮询和最小连接数的优点，能根据服务器的性能和连接数进行智能调度。- 适应性强，可以更好地平衡负载。</td>
+<td>- 需要人工设置权重，增加配置复杂度。- 权重不合理时，可能导致部分服务器负载过重。</td>
+</tr>
+<tr>
+<td><strong>随机（Random）</strong></td>
+<td>- 实现简单且高效，适合轻量级服务。- 无需维护状态或计算负载。</td>
+<td>- 随机性较强，负载可能不均衡，尤其在实例多时。- 对服务器性能差异没有感知，容易导致某些服务器负载过重。</td>
+</tr>
+<tr>
+<td><strong>一致性哈希（Consistent Hashing）</strong></td>
+<td>- 适合动态增减节点，减少数据迁移。- 负载均衡效果好，且能保证请求尽量路由到相同实例。</td>
+<td>- 实现较复杂，需要设计合适的哈希算法。- 适合于节点频繁变化的场景，负载均衡效果有限于请求分配的稳定性。</td>
+</tr>
+</tbody></table>
+<h2 id="grpc负载均衡策略"><a href="#grpc负载均衡策略" class="headerlink" title="grpc负载均衡策略"></a>grpc负载均衡策略</h2><blockquote>
+<p>grpc的负载均衡策略:<a target="_blank" rel="noopener" href="https://github.com/grpc/grpc/blob/master/doc/load-balancing.md">文档</a></p>
+<p>go使用grpc负载均衡:<a target="_blank" rel="noopener" href="https://github.com/mbobakov/grpc-consul-resolver">文档</a></p>
+<p>关于serverconfig:<a target="_blank" rel="noopener" href="https://github.com/grpc/grpc/blob/master/doc/service_config.md">官方文档</a></p>
+</blockquote>
+<p>简单代码示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br>	<span class="hljs-keyword">import</span> (<br>		<span class="hljs-string">&quot;OldPackageTest/grpclb_test/proto&quot;</span><br>		<span class="hljs-string">&quot;context&quot;</span><br>		<span class="hljs-string">&quot;fmt&quot;</span><br>		<span class="hljs-string">&quot;log&quot;</span><br>		_ <span class="hljs-string">&quot;github.com/mbobakov/grpc-consul-resolver&quot;</span> <span class="hljs-comment">// It&#x27;s important</span><br>		<span class="hljs-string">&quot;google.golang.org/grpc&quot;</span><br>	)<br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	conn, err := grpc.Dial(<br>	<span class="hljs-string">&quot;consul://192.168.1.103:8500/user-srv?wait=14s&amp;tag=srv&quot;</span>,<br>	grpc.WithInsecure(),<br>	grpc.WithDefaultServiceConfig(<span class="hljs-string">`&#123;&quot;loadBalancingPolicy&quot;: &quot;round_robin&quot;&#125;`</span>),<br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatal(err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> conn.Close()<br>	<span class="hljs-keyword">for</span> i := <span class="hljs-number">0</span>; i&lt;<span class="hljs-number">10</span>; i++&#123;<br>		userSrvClient := proto.NewUserClient(conn)<br>		rsp, err := userSrvClient.GetUserList(context.Background(), &amp;proto.PageIn<br>		Pn: <span class="hljs-number">1</span>,<br>		PSize: <span class="hljs-number">2</span>,<br>	&#125;)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br>	<span class="hljs-keyword">for</span> index, data := <span class="hljs-keyword">range</span> rsp.Data&#123;<br>		fmt.Println(index, data)<br>		&#125;<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+
+
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000014963576">Go微服务 - 第七部分 - 服务发现和负载均衡 - Go语言 - SegmentFault 思否</a></p>
+<h1 id="api网关和部署"><a href="#api网关和部署" class="headerlink" title="api网关和部署"></a>api网关和部署</h1><blockquote>
+<p>在微服务架构中，1个系统会被拆分为了很多个微服务。如果每1个微服务都直接对外暴露出来，让用户直接访问这些微服务；那么如何对用户的身份和权限进行鉴定？如何对微服务中的访问流量进行限流？此时我们需要1个统一的入口（网关服务）以上问题将迎刃而解；</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/02/05/OGZlDKzwHnBoN1y.png" srcset="/img/loading.gif" lazyload alt="image-20250205095411384"></p>
+<h2 id="简单的场景"><a href="#简单的场景" class="headerlink" title="简单的场景"></a>简单的场景</h2><p>试想这样的情景，小崩同学要在一个网站上面购买东西，首先他输入了网址A访问了网站首页，然后小崩需要登录进行购买，但是这时候网站并不会自动跳转登录页面，因为这时候小崩需要访问的是登录微服务，需要另外输入新的网址B来进入登录界面。这时候小崩说，我只知道<a target="_blank" rel="noopener" href="http://www.jd.com啊,我哪里知道京东的登录网址是什么.这时候小崩进行了一番搜索,终于获得了京东的登录界面网址,然后小崩成功登录了京东账号,点击结算,这时候需要访问的是订单微服务,而系统又提示小崩需要输入网址c进入订单微服务,这时候小崩实在蚌埠住了,一怒之下放弃了剁手,直接省下999./">www.jd.com啊，我哪里知道京东的登录网址是什么。这时候小崩进行了一番搜索，终于获得了京东的登录界面网址，然后小崩成功登录了京东账号，点击结算，这时候需要访问的是订单微服务，而系统又提示小崩需要输入网址C进入订单微服务，这时候小崩实在蚌埠住了，一怒之下放弃了剁手，直接省下999。</a></p>
+<p> 假如没有网关，你就可能会遇到像小崩那样的情景，相信这样你也会绷不住的，因为每一个微服务都有自己的访问地址，我们完成一个业务需求可能需要调用多个微服务，没有网关的场景是这样的：</p>
+<p><img src="https://s2.loli.net/2025/02/05/Y4wrGyp9jB5H7sK.png" srcset="/img/loading.gif" lazyload alt="image-20250205095032660"></p>
+<p>这样的结构存在如下问题：</p>
+<ul>
+<li>我们完成一个业务需求需要访问很多个微服务，而这些全部都要我们自己一个个手动完成，增加了客户端的复杂性。</li>
+<li>存在跨域请求问题，处理相对复杂。</li>
+<li>订单微服务需要依赖于用户已经登录的情况，这时候就存在一个认证问题，因为每个微服务都需要单独进行认证。</li>
+</ul>
+<p>这时候引入网关，场景发生了变化：</p>
+<p><img src="https://s2.loli.net/2025/02/05/TQrJ68dMk1fBUNc.png" srcset="/img/loading.gif" lazyload alt="image-20250205095116233"></p>
+<p>这时候我们有业务需求我们只需要直接访问网关即可，然后网关会根据实际请求再去访问不同的微服务，这样我们只需要与网关进行交互，只需要记住网关的地址，这样就解决了用户交互复杂问题；同时所有的认证请求都统一在网关进行认证，这时候就解决了认证困难问题；最后，我们还能通过网关对所有微服务进行监控，实时掌握各个微服务的运行状况，便于管理。</p>
+<p><strong>微服务网关的核心功能：</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>核心功能</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>请求路由</strong></td>
+<td>微服务网关根据客户端的请求，将请求路由到相应的微服务实例。这使得客户端不需要直接与每个微服务通信，而是通过网关集中管理路由逻辑。</td>
+</tr>
+<tr>
+<td><strong>负载均衡</strong></td>
+<td>微服务网关可以将流量均衡地分发到多个服务实例，以防止单个实例过载，提高系统的可用性和性能。常见的负载均衡策略有轮询、加权轮询等。</td>
+</tr>
+<tr>
+<td><strong>服务聚合</strong></td>
+<td>微服务网关可以将来自多个微服务的请求结果进行聚合，并将最终结果返回给客户端。例如，前端请求一个页面时，网关可以从多个服务获取数据，并合并后返回。</td>
+</tr>
+<tr>
+<td><strong>身份验证与授权</strong></td>
+<td>微服务网关负责处理所有请求的身份验证和授权，确保用户权限合法。它可以集成OAuth2.0、JWT等机制，保证用户身份的安全性。</td>
+</tr>
+<tr>
+<td><strong>API 网关</strong></td>
+<td>作为统一的API接口层，微服务网关将多个微服务的接口合并成统一的API，简化客户端与多个微服务的交互。</td>
+</tr>
+<tr>
+<td><strong>服务发现与注册</strong></td>
+<td>微服务网关通常与服务注册中心（如Consul、Eureka等）集成，能够动态获取微服务的实例信息，并根据服务发现的结果进行动态路由。</td>
+</tr>
+<tr>
+<td><strong>故障隔离与熔断</strong></td>
+<td>网关可以通过实现熔断机制、重试机制、降级等手段，防止服务故障蔓延。通过监控每个服务的健康状况，及时处理故障并保证系统的高可用性。</td>
+</tr>
+<tr>
+<td><strong>安全防护</strong></td>
+<td>微服务网关可以提供安全功能，如防火墙、DDoS防护、限流等，确保服务不受到恶意攻击，并有效控制流量。</td>
+</tr>
+<tr>
+<td><strong>请求与响应的过滤</strong></td>
+<td>微服务网关可以在请求和响应过程中进行拦截、修改和过滤。常见功能包括日志记录、请求头管理、数据格式转换等。</td>
+</tr>
+<tr>
+<td><strong>流量控制与限流</strong></td>
+<td>为了避免流量冲击某些服务，微服务网关可以进行流量控制和限流，防止服务在高并发下过载。常见的限流策略有令牌桶、漏斗算法等。</td>
+</tr>
+<tr>
+<td><strong>API版本管理</strong></td>
+<td>微服务网关可以处理不同版本的API请求，根据版本信息路由到对应的微服务版本，简化了API的版本控制和更新过程。</td>
+</tr>
+<tr>
+<td><strong>日志记录与监控</strong></td>
+<td>微服务网关可以统一记录所有请求和响应的日志，并集成到监控系统中，便于后续的性能分析、故障排查和用户行为分析。</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2025/02/05/LKZx2gVsqMtum47.png" srcset="/img/loading.gif" lazyload alt="image-20250205095958739"></p>
+<p>典型的微服务架构：</p>
+<p><img src="https://s2.loli.net/2025/02/05/TCY3O7KoR18UBrD.png" srcset="/img/loading.gif" lazyload alt="image-20250205095916945"></p>
+<h2 id="API网关"><a href="#API网关" class="headerlink" title="API网关"></a>API网关</h2><h3 id="技术选型"><a href="#技术选型" class="headerlink" title="技术选型"></a>技术选型</h3><p>先简单看一下市面上常用的API网关：</p>
+<p><img src="https://s2.loli.net/2025/02/04/aWtLgQ8cMON7oHu.png" srcset="/img/loading.gif" lazyload alt="image-20250204221937331"></p>
+<h3 id="API网关对比"><a href="#API网关对比" class="headerlink" title="API网关对比"></a>API网关对比</h3><table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>Kong</strong></th>
+<th><strong>Nginx</strong></th>
+<th><strong>Zuul</strong></th>
+<th><strong>Traefik</strong></th>
+<th><strong>Spring Cloud Gateway</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主要功能</strong></td>
+<td>API 管理，流量控制，身份验证，路由</td>
+<td>反向代理，负载均衡，缓存，安全</td>
+<td>动态路由，过滤器，监控，认证</td>
+<td>服务发现，动态路由，负载均衡，API 管理</td>
+<td>路由、认证、限流、监控、API 管理</td>
+</tr>
+<tr>
+<td><strong>开源&#x2F;商用</strong></td>
+<td>开源（有企业版）</td>
+<td>开源（有企业版）</td>
+<td>开源</td>
+<td>开源（支持 Docker 和 Kubernetes）</td>
+<td>开源（与 Spring Cloud 配合使用）</td>
+</tr>
+<tr>
+<td><strong>服务发现</strong></td>
+<td>支持（与 Consul、Kubernetes 等集成）</td>
+<td>不支持（需与外部服务发现集成）</td>
+<td>支持（与 Eureka、Consul、Zookeeper 等集成）</td>
+<td>支持（与 Kubernetes 集成）</td>
+<td>支持（与 Spring Cloud 集成）</td>
+</tr>
+<tr>
+<td><strong>负载均衡</strong></td>
+<td>支持（内建负载均衡器）</td>
+<td>支持（内建负载均衡器）</td>
+<td>支持（与 Ribbon、Eureka 等集成）</td>
+<td>支持（与 Kubernetes 服务发现结合）</td>
+<td>支持（与 Ribbon、Spring Cloud 集成）</td>
+</tr>
+<tr>
+<td><strong>认证与安全</strong></td>
+<td>支持（OAuth、API Key、JWT、ACL）</td>
+<td>需要配合其他工具实现</td>
+<td>支持（OAuth、JWT、基本认证等）</td>
+<td>支持（JWT、OAuth2、Basic Auth）</td>
+<td>支持（OAuth、JWT、Basic Auth 等）</td>
+</tr>
+<tr>
+<td><strong>动态路由</strong></td>
+<td>支持（通过插件配置）</td>
+<td>需要手动配置</td>
+<td>支持（根据请求动态路由到微服务）</td>
+<td>支持（Kubernetes 动态路由）</td>
+<td>支持（基于 Spring 配置）</td>
+</tr>
+<tr>
+<td><strong>监控与日志</strong></td>
+<td>支持（内建监控与日志集成）</td>
+<td>支持（需要第三方插件）</td>
+<td>支持（通过 Spring Cloud 集成）</td>
+<td>支持（与 Prometheus 集成）</td>
+<td>支持（与 Spring Boot Actuator 集成）</td>
+</tr>
+<tr>
+<td><strong>插件生态系统</strong></td>
+<td>丰富（有很多官方插件和社区插件）</td>
+<td>简单（需要通过 Lua 或其他方式扩展）</td>
+<td>有插件支持，但较为基础</td>
+<td>丰富（特别是与容器化环境配合时）</td>
+<td>较为基础（集成 Spring Cloud 服务）</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>微服务架构，高流量、高可用性场景</td>
+<td>静态内容服务，反向代理</td>
+<td>微服务架构，Spring Cloud 系统中使用</td>
+<td>容器化应用，Kubernetes 集群</td>
+<td>Spring Cloud 环境中，微服务架构</td>
+</tr>
+<tr>
+<td><strong>负载均衡策略</strong></td>
+<td>轮询、随机、最小连接数、权重等</td>
+<td>轮询、加权轮询、IP 哈希等</td>
+<td>基于 Ribbon，支持多种负载均衡策略</td>
+<td>基于 Kubernetes，支持多种负载均衡策略</td>
+<td>基于 Spring Cloud，支持 Ribbon、Nginx 等</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>Kong</strong> 和 <strong>Traefik</strong> 更适合大规模微服务架构，具有强大的动态路由和插件生态，能够适应容器化环境。</li>
+<li><strong>Nginx</strong> 更适合传统应用场景，提供高性能的负载均衡和反向代理服务。</li>
+<li><strong>Zuul</strong> 和 <strong>Spring Cloud Gateway</strong> 是 Spring Cloud 生态中的优秀选择，适合 Java 微服务架构，具有很好的路由和过滤功能。</li>
+</ul>
+<p>在选择 API 网关时，考虑应用的具体需求、技术栈（如 Spring 或 Kubernetes）以及性能要求是至关重要的。</p>
+<h3 id="kong了解与使用"><a href="#kong了解与使用" class="headerlink" title="kong了解与使用"></a>kong了解与使用</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://geekdaxue.co/read/kong-docs-cn/GETTING-STARTED-introduction.md">欢迎使用kong - 《微服务 Api 网关 Kong 最新文档中文文档》 - 极客文档</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.konghq.com/gateway/latest/">Kong Gateway | Kong Docs</a></p>
+</blockquote>
+<h2 id="项目部署"><a href="#项目部署" class="headerlink" title="项目部署"></a>项目部署</h2><h3 id="敏捷开发"><a href="#敏捷开发" class="headerlink" title="敏捷开发"></a>敏捷开发</h3><p><strong>敏捷开发</strong>是一种软件开发方法论，强调通过短周期的迭代和持续的客户反馈来逐步交付高质量的软件。敏捷开发注重与客户的紧密合作，强调快速响应变化而非严格遵循预定的计划。敏捷开发方法以小团队为单位，围绕快速、灵活、持续改进的原则进行工作。</p>
+<h4 id="敏捷开发的核心原则"><a href="#敏捷开发的核心原则" class="headerlink" title="敏捷开发的核心原则"></a>敏捷开发的核心原则</h4><ol>
+<li><strong>客户合作胜过合同谈判</strong>：强调与客户的持续沟通，了解客户需求，并根据客户反馈调整开发方向。</li>
+<li><strong>欢迎变化</strong>：即使在开发后期，需求发生变化，也能够快速适应并调整开发计划。</li>
+<li><strong>交付可工作的软件</strong>：每个迭代周期都要交付可工作的软件版本，确保产品持续进展。</li>
+<li><strong>团队自组织</strong>：团队成员可以自主决定如何组织工作，促进更高的效率和创新。</li>
+<li><strong>频繁交付</strong>：每个迭代周期结束时都会交付一个增量，确保持续交付价值。</li>
+<li><strong>持续改进</strong>：团队定期进行回顾，不断优化工作流程和开发效率。</li>
+</ol>
+<p>举个例子</p>
+<p>假设我们正在开发一款移动应用——比如一个电子商务购物App。应用的开发周期很长，客户希望能够先尽早发布一些功能，以便尽早让用户体验，并根据用户反馈逐步改进。</p>
+<p>传统开发方法：</p>
+<ul>
+<li>开发团队可能会先进行详细的需求分析、设计和规划，花费几个月的时间才能开发出一个完整的产品，然后再交付给客户。这种方式意味着整个开发周期较长，客户不能在开发过程中实时得到反馈。</li>
+</ul>
+<p>敏捷开发：</p>
+<ul>
+<li><strong>迭代过程</strong>：我们分成多个短期的开发周期（如2周的迭代），每个迭代周期结束时交付一个小功能或改进版本。例如，第一轮迭代可能仅开发用户注册、登录和浏览商品的基本功能，第二轮迭代则可能加入购物车、支付、订单历史等功能。</li>
+<li><strong>客户反馈</strong>：在每次迭代后，团队会向客户演示当前的功能，收集客户的反馈意见。比如，在第一个迭代结束后，客户可能提出用户登录流程需要简化，或者商品推荐的算法需要优化。</li>
+<li><strong>调整与优化</strong>：根据客户反馈，团队在后续迭代中快速调整，加入新的功能或优化现有功能。假设客户希望在购物车中增加推荐商品的功能，开发团队会在下一个迭代中加入此功能。</li>
+<li><strong>持续交付</strong>：每个迭代周期结束时都会交付可工作的产品，客户可以尽早体验到应用，并为未来的开发提供有价值的反馈。</li>
+</ul>
+<h4 id="敏捷开发中的持续集成痛点"><a href="#敏捷开发中的持续集成痛点" class="headerlink" title="敏捷开发中的持续集成痛点"></a>敏捷开发中的持续集成痛点</h4><table>
+<thead>
+<tr>
+<th><strong>痛点</strong></th>
+<th><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>自动化发布流程不完善</strong></td>
+<td>发布和部署过程仍然依赖手动操作，容易引入人为错误，且效率低下。缺乏完善的自动化流程使得发布过程繁琐且难以追溯。</td>
+</tr>
+<tr>
+<td><strong>环境配置不一致</strong></td>
+<td>开发环境、测试环境和生产环境的配置不一致，导致发布后可能出现无法预见的问题。例如，数据库版本、依赖服务等环境差异。</td>
+</tr>
+<tr>
+<td><strong>发布频率低</strong></td>
+<td>发布周期过长，导致新功能或bug修复无法及时交付。频繁的发布被视为过于复杂，导致公司推出新版本的速度变慢。</td>
+</tr>
+<tr>
+<td><strong>发布失败难以回滚</strong></td>
+<td>发布后遇到问题时，回滚的流程不清晰或不可自动化。手动回滚增加了运维的负担，也容易在回滚过程中引入更多的错误。</td>
+</tr>
+<tr>
+<td><strong>依赖管理复杂</strong></td>
+<td>发布时依赖库、容器镜像等第三方依赖版本难以控制和管理，导致发布过程中可能出现版本冲突，或者在不同环境中行为不一致。</td>
+</tr>
+<tr>
+<td><strong>缺少多环境支持</strong></td>
+<td>对于多环境（如开发、测试、预生产、生产）支持不完善，发布到不同环境时，可能需要不同的配置或服务，导致发布的过程重复且容易出错。</td>
+</tr>
+<tr>
+<td><strong>代码与配置的分离不足</strong></td>
+<td>项目中代码和配置难以分离管理，尤其是配置文件和代码一同提交，发布过程中配置文件可能被遗忘或者误修改，导致发布后的问题难以定位。</td>
+</tr>
+<tr>
+<td><strong>测试覆盖不充分</strong></td>
+<td>自动化测试覆盖面不足，尤其是集成测试和端到端测试无法充分模拟真实生产环境中的部署行为，发布后的错误难以及时发现。</td>
+</tr>
+<tr>
+<td><strong>发布流程不可视化</strong></td>
+<td>发布过程缺乏清晰的可视化管理，开发人员和运维人员无法实时监控发布状态，缺乏实时的反馈，导致难以及时发现和修复问题。</td>
+</tr>
+<tr>
+<td><strong>复杂的蓝绿发布或灰度发布</strong></td>
+<td>在复杂的蓝绿发布或灰度发布过程中，难以保证发布策略的精确执行，可能导致部分用户遇到新版本问题，而其他用户仍然使用旧版本。</td>
+</tr>
+<tr>
+<td><strong>安全性问题</strong></td>
+<td>发布过程中可能涉及敏感数据或权限管理，若安全措施不足，可能会导致信息泄露、权限提升等安全问题，影响发布的稳定性和安全性。</td>
+</tr>
+<tr>
+<td><strong>发布后的监控不足</strong></td>
+<td>发布后缺乏充分的监控手段，无法快速察觉到生产环境中的问题或性能瓶颈，导致故障恢复时间较长，影响用户体验。</td>
+</tr>
+</tbody></table>
+<h3 id="jenkens了解与使用"><a href="#jenkens了解与使用" class="headerlink" title="jenkens了解与使用"></a>jenkens了解与使用</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jenkins.io/zh/doc/">Jenkins 用户手册</a></p>
+</blockquote>
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ttaall/p/13712855.html">分布式系统API网关原理及选型 - 六小扛把子 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/justlpf/article/details/130259022">微服务之服务网关介绍及(Spring Cloud Gateway搭建)_微服务的网关-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/cxyxysam/article/details/135389606">微服务网关：从对比到选型，由理论到实践_微服务网关选择-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/kgka8tfe5gqrftmw*lbn">一篇文章读懂微服务与网关技术（SIA-GateWay）_软件工程_王佩华_InfoQ精选文章</a></p>
+<h1 id="gRPC框架"><a href="#gRPC框架" class="headerlink" title="gRPC框架"></a>gRPC框架</h1><h2 id="RPC"><a href="#RPC" class="headerlink" title="RPC"></a>RPC</h2><p>当我们的业务越来越多、应用也越来越多时，自然的，我们会发现有些功能已经不能简单划分开来或者划分不出来。</p>
+<p>此时可以将公共业务逻辑抽离出来，将之组成独立的服务 Service 应用，而原有的、新增的应用都可以与那些独立的 Service 应用 交互，以此来完成完整的业务功能。</p>
+<p>所以我们急需一种高效的应用程序之间的通讯手段来完成这种需求，RPC 大显身手的时候来了！</p>
+<h3 id="什么是-RPC"><a href="#什么是-RPC" class="headerlink" title="什么是 RPC"></a>什么是 RPC</h3><p>RPC（远程过程调用）是一种通信协议，它允许程序在不同的计算机或网络上运行时，屏蔽底层的传输方式（TCP 或者 UDP）、序列化方式（XML&#x2F;Json&#x2F; 二进制）和通信细节，服务调用者可以像调用本地接口一样调用远程的服务提供者，而不需要关心底层通信细节和调用过程。像调用本地函数一样调用远程的服务。</p>
+<p><img src="https://s2.loli.net/2025/01/20/qvQ9PTdLpch1Gis.png" srcset="/img/loading.gif" lazyload alt="image-20250120213314906"></p>
+<h3 id="RPC-的调用流程"><a href="#RPC-的调用流程" class="headerlink" title="RPC 的调用流程"></a>RPC 的调用流程</h3><p>要让网络通信细节对使用者透明，我们需要对通信细节进行封装，我们先看下一个 RPC 调用的流程涉及到哪些通信细节：</p>
+<p><img src="https://s2.loli.net/2025/01/20/X1YKOLfTN7uCRQk.png" srcset="/img/loading.gif" lazyload alt="image-20250120213529301"></p>
+<p>服务消费方（client）调用以本地调用方式调用服务；<br>client stub接收到调用后负责将方法、参数等组装成能够进行网络传输的消息体；<br>client stub找到服务地址，并将消息发送到服务端；<br>server stub收到消息后进行解码；<br>server stub根据解码结果调用本地的服务；<br>本地服务执行并将结果返回给 server stub；<br>server stub将返回结果打包成消息并发送至消费方；<br>client stub接收到消息，并进行解码；<br>服务消费方得到最终结果。<br><img src="https://s2.loli.net/2025/01/20/C1GXo5TaELtOlu6.png" srcset="/img/loading.gif" lazyload alt="06d285beb1670ec3389586c156a79238"></p>
+<h3 id="RPC框架的组成"><a href="#RPC框架的组成" class="headerlink" title="RPC框架的组成"></a><strong>RPC框架的组成</strong></h3><p>一个完整的 RPC 框架包含了服务注册发现、负载、容错、序列化、协议编码和网络传输等组件。不同的 RPC 框架包含的组件可能会有所不同，但是一定都包含 RPC 协议相关的组件，RPC 协议包括序列化、协议编解码器和网络传输栈，如下图所示：</p>
+<p><img src="https://s2.loli.net/2025/01/20/yOnslfkFL1TJUXj.png" srcset="/img/loading.gif" lazyload alt="824470-20201030135431451-1886001617"></p>
+<p><strong>RPC和HTTP区别</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th><strong>RPC</strong></th>
+<th><strong>HTTP</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>通信协议</strong></td>
+<td>自定义协议（如 gRPC 使用 HTTP&#x2F;2，XML-RPC 使用 HTTP）</td>
+<td>基于 HTTP 协议（通常使用 TCP）</td>
+</tr>
+<tr>
+<td><strong>接口定义</strong></td>
+<td>需要接口定义（如 IDL 或 <code>.proto</code> 文件）</td>
+<td>无需明确接口定义，通常是通过 URL 路径和请求方法来定义</td>
+</tr>
+<tr>
+<td><strong>请求&#x2F;响应方式</strong></td>
+<td>请求和响应是函数调用，通常是二进制格式（如 Protobuf）</td>
+<td>请求和响应是文本格式，通常是 JSON 或 XML</td>
+</tr>
+<tr>
+<td><strong>性能</strong></td>
+<td>高效，通常使用二进制协议（如 Protobuf）</td>
+<td>性能较低，文本协议（JSON&#x2F;XML）占用更多带宽，解析较慢</td>
+</tr>
+<tr>
+<td><strong>消息格式</strong></td>
+<td>二进制（如 Protobuf）</td>
+<td>文本（如 JSON、XML）</td>
+</tr>
+<tr>
+<td><strong>通信模式</strong></td>
+<td>支持双向流、异步和流式通信</td>
+<td>通常是请求-响应模型，不支持双向流和流式通信</td>
+</tr>
+<tr>
+<td><strong>请求方式</strong></td>
+<td>可以是多种方法（如 gRPC 支持多种 HTTP&#x2F;2 方法）</td>
+<td>基本的 HTTP 请求方法：GET、POST、PUT、DELETE 等</td>
+</tr>
+<tr>
+<td><strong>跨语言支持</strong></td>
+<td>支持多语言（如 gRPC 支持 C++, Java, Python, Go 等）</td>
+<td>基本上支持所有语言，只要能发起 HTTP 请求</td>
+</tr>
+<tr>
+<td><strong>连接管理</strong></td>
+<td>客户端和服务器之间需要维护连接</td>
+<td>每次请求建立新的连接，除非使用持久连接（Keep-Alive）</td>
+</tr>
+<tr>
+<td><strong>易用性</strong></td>
+<td>需要明确的接口定义和更多配置</td>
+<td>简单易用，广泛使用，接口使用 URL 和 HTTP 方法</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>适合微服务架构、高效通信、低延迟系统、跨语言系统</td>
+<td>适合Web应用、浏览器与服务器通信、RESTful API</td>
+</tr>
+<tr>
+<td><strong>版本控制</strong></td>
+<td>通常通过接口文件进行版本管理</td>
+<td>通过路径或请求头中的版本信息来进行版本管理</td>
+</tr>
+<tr>
+<td><strong>安全性</strong></td>
+<td>可以使用加密（如 gRPC 使用 TLS&#x2F;SSL）</td>
+<td>可以通过 HTTPS 提供安全通信</td>
+</tr>
+<tr>
+<td><strong>错误处理</strong></td>
+<td>错误通过异常处理传递</td>
+<td>错误通常通过 HTTP 状态码（如 404、500）进行处理</td>
+</tr>
+</tbody></table>
+<h2 id="什么是-gRPC"><a href="#什么是-gRPC" class="headerlink" title="什么是 gRPC"></a>什么是 gRPC</h2><p>gRPC是一种进程间通信技术。在 gRPC 中，客户端可以直接调用不同机器上的服务端的方法，就像调用本地函数一样。</p>
+<p>与许多 RPC 系统一样，gRPC 基于定义服务的思想，指定可以远程调用的接口及其参数和返回类型。服务端实现这个接口并运行一个 gRPC <a target="_blank" rel="noopener" href="https://cloud.tencent.com/product/cvm/?from_column=20065&from=20065">服务器</a>来处理客户端调用。而客户端有一个stub（在某些语言中也称为client），它提供与服务器相同的方法。客户端通过调用stub的方法来与服务端进行通信，获取响应结果。</p>
+<p><img src="https://s2.loli.net/2025/01/20/iQb2mr95aoOqBHN.png" srcset="/img/loading.gif" lazyload alt="255a7c0f89cd627e007af4d2c22c42f5"></p>
+<h2 id="Protocol-Buffers"><a href="#Protocol-Buffers" class="headerlink" title="Protocol Buffers"></a>Protocol Buffers</h2><p>你可以理解 ProtoBuf 是一种更加灵活、高效的数据格式，与 XML、JSON 类似，在一些高性能且对响应速度有要求的数据传输场景非常适用。</p>
+<p>ProtoBuf 在 gRPC 的框架中主要有三个作用：定义数据结构、定义服务接口，通过序列化和反序列化方式提升传输效率。</p>
+<h3 id="为什么-ProtoBuf-会提高传输效率呢？"><a href="#为什么-ProtoBuf-会提高传输效率呢？" class="headerlink" title="为什么 ProtoBuf 会提高传输效率呢？"></a>为什么 ProtoBuf 会提高传输效率呢？</h3><p>我们知道使用 XML、JSON 进行数据编译时，数据文本格式更容易阅读，但进行数据交换时，设备就需要耗费大量的 CPU 在 I&#x2F;O 动作上，自然会影响整个传输速率。Protocol Buffers 不像前者，它会将字符串进行序列化后再进行传输，即二进制数据</p>
+<p><img src="https://s2.loli.net/2025/01/20/AWDPzkULK97Gg3v.png" srcset="/img/loading.gif" lazyload alt="image-20250120214215507"></p>
+<p>可以看到其实两者内容相差不大，并且内容非常直观，但是 Protocol Buffers 编码的内容只是提供给操作者阅读的，实际上传输的并不会以这种文本形式，而是序列化后的二进制数据，字节数会比 JSON、XML 的字节数少很多，速率更快。</p>
+<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><ol>
+<li>首先，你需要定义一个服务接口。服务接口定义包含有关客户端如何使用你的服务、允许客户端远程调用哪些方法、调用这些方法时需要传递哪些参数、返回格式是怎么样的等信息。一般通过<a href="https://cloud.tencent.com/developer/tools/blog-entry?target=https://developers.google.com/protocol-buffers&objectId=2103251&objectType=1&isNewArticle=undefined">protocol buffer</a>来定义服务接口。</li>
+<li>使用protocol buffer定义好服务接口之后，你可以使用它提供的protoc工具生成被称为*服务器骨架(Server Skeleton)<em>的服务端代码，它通过提供低级通信抽象来简化服务器端逻辑。此外，你还可以生成客户端代码，称为</em>客户端存根(client stub)*，它通过抽象来简化客户端通信，以隐藏不同编程语言的低级通信。</li>
+<li>客户端使用你在服务接口定义中指定的方法来进行远程调用，就像进行本地函数调用一样简单。底层 gRPC 框架会自动帮你处理数据序列化、网络通信、<a target="_blank" rel="noopener" href="https://cloud.tencent.com/product/idam?from_column=20065&from=20065">身份验证</a>、访问控制、可观察性等远程通信相关的所有复杂的工作。</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/01/20/93r2wbmFQLENUSs.png" srcset="/img/loading.gif" lazyload alt="image-20250120214316706"></p>
+<h3 id="gRPC：A-服务调用-B-服务的流程"><a href="#gRPC：A-服务调用-B-服务的流程" class="headerlink" title="gRPC：A 服务调用 B 服务的流程"></a>gRPC：A 服务调用 B 服务的流程</h3><h3 id="1-准备工作："><a href="#1-准备工作：" class="headerlink" title="1. 准备工作："></a>1. <strong>准备工作：</strong></h3><p>在 gRPC 中，服务的定义需要使用 <strong>Protocol Buffers（.proto 文件）</strong> 来指定。这个文件定义了服务的接口、方法和数据结构。</p>
+<p>假设我们有两个服务：</p>
+<ul>
+<li><strong>A 服务</strong>：需要调用 B 服务的一个接口。</li>
+<li><strong>B 服务</strong>：提供被 A 服务调用的接口。</li>
+</ul>
+<h3 id="2-步骤："><a href="#2-步骤：" class="headerlink" title="2. 步骤："></a>2. <strong>步骤：</strong></h3><h4 id="2-1-定义-gRPC-服务接口（-proto-文件）"><a href="#2-1-定义-gRPC-服务接口（-proto-文件）" class="headerlink" title="2.1 定义 gRPC 服务接口（.proto 文件）"></a>2.1 <strong>定义 gRPC 服务接口（.proto 文件）</strong></h4><p>首先，你需要为 B 服务定义一个接口文件。这里是一个简单的例子：</p>
+<p><strong>b_service.proto</strong></p>
+<figure class="highlight proto"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs proto">syntax = <span class="hljs-string">&quot;proto3&quot;</span>;<br><br><span class="hljs-keyword">package</span> bservice;<br><br><span class="hljs-comment">// 定义请求和响应消息类型</span><br><span class="hljs-keyword">message </span><span class="hljs-title class_">Request</span> &#123;<br>  <span class="hljs-type">string</span> name = <span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-keyword">message </span><span class="hljs-title class_">Response</span> &#123;<br>  <span class="hljs-type">string</span> message = <span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-comment">// 定义 B 服务</span><br><span class="hljs-keyword">service </span><span class="hljs-title class_">BService</span> &#123;<br>  <span class="hljs-function"><span class="hljs-keyword">rpc</span> Greet (Request) <span class="hljs-keyword">returns</span> (Response)</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在这个文件中，<code>BService</code> 服务有一个 <code>Greet</code> 方法，接受一个 <code>Request</code> 类型的参数并返回一个 <code>Response</code> 类型的结果。</p>
+<h4 id="2-2-编译-proto-文件"><a href="#2-2-编译-proto-文件" class="headerlink" title="2.2 编译 .proto 文件"></a>2.2 <strong>编译 .proto 文件</strong></h4><p>接下来，需要使用 <code>protoc</code> 编译器将 <code>.proto</code> 文件转换为不同语言的代码（客户端和服务端的代码）。比如，生成 Go、Java 或 Python 等语言的代码。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">protoc --go_out=plugins=grpc:. b_service.proto<br></code></pre></td></tr></table></figure>
+
+<p>这个命令会根据 <code>.proto</code> 文件生成相应的代码，通常会生成客户端和服务器代码的结构。</p>
+<h4 id="2-3-实现-B-服务"><a href="#2-3-实现-B-服务" class="headerlink" title="2.3 实现 B 服务"></a>2.3 <strong>实现 B 服务</strong></h4><p>在 B 服务中实现接口。</p>
+<p><strong>b_service.go</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>    <span class="hljs-string">&quot;context&quot;</span><br>    <span class="hljs-string">&quot;fmt&quot;</span><br>    <span class="hljs-string">&quot;google.golang.org/grpc&quot;</span><br>    <span class="hljs-string">&quot;log&quot;</span><br>    <span class="hljs-string">&quot;net&quot;</span><br>    pb <span class="hljs-string">&quot;path/to/bservice&quot;</span> <span class="hljs-comment">// 这里是生成的 protobuf 代码</span><br>)<br><br><span class="hljs-keyword">type</span> server <span class="hljs-keyword">struct</span> &#123;<br>    pb.UnimplementedBServiceServer<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *server)</span></span> Greet(ctx context.Context, req *pb.Request) (*pb.Response, <span class="hljs-type">error</span>) &#123;<br>    <span class="hljs-keyword">return</span> &amp;pb.Response&#123;Message: <span class="hljs-string">&quot;Hello, &quot;</span> + req.GetName()&#125;, <span class="hljs-literal">nil</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>    <span class="hljs-comment">// 启动 gRPC 服务</span><br>    lis, err := net.Listen(<span class="hljs-string">&quot;tcp&quot;</span>, <span class="hljs-string">&quot;:50051&quot;</span>)<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        log.Fatalf(<span class="hljs-string">&quot;failed to listen: %v&quot;</span>, err)<br>    &#125;<br>    grpcServer := grpc.NewServer()<br>    pb.RegisterBServiceServer(grpcServer, &amp;server&#123;&#125;)<br>    <span class="hljs-keyword">if</span> err := grpcServer.Serve(lis); err != <span class="hljs-literal">nil</span> &#123;<br>        log.Fatalf(<span class="hljs-string">&quot;failed to serve: %v&quot;</span>, err)<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这个示例中，我们实现了 B 服务的 <code>Greet</code> 方法，它接受一个 <code>Request</code>（包含名字），然后返回一个 <code>Response</code>（包含欢迎消息）。</p>
+<h4 id="2-4-实现-A-服务客户端调用-B-服务"><a href="#2-4-实现-A-服务客户端调用-B-服务" class="headerlink" title="2.4 实现 A 服务客户端调用 B 服务"></a>2.4 <strong>实现 A 服务客户端调用 B 服务</strong></h4><p>在 A 服务中，你需要调用 B 服务的 <code>Greet</code> 方法。这通常通过生成的 gRPC 客户端代码完成。</p>
+<p><strong>a_service.go</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>    <span class="hljs-string">&quot;context&quot;</span><br>    <span class="hljs-string">&quot;fmt&quot;</span><br>    <span class="hljs-string">&quot;google.golang.org/grpc&quot;</span><br>    pb <span class="hljs-string">&quot;path/to/bservice&quot;</span> <span class="hljs-comment">// 这里是生成的 protobuf 代码</span><br>    <span class="hljs-string">&quot;log&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>    <span class="hljs-comment">// 连接到 B 服务</span><br>    conn, err := grpc.Dial(<span class="hljs-string">&quot;localhost:50051&quot;</span>, grpc.WithInsecure())<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        log.Fatalf(<span class="hljs-string">&quot;did not connect: %v&quot;</span>, err)<br>    &#125;<br>    <span class="hljs-keyword">defer</span> conn.Close()<br>    <br>    <span class="hljs-comment">// 创建 B 服务客户端</span><br>    c := pb.NewBServiceClient(conn)<br>    <br>    <span class="hljs-comment">// 调用 B 服务的 Greet 方法</span><br>    resp, err := c.Greet(context.Background(), &amp;pb.Request&#123;Name: <span class="hljs-string">&quot;Alice&quot;</span>&#125;)<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        log.Fatalf(<span class="hljs-string">&quot;could not greet: %v&quot;</span>, err)<br>    &#125;<br>    <br>    <span class="hljs-comment">// 打印返回的响应</span><br>    fmt.Println(<span class="hljs-string">&quot;Response from B service:&quot;</span>, resp.GetMessage())<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-详细流程："><a href="#3-详细流程：" class="headerlink" title="3. 详细流程："></a>3. <strong>详细流程：</strong></h3><h4 id="A-服务调用-B-服务的流程："><a href="#A-服务调用-B-服务的流程：" class="headerlink" title="A 服务调用 B 服务的流程："></a><strong>A 服务调用 B 服务的流程：</strong></h4><ol>
+<li><strong>启动 B 服务</strong>：B 服务会监听一个端口（如 <code>50051</code>），等待来自客户端（如 A 服务）的请求。</li>
+<li><strong>A 服务创建 gRPC 客户端</strong>：A 服务会连接到 B 服务，通常使用 B 服务的 <code>gRPC</code> 地址（如 <code>localhost:50051</code>）。</li>
+<li><strong>A 服务发起请求</strong>：A 服务使用 gRPC 客户端的 <code>Greet</code> 方法来发起请求，传递请求数据（如 <code>name: &quot;Alice&quot;</code>）。</li>
+<li><strong>B 服务接收请求并处理</strong>：B 服务接收 A 服务的请求，执行相应的业务逻辑（例如，生成响应消息）。</li>
+<li><strong>B 服务返回响应</strong>：B 服务将处理结果（例如，&#96;”Hello, Alice”）返回给 A 服务。</li>
+<li><strong>A 服务处理响应</strong>：A 服务接收到 B 服务返回的数据并做相应的处理。</li>
+</ol>
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://grpc.org.cn/docs/what-is-grpc/">什么是 gRPC？ | gRPC 框架</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2103251">深入了解grpc（一）：grpc介绍-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/songgj/p/13463717.html">gRPC框架详解 - songguojun - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/jichencsdn/article/details/131143419">一文看懂gRPC远程调用框架_grpc框架-CSDN博客</a></p>
+<h1 id="幕等与延迟消息"><a href="#幕等与延迟消息" class="headerlink" title="幕等与延迟消息"></a>幕等与延迟消息</h1><p>在前面<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2024/07/26/%E5%88%86%E5%B8%83%E5%BC%8F%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80/">分布式理论基础 - The Peak Tower</a>谈到了在分布式系统中如何在网络等一系列不可预计的情况下尽量数据一致性，但尽管如此仍然在基于消息队列(MQ)的实现消息可靠性还有一些业务上的特殊情况需要处理。</p>
+<ul>
+<li><p>用户下单时，可能会由于网络抖动或前端重复提交，导致同一个订单请求被多次发送。如果没有幂等性设计，可能会导致重复创建订单。</p>
+</li>
+<li><p>用户下单后未支付，库存被锁定但未扣减，需要在一定时间后释放库存。如果立即释放库存，可能会导致库存数据不一致。</p>
+</li>
+<li><p>在商城系统中，订单服务通过消息队列发送“扣减库存”消息，库存服务消费该消息并执行扣减操作。然而，如果库存不足，可能会导致以下问题：</p>
+<ol>
+<li><strong>消息消费失败</strong>：<ul>
+<li>库存服务无法扣减库存，导致消息消费失败。</li>
+<li>消息队列会重新投递消息，但库存仍然不足，导致消息一直无法被成功消费。</li>
+</ul>
+</li>
+<li><strong>数据不一致</strong>：<ul>
+<li>订单服务认为库存已扣减，但库存服务实际未扣减，导致数据不一致。</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<ol>
+<li><strong>库存超卖</strong>：通过分布式锁、乐观锁或预占库存解决。</li>
+<li><strong>库存数据不一致</strong>：通过可靠消息传递、幂等性设计或本地消息表解决。</li>
+<li><strong>库存回滚问题</strong>：通过 TCC 模式、补偿机制或延时任务解决。</li>
+<li><strong>库存热点问题</strong>：通过库存分片、缓存库存或限流降级解决。</li>
+<li><strong>库存更新延迟</strong>：通过实时库存同步、库存预占机制或前端库存校验解决。</li>
+<li><strong>库存负数问题</strong>：通过库存校验、数据库约束或分布式锁解决。</li>
+<li><strong>库存数据丢失</strong>：通过数据备份、日志记录或分布式存储解决。</li>
+<li><strong>库存数据不一致（跨系统）</strong>：通过分布式事务、最终一致性或数据同步解决。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<h2 id="Rocketmq简单介绍和使用"><a href="#Rocketmq简单介绍和使用" class="headerlink" title="Rocketmq简单介绍和使用"></a>Rocketmq简单介绍和使用</h2><p>RocketMQ 是一个高性能、可靠、可扩展的分布式消息队列系统。它适用于高吞吐量、大并发、高可靠性的分布式系统，能够解决微服务架构中的异步消息、流量削峰、解耦等问题。凭借其易扩展性、可靠性、顺序消费等特性，RocketMQ 广泛应用于日志收集、实时数据流处理、异步消息通知等场景。</p>
+<blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/sdk/05go/">Go 客户端 | RocketMQ</a></p>
+<p><a target="_blank" rel="noopener" href="https://rocketmq.io/course/baseLearn/rocketmq_learning-fast/?spm=5176.29160081.0.0.50a9608eMzBaoF">RocketMQ 快速上手体验</a></p>
+</blockquote>
+<h3 id="RocketMQ-的基本概念"><a href="#RocketMQ-的基本概念" class="headerlink" title="RocketMQ 的基本概念"></a><strong>RocketMQ 的基本概念</strong></h3><ol>
+<li><strong>Producer（生产者）</strong>：生产者负责发送消息到 RocketMQ 服务端。生产者可以有多个，并且可以向指定的消息队列发送消息。</li>
+<li><strong>Consumer（消费者）</strong>：消费者负责从 RocketMQ 服务端接收并处理消息。消费者通过订阅消息队列进行消息消费，支持多种消费方式，如顺序消费和并发消费。</li>
+<li><strong>Broker（消息中间件）</strong>：RocketMQ 服务器端的核心组件，负责消息的存储、转发和管理。Broker 存储消息并负责消息的消费调度。它支持高可用、分布式存储。</li>
+<li><strong>Message Queue（消息队列）</strong>：消息队列是存储消息的逻辑概念，消息会根据特定的路由规则发送到不同的队列。每个消息队列可以对应一个或多个消费者进行消费。</li>
+<li><strong>Topic（主题）</strong>：主题是消息的分类标识。生产者发送消息到一个特定的主题，消费者通过订阅主题来接收消息。一个主题可以包含多个消息队列。</li>
+</ol>
+<h3 id="RocketMQ-的工作流程"><a href="#RocketMQ-的工作流程" class="headerlink" title="RocketMQ 的工作流程"></a><strong>RocketMQ 的工作流程</strong></h3><ol>
+<li><p><strong>生产者（Producer）发送消息</strong>：生产者通过与 Broker 的通信，将消息发送到 RocketMQ 服务端。消息会被写入到相应的消息队列中。</p>
+</li>
+<li><p><strong>Broker 存储消息</strong>：Broker 将收到的消息存储在磁盘中，并为每个消息分配一个唯一的消息 ID。消息被存储在特定的队列中。</p>
+</li>
+<li><p><strong>消费者（Consumer）订阅消息</strong>：消费者通过订阅特定的 Topic 或 Queue 来接收消息。消费者可以是多个，RocketMQ 支持多种消费模式（顺序消费、并发消费等）。</p>
+</li>
+<li><p><strong>消息消费</strong>：消费者从 Broker 获取消息并处理。处理完成后，消费者会向 Broker 发送消息消费的确认，确认消息已被成功消费。若没有确认，消息会重新投递给消费者。</p>
+</li>
+<li><p><strong>消息的可靠性保障</strong>：RocketMQ 采用同步和异步的方式进行消息确认，可以确保消息不会丢失。同时，消息在存储时也会进行磁盘持久化，防止服务器宕机导致消息丢失。</p>
+<p><img src="https://s2.loli.net/2025/02/04/f8GKhkvwPBIiqZo.png" srcset="/img/loading.gif" lazyload alt="eb2a803a826b45f6a034f39ff38d4f42"></p>
+</li>
+</ol>
+<h3 id="RocketMQ-与其他消息队列的比较"><a href="#RocketMQ-与其他消息队列的比较" class="headerlink" title="RocketMQ 与其他消息队列的比较"></a><strong>RocketMQ 与其他消息队列的比较</strong></h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>RocketMQ</th>
+<th>Kafka</th>
+<th>RabbitMQ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>吞吐量</strong></td>
+<td>高吞吐量，适合大规模并发</td>
+<td>极高吞吐量，适合日志处理</td>
+<td>吞吐量相对较低，适合任务队列</td>
+</tr>
+<tr>
+<td><strong>消息顺序性</strong></td>
+<td>支持顺序消费</td>
+<td>支持分区内顺序消费</td>
+<td>不支持严格顺序</td>
+</tr>
+<tr>
+<td><strong>可靠性</strong></td>
+<td>支持持久化，消息确认机制</td>
+<td>支持持久化，消息确认机制</td>
+<td>支持持久化，消息确认机制</td>
+</tr>
+<tr>
+<td><strong>消息过滤</strong></td>
+<td>支持消息属性过滤</td>
+<td>不支持消息过滤</td>
+<td>支持消息路由和过滤</td>
+</tr>
+<tr>
+<td><strong>分布式架构</strong></td>
+<td>分布式部署、容错和高可用</td>
+<td>分布式部署、容错和高可用</td>
+<td>支持分布式部署</td>
+</tr>
+<tr>
+<td><strong>协议</strong></td>
+<td>使用自己的协议</td>
+<td>使用 Kafka 协议</td>
+<td>AMQP 协议</td>
+</tr>
+</tbody></table>
+<h2 id="幂等性"><a href="#幂等性" class="headerlink" title="幂等性"></a>幂等性</h2><p>百度对 “幂等” 解释如下</p>
+<blockquote>
+<p>设f为一由X映射至X的一元运算，则f为幂等的，当对于所有在X内的x，<br>f(f(x)) &#x3D; f(x).<br>特别的是，恒等函数一定是幂等的，且任一常数函数也都是幂等的。</p>
+</blockquote>
+<p>这里的关键是 **f(f(x)) &#x3D; f(x)**， 翻译成通俗的解释就是：</p>
+<p><strong>如果有一个操作，多次执行与一次执行所产生的影响是相同的，我们就称这个操作是幂等的。</strong></p>
+<h3 id="消息幂等"><a href="#消息幂等" class="headerlink" title="消息幂等"></a>消息幂等</h3><p>基于上述的概念，结合消息消费的场景，我们能够很容易的总结出消息幂等的概念：</p>
+<blockquote>
+<p>如果消息重试多次，消费者端对该重复消息消费多次与消费一次的结果是相同的，并且多次消费没有对系统产生副作用，那么我们就称这个过程是消息幂等的。</p>
+</blockquote>
+<p>例如：</p>
+<p>支付场景下，消费者消费扣款消息，对一笔订单进行扣款操作，该扣款操作需要扣除10元。这时由于各种原因：或者用户网络卡顿又或许网站系统限流等，用户误以为未支付成功，便进行多次支付操作。</p>
+<p>这个扣款操作重复多次与执行一次的效果相同，只进行一次真实扣款，用户的扣款记录中对应该笔订单的只有一条扣款流水。不会多扣。那么我们就说这个扣款操作是符合要求的，这个消费过程是消息幂等的。</p>
+<blockquote>
+<p>就是无论别人对你的接口请求多少次，你都需要保证接口调用一次和多次的结果是相同的。</p>
+</blockquote>
+<h4 id="需要进行消息幂等的场景"><a href="#需要进行消息幂等的场景" class="headerlink" title="需要进行消息幂等的场景"></a>需要进行消息幂等的场景</h4><p>首先我们回顾一下需要进行消息幂等的场景，也就是上一篇文章提到的消息重复的场景。</p>
+<h5 id="发送时重复"><a href="#发送时重复" class="headerlink" title="发送时重复"></a>发送时重复</h5><p>生产者发送消息时，消息成功投递到broker，但此时发生网络闪断或者生产者down掉，导致broker发送ACK失败。此时生产者由于未能收到消息发送响应，认为发送失败，因此尝试重新发送消息到broker。当消息发送成功后，在broker中就会存在两条相同内容的消息，最终消费者会拉取到两条内容一样并且Message ID也相同的消息。因此造成了消息的重复。</p>
+<h5 id="消费时重复"><a href="#消费时重复" class="headerlink" title="消费时重复"></a>消费时重复</h5><p>消费消息时同样会出现重复消费的情况。当消费者在处理业务完成返回消费状态给broker时，由于网络闪断等异常情况导致未能将消费完成的CONSUME_SUCCESS状态返回给broker。broker为了保证消息被至少消费一次的语义，会在网络环境恢复之后再次投递该条被处理的消息，最终造成消费者多次收到内容一样并且Message ID也相同的消息，造成了消息的重复。</p>
+<hr>
+<p><strong>可以看到，无论是发送时重复还是消费时重复，最终的效果均为消费者消费时收到了重复的消息，那么我们就知道：只需要在消费者端统一进行幂等处理就能够实现消息幂等。</strong></p>
+<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a>业务场景</h3><p>基于优惠券重复发放问题的前提下，流程图：</p>
+<p><img src="https://s2.loli.net/2025/02/04/Cev5pGuf3MSD4Hb.png" srcset="/img/loading.gif" lazyload alt="image-20250204171003233"></p>
+<h4 id="解决优惠券重复方法的问题"><a href="#解决优惠券重复方法的问题" class="headerlink" title="解决优惠券重复方法的问题"></a><strong>解决优惠券重复方法的问题</strong></h4><h5 id="抽象原因"><a href="#抽象原因" class="headerlink" title="抽象原因"></a>抽象原因</h5><ul>
+<li>原因1：生产者多次发送同一条消息，导致消费者多次消息同一条消息，因此重复发放优惠券</li>
+<li>原因2：生产者发送一次消息，但消费者多次消费同一条消息，因此重复发送优惠券</li>
+</ul>
+<h5 id="具象原因"><a href="#具象原因" class="headerlink" title="具象原因"></a>具象原因</h5><ul>
+<li>比如原因1，用户支付订单后，订单系统处理有点慢，这会让支付系统以为请求超时，这时支付系统会再次调用订单系统。这就会导致订单系统多次发送同一条支付消息。消息重试，网络异常，都会导致生产者多次发送同一条消息</li>
+<li>比如原因2，用户支付成功，订单系统和支付系统交互也没超时，顺利发送一条支付消息，这个时候优惠券系统也成功消费支付消息，这时发放了一张优惠券。但意外来了，这个时候优惠券系统崩了，但还没来得及提交消费进度offset到RocketMQ。因而重启优惠券系统后，又会重新消费一次支付消息，从而重复发放优惠券。</li>
+</ul>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><h4 id="先决条件"><a href="#先决条件" class="headerlink" title="先决条件"></a>先决条件</h4><p>那么如何才能实现消息幂等呢？</p>
+<p>首先要定义消息幂等的两要素：</p>
+<ol>
+<li>幂等令牌</li>
+<li>处理唯一性的确保</li>
+</ol>
+<p>必须保证存在幂等令牌的情况下保证业务处理结果的唯一性，才认为幂等实现是成功的。接下来分别解释这两个要素</p>
+<h5 id="幂等令牌"><a href="#幂等令牌" class="headerlink" title="幂等令牌"></a>幂等令牌</h5><p>幂等令牌是生产者和消费者两者中的既定协议，在业务中通常是具备唯一业务标识的字符串，如：订单号、流水号等。且一般由生产者端生成并传递给消费者端。</p>
+<h5 id="处理唯一性的确保"><a href="#处理唯一性的确保" class="headerlink" title="处理唯一性的确保"></a>处理唯一性的确保</h5><p>即服务端应当采用一定的策略保证同一个业务逻辑一定不会重复执行成功多次。如：使用支付宝进行支付，买一个产品支付多次只会成功一笔。</p>
+<p>较为常用的方式是采用缓存去重并且通过对业务标识添加数据库的唯一索引实现幂等。</p>
+<p>具体的思路为：如支付场景下，支付的发起端生成了一个支付流水号，服务端处理该支付请求成功后，数据持久化成功。由于表中对支付流水添加了唯一索引，因此当重复支付时会因为唯一索引的存在报错 <strong>duplicate entry</strong>，服务端的业务逻辑捕获该异常并返回调用侧“重复支付”提示。这样就不会重复扣款。</p>
+<p>在上面场景的基础上，还可以引入Redis等缓存组件实现去重：当支付请求打到服务端，首先去缓存进行判断，根据key&#x3D;“支付流水号”去get存储的值，如果返回为空，表明是首次进行支付操作同时将当前的支付流水号作为key、value可以为任意字符串通过set(key,value,expireTime)存储在redis中。</p>
+<p>当重复的支付请求到来时，尝试进行get(支付流水号)操作，这个操作会命中缓存，因此我们可以认为该请求是重复的支付请求，服务端业务将重复支付的业务提示返回给请求方。</p>
+<p>由于我们一般都会在缓存使用过程中设置过期时间，缓存可能会失效从而导致请求穿透到持久化存储中（如：MySQL）。因此不能因为引入缓存而放弃使用唯一索引，将二者结合在一起是一个比较好的方案。</p>
+<h4 id="具体方案"><a href="#具体方案" class="headerlink" title="具体方案"></a>具体方案</h4><h5 id="业务状态机判断"><a href="#业务状态机判断" class="headerlink" title="业务状态机判断"></a><strong>业务状态机判断</strong></h5><p>举个例子，在电商系统中，有订单id，这个时候在优惠券系统每消费一条支付消息，同步插入一条订单数据，能插入成功，证明之前这个订单没被消费过，发送优惠券。插入失败，则证明这个订单之前已经被消费过了。不做任何操作即可。</p>
+<p><img src="https://s2.loli.net/2025/02/04/S2zOYPECidXB8FM.png" srcset="/img/loading.gif" lazyload alt="image-20250204213554245"></p>
+<h5 id="Redis缓存法"><a href="#Redis缓存法" class="headerlink" title="Redis缓存法"></a>Redis缓存法</h5><p>在并发量特别高的订单系统中，支付消息会特别多，这个时候，如果用业务判断法，插入数据库，容易存在瓶颈。这个时候如果想要提高并发量，可以考虑使用Redis。Redis缓存订单id，如果这个订单id已经被消费过后，会存在Redis中。当这个订单id再次被消费时，就会被过滤，不操作。</p>
+<p>这也是一种幂等性的实现方法。但Redis容易丢数据，这也是需要考虑的。<img src="https://ucc.alicdn.com/pic/developer-ecology/980d85723fe44d8b8516694c6a94b8f4.gif" srcset="/img/loading.gif" lazyload alt="image.gif"></p>
+<h5 id="RocketMQ场景下"><a href="#RocketMQ场景下" class="headerlink" title="RocketMQ场景下"></a>RocketMQ场景下</h5><p>了解了两个要素及典型案例之后，回到消息消费的场景。</p>
+<p>作为一款高性能的消息中间件，RocketMQ能够保证消息不丢失但不保证消息不重复。如果在RocketMQ中实现消息去重实际也是可以的，但是考虑到高可用以及高性能的需求，如果做了服务端的消息去重，RocketMQ就需要对消息做额外的rehash、排序等操作，这会花费较大的时间和空间等资源代价，收益并不明显。RocketMQ考虑到正常情况下出现重复消息的概率其实是很小的，因此RocketMQ将消息幂等操作交给了业务方处理。</p>
+<p>实际上，上述问题的本质在于：网络调用本身存在不确定性，也就是既不成功也不失败的第三种状态，即所谓的 <strong>处理中</strong> 状态，因此会有重复的情况发生。这个问题是很多其他的MQ产品同样会遇到的，<strong>通常的方法就是要求消费方在消费消息时进行去重，也就是本文说的消费幂等性。</strong></p>
+<blockquote>
+<p>每条消息都有一个MessageID，那么能否使用该ID作为去重依据，也就是上面提到的幂等令牌呢？</p>
+<p>答案是否定的，因为MessageID可能出现冲突的情况，因此不建议通过MessageID作为处理依据而应当使用业务唯一标识如：订单号、流水号等作为幂等处理的关键依据。</p>
+</blockquote>
+<p>上面也提到了，幂等依据应当由消息生产者生成，在发送消息时候，我们能够通过消息的key设置该id，对应的API为 <strong>org.apache.rocketmq.common.message.setKeys(String keys)</strong> 代码如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Message sendMessage = new Message(<br>                MessageProtocolConst.WALLET_PAY_TOPIC.getTopic(),<br>                message.getBytes());<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf">sendMessage.setKeys(<span class="hljs-string">&quot;OD0000000001&quot;</span>)<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p>当消息消费者收到该消息时，根据该消息的key做幂等处理，API为 <strong>org.apache.rocketmq.common.message.getKeys()</strong> 代码如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs text">(msgs, context) -&gt; &#123;<br>    try &#123;<br>        // 默认msgs只有一条消息<br>        for (MessageExt msg : msgs) &#123;<br>            String key = msg.getKeys();<br>            return walletCharge(msg);<br>        &#125;<br>        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;<br>    &#125; catch (Exception e) &#123;<br>        LOGGER.error(&quot;钱包扣款消费异常,e=&#123;&#125;&quot;, e);<br>        return ConsumeConcurrentlyStatus.RECONSUME_LATER;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>消费者通过getKeys()能够读取到生产者设置的幂等依据（如：订单号等），然后业务逻辑围绕该id进行幂等处理即可。</p>
+<p>如果觉得每次都需要在生产者侧setkey，在消费者侧getkey，有点繁琐。也可以将该幂等依据设置在消息协议中，消费者接收到消息后解析该id进行幂等操作也是可以的。只需要消息的生产者和消费者约定好如何解析id的协议即可。</p>
+<h5 id="消费端常见的幂等操作"><a href="#消费端常见的幂等操作" class="headerlink" title="消费端常见的幂等操作"></a>消费端常见的幂等操作</h5><h6 id="业务操作之前进行状态查询"><a href="#业务操作之前进行状态查询" class="headerlink" title="业务操作之前进行状态查询"></a>业务操作之前进行状态查询</h6><p>消费端开始执行业务操作时，通过幂等id首先进行业务状态的查询，如：修改订单状态环节，当订单状态为成功&#x2F;失败则不需要再进行处理。那么我们只需要在消费逻辑执行之前通过订单号进行订单状态查询，一旦获取到确定的订单状态则对消息进行提交，通知broker消息状态为：<strong>ConsumeConcurrentlyStatus.CONSUME_SUCCESS</strong> 。</p>
+<h6 id="业务操作前进行数据的检索"><a href="#业务操作前进行数据的检索" class="headerlink" title="业务操作前进行数据的检索"></a>业务操作前进行数据的检索</h6><p>逻辑和第一点相似，即消费之前进行数据的检索，如果能够通过业务唯一id查询到对应的数据则不需要进行再后续的业务逻辑。如：下单环节中，在消费者执行异步下单之前首先通过订单号查询订单是否已经存在，这里可以查库也可以查缓存。如果存在则直接返回消费成功，否则进行下单操作。</p>
+<hr>
+<p>详细参考：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2371740">一文讲透消息队列RocketMQ实现消费幂等-腾讯云开发者社区-腾讯云</a></p>
+<blockquote>
+<p>不论怎样，请牢记一个原则：<strong>缓存是不可靠的，查询是不可靠的</strong> 。</p>
+<p>在高并发的场景下，一定要通过持久化存储的唯一索引以及引入锁机制作为共同保障数据准确性和完整性的最后一道防线！</p>
+</blockquote>
+<h2 id="延时消息"><a href="#延时消息" class="headerlink" title="延时消息"></a>延时消息</h2><blockquote>
+<p>详见：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/339459783">消息队列——延时消息应用解析及实践 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43270074/article/details/141028713">图解RocketMQ之如何实现定时延时消息_rocketmq延时消息-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1659393">一口气说出 6种 延时队列的实现方法，面试官也得服-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p>RocketMQ 在 Broker 端为每个延迟级别维护一个单独的队列。</p>
+<p>消息发送时，指定延迟级别，消息会被存储在对应的延迟队列中。</p>
+<p>延迟时间到达后，消息会被转移到普通队列中，供消费者消费。</p>
+<h2 id="库存问题"><a href="#库存问题" class="headerlink" title="库存问题"></a>库存问题</h2><p><img src="https://s2.loli.net/2025/03/20/MXY5fbuSQKPdRzJ.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="分布式事务"><a href="#分布式事务" class="headerlink" title="分布式事务"></a>分布式事务</h1><h2 id="为什么需要分布式事务？"><a href="#为什么需要分布式事务？" class="headerlink" title="为什么需要分布式事务？"></a>为什么需要分布式事务？</h2><p>在分布式系统中，数据一致性是一个核心挑战。由于系统被拆分为多个独立的服务或数据库，每个服务可能运行在不同的节点上，数据的一致性无法通过单机事务来保证。</p>
+<p>分布式系统中，由于网络和节点的不可靠性，数据不一致问题更加复杂。以下是常见的分布式系统问题：</p>
+<h3 id="网络问题"><a href="#网络问题" class="headerlink" title="网络问题"></a><strong>网络问题</strong></h3><p><strong>网卡故障</strong>：网络接口卡故障导致消息丢失或延迟。<strong>网络拥塞</strong>：网络流量过大导致消息传递延迟或丢失。<strong>网络抖动</strong>：网络延迟不稳定，导致消息重复或乱序。导致了：</p>
+<ul>
+<li>消息丢失或延迟可能导致事务状态不一致。</li>
+<li>例如：库存服务未收到扣减库存的请求，导致库存数据不一致。</li>
+</ul>
+<h3 id="程序出错"><a href="#程序出错" class="headerlink" title="程序出错"></a><strong>程序出错</strong></h3><p><strong>代码异常</strong>：程序逻辑错误或异常导致事务执行失败。<strong>宕机</strong>：服务或节点崩溃，导致事务状态丢失。造成了</p>
+<ul>
+<li>事务执行失败可能导致部分操作未完成，数据不一致。</li>
+<li>例如：订单服务创建了订单，但库存服务因宕机未扣减库存。</li>
+</ul>
+<hr>
+<p><strong>分布式事务的典型场景</strong>：</p>
+<table>
+<thead>
+<tr>
+<th><strong>场景</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>问题分析</strong></th>
+<th><strong>适用解决方案</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>跨服务调用</strong></td>
+<td>多个服务协同完成一个业务操作（如订单服务调用库存服务和支付服务）。</td>
+<td>部分服务成功，部分服务失败，导致数据不一致。</td>
+<td>- <strong>2PC</strong>：强一致性。<br>- <strong>TCC</strong>：高性能，适合复杂业务逻辑。<br>- <strong>本地消息表</strong>：可靠性高。</td>
+</tr>
+<tr>
+<td><strong>跨数据库操作</strong></td>
+<td>数据存储在不同的数据库中（如订单数据在 MySQL，库存数据在 Redis）。</td>
+<td>部分数据库操作成功，部分失败，导致数据不一致。</td>
+<td>- <strong>2PC</strong>：强一致性。<br>- <strong>TCC</strong>：适合跨数据库场景。<br>- <strong>本地消息表</strong>：结合本地事务。</td>
+</tr>
+<tr>
+<td><strong>异步消息传递</strong></td>
+<td>通过消息队列实现服务间的异步通信（如订单服务通过 MQ 通知库存服务扣减库存）。</td>
+<td>消息丢失、重复消费或乱序，导致数据不一致。</td>
+<td>- <strong>基于消息队列的最终一致性</strong>：适合对一致性要求不高的场景。<br>- <strong>本地消息表</strong>：可靠性高。</td>
+</tr>
+<tr>
+<td><strong>分布式锁与资源竞争</strong></td>
+<td>多个服务竞争同一资源（如秒杀活动中的库存扣减）。</td>
+<td>资源竞争导致超卖或数据不一致。</td>
+<td>- <strong>TCC</strong>：通过 Try 操作预留资源。<br>- <strong>分布式锁</strong>：确保资源独占。</td>
+</tr>
+<tr>
+<td><strong>数据分片与分布式存储</strong></td>
+<td>数据分布在多个节点或分片中（如分布式数据库、分布式缓存）。</td>
+<td>跨分片操作可能导致部分成功、部分失败。</td>
+<td>- <strong>2PC</strong>：强一致性。<br>- <strong>TCC</strong>：适合跨分片场景。</td>
+</tr>
+<tr>
+<td><strong>微服务架构中的事务管理</strong></td>
+<td>在微服务架构中，每个服务独立管理自己的数据，但需要保证全局事务的一致性。</td>
+<td>服务之间的调用链路复杂，事务状态难以管理。</td>
+<td>- <strong>TCC</strong>：适合微服务场景。<br>- <strong>Saga 模式</strong>：通过事件驱动实现最终一致性。</td>
+</tr>
+</tbody></table>
+<p>举个例子：</p>
+<p>在电商系统中，用户下单时涉及多个操作：</p>
+<ol>
+<li><strong>创建订单</strong>：生成订单记录。</li>
+<li><strong>扣减库存</strong>：减少商品库存。</li>
+<li><strong>支付</strong>：扣减用户账户余额。</li>
+</ol>
+<p>如果这些操作分散在不同的服务中（如订单服务、库存服务、支付服务），在没有分布式事务的情况下，可能会出现以下问题：</p>
+<ul>
+<li><strong>先扣库存还是后扣库存</strong>：<ul>
+<li>如果先扣库存，但支付失败，库存会被错误扣减，导致超卖。</li>
+<li>如果后扣库存，但库存不足，支付成功后无法完成订单，导致数据不一致。</li>
+</ul>
+</li>
+<li><strong>订单超时</strong>：<ul>
+<li>用户下单后未支付，订单超时取消，但库存已被扣减，导致库存数据不一致。</li>
+</ul>
+</li>
+</ul>
+<p>在实际应用中，可以根据业务需求选择合适的分布式事务方案：</p>
+<ul>
+<li>对一致性要求高的场景，可以选择 <strong>2PC</strong> 或 <strong>TCC</strong>。</li>
+<li>对性能要求高的场景，可以选择 <strong>基于消息队列的最终一致性</strong> 或 <strong>本地消息表</strong>。</li>
+</ul>
+<p>我们都知道数据库(MySql)的事务机制【<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/05/06/%E4%BA%8B%E5%8A%A1/">事务(隔离级别) - The Peak Tower</a>】有ACID四大性质：<strong>原子性（Atomicity）</strong>、<strong>一致性（Consistency）</strong>、<strong>隔离性（Isolation）</strong> 和 <strong>持久性（Durability）</strong>，类比来看：</p>
+<p><strong>分布式事务</strong>是指涉及多个独立系统或服务的事务操作，这些系统或服务可能分布在不同的节点或数据库中。分布式事务需要确保所有参与的系统要么全部提交事务，要么全部回滚，以保持数据的一致性。</p>
+<p><img src="https://s2.loli.net/2025/03/20/GNK5hp2ErMDjxJS.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>比如：商城系统，用户在下单时，系统需要完成以下操作：</p>
+<ol>
+<li><strong>订单服务</strong>：创建订单。</li>
+<li><strong>库存服务</strong>：扣减库存。</li>
+<li><strong>物流服务</strong>：生成物流单。</li>
+</ol>
+<p>这些操作涉及多个独立的服务，如果任何一个操作失败，整个事务需要回滚，以确保数据的一致性。</p>
+<h2 id="2PC两阶段提交分布式事务"><a href="#2PC两阶段提交分布式事务" class="headerlink" title="2PC两阶段提交分布式事务"></a>2PC两阶段提交分布式事务</h2><h3 id="概况"><a href="#概况" class="headerlink" title="概况"></a>概况</h3><blockquote>
+<p>了解过拜占庭将军问题吗？</p>
+</blockquote>
+<p><strong>2PC（Two-Phase Commit）</strong> 是一种经典的分布式事务协议，用于确保所有参与节点要么全部提交事务，要么全部回滚。它分为两个阶段：</p>
+<ol>
+<li><strong>准备阶段（Prepare Phase）</strong>：<ul>
+<li>事务协调者（Transaction Coordinator）向所有参与者发送准备请求。(注意这其中依赖了底层资源管理器（如数据库）的事务支持。)</li>
+<li>参与者执行事务操作，但不提交，将结果（成功或失败）反馈给协调者。</li>
+</ul>
+</li>
+<li><strong>提交阶段（Commit Phase）</strong>：<ul>
+<li>如果所有参与者都准备成功，协调者发送提交请求，参与者提交事务。</li>
+<li>如果有任何参与者准备失败，协调者发送回滚请求，参与者回滚事务。</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>还记得Mysql的两阶段提交吗？<a target="_blank" rel="noopener" href="https://wangxiaobai08.github.io/2023/04/25/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">日志系统 - The Peak Tower</a></p>
+</blockquote>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><h4 id="2PC第一阶段"><a href="#2PC第一阶段" class="headerlink" title="2PC第一阶段"></a>2PC第一阶段</h4><p>投票环节，投票由协调者节点发起，可以进一步细分为以下步骤：</p>
+<ol>
+<li>事务询问：协调者向所有的参与者发送事务预处理请求，称之为Prepare，并开始等待各参与者的响应。</li>
+<li>执行本地事务：各个参与者节点执行本地事务操作,但在执行完成后并不会真正提交数据库本地事务，而是先向协调者报告说：“我这边可以处理了&#x2F;我这边不能处理”。</li>
+<li>各参与者向协调者反馈事务询问的响应：如果参与者成功执行了事务操作，那么就反馈给协调者Yes响应，表示事务可以执行，如果没有参与者成功执行事务，那么就反馈给协调者No响应，表示事务不可以执行。</li>
+</ol>
+<p>第一阶段执行完后，会有两种可能。1、所有都返回Yes. 2、有一个或者多个返回No。</p>
+<p><img src="https://s2.loli.net/2025/03/20/ZCS521DBIGgLARF.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="2PC第二阶段"><a href="#2PC第二阶段" class="headerlink" title="2PC第二阶段"></a>2PC第二阶段</h4><h5 id="正常提交"><a href="#正常提交" class="headerlink" title="正常提交"></a>正常提交</h5><p>如果第一阶段所有的参与者都返回Yes，那么我们就可以继续执行2PC第二阶段的正常提交步骤：</p>
+<ol>
+<li>协调者节点通知所有的参与者Commit事务请求；</li>
+<li>参与者收到Commit请求之后，就会正式执行本地事务Commit操作，并在完成提交之后释放整个事务执行期间占用的事务资源。</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/03/20/odbNzM3vHeAI8Rp.png" srcset="/img/loading.gif" lazyload></p>
+<h5 id="异常回滚"><a href="#异常回滚" class="headerlink" title="异常回滚"></a>异常回滚</h5><p>如果任何一个参与者向协调者反馈了No响应，或者等待超时之后，协调者尚未收到所有参与者的反馈响应，那么我们就需要执行2PC第二阶段的回滚操作：</p>
+<ol>
+<li>协调者节点通知所有的参与者Rollback请求；</li>
+<li>参与者收到Rollback请求之后，就会正式执行本地事务Rollback操作，并在完成提交之后释放整个事务执行期间占用的事务资源。</li>
+</ol>
+<p><img src="https://s2.loli.net/2025/03/20/diLU5BqgOEAH6Co.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="找茬环节"><a href="#找茬环节" class="headerlink" title="找茬环节"></a>找茬环节</h3><p><strong>协调者向所有参与者发送准备请求，但由于网络抖动或阻塞，部分参与者收到了请求，而另一部分未收到。</strong></p>
+<p>解决方案：</p>
+<p><strong>超时机制</strong>：</p>
+<p>协调者在发送请求后，会等待参与者的响应。如果在一定时间内未收到响应，协调者会认为网络出现问题。</p>
+<p>协调者可以根据超时结果决定事务的最终状态：</p>
+<ul>
+<li>如果大多数参与者已经返回成功，协调者可以决定提交事务。</li>
+<li>如果无法确定参与者的状态，协调者通常会选择回滚事务，以确保数据的一致性。</li>
+</ul>
+<p><strong>重试机制</strong>：</p>
+<p>协调者可以尝试重新发送请求给未响应的参与者，直到收到响应或达到最大重试次数。如果重试后仍然无法收到响应，协调者会认为该参与者不可用，并触发回滚操作。</p>
+<p><strong>参与者成功执行了事务操作，并发送了“成功”响应给协调者，但由于网络抖动或阻塞，协调者未收到响应。协调者误认为参与者未响应，通知其他参与者回滚，导致数据不一致。</strong></p>
+<p>解决方案：</p>
+<p> <strong>引入超时重试机制</strong>：</p>
+<p><strong>协调者</strong>：在发送提交请求后，协调者会等待参与者的响应。如果在一定时间内未收到响应，协调者会重试发送提交请求，而不是立即回滚。重试次数和时间间隔可以根据业务需求配置。</p>
+<p><strong>参与者</strong>：参与者在提交事务后，会等待协调者的确认。如果长时间未收到确认，参与者可以主动向协调者查询状态。</p>
+<p><strong>确认机制</strong>：</p>
+<p>参与者在发送“成功”响应后，会等待协调者的最终指令（提交或回滚）。如果长时间未收到指令，参与者可以主动向协调者查询状态。</p>
+<p><strong>日志记录</strong>：</p>
+<p>参与者在执行事务操作时，会记录事务状态（如“已准备”）。如果协调者发送了错误的回滚指令，参与者可以根据日志状态决定是否回滚。</p>
+<p><strong>补偿机制</strong>：</p>
+<p>如果参与者已经提交了事务，但协调者通知回滚，参与者可以通过补偿操作（如反向操作）恢复数据一致性。补偿操作必须是幂等的，即多次执行不会产生副作用。</p>
+<p><strong>协调者或参与者在关键阶段宕机</strong>，<strong>导致事务状态不一致，部分参与者提交了事务，而另一部分未提交或回滚。</strong>？</p>
+<p><strong>协调者正常,参与者宕机</strong></p>
+<p>由于协调者无法收集到所有参与者的反馈，会陷入阻塞情况。解决方案:引入超时机制,如果协调者在超过指定的时间还没有收到参与者的反馈,事务就失败,向所有节点发送终止事务请求。</p>
+<p><strong>协调者宕机,参与者正常</strong></p>
+<p>无论处于哪个阶段，由于协调者宕机，无法发送提交请求，所有处于执行了操作但是未提交状态的参与者都会陷入阻塞情况。解决方案:引入协调者备份,同时协调者需记录操作日志.当检测到协调者宕机一段时间后，协调者备份取代协调者，并读取操作日志，向所有参与者询问状态。</p>
+<p><strong>协调者和参与者都宕机</strong></p>
+<p><strong>如果发生在第一阶段</strong>： 因为第一阶段，所有参与者都没有真正执行commit，所以只需重新在剩余的参与者中重新选出一个协调者，新的协调者在重新执行第一阶段和第二阶段就可以了。</p>
+<p><strong>发生在第二阶段并且挂了的参与者在挂掉之前没有收到协调者的指令</strong>：也就是上面的第2步挂了，这是可能协调者还没有发送第2步就挂了。这种情形下，新的协调者重新执行第一阶段和第二阶段操作。</p>
+<p><strong>发生在第二阶段并且有部分参与者已经执行完commit操作</strong>：就好比这里订单服务A和支付服务B都收到协调者发送的commit信息，开始真正执行本地事务commit,但突发情况，A commit成功，B挂了。这个时候目前来讲数据是不一致的。虽然这个时候可以再通过手段让他和协调者通信，再想办法把数据搞成一致的，但是，这段时间内他的数据状态已经是不一致的了！ 2PC无法解决这个问题。</p>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><p>2PC实现了强一致性确保所有节点要么全部提交，要么全部回滚。同时简单易懂：协议逻辑清晰，易于实现。</p>
+<p>但又有一些缺点：</p>
+<ul>
+<li>性能瓶颈：同步阻塞，协调者和参与者在准备和提交阶段需要等待所有节点的响应。</li>
+<li>单点故障：协调者故障可能导致整个系统阻塞。</li>
+<li>数据不一致：在极端情况下，如网络分区，可能导致数据不一致。</li>
+</ul>
+<p>所有2PC适用于对一致性要求极高的场景，如金融系统和分布式数据库。然而，在高并发或对性能要求较高的场景中，2PC可能不是最佳选择。</p>
+<h2 id="TCC提交分布式事务实现方案"><a href="#TCC提交分布式事务实现方案" class="headerlink" title="TCC提交分布式事务实现方案"></a>TCC提交分布式事务实现方案</h2><p>在前面一节中，可以看到2PC两阶段提交由于使用了数据库是事务机制导致并发性不是很高，<strong>有没有一种方法：能不能不依赖底层的事务机制来确保分布式系统中的事务一致性</strong>，即所有参与的服务要么全部提交事务，要么全部回滚。</p>
+<h3 id="概况-1"><a href="#概况-1" class="headerlink" title="概况"></a>概况</h3><blockquote>
+<p><strong>TCC（Try-Confirm-Cancel）</strong> 是一种基于补偿机制的分布式事务模型，适用于高并发和高性能要求的场景。TCC通过业务逻辑层面的补偿操作来实现事务的一致性，而不是依赖底层资源管理器（如数据库）的事务支持。</p>
+</blockquote>
+<p><strong>TCC 本质上是 2PC 的一种实现</strong>(可以看作是对 2PC 的一种业务逻辑层面的实现。)，但它通过业务逻辑层面的设计，将 2PC 的“准备-提交”机制转化为 Try、Confirm 和 Cancel 操作，从而提高了灵活性和性能。<strong>核心优势</strong>在于它能够适应复杂的业务场景，并通过补偿机制<strong>确保最终一致性</strong>。</p>
+<h3 id="具体实现-1"><a href="#具体实现-1" class="headerlink" title="具体实现"></a>具体实现</h3><h4 id="TM事务管理器"><a href="#TM事务管理器" class="headerlink" title="TM事务管理器"></a>TM事务管理器</h4><blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/650791238">从零到一搭建 TCC 分布式事务框架 - 知乎</a></p>
+</blockquote>
+<p>TM事务管理器 TM事务管理器可以实现为独立的服务，也可以让全局事务发起方充当 TM的角色，TM独立出来是为了成为公用组件，是为了考虑系统结构和软件复用。TM在发起全局事务时生成全局事务记录，全局事务ID贯穿整个分布式事务调用链条，用来记录事务上下文，追踪和记录状态，由于Confirm 和 Cancel失败需进行重试，因此需要实现为幂等，幂等性是指同一个操作无论请求多少次，其结果都相同。</p>
+<table>
+<thead>
+<tr>
+<th><strong>问题</strong></th>
+<th><strong>描述</strong></th>
+<th><strong>解决方案</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 事务的全局协调</strong></td>
+<td>多个独立服务需要协同工作，确保所有服务要么全部提交，要么全部回滚。</td>
+<td>TM 作为全局协调者，驱动 Try、Confirm 和 Cancel 操作的执行，根据 Try 阶段结果决定 Confirm 或 Cancel。</td>
+</tr>
+<tr>
+<td><strong>2. 事务状态管理</strong></td>
+<td>分布式事务涉及多个服务，每个服务的状态需要被跟踪和管理，否则事务可能陷入不一致状态。</td>
+<td>TM 记录事务的全局状态（如“进行中”、“已提交”、“已回滚”），并跟踪每个参与者的执行状态（如 Try 是否成功）。</td>
+</tr>
+<tr>
+<td><strong>3. 异常处理与重试</strong></td>
+<td>网络抖动、节点故障等问题可能导致事务执行失败，缺乏统一异常处理机制可能导致事务无法正确回滚。</td>
+<td>TM 负责处理异常情况（如超时、重试），如果某个参与者失败，TM 会触发 Cancel 操作，确保事务回滚。</td>
+</tr>
+<tr>
+<td><strong>4. 日志记录与恢复</strong></td>
+<td>如果协调者或参与者宕机，事务状态可能丢失，系统无法恢复事务状态。</td>
+<td>TM 记录事务日志（如事务状态、参与者状态），在系统崩溃或重启后能够恢复事务状态。</td>
+</tr>
+<tr>
+<td><strong>5. 幂等性保障</strong></td>
+<td>网络抖动可能导致消息重复发送，缺乏幂等性保障可能导致数据不一致。</td>
+<td>TM 确保 Confirm 和 Cancel 操作的幂等性，例如为每个事务生成唯一的事务 ID，参与者根据事务 ID 判断是否已处理。</td>
+</tr>
+</tbody></table>
+<ul>
+<li>[全栈(数据采集处理), 后端, 分布式系统]</li>
+</ul>
+<hr>
+<h5 id="TM-的工作流程"><a href="#TM-的工作流程" class="headerlink" title="TM 的工作流程"></a>TM 的工作流程</h5><p><img src="https://s2.loli.net/2025/03/20/KOzdL2fbsEJxVSg.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="TCC具体流程"><a href="#TCC具体流程" class="headerlink" title="TCC具体流程"></a>TCC具体流程</h4><p><img src="https://s2.loli.net/2025/03/20/cVsESRyjvNa2tZH.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>Try阶段</strong>：这是事务的预处理阶段，主要用于检查所有必要的条件是否满足，并预留所需的资源。在这个阶段，系统会尝试执行事务，但不会最终提交，以确保在确认阶段可以无障碍地完成事务。(业务上预扣减，呈现给用户中间状态。并未真正进行数据库上操作)</p>
+<p><strong>Confirm阶段</strong>：如果Try阶段成功，系统将进入Confirm阶段。在这个阶段，系统会正式提交事务，释放在Try阶段预留的资源。这个阶段通常不会进行业务检查，因为Try阶段已经确保了事务的可执行性。</p>
+<p><strong>Cancel阶段</strong>：如果Try阶段失败，或者在Confirm阶段之前发生了任何异常，系统将进入Cancel阶段。在这个阶段，系统会撤销Try阶段执行的操作，释放预留的资源，确保系统回到事务执行前的状态。</p>
+<h3 id="使用场景-1"><a href="#使用场景-1" class="headerlink" title="使用场景"></a>使用场景</h3><p>可以看到TCC 通过业务逻辑层面的补偿机制，减少了对底层资源管理器的依赖，<strong>提高了系统的并发性能</strong>。允许开发者根据具体业务需求自定义 Try、Confirm 和 Cancel 操作，提供了更大的灵活性。<strong>通过补偿机制确保系统最终达到一致状态</strong>，<strong>适用于对一致性要求较高但可以容忍短暂不一致的场景。</strong></p>
+<p>但同时:</p>
+<p>TCC 需要开发者显式地实现 Try、Confirm 和 Cancel 操作，增加了开发和维护的复杂性。(原本一个接口需要写三个接口),Confirm 和 Cancel 操作必须是幂等的，这对业务逻辑的设计提出了更高的要求。需要设计完善的补偿逻辑，以确保在出现异常时能够正确回滚事务。</p>
+<h2 id="可靠消息最终一致性事务概述"><a href="#可靠消息最终一致性事务概述" class="headerlink" title="可靠消息最终一致性事务概述"></a>可靠消息最终一致性事务概述</h2><p>可靠消息最终一致性方案是指当事务发起方执行完成本地事务后并发出一条消息，事务参与方(消息消费者)一定能够接收消息并处理事务成功，此方案强调的是只要消息发给事务参与方<strong>最终事务要达到一致</strong>。 此方案是利用消息<a target="_blank" rel="noopener" href="https://cloud.tencent.com/product/message-queue-catalog?from_column=20065&from=20065">中间件</a>完成</p>
+<p><img src="https://s2.loli.net/2025/03/20/lpYWVI2qLZhD81a.png" srcset="/img/loading.gif" lazyload></p>
+<p>事务发起方（消息生产方）将消息发给消息中间件，事务参与方从消息中间件接收消息，事务参与方（消息消费方）和消息中间件之间都是通过<strong>网络通信</strong>，由于网络通信的不确定性会导致分布式事务问题。因此可靠消息最终一致性方案要解决以下几个问题：</p>
+<p> 【1】<strong>本地事务与消息发送的原子性问题：</strong>事务发起方在本地事务执行成功后消息必须发出去，否则就丢弃消息。即实现本地事务和消息发送的原子性，要么都成功，要么都失败。本地事务与消息发送的原子性问题是实现可靠消息最终一致性方案的关键问题。先来尝试下这种操作，先发送消息，再操作数据库<strong>：</strong>这种情况下无法保证数据库操作与发送消息的一致性，因为可能发送消息成功，据库操作失败。</p>
+<p>【2】<strong>事务参与方接收消息的可靠性：</strong>事务参与方必须能够从消息队列接收到消息，如果接收消息失败可以重复接收消息。 </p>
+<p>【3】<strong>消息重复消费的问题：</strong>由于步骤2的存在，若某一个消费节点超时但是消费成功，此时消息中间件会重复投递此消息，就导致了消息的重复消费。要解决消息重复消费的问题就要实现事务参与方的方法幂等性。</p>
+<h3 id="基于本地消息表"><a href="#基于本地消息表" class="headerlink" title="基于本地消息表"></a>基于本地消息表</h3><h4 id="概况-2"><a href="#概况-2" class="headerlink" title="概况"></a>概况</h4><p><strong>基于本地消息表的最终一致性方案</strong> 是一种通过结合 <strong>本地数据库事务</strong> 和 <strong>消息队列（MQ）</strong> 来实现分布式系统最终一致性的方法。该方案的核心思想是：在执行业务操作的同时，将需要发送的消息记录到本地数据库中，确保消息的可靠性和事务的一致性。与单纯使用消息队列的方案相比，本地消息表方案通过本地事务保证了消息的可靠性，避免了消息丢失或重复发送的问题。</p>
+<p><img src="https://s2.loli.net/2025/03/20/YWm4rI9iBwKQXnZ.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="具体实现-2"><a href="#具体实现-2" class="headerlink" title="具体实现"></a>具体实现</h4><p><strong>业务操作与消息记录</strong>：</p>
+<p>业务服务在执行本地事务时，同时将需要发送的消息插入到本地消息表中。</p>
+<ul>
+<li>例如：创建订单时，业务服务在订单表中插入一条订单记录，同时在本地消息表中插入一条消息，内容为“订单已创建”。</li>
+</ul>
+<p><strong>消息发送</strong>：</p>
+<p>消息生产者定期扫描本地消息表，将状态为“待发送”的消息发送到消息队列。发送成功后，更新消息状态为“已发送”。</p>
+<p><strong>消息消费</strong>：</p>
+<p>消息消费者从消息队列中消费消息，并执行业务逻辑。</p>
+<ul>
+<li>例如：库存服务消费“订单已创建”消息，扣减库存并更新本地数据库。</li>
+</ul>
+<p><strong>消息确认</strong>：</p>
+<p>消费者处理成功后，向消息队列发送确认（ACK），消息队列会删除或标记该消息为已处理。如果消费者处理失败，消息会重新进入队列，等待再次消费。</p>
+<p><strong>消息重试</strong>：</p>
+<p>如果消息发送失败（如网络问题），消息生产者会根据重试策略重新发送消息。如果消息消费失败，消费者会根据重试策略重新处理消息。</p>
+<p><img src="https://s2.loli.net/2025/03/20/IrVfhKPSoRbGsni.png" srcset="/img/loading.gif" lazyload></p>
+<p>本地消息表的设计如下</p>
+<p><img src="https://s2.loli.net/2025/03/20/EOeor6YW1talJqS.png" srcset="/img/loading.gif" lazyload></p>
+<p>时序图：</p>
+<p><img src="https://s2.loli.net/2025/03/20/sXqzVtMBnvA3GEp.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="使用场景-2"><a href="#使用场景-2" class="headerlink" title="使用场景"></a>使用场景</h4><p>从上面的描述可以看到该方案的一些缺点：要维护本地消息表和消息队列，增加了系统的复杂性。由于消息是异步发送和处理的，系统的一致性会有一定的延迟。消费端的业务逻辑需要保证幂等性，增加了业务逻辑的复杂性。</p>
+<p>基于本地消息表的最终一致性方案适用于对一致性要求不是特别严格，允许短暂时间内的不一致性，但需要高可靠性和高扩展性的分布式系统，如电商订单系统、支付系统和库存管理系统。</p>
+<h3 id="基于可靠消息"><a href="#基于可靠消息" class="headerlink" title="基于可靠消息"></a>基于可靠消息</h3><blockquote>
+<p><strong>基于可靠消息的最终一致性方案</strong> 是一种通过可靠消息队列确保分布式系统最终一致性的方法。与基于本地消息的方案不同，该方案依赖于消息队列的可靠性来保证消息的传递和处理，从而确保所有参与的服务最终达到一致状态。</p>
+</blockquote>
+<h4 id="具体实现-3"><a href="#具体实现-3" class="headerlink" title="具体实现"></a>具体实现</h4><p><strong>消息生产与发送</strong>：</p>
+<p>业务服务在执行本地事务后，向可靠消息队列发送一条消息。这条消息包含了需要其他服务处理的信息。可靠消息队列（如 Kafka、RabbitMQ）确保消息的持久化和可靠传递。</p>
+<p><strong>消息确认与存储</strong>：</p>
+<p>消息队列接收到消息后，会进行持久化存储，并返回确认（ACK）给生产者。生产者只有在收到确认后，才认为消息已成功发送。</p>
+<p><strong>消息消费与处理</strong>：</p>
+<p>消费者服务从消息队列中拉取消息，并执行相应的业务操作。如果消费成功，消费者会发送确认（ACK）给消息队列，消息队列会删除或标记该消息为已处理。如果消费失败，消息会重新进入队列，等待再次消费。</p>
+<p><strong>消息重试与幂等性</strong>：</p>
+<p>为了处理消息可能重复发送的情况，消费端的业务逻辑需要保证幂等性，即多次处理同一条消息不会产生副作用。</p>
+<p><img src="https://s2.loli.net/2025/03/20/CDAsxtTyujbi7F1.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><p>依赖消息队列，需要考虑消息队列宕机后的可用性</p>
+<h2 id="最大努力通知方案"><a href="#最大努力通知方案" class="headerlink" title="最大努力通知方案"></a>最大努力通知方案</h2><p><strong>最大努力通知方案</strong> 是一种用于实现分布式系统最终一致性的方法，特别适用于跨系统、跨网络的异步通信场景。该方案的核心思想是，发送方会尽最大努力将通知消息传递给接收方，但并不保证消息一定能够成功送达或处理。接收方在收到通知后，可能会进行相应的处理，但如果通知失败，发送方会进行多次重试，直到达到预定的重试次数或时间限制。</p>
+<blockquote>
+<p><strong>最大努力通知事务本质是通过引入定期校验机制来对最终一致性做兜底，对业务侵入性较低；适合于对最终一致性敏感度比较低、业务链路较短的场景。</strong></p>
+</blockquote>
+<p>核心思想：</p>
+<p><strong>有一定的消息重复通知机制：</strong>因为接收通知方可能没有接收到通知，此时要有一定的机制对消息重复通知。</p>
+<p><strong>消息校对机制</strong>：如果尽最大努力也没有通知到接收方，或者接收方消费消息后要再次消费，此时可由接收方主动向通知方查询消息信息来满足需求。</p>
+<p><img src="https://s2.loli.net/2025/03/20/PK9kp12ndAmZNI4.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="具体实现-4"><a href="#具体实现-4" class="headerlink" title="具体实现"></a>具体实现</h3><p><strong>通知发送</strong>：</p>
+<p>发送方在执行完本地事务后，向接收方发送通知消息。通知消息通常包含业务操作的结果或状态。发送方会记录通知的状态（如“已发送”、“待重试”等），以便在通知失败时进行重试。</p>
+<p><strong>通知确认</strong>：</p>
+<p>接收方在收到通知后，会进行处理并返回确认（ACK）给发送方。如果接收方处理成功，发送方会标记通知为“已完成”。如果接收方处理失败或未返回确认，发送方会标记通知为“待重试”。</p>
+<p><strong>通知重试</strong>：</p>
+<p>发送方会定期检查未完成的通知，并进行重试。</p>
+<p>重试机制通常包括指数退避策略，即每次重试的时间间隔逐渐增加，以避免对接收方造成过大压力。重试次数和时间间隔可以根据业务需求进行配置。</p>
+<p><strong>最终处理</strong>：</p>
+<p>如果经过多次重试后，通知仍然未能成功送达或处理，发送方会记录失败状态，并可能进行人工干预或其他补偿操作。</p>
+<p><img src="https://s2.loli.net/2025/03/20/sFiRYDXlMT7Ckbn.png" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yuhushen/p/15434594.html">分布式事务（二）之两阶段提交 - 御狐神 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ttaylor/p/15988375.html">分布式事务解决方案之2PC(两阶段提交) - 1450811640 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zhengzhaoxiang/p/13976524.html">TCC 分布式事务解决方案 - Java程序员进阶 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1824295">可靠消息最终一致性【本地消息表、RocketMQ 事务消息方案】-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/462665440">分布式理论之分布式事务：可靠消息最终一致性方案 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="http://interview.wzcu.com/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E6%9C%80%E5%A4%A7%E5%8A%AA%E5%8A%9B%E9%80%9A%E7%9F%A5.html">最大努力通知 · GitBook</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/haizai/p/11973668.html">分布式事务之解决方案（最大努力通知） - 小小一 - 博客园</a></p>
+<h1 id="链路追踪、限流、熔断"><a href="#链路追踪、限流、熔断" class="headerlink" title="链路追踪、限流、熔断"></a>链路追踪、限流、熔断</h1><h2 id="链路追踪"><a href="#链路追踪" class="headerlink" title="链路追踪"></a>链路追踪</h2><h3 id="为什么需要链路追踪"><a href="#为什么需要链路追踪" class="headerlink" title="为什么需要链路追踪"></a>为什么需要链路追踪</h3><p>微服务之间往往有复杂的依赖关系，例如，一个服务调用另一个服务，那个服务又调用另一个服务，这样的链式依赖关系在系统中普遍存在。故障往往发生在服务间的某个环节，但单纯依靠日志无法轻松看出依赖关系和具体瓶颈所在。在微服务架构中，请求通常会跨多个服务进行处理。一个用户请求可能会经过多个服务实例，甚至多个微服务。当请求失败或延迟时，开发者需要了解整个调用链路，而传统的日志记录无法提供完整的上下游服务关系。</p>
+<h4 id="场景一："><a href="#场景一：" class="headerlink" title="场景一："></a>场景一：</h4><p><img src="https://s2.loli.net/2025/02/03/MP2BfWgcNQd8JvU.png" srcset="/img/loading.gif" lazyload alt="image-20250203195615602"></p>
+<p>在分布式系统中，故障可能是由于网络延迟、服务崩溃、超时、配置问题等多种原因引起的。传统的日志无法提供足够的上下文信息，导致排查问题时需要花费大量时间。</p>
+<h4 id="场景二："><a href="#场景二：" class="headerlink" title="场景二："></a>场景二：</h4><p><img src="https://s2.loli.net/2025/02/03/meb84d2vZtnBVHx.png" srcset="/img/loading.gif" lazyload alt="image-20250203195731181"></p>
+<p>分布式事务在多个服务间的协作中非常常见，但它们很容易变得复杂且难以调试。多个微服务之间的事务可能涉及多个服务的交互，传统的方式难以准确跟踪每个事务的状态。在微服务架构中，性能瓶颈可能出现在任何一个环节。当系统响应缓慢时，单独查看某个服务的日志往往不能提供足够的信息来定位瓶颈。</p>
+<h3 id="链路追踪技术选型"><a href="#链路追踪技术选型" class="headerlink" title="链路追踪技术选型"></a>链路追踪技术选型</h3><p>链路追踪的核心是为每个请求生成一个唯一的标识符（如 Trace ID），并将该标识符传播到各个服务之间。每个服务在接收到请求时，会记录下自己的执行信息（如开始时间、结束时间、调用的其他服务等），并将这些信息作为“跨度”（Span）记录下来。最终，链路追踪系统将这些“跨度”数据汇聚起来，形成完整的请求调用链。</p>
+<p><img src="https://s2.loli.net/2025/02/03/481HAmjDlLP2swM.png" srcset="/img/loading.gif" lazyload alt="image-20250203200326969"></p>
+<h3 id="jaeger简单使用"><a href="#jaeger简单使用" class="headerlink" title="jaeger简单使用"></a>jaeger简单使用</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://jaeger-cn.readthedocs.io/zh-cn/latest/">Jaeger Documentation</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/">Jaeger: open source, distributed tracing platform</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/docs/1.18/getting-started/">Getting Started — Jaeger documentation</a></p>
+</blockquote>
+<h2 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h2><h3 id="为什么要限流"><a href="#为什么要限流" class="headerlink" title="为什么要限流"></a>为什么要限流</h3><p>预期外的突发流量总会出现，对系统可承载的容量造成巨大冲击，极端情况下甚至会导致系统雪崩 。</p>
+<blockquote>
+<p>在分布式系统中，如果某个服务节点发生故障或者网络发生异常，都有可能导致调用方被阻塞等待，如果超时时间设置很长，调用方资源很可能被耗尽。这又导致了调用方的上游系统发生资源耗尽的情况，最终导致系统雪崩。</p>
+</blockquote>
+<p>当系统的处理能力有限时，如何阻止计划外的请求继续对系统施压，这便是限流的作用之处 。限流可以帮助我们应对突发流量，通过限制服务的请求率来保护服务不被过载 。除了控制流量，限流还有一个应用目的是用于控制用户行为，避免无用请求，比如频繁地下载系统中的数据表格。</p>
+<blockquote>
+<p>限流一般来说分为客户端限流和服务端限流两类。</p>
+</blockquote>
+<h3 id="客户端限流"><a href="#客户端限流" class="headerlink" title="客户端限流"></a>客户端限流</h3><p>在客户端限流中，由于请求方和被请求方的关系明确，通常采用较为简单的限流策略，如结合分布式限流和固定的限流阈值。</p>
+<p>客户端的限流阈值可被视作被调用方对主调方的配额。</p>
+<p>合理设定限流阈值的方法包括：</p>
+<ol>
+<li><strong>容量评估</strong>：通过单机压测确定服务的单机容量模型，并与下游服务协商以了解他们的限流阈值</li>
+<li><strong>容量规划</strong>：根据日常运行、运营活动和节假日等不同场景，提前进行容量评估和规划</li>
+<li><strong>全链路压测</strong>：通过模拟真实场景的压测，评估现有限流值的合理性</li>
+</ol>
+<p>在限流算法方面，比如:像<strong>滑动窗口、漏桶</strong>和<strong>令牌桶</strong>均是常用的限流算法。</p>
+<blockquote>
+<p>关于这些限流算法的详细信息：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1815254">10张图带你彻底搞懂限流、熔断、服务降级-腾讯云开发者社区-腾讯云</a></p>
+</blockquote>
+<p>这些算法各有特点，能有效管理客户端的请求流量，保障系统的稳定运行。</p>
+<p><img src="https://s2.loli.net/2025/02/04/9AbSsc3Rj6VCXzG.png" srcset="/img/loading.gif" lazyload alt="image-20250204161843575"></p>
+<h3 id="服务端限流"><a href="#服务端限流" class="headerlink" title="服务端限流"></a>服务端限流</h3><p>服务端限流旨在通过主动丢弃或延迟处理部分请求，以应对系统过载的情况。</p>
+<p>服务端限流实现的两个关键点：</p>
+<p><strong>1、如何判断系统是否过载</strong></p>
+<p>常用的判断依据包括：</p>
+<ul>
+<li>资源使用率；</li>
+<li>请求成功率；</li>
+<li>响应时间；</li>
+<li>请求排队时间</li>
+</ul>
+<p><strong>2、过载时如何选择要丢弃的请求</strong></p>
+<p>常用的判断依据包括：</p>
+<ul>
+<li>按照主调方（客户端）的重要性来划分优先级；</li>
+<li>根据用户的重要性进行区分。</li>
+</ul>
+<p>关于服务端限流在业界内的实践应用：</p>
+<ul>
+<li>开源的 Sentinel 采用类似 TCP BBR 的限流方法。它基于利特尔法则，计算时间窗口内的最大成功请求数 （MaxPass） 和最小响应时间（MinRt）。当 CPU 使用率超过 80% 时，根据 MaxPass 和 MinRt 计算窗口内理论上可以通过的最大请求量，进而确定每秒的最大请求数。如果当前处理中的请求数超过此计算值，则进行请求丢弃。</li>
+<li>微信后台则使用请求的平均排队时间作为系统过载的判断标准。当平均等待时间超过 20 毫秒时，它会以一定的降速因子来过滤部分请求。相反，如果判断平均等待时间低于 20 毫秒，则会逐渐提高请求的通过率。这种“快速降低，缓慢提升”的策略有助于防止服务的大幅波动。</li>
+</ul>
+<h3 id="限流技术选型"><a href="#限流技术选型" class="headerlink" title="限流技术选型"></a>限流技术选型</h3><p><img src="https://s2.loli.net/2025/02/03/tJgUGp3h4sefdnu.png" srcset="/img/loading.gif" lazyload alt="image-20250203201902616"></p>
+<h4 id="Sentinel简单使用"><a href="#Sentinel简单使用" class="headerlink" title="Sentinel简单使用"></a>Sentinel简单使用</h4><blockquote>
+<p>官方文档：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/alibaba/Sentinel/wiki/%E4%BB%8B%E7%BB%8D">介绍 · alibaba&#x2F;Sentinel Wiki</a></p>
+<p><a target="_blank" rel="noopener" href="https://sentinelguard.io/zh-cn/index.html">home | Sentinel</a></p>
+</blockquote>
+<h2 id="降级"><a href="#降级" class="headerlink" title="降级"></a>降级</h2><p>降级是从系统功能角度出发，人为或自动地将某些不重要的功能停掉或者简化，以降低系统负载，这部分释放的资源可以去支撑更核心的功能</p>
+<ul>
+<li>目的是为了提升系统的可用性，同时要寻找到用户体验与降级成本的平衡点；</li>
+<li>降级属于有损操作。简而言之，弃卒保帅。</li>
+</ul>
+<h3 id="降级策略"><a href="#降级策略" class="headerlink" title="降级策略"></a>降级策略</h3><p><img src="https://s2.loli.net/2025/02/04/x4t2hPv3N8zrRqE.png" srcset="/img/loading.gif" lazyload alt="image-20250204150521279"></p>
+<p><strong>虽说故障是不可避免的，要达到绝对高可用一般都是使用冗余+自动故障转移，这个时候其实也不需要降级措施了。</strong></p>
+<p>但是这样带来的成本较高，而且可用性、成本、用户体验3者本身之间是需要权衡的，一般来说他们之前会是这样的关系：</p>
+<p><img src="https://s2.loli.net/2025/02/04/rgMUVWtS4ByXIsO.png" srcset="/img/loading.gif" lazyload alt="image-20250204150606583"></p>
+<h3 id="自动降级"><a href="#自动降级" class="headerlink" title="自动降级"></a>自动降级</h3><ul>
+<li>适合触发条件明确可控的场景，比如请求调用失败次数大于一定的阈值，服务接口超时等情况；</li>
+<li>对于一些旁路服务，服务负载过高也可以直接触发自动降级。</li>
+</ul>
+<h4 id="页面降级"><a href="#页面降级" class="headerlink" title="页面降级"></a><strong>页面降级</strong></h4><p>从用户操作页面进行操作，直接限制和截断某功能的入口：</p>
+<p><img src="https://s2.loli.net/2025/02/04/MdhfJgTKXjHR59v.png" srcset="/img/loading.gif" lazyload alt="image-20250204151020172"></p>
+<p>从页面入口对积分链路降级,如上图所示，该业务场景下，是否使用积分，是在页面渲染阶段决定并返回给前段进行页面拼接的。当我们需要对其进行降级时，会通过控制平台进行降级开关切换，系统读到降级开启后，会返回前段积分降级的标识，前端将不再显示积分抵扣入口。即从入口处截断积分链路的执行，达到降级的目的。</p>
+<h4 id="存储降级"><a href="#存储降级" class="headerlink" title="存储降级"></a><strong>存储降级</strong></h4><p>使用缓存方式来降级频繁操作的存储</p>
+<p><img src="https://s2.loli.net/2025/02/04/DromZhUyBNaPSve.png" srcset="/img/loading.gif" lazyload alt="27422-20230615134038437-936904874"></p>
+<p>对于秒杀业务这种写多读少的场景，对DB的压力是非常大的，一般的，我们会采用上图所示的缓存架构，用缓存操作代替DB操作，用异步MQ代替同步接口，也属于一种存储的降级行为。</p>
+<h4 id="读降级"><a href="#读降级" class="headerlink" title="读降级"></a><strong>读降级</strong></h4><p>对于非核心信息的读请求禁用</p>
+<p> 微信的抢红包场景，红包列表的展示属于抢红包的非核心链路，因此，对于列表展示，在业务压力较大的情况下，对头像等信息的读，可以直接禁用。</p>
+<h4 id="写降级"><a href="#写降级" class="headerlink" title="写降级"></a><strong>写降级</strong></h4><p> 直接禁止相关写操作的服务请求</p>
+<p> 总结，一句话概括降级的核心–丢车保帅。以损失部分体验的代价，来换取整个业务链路的稳定性和持续可用。</p>
+<h3 id="手动降级"><a href="#手动降级" class="headerlink" title="手动降级"></a>手动降级</h3><ul>
+<li>降级操作都是有损的，部分情况下需要根据对业务的影响程度进行手动降级；</li>
+<li>通常需要先制定降级的分级策略，影响面由浅至深。</li>
+</ul>
+<hr>
+<p><img src="https://s2.loli.net/2025/02/04/fDZgTpetK6hlMmH.png" srcset="/img/loading.gif" lazyload alt="image-20250204150722082"></p>
+<p>降级的策略还是比较丰富的，因此需要从多个角度去化简</p>
+<ul>
+<li>首先，将一部分判断条件简单的降级通过自动化手段去实现；</li>
+<li>其次，根据对业务的影响程度，对降级进行分级，达到有层次的降级效果；</li>
+<li>最后，通过高频演练，确保降级的有效性。</li>
+</ul>
+<h3 id="与限流的区别"><a href="#与限流的区别" class="headerlink" title="与限流的区别"></a>与限流的区别</h3><ul>
+<li><strong>降级依靠牺牲一部分功能或体验保住容量，而限流则是依靠牺牲一部分流量来保住容量。</strong></li>
+<li>一般来说，限流的通用性会更强一些，因为每个服务理论上都可以设置限流，<strong>但并不是每个服务都能降级</strong>，比如系统中的登录服务和用户服务，就不可能被降级（没有这两个服务，用户都没法使用系统了）。</li>
+</ul>
+<h2 id="熔断"><a href="#熔断" class="headerlink" title="熔断"></a>熔断</h2><h3 id="服务雪崩效应"><a href="#服务雪崩效应" class="headerlink" title="服务雪崩效应"></a>服务雪崩效应</h3><ul>
+<li>原因：由于延时或负载过高等导致请求积压，占用大量系统资源，服务器达到性能瓶颈，服务提供者不可用</li>
+<li>现象：上游服务故障导致下游服务瘫痪，出现连锁故障</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/04/iAOQPLrGKou2RHZ.png" srcset="/img/loading.gif" lazyload alt="image-20250204151701452"></p>
+<p>熔断器像是一个保险丝。当我们依赖的服务出现问题时，可以及时容错。<br>一方面可以减少依赖服务对自身访问的依赖，防止出现雪崩效应；<br>另一方面降低请求频率以方便上游尽快恢复服务。</p>
+<blockquote>
+<p>熔断机制之所以被我赋予大局观的美称，是因为其所要解决的问题是级联故障和服务雪崩！</p>
+</blockquote>
+<p>在分布式的环境下，异常是常态。如上图所示，当服务C出现调用异常时，会在服务B中出现大量的请求超时和调用延迟。这些调用也是需要占用系统资源的，当大量请求积压，服务B的线程池等资源也会随之耗尽，最终导致整个服务链路的雪崩都是有可能的。因此，当服务C出现异常时，对服务C的调用适当暂停，同时不断监测其接口是否恢复，对于整个链路的健康非常有必要的，上述针对C的处理过程就是熔断。</p>
+<h3 id="传统熔断器"><a href="#传统熔断器" class="headerlink" title="传统熔断器"></a><strong>传统熔断器</strong></h3><p>当请求失败比率达到一定阈值之后，熔断器开启，并休眠一段时间（由配置决定）。这段休眠期过后，熔断器将处于半开状态，在此状态下将试探性地放过一部分流量，如果这部分流量调用成功后，再次将熔断器关闭，否则熔断器继续保持开启并进入下一轮休眠周期。</p>
+<p>引入传统熔断器的请求时序图：</p>
+<p><img src="https://s2.loli.net/2025/02/04/Q8IhwNxu54PGcAg.png" srcset="/img/loading.gif" lazyload alt="29484b12e0192f9ba21f06bc4d9aeb35"></p>
+<p>传统熔断器实现 关闭、打开、半开 三个状态；</p>
+<ul>
+<li><p>关闭（Closed）：默认状态。允许请求到达目标服务，同时统计在窗口时间内的成功和失败次数，如果达到错误率阈值将会切换为“打开”状态；</p>
+</li>
+<li><p>打开（Open）：对应用的请求会立即返回错误响应或执行预设的失败降级逻辑，而不调用目标服务；</p>
+</li>
+<li><p>半开（Half-Open）：进入“打开”状态会维护一个超时时间，到达超时时间后开始进入该状态，允许应用程序一定数量的请求去调用目标服务。</p>
+<ul>
+<li>熔断器会对成功执行的调用进行计数，达到配置的阈值后会认为目标服务恢复正常，此时熔断器回到“关闭”状态；</li>
+<li>如果有请求出现失败的情况，则回到“打开”状态，并重新启动超时计时器，再给系统一段时间来从故障中恢复。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/04/XWbQB58LUcixvFE.png" srcset="/img/loading.gif" lazyload alt="image-20250204152256299"></p>
+</li>
+<li><p>当进入 Open 状态时会拒绝所有请求；进入 Closed 状态时瞬间会有大量请求，这时服务端可能还没有完全恢复，会导致熔断器又切换到 Open 状态；而 Half-Open 状态存在的目的在于实现了服务的自我修复，同时防止正在恢复的服务再次被大量打垮；</p>
+</li>
+<li><p>所以传统熔断器在实现上过于一刀切，是一种比较刚性的熔断策略。</p>
+</li>
+</ul>
+<h3 id="熔断与限流的区别"><a href="#熔断与限流的区别" class="headerlink" title="熔断与限流的区别"></a>熔断与限流的区别</h3><p>限速器(limiter)可以限制接口自身被调的频率熔断器可监控所调用的服务的失败、超时情况，当依赖的上游服务失败过高时，熔断器开启，不再调用上游服务，转向降级策略，从而避免雪崩。它们最大的区别在于限流主要在server实现，而熔断主要在client实现</p>
+<blockquote>
+<p>熔断本质上是一种快速失败策略。旨在通过及时中断失败或超时的操作，防止资源过度消耗和请求堆积，从而<strong>避免服务因小问题而引发的雪崩效应。</strong></p>
+</blockquote>
+<h2 id="限流-降级-熔断技术选型"><a href="#限流-降级-熔断技术选型" class="headerlink" title="限流&#x2F;降级&#x2F;熔断技术选型"></a>限流&#x2F;降级&#x2F;熔断技术选型</h2><p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2374938">熔断、隔离、重试、降级、超时、限流，高可用架构流量治理核心策略全掌握-腾讯云开发者社区-腾讯云</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/88223100/p/Detailed-explanation-of-degradation-current-limiting-and-fusing.html">高并发整体可用性：一文详解降级、限流和熔断 - 古道轻风 - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="category-chain-item">量化分析系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/" class="category-chain-item">逆向与开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/" class="category-chain-item">软件全栈开发</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/DevOps/" class="category-chain-item">DevOps</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>微服务全解</div>
+      <div>https://hermes37.vercel.app/2026/05/25/量化分析系统/逆向与开发/软件全栈开发/DevOps/微服务全解/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/26/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/Android%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%B0%83%E8%AF%95/" title="调试与反调试">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">调试与反调试</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/25/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E9%A2%84%E5%A4%84%E7%90%86/%E7%90%86%E8%A7%A3%E4%B8%8E%E6%B8%85%E6%B4%97%E6%95%B0%E6%8D%AE/" title="理解与清洗数据">
+                        <span class="hidden-mobile">理解与清洗数据</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

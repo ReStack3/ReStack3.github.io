@@ -1,0 +1,1477 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="可执行文件的装载与进程进程虚拟地址空间在前面的CPU虚拟化与进程 - The Peak Tower和并发与线程 - The Peak Tower已经详细了解过了进程虚拟地址空间。  其实从程序的角度看,我们可以通过判断C语言程序中的指针所占的空间来计算虚拟，地址空间的大小。一般来说,C语言指针大小的位数与虚拟空间的位数相同,如32位平台 下的指针为32位,即4字节;64位平台下的指针为64位,即">
+<meta property="og:type" content="article">
+<meta property="og:title" content="装载与动态链接">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/27/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/%E8%A3%85%E8%BD%BD%E4%B8%8E%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="可执行文件的装载与进程进程虚拟地址空间在前面的CPU虚拟化与进程 - The Peak Tower和并发与线程 - The Peak Tower已经详细了解过了进程虚拟地址空间。  其实从程序的角度看,我们可以通过判断C语言程序中的指针所占的空间来计算虚拟，地址空间的大小。一般来说,C语言指针大小的位数与虚拟空间的位数相同,如32位平台 下的指针为32位,即4字节;64位平台下的指针为64位,即">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/yQXYEbkefNIli1m.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/CPD5w6UB4Tf9JsK.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/UnVQuWgR3iAxrHc.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/94sH3f1vECnJykB.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/DGKSz2ayujWZ5cE.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250527161300059.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/6Vw3tZkYj27gOlF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/TYjWOoA5xRLyJC1.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/mF8KA4IZC1DLYoy.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/HLOWz8kwtQxcJgF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/2xiAc7SZzkpywlJ.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/Mj1cTevr4iY6Azg.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/WhYMVHXRLZxCQK7.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/c71NeVEsyRWQfLS.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/dEimNJ64qOkCpwM.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/wDv6dnmHJSiVbT4.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/YUNoMreG2PDlRpF.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/CFirDHsZtxYoRAX.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/HIzPixfGcD4Ms8k.png">
+<meta property="og:image" content="https://s2.loli.net/2025/05/27/Pzcf9mTaHN85Xqk.png">
+<meta property="article:published_time" content="2025-05-27T01:34:52.693Z">
+<meta property="article:modified_time" content="2026-07-10T12:32:57.781Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/05/27/yQXYEbkefNIli1m.png">
+  
+  
+  
+  <title>装载与动态链接 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="装载与动态链接"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          20k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          164 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">装载与动态链接</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://s2.loli.net/2025/05/27/yQXYEbkefNIli1m.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="可执行文件的装载与进程"><a href="#可执行文件的装载与进程" class="headerlink" title="可执行文件的装载与进程"></a>可执行文件的装载与进程</h1><h2 id="进程虚拟地址空间"><a href="#进程虚拟地址空间" class="headerlink" title="进程虚拟地址空间"></a>进程虚拟地址空间</h2><p>在前面的<a target="_blank" rel="noopener" href="https://restack3.github.io/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/CPU%E8%99%9A%E6%8B%9F%E5%8C%96%E4%B8%8E%E8%BF%9B%E7%A8%8B/">CPU虚拟化与进程 - The Peak Tower</a>和<a target="_blank" rel="noopener" href="https://restack3.github.io/2025/05/09/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%B9%B6%E5%8F%91%E4%B8%8E%E7%BA%BF%E7%A8%8B/">并发与线程 - The Peak Tower</a>已经详细了解过了<strong>进程虚拟地址空间</strong>。</p>
+<blockquote>
+<p>其实从程序的角度看,我们可以通过判断C语言程序中的指针所占的空间来计算虚拟，地址空间的大小。一般来说,C语言指针大小的位数与虚拟空间的位数相同,如32位平台 下的指针为32位,即4字节;64位平台下的指针为64位,即8字节。</p>
+</blockquote>
+<p>这里只做简单回顾：</p>
+<p>进程虚拟地址空间是操作系统为每个运行中的进程提供的抽象内存视图，使得每个进程仿佛独占了整个系统的内存资源。</p>
+<p>每个进程拥有独立的虚拟地址空间（32位系统通常为4GB，64位可达TB级别），由操作系统通过内存管理单元（MMU）和页表机制映射到物理内存。这种设计确保进程间内存隔离，防止越界访问，增强系统稳定性与安全性。</p>
+<h3 id="地址空间布局"><a href="#地址空间布局" class="headerlink" title="地址空间布局"></a><strong>地址空间布局</strong></h3><p>虚拟地址空间通常划分为多个区域：</p>
+<ul>
+<li><strong>代码段（Text）</strong>：存放可执行指令，只读且固定大小。</li>
+<li><strong>数据段（Data&#x2F;BSS）</strong>：存储初始化和未初始化的全局&#x2F;静态变量。</li>
+<li><strong>堆（Heap）</strong>：动态分配内存的区域（如<code>malloc</code>），向高地址增长。</li>
+<li><strong>栈（Stack）</strong>：用于函数调用、局部变量，向低地址增长，大小有限。</li>
+<li><strong>共享库</strong>：映射动态链接库的代码和数据。</li>
+<li><strong>内核空间</strong>：保留给操作系统内核，用户进程不可直接访问（在Windows&#x2F;Linux中，32位系统默认用户&#x2F;内核比为3:1）。</li>
+</ul>
+<h3 id="分页与映射机制"><a href="#分页与映射机制" class="headerlink" title="分页与映射机制"></a><strong>分页与映射机制</strong></h3><ul>
+<li>虚拟地址通过页表转换为物理地址，支持按需分页和页面置换（如LRU算法）。</li>
+<li>内存映射文件（如<code>mmap</code>）可将文件直接映射到地址空间，提升I&#x2F;O效率。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/27/CPD5w6UB4Tf9JsK.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="装载的方式"><a href="#装载的方式" class="headerlink" title="装载的方式"></a>装载的方式</h2><blockquote>
+<p>程序执行时所需要的指令和数据必须在内存中才能够正常运行,最简单的办法就是将程序运行所需要的指令和数据全都装入内存中,这样程序就可以顺利运行,这就是最简单的静 态装入的办法。但是很多情况下程序所需要的内存数量大于物理内存的数量,当内存的数量 不够时,根本的解决办法就是添加内存。相对于磁盘来说,内存是昂贵且稀有的,这种情况 自计算机磁盘诞生以来一直如此。所以人们想尽各种办法,希望能够在不添加内存的情况下 让更多的程序运行起来,尽可能有效地利用内存。后来研究发现,程序运行时是有局部性原 理的,所以我们可以将程序最常用的部分驻留在内存中,而将一些不太常用的数据存放在磁 盘里面,这就是动态装入的基本原理。 </p>
+<p><strong>覆盖装入(Overlay)和页映射(Paging)是两种很典型的动态装载方法,它们所采用 的思想都差不多,原则上都是利用了程序的局部性原理。动态装入的思想是程序用到哪个模 块,就将哪个模块装入内存,如果不用就暂时不装入,存放在磁盘中。</strong></p>
+</blockquote>
+<h3 id="覆盖装入"><a href="#覆盖装入" class="headerlink" title="覆盖装入"></a>覆盖装入</h3><p>覆盖装入在没有发明虚拟存储之前使用比较广泛,现在已经几乎被淘汰了。</p>
+<p>覆盖装入的方法把挖掘内存潜力的任务交给了程序员,程序员在编写程序的时候必须手工将程序分割成若干块,然后编写一个小的辅助代码来管理这些模块何时应该驻留内存而何 时应该被替换掉。这个小的辅助代码就是所谓的覆盖管理器(Overlay Manager)。最简单的 情况下,一个程序有主模块“main”, main 分别会调用到模块A和模块B,但是A和B之 间不会相互调用;这三个模块的大小分别是1024字节、512字节和256字节。假设不考虑 内存对齐、装载地址限制的情况,理论上运行这个程序需要有1792个字节的内存。如果我 们采用覆盖装入的办法,那么在内存中可以这样安排,如</p>
+<img src="https://s2.loli.net/2025/05/27/UnVQuWgR3iAxrHc.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<p>由于模块A和模块B之间相互调用依赖关系,我们可以把模块A和模块B在内存中“相 互覆盖”,即两个模块共享块内存区域。当main 模块调用模块A时,覆盖管理器保证将模 块A从文件中读入内存;当模块 main 调用模块B时,则覆盖管理器将模块B从文件中读入 内存,由于这时模块A不会被使用,那么模块 B可以装入到原来模块A所占用的内存空间。 很明显,除了覆盖管理器,整个程序运行只需要1536个字节,比原来的方案节省了256字 节的空间。覆盖管理器本身往往很小,从数十字节到数百字节不等,一般都常驻内存。 </p>
+<p>上面的例子是最简单的覆盖情况,但是事实上程序往往不止两个模块,而模块之间的调 用关系也比上面的例子要复杂。在多个模块的情况下,程序员需要手工将模块按照它们之间 的调用依赖关系组织成树状结构。</p>
+<img src="https://s2.loli.net/2025/05/27/94sH3f1vECnJykB.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<p>这个树状结构中从任何一个模块到树的根(也就是main)模块都叫调用路径。当该模 块被调用时,整个调用路径上的模块必须都在内存中。比如程序正在模块E中执行代 码,那么模块B和模块 main 必须都在内存中,以确保模块E执行完毕以后能够正确返 回至模块 B和模块main。 </p>
+<p>禁止跨树间调用。任意一个模块不允许跨过树状结构进行调用。比如上面例子中,模 块A不可以调用模块B、E、F:模块C不可以调用模块D、B、E、F等。因为覆盖管 理器不能够保证跨树间的模块能够存在于内存中。不过很多时候可能两个子模块都需 要依赖于某个模块,比如模块E和模块C都需要另外一个模块 G,那么最方便的做法 是将模块 G并入到main 模块中,这样G就在E和C的调用路径上了。 </p>
+<p>当然,由于跨模块间的调用都需要经过覆盖管理器,以确保所有被调用到的模块都能够 正确地驻留在内存,而且一旦模块没有在内存中,还需要从磁盘或其他存储器读取相应的模 块,所以覆盖装入的速度肯定比较慢,不过这也是一种折中的方案,是典型的利用时间换取 空间的方法。</p>
+<h3 id="页映射"><a href="#页映射" class="headerlink" title="页映射"></a>页映射</h3><p>页映射是虚拟存储机制的一部分,它随着虚拟存储的发明而诞生。与覆盖装入的原理相似,页映射也不是一下子就把程序的所有数据和指令都装入内存,而是将内存和所有磁盘中的数据和指令按照“页(Page)”为单位划分成若干个 页,以后所有的装载和操作的单位就是页。</p>
+<img src="https://s2.loli.net/2025/05/27/DGKSz2ayujWZ5cE.png" srcset="/img/loading.gif" lazyload style="zoom:50%;" />
+
+<p>很明显,如果这时候程序只需要PO、P3、P5和P6这4个页,那么程序就能一直运行 下去。但是问题很明显,如果这时候程序需要访问 P4,那么装载管理器必须做出抉择,它 必须放弃目前正在使用的4个内存页中的其中一个来装载 P4。至于选择哪个页,我们有很多种算法可以选择,比如可以选择 FO,因为它是第一个被分配掉的内存页(这个算法我们 可以称之为FIFO,先进先出算法):假设装载管理器发现F2 很少被访问到,那么我们可以 选择F2(这种算法可以称之为LUR,最少使用算法)。假设我们放弃PO,那么这时候FO就 装入了P4。程序接着按照这样的方式运行。</p>
+<h2 id="从操作系统角度看可执行文件的装载"><a href="#从操作系统角度看可执行文件的装载" class="headerlink" title="从操作系统角度看可执行文件的装载"></a>从操作系统角度看可执行文件的装载</h2><h3 id="进程的建立"><a href="#进程的建立" class="headerlink" title="进程的建立"></a>进程的建立</h3><p>事实上,从操作系统的角度来看,一个进程最关键的特征是它拥有独立的虚拟地址空间, 这使得它有别于其他进程。很多时候一个程序被执行同时都伴随着一个新的进程的创建,那么我们就来看看这种最通常的情形:创建一个进程,然后装载相应的可执行文件并且执行。 在有虚拟存储的情况下,上述过程最开始只需要做三件事情:</p>
+<hr>
+<p>1.<strong>创建一个独立的虚拟地址空间。</strong> </p>
+<p>在 x86 Linux 系统下，创建虚拟地址空间<strong>并不直接分配物理内存</strong>，而是<strong>初始化页映射所需的数据结构</strong>，即<strong>页目录（Page Directory）</strong>。</p>
+<ul>
+<li>页目录用于管理虚拟页到物理页的映射关系，但初始时并不填充具体的映射，而是采用<strong>延迟分配（Lazy Allocation）</strong>策略。</li>
+<li>当程序访问某个虚拟地址时，若该地址尚未映射到物理内存（触发<strong>缺页异常</strong>），操作系统才会分配物理页并建立映射。</li>
+</ul>
+<p><strong>关键点</strong>：<strong>虚拟地址空间 ≠ 物理内存占用</strong>，仅是一个逻辑结构。<strong>页表（Page Table）</strong> 的填充是动态的，由缺页异常处理程序完成。</p>
+<hr>
+<p>2.<strong>读取可执行文件头,并且建立虚拟空间与可执行文件的映射关系。</strong> </p>
+<blockquote>
+<p>上面那一步的页映射 关系函数是虚拟空间到物理内存的映射关系,这一步所做的是虚拟空间与可执行文件的映射 关系。我们知道,当程序执行发生页错误时,操作系统将从物理内存中分配一个物理页,然 后将该“缺页”从磁盘中读取到内存中,再设置缺页的虚拟页和物理页的映射关系,这样程 序才得以正常运行。但是很明显的一点是,当操作系统捕获到缺页错误时,它应知道程序当 前所需要的页在可执行文件中的哪一个位置。这就是虚拟空间与可执行文件之间的映射关 系。从某种角度来看,这一步是整个装载过程中最重要的一步,也是传统意义上“装载”的 过程。</p>
+</blockquote>
+<p>操作系统需要知道<strong>如何从磁盘加载缺失的页</strong>，因此需建立<strong>虚拟地址空间与可执行文件的映射关系</strong>。</p>
+<ul>
+<li><strong>传统“装载”的核心</strong>：将可执行文件的段（如代码段、数据段）映射到进程的虚拟内存区域（VMA）。</li>
+<li><strong>映射方式</strong>：<ul>
+<li>文件中的段（如 <code>.text</code>）按页对齐（如 4KB）映射到虚拟地址（如 <code>0x08048000</code>）。</li>
+<li>操作系统记录 <strong>VMA（Virtual Memory Area）</strong>，描述段的虚拟地址范围、文件偏移、权限（如只读、可写）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>3.<strong>将CPU 的指令寄存器设置成可执行文件的入口地址,启动运行。</strong></p>
+<blockquote>
+<p>第三步其实也是最简单的一部, 操作系统通过设置 CPU的指令寄存器将控制权转交给进程,由此进程开始执行。这一步看 似简单,实际上在操作系统层面上比较复杂,它涉及内核堆栈和用户堆栈的切换、CPU运 行权限的切换。不过从进程的角度看这一步可以简单地认为操作系统执行了一条跳转指令, 直接跳转到可执行文件的入口地址。还记得ELF 文件头中保存有入口地址吗?没错,就是 这个地址。</p>
+</blockquote>
+<p>最后一步是将 CPU 的控制权交给进程：</p>
+<ol>
+<li><strong>设置指令寄存器（EIP&#x2F;RIP）</strong>：指向 ELF 文件头中定义的<strong>入口地址</strong>（如 <code>0x08048000</code>）。</li>
+<li><strong>权限切换</strong>：<ul>
+<li>从内核态切换到用户态。</li>
+<li>用户栈（User Stack）初始化，替代内核栈。</li>
+</ul>
+</li>
+<li><strong>执行跳转</strong>：<ul>
+<li>效果类似于 <code>jmp 0x08048000</code>，进程开始执行第一条指令。</li>
+</ul>
+</li>
+</ol>
+<p><strong>关键点</strong>：<strong>入口地址</strong>由 ELF 文件头（<code>e_entry</code>）指定，通常是 <code>.text</code> 段的起始地址。切换过程涉及 CPU 特权级变更，确保进程运行在用户态。</p>
+<h3 id="页错误"><a href="#页错误" class="headerlink" title="页错误"></a>页错误</h3><p>上面的步骤执行完以后,其实可执行文件的真正指令和数据都没有被装入到内存中。操 作系统只是通过可执行文件头部的信息建立起可执行文件和进程虚存之间的映射关系而已。 假设在上面的例子中,程序的入口地址为0x08048000,即刚好是.text段的起始地址。当CPU 开始打算执行这个地址的指令时,发现页面 0x08048000~0x08049000 是个空页面,于是它 就认为这是一个页错误(Page Fault)。CPU 将控制权交给操作系统,操作系统有专门的页 错误处理例程来处理这种情况。这时候我们前面提到的装载过程的第二步建立的数据结构起 到了很关键的作用,操作系统将查询这个数据结构,然后找到空页面所在的VMA,计算出 相应的页面在可执行文件中的偏移,然后在物理内存中分配一个物理页面,将进程中该虚拟 页与分配的物理页之间建立映射关系,然后把控制权再还回给进程,进程从刚才页错误的位 置重新开始执行。 </p>
+<p>随着进程的执行,页错误也会不断地产生,操作系统也会为进程分配相应的物理页面来 满足进程执行的需求,如图6-6所示。当然有可能进程所需要的内存会超过可用的内存数量, 特别是在有多个进程同时执行的时候,这时候操作系统就需要精心组织和分配物理内存,甚至有时候应将分配给进程的物理内存暂时收回等,这就涉及了操作系统的虚拟存储管理。</p>
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20250527161300059.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="进程虚存空间分布"><a href="#进程虚存空间分布" class="headerlink" title="进程虚存空间分布"></a>进程虚存空间分布</h2><h3 id="ELF文件链接视图和执行视图"><a href="#ELF文件链接视图和执行视图" class="headerlink" title="ELF文件链接视图和执行视图"></a>ELF文件链接视图和执行视图</h3><p>前面例子的可执行文件中只有一个代码段,所以它被操作系统装载至进程地址空间之 后,相对应的只有一个VMA。不过实际情况会比这复杂得多,在一个正常的进程中,可执 行文件中包含的往往不止代码段,还有数据段、BSS等,所以映射到进程虚拟空间的往往不 止一个段。</p>
+<blockquote>
+<p>当段的数量增多时,就会产生空间浪费的问题。因为我们知道,ELF文件被映射时,是 以系统的页长度作为单位的,那么每个段在映射时的长度应该都是系统页长度的整数倍;如 果不是,那么多余部分也将占用一个页。一个ELF文件中往往有十几个段,那么内存空间 的浪费是可想而知的。有没有办法尽量减少这种内存浪费呢?</p>
+</blockquote>
+<p>当我们站在操作系统装载可执行文件的角度看问题时,可以发现它实际上并不关心可执 行文件各个段所包含的实际内容,操作系统只关心一些跟装载相关的问题,最主要的是段的 权限(可读、可写、可执行)。</p>
+<p>ELF文件中,段的权限往往只有为数不多的几种组合,基本上是三种: </p>
+<ul>
+<li>以代码段为代表的权限为可读可执行的段。 </li>
+<li>以数据段和BSS段为代表的权限为可读可写的段。 </li>
+<li>以只读数据段为代表的权限为只读的段。</li>
+</ul>
+<p>那么我们可以找到一个很简单的方案就是:对于相同权限的段,把它们合并到一起当作 一个段进行映射。比如有两个段分别叫“.text”和“init”,它们包含的分别是程序的可执行 代码和初始化代码,并且它们的权限相同,都是可读并且可执行的。假设.text 为4097字 节,init 为512字节,这两个段分别映射的话就要占用三个页面,但是,如果将它们合并成 一起映射的话只须占用两个页面,如图:</p>
+<p><img src="https://s2.loli.net/2025/05/27/6Vw3tZkYj27gOlF.png" srcset="/img/loading.gif" lazyload></p>
+<p>ELF 可执行文件引入了一个概念叫做“Segment”,一个“Segment”包含一个或多个属 性类似的“Section”。正如我们上面的例子中看到的,如果将“text”段和“init”段合并在 一起看作是一个“Segment”,那么装载的时候就可以将它们看作一个整体一起映射,也就是 说映射以后在进程虚存空间中只有一个相对应的VMA,而不是两个,这样做的好处是可以 很明显地减少页面内部碎片,从而节省了内存空间。</p>
+<p>“Segment”的概念实际上是从装载的角度重新划分了ELF的各个段。在将目标文件链 接成可执行文件的时候,链接器会尽量把相同权限属性的段分配在同一空间。比如可读可执行的段都放在一起,这种段的典型是代码段;可读可写的段都放在一起,这种段的典型是数 据段。在ELF 中把这些属性相似的,又连在一起的段叫做一个“Segment”,而系统正是按 照“Segment”而不是“Section”来映射可执行文件的.</p>
+<p>所以总的来说,“Segment”和“Section”是从不同的角度来划分同一个ELF 文件。这 个在ELF 中被称为不同的视图(View),从“Section”的角度来看 ELF文件就是链接视图 (Linking View),从“Segment”的角度来看就是执行视图(Execution View)。当我们在谈 到ELF装载时,“段”专门指“Segment”;而在其他的情况下,“段”指的是“Section”</p>
+<p><img src="https://s2.loli.net/2025/05/27/TYjWOoA5xRLyJC1.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Linux内核装载-ELF-过程简介"><a href="#Linux内核装载-ELF-过程简介" class="headerlink" title="Linux内核装载 ELF 过程简介"></a>Linux内核装载 ELF 过程简介</h2><p>Linux 中所有被支持的可执行文件格式都有 相应的装载处理过程,search_binary_handle()会通过判断文件头部的魔数确定文件的格式, 并且调用相应的装载处理过程。比如ELF可执行文件的装载处理过程叫做 load_elf_binary(); a.out 可执行文件的装载处理过程叫做 load_aout_binary();而装载可执行脚本程序的处理过 程叫做 load_script()。这里我们只关心 ELF 可执行文件的装载,load_elf_binary()被定义在 fs&#x2F;Binfmt_elf.c,这个函数的代码比较长,它的主要步骤是: </p>
+<ol>
+<li>检查ELF可执行文件格式的有效性,比如魔数、程序头表中段(Segment)的数量。 </li>
+<li>寻找动态链接的“interp”段,设置动态链接器路径(与动态链接有关,具体请 参考第9章)。</li>
+<li>根据ELF可执行文件的程序头表的描述,对ELF文件进行映射,比如代码、数据、 只读数据。</li>
+<li>初始化ELF进程环境,比如进程启动时EDX 寄存器的地址应该是DT_FINI 的地 址(参照动态链接)。 </li>
+<li>将系统调用的返回地址修改成ELF可执行文件的入口点,这个入口点取决于程序 的链接方式,对于静态链接的ELF 可执行文件,这个程序入口就是 ELF 文件的文件头中 e_entry 所指的地址;对于动态链接的ELF可执行文件,程序入口点是动态链接器。</li>
+</ol>
+<p>当load_elf_binary()执行完毕,返回至 do_execve()再返回至sys_execve()时,上面的第 5 步中已经把系统调用的返回地址改成了被装载的ELF程序的入口地址了。所以当sys_execve() 系统调用从内核态返回到用户态时,EIP 寄存器直接跳转到了ELF 程序的入口地址,于是新 的程序开始执行,ELF可执行文件装载完成。</p>
+<h2 id="Windows-PE-的装载"><a href="#Windows-PE-的装载" class="headerlink" title="Windows PE 的装载"></a>Windows PE 的装载</h2><p>PE 文件的装载跟ELF有所不同,由于PE 文件中,所有段的起始地址都是页的倍数, 段的长度如果不是页的整数倍,那么在映射时向上补齐到页的整数倍,我们也可以简单地认 为在32位的PE 文件中,段的起始地址和长度都是4096字节的整数倍。由于这个特点,PE 文件的映射过程会比ELF简单得多,因为它无须考虑如ELF里面诸多段地址对齐之类的问 题,虽然这样会浪费一些磁盘和内存空间。PE 可执行文件的段的数量一般很少,不像 ELF 中经常有十多个“Section”,最后不得不使用“Segment”的概念把它们合并到一起装载,PE 文件中,链接器在生产可执行文件时,往往将所有的段尽可能地合并,所以一般只有代码段、 数据段、只读数据段和BSS等为数不多的几个段。</p>
+<p>装载一个PE可执行文件并且装载它,是个比ELF文件相对简单的过程: </p>
+<ol>
+<li>先读取文件的第一个页,在这个页中,包含了 DOS 头、PE 文件头和段表。 </li>
+<li>检查进程地址空间中,目标地址是否可用,如果不可用,则另外选一个装载地址。这 个问题对于可执行文件来说基本不存在,因为它往往是进程第一个装入的模块,所以 目标地址不太可能被占用。主要是针对DLL 文件的装载而言的,我们在后面的 “Rebasing”这一节还会具体介绍这个问题。 </li>
+<li>使用段表中提供的信息,将PE 文件中所有的段一一映射到地址空间中相应的位置。 </li>
+<li>如果装载地址不是目标地址,则进行 Rebasing</li>
+<li>装载所有 PE 文件所需要的DLL 文件。 </li>
+<li>对PE 文件中的所有导入符号进行解析。 </li>
+<li>根据PE 头中指定的参数,建立初始化栈和堆。 </li>
+<li>建立主线程并且启动进程。</li>
+</ol>
+<h1 id="动态链接"><a href="#动态链接" class="headerlink" title="动态链接"></a>动态链接</h1><h2 id="为什么要动态链接"><a href="#为什么要动态链接" class="headerlink" title="为什么要动态链接"></a>为什么要动态链接</h2><h3 id="静态链接的弊端"><a href="#静态链接的弊端" class="headerlink" title="静态链接的弊端"></a>静态链接的弊端</h3><h4 id="内存和磁盘空间的浪费"><a href="#内存和磁盘空间的浪费" class="headerlink" title="内存和磁盘空间的浪费"></a>内存和磁盘空间的浪费</h4><p>静态链接极大地浪费了内存空间,想象一下每个程序内部除了都 保留着 printf()函数、scanf()函数、strlen()等这样的公用库函数,还有数量相当可观的其他库 函数及它们所需要的辅助数据结构。在现在的 Linux 系统中,一个普通程序会使用到的C 语言静态库至少在1MB 以上,那么,如果我们的机器中运行着100个这样的程序,就要浪 费近100 MB 的内存:如果磁盘中有2000个这样的程序,就要浪费近2GB 的磁盘空间, 很多 Linux 的机器中,&#x2F;usr&#x2F;bin 下就有数千个可执行文件。</p>
+<p><img src="https://s2.loli.net/2025/05/27/mF8KA4IZC1DLYoy.png" srcset="/img/loading.gif" lazyload></p>
+<p>并且它们还共用 Lib.o 这两模块。在静态连接的情况下,因为Program1 和 Program2 都用到 了 Lib.o 这个模块,所以它们同时在链接输出的可执行文件 Program1 和 Program2 有两个副 本。当我们同时运行 Program1 和 Program2 时,Lib.o 在磁盘中和内存中都有两份副本。当 系统中存在大量的类似于Lib.o 的被多个程序共享的目标文件时,其中很大一部分空间就被 浪费了。在静态链接中,C语言静态库是很典型的浪费空间的例子,还有其他数以千计的库 如果都需要静态链接,那么空间浪费无法想象。</p>
+<h4 id="程序开发和发布"><a href="#程序开发和发布" class="headerlink" title="程序开发和发布"></a>程序开发和发布</h4><p>空间浪费是静态链接的一个问题,另一个问题是静态链接对程序的更新、部署和发布也 会带来很多麻烦。比如程序 Programl 所使用的 Lib.o 是由一个第三方厂商提供的,当该厂 商更新了 Lib.o的时候(比如修正了 lib.o 里面包含的一个Bug),那么 Program1的厂商就需 要拿到最新版的Lib.o,然后将其与Program1.0 链接后,将新的Programl 整个发布给用户。 这样做的缺点很明显,即一旦程序中有任何模块更新,整个程序就要重新链接、发布给用户。 比如一个程序有20个模块,每个模块1MB,那么每次更新任何一个模块,用户就得重新获 取这个20 MB 的程序。如果程序都使用静态链接,那么通过网络来更新程序将会非常不便, 因为一旦程序任何位置的一个小改动,都会导致整个程序重新下载。</p>
+<h3 id="动态链接的引入"><a href="#动态链接的引入" class="headerlink" title="动态链接的引入"></a>动态链接的引入</h3><p>要解决空间浪费和更新困难这两个问题最简单的办法就是把程序的模块相互分割开来, 形成独立的文件,而不再将它们静态地链接在一起。简单地讲,就是不对那些组成程序的目 标文件进行链接,等到程序要运行时才进行链接。也就是说,把链接这个过程推迟到了运行 时再进行,这就是动态链接 (Dynamic Linking)的基本思想。</p>
+<p>还是以 Programl 和 Program2 为例,假设我们保留 Programl.o、Program2.0 和 Lib.0 三 个目标文件。当我们要运行 Programl 这个程序时,系统首先加载 Program1.0,当系统发现 Program1.o 中用到了 Lib.o,即 Programl.o 依赖于 Lib.o,那么系统接着加载 Lib.o,如果 Program1.0 或Lib.o还依赖于其他目标文件,系统会按照这种方法将它们全部加载至内存。 所有需要的目标文件加载完毕之后,如果依赖关系满足,即所有依赖的目标文件都存在于磁 盘,系统开始进行链接工作。</p>
+<p>这个链接工作的原理与静态链接非常相似,包括符号解析、地址重定位等,我们在前面已经很详细地介绍过了。完成这些步骤之后,系统开始把控制权交 给 Programl.o 的程序入口处,程序开始运行。</p>
+<p>这时如果我们需要运行 Program2,那么系统 只需要加载 Program2.0,而不需要重新加载 Lib.o,因为内存中已经存在了一份 Lib.o 的副本 (见图7-2),系统要做的只是将 Program2.0 和 Lib.o 链接起来。 很明显,上面的这种做法解决了共享的目标文件多个副本浪费磁盘和内存空间的问题, 可以看到,磁盘和内存中只存在一份 Lib.o,而不是两份。另外在内存中共享一个目标文件</p>
+<p><img src="https://s2.loli.net/2025/05/27/HLOWz8kwtQxcJgF.png" srcset="/img/loading.gif" lazyload></p>
+<p>模块的好处不仅仅是节省内存,它还可以减少物理页面的换入换出,也可以增加CPU 缓存 的命中率,因为不同进程间的数据和指令访问都集中在了同一个共享模块上。 上面的动态链接方案也可以使程序的升级变得更加容易,当我们要升级程序库或程序共 享的某个模块时,理论上只要简单地将旧的目标文件覆盖掉,而无须将所有的程序再重新链 接一遍。当程序下一次运行的时候,新版本的目标文件会被自动装载到内存并且链接起来, 程序就完成了升级的目标。</p>
+<p>动态链接还有一个特点就是程序在运行时可以动态地选择加载各种程序模块,这个优点 就是后来被人们用来制作程序的插件(Plug-in)。 </p>
+<p>比如某个公司开发完成了某个产品,它按照一定的规则制定好程序的接口,其他公司或 开发者可以按照这种接口来编写符合要求的动态链接文件。该产品程序可以动态地载入各种 由第三方开发的模块,在程序运行时动态地链接,实现程序功能的扩展。</p>
+<p>动态链接还可以加强程序的兼容性。一个程序在不同的平台运行时可以动态地链接到由操作系统提供的动态链接库,这些动态链接库相当于在程序和操作系统之间增加了一个中间层,从而消除了程序对不同平台之间依赖的差异性。</p>
+<p>比如操作系统 A 和操作系统 B 对于 printf()的实现机制不同,如果我们的程序是静态链接的,那么程序需要分别链接成能够在A 运行和在B运行的两个版本并且分开发布;</p>
+<p>但是如果是动态链接,只要操作系统A和操作 系统 B 都能提供一个动态链接库包含 printf(),并且这个printf()使用相同的接口,那么程序 只需要有一个版本,就可以在两个操作系统上运行,动态地选择相应的printf()的实现版本。 </p>
+<p>当然这只是理论上的可能性,实际上还存在不少问题,我们会在后面继续探讨关于动态链接 模块之间兼容性的问题。 从上面的描述来看,动态链接是不是一种“万能膏药”,包治百病呢?</p>
+<p>很遗憾,动态链 接也有诸多的问题及令人烦恼和费解的地方。很常见的一个问题是,当程序所依赖的某个模块更新后,由于新的模块与旧的模块之间接口不兼容,导致了原有的程序无法运行。</p>
+<blockquote>
+<p>这个问 题在早期的 Windows 版本中尤为严重,因为它们缺少一种有效的共享库版本管理机制,使 得用户经常出现新程序安装完之后,其他某个程序无法正常工作的现象,这个问题也经常被 称为“DLL Hell”</p>
+</blockquote>
+<h3 id="动态链接的基本实现"><a href="#动态链接的基本实现" class="headerlink" title="动态链接的基本实现"></a>动态链接的基本实现</h3><blockquote>
+<p>动态链接的基本思想是把程序按照模块拆分成各个相对独立部分,在程序运行时才将它 们链接在一起形成一个完整的程序,而不是像静态链接一样把所有的程序模块都链接成一个 个单独的可执行文件。那么我们能不能按照前面例子中所描述的那样,直接使用目标文件进 行动态链接呢?</p>
+<p>这个问题的答案是:理论上是可行的,但实际上动态链接的实现方案与直接 使用目标文件稍有差别。我们将在后面分析目标文件和动态链接文件的区别。</p>
+</blockquote>
+<p>动态链接涉及运行时的链接及多个文件的装载,必需要有操作系统的支持,因为动态链接的情况下,进程的虚拟地址空间的分布会比静态链接情况下更为复杂,还有一些存储管理、 内存共享、进程线程等机制在动态链接下也会有一些微妙的变化。</p>
+<blockquote>
+<p>目前主流的操作系统几乎 都支持动态链接这种方式,在Linux系统中,ELF动态链接文件被称为动态共享对象(DSO, Dynamic Shared Objects),简称共享对象,它们一般都是以“.so”为扩展名的一些文件; 而在 Windows系统中,动态链接文件被称为动态链接库(Dynamical Linking Library),它 们通常就是我们平时很常见的以“.dll”为扩展名的文件。</p>
+</blockquote>
+<p>在Linux 中,常用的C语言库的l运行库 glibc,它的动态链接形式的版本保存在“&#x2F;lib”目录下,文件名叫做“libc.so”。整个系统只保留一份C语言库的动态链接文件“libc.so”, 而所有的C语言编写的、动态链接的程序都可以在运行时使用它。当程序被装载的时候, 系统的动态链接器会将程序所需要的所有动态链接库(最基本的就是libc.so)装载到进程的 地址空间,并且将程序中所有未决议的符号绑定到相应的动态链接库中,并进行重定位工作。</p>
+<p> 程序与 libc.so 之间真正的链接工作是由动态链接器完成的,而不是由我们前面看到过的静态链接器 Id 完成的。</p>
+<p>也就是说,动态链接是把链接这个过程从本来的程序装载前被推迟到了装载的时候。可能有人会问,这样的做法的确很灵活,但是程序每次被装载时都要进行重新进行链接,是不是很慢?</p>
+<p>的确,动态链接会导致程序在性能的一些损失,但是对动态 接的链接过程可以进行优化,比如我们后面要介绍的**延迟绑定(Lazy Binding)**等方法, 可以使得动态链接的性能损失尽可能地减小。</p>
+<blockquote>
+<p>据估算,动态链接与静态链接相比,性能损失 大约在5%以下。当然经过实践的证明,这点性能损失用来换取程序在空间上的节省和程序 构建和升级时的灵活性,是相当值得的。</p>
+</blockquote>
+<h2 id="简单的动态链接例子"><a href="#简单的动态链接例子" class="headerlink" title="简单的动态链接例子"></a>简单的动态链接例子</h2><p><img src="https://s2.loli.net/2025/05/27/2xiAc7SZzkpywlJ.png" srcset="/img/loading.gif" lazyload></p>
+<p>有一个步骤与静态链接不一样,那就是 Programl.o 被连接 成可执行文件的这一步。在静态链接中,这一步链接过程会把 Program1.o 和 Lib.o 链接到一 起,并且产生输出可执行文件 Programl。但是在这里,Lib.o 没有被链接进来,链接的输入目标文件只有 Program1.o (当然还有C语言运行库,我们这里暂时忽略)。</p>
+<p><strong>但是我们看到,Lib.so 也参与了链接过程。这是怎么回事呢?</strong></p>
+<p>让我们再回到动态链接的机制上来,当程序模块 Program1.c 被编译成为 Program1.0时, 编译器还不不知道 foobar()函数的地址,这个内容我们已在静态链接中解释过了。当链接器 将 Program1.0 链接成可执行文件时,这时候链接器必须确定 Program1.0 中所引用的foobar() 函数的性质。如果 foobar()是一个定义与其他静态目标模块中的函数,那么链接器将会按照 静态链接的规则,将Program1.0 中的foobar 地址引用重定位:如果foobar()是一个定义在某 个动态共享对象中的函数,那么链接器就会将这个符号的引用标记为一个动态链接的符号, 不对它进行地址重定位,把这个过程留到装载时再进行。 </p>
+<p><strong>那么这里就有个问题,链接器如何知道 foobar 的引用是一个静态符号还是一个动态符 号?</strong></p>
+<p>这实际上就是我们要用到Lib.so 的原因。Lib.so 中保存了完整的符号信息(因为运行时 进行动态链接还须使用符号信息),把Lib.so 也作为链接的输入文件之一,链接器在解析符 号时就可以知道: foobar是一个定义在Lib.so 的动态符号。这样链接器就可以对 foobar 的引 用做特殊的处理,使它成为一个对动态符号的引用。</p>
+<h3 id="动态链接程序运行时地址空间分布"><a href="#动态链接程序运行时地址空间分布" class="headerlink" title="动态链接程序运行时地址空间分布"></a>动态链接程序运行时地址空间分布</h3><p>对于静态链接的可执行文件来说,整个进程只有一个文件要被映射,那就是可执行文件 本身,我们在前面的章节已经介绍了静态链接下的进程虚拟地址空间的分布。但是对于动态 链接来说,除了可执行文件本身之外,还有它所依赖的共享目标文件。那么这种情况下,进 程的地址空间分布又会怎样呢?</p>
+<p>可以预料到,整个进程虚拟地址空间中,多出了几个文件的映射。Lib.so 与Program1- 样,它们都是被操作系统用同样的方法映射至进程的虚拟地址空间,只是它们占据的虚拟地 址和长度不同。</p>
+<p>Programl 除了使用 Lib.so 以外,它还用到了动态链接形式的C语言运行库 libc-2.6.1.so。另外还有一个很值得关注的共享对象就是ld-2.6.so,它实际上是Linux 下的动态链接器。动态链接器与普通共享对象一样被映射到了进程的地址空间,<strong>在系统开始运行 Program1 之前,首先会把控制权交给动态链接器,由它完成所有的动态链接工作以后再把 控制权交给 Program1,然后开始执行。</strong></p>
+<p>查看 Lib.so 的装载属性,除了文件的类型与普通程序不同以外,其他几乎与普通程序一样。还有有一点比较不同 的是,动态链接模块的装载地址是从地址0x00000000 开始的。我们知道这个地址是无效地址,并且从上面的进程虚拟空间分布看到,Lib.so 的最终装载地址并不是0x00000000,而是 Oxb7efc000。从这一点我们可以推断,<strong>共享对象的最终装载地址在编译时是不确定的,而是 在装载时,装载器根据当前地址空间的空闲情况,动态分配一块足够大小的虚拟地址空间给 相应的共享对象</strong>。</p>
+<h2 id="地址无关代码"><a href="#地址无关代码" class="headerlink" title="地址无关代码"></a>地址无关代码</h2><h3 id="固定装载地址的困扰"><a href="#固定装载地址的困扰" class="headerlink" title="固定装载地址的困扰"></a>固定装载地址的困扰</h3><p>通过之前的介绍我们已经基本了解了动态链接的概念,同时,我们也得到了一个问题, 那就是:共享对象在被装载时,如何确定它在进程虚拟地址空间中的位置? </p>
+<p>为了实现动态链接,我们首先会遇到的问题就是共享对象地址的冲突问题。让我们先来 回顾一下程序模块的指令和数据中可能会包含一些绝对地址的引用,我们在 链接产生输出文件的时候,就要假设模块被装载的目标地址。</p>
+<p>很明显,在动态链接的情况下,如果不同的模块目标装载地址都一样是不行的。而对于单个程序来讲,我们可以手工指定各个模块的地址,比如把0x1000到0x2000分配给模块 A, 把地址0x2000 到0x3000分配给模块B。但是,如果某个模块被多个程序使用,甚至多个模 块被多个程序使用,那么管理这些模块的地址将是一件无比繁琐的事情。</p>
+<p>比如一个很简单的 情况,一个人制作了一个程序,该程序需要用到模块B,但是不需要用到模块A,所以他以 为地址 0x1000到0x2000是空闲的,于是分配给了另外一个模块C。这样C和原先的模块 A 的目标地址就冲突了,任何人以后将不能在同一个程序里面使用模块A和C。想象一个有 着成千上万个并且由不同公司和个人开发的共享对象的系统中,采用这种手工分配的方式几乎是不可行的。</p>
+<blockquote>
+<p>不幸的是,早期的确有些系统采用了这样的做法,这种做法叫做静态共享库(Static Shared Library),请注意,它跟静态库(Static Library)有很明显的区别。静态共享库的做 法就是将程序的各种模块统一交给操作系统来管理,操作系统在某个特定的地址划分出一些 地址块,为那些已知的模块预留足够的空间。</p>
+</blockquote>
+<p>为了解决这个模块装载地址固定的问题,我们设想是否可以让共享对象在任意地址加 载?这个问题另一种表述方法就是:共享对象在编译时不能假设自己在进程虚拟地址空间中 的位置。</p>
+<p>与此不同的是,可执行文件基本可以确定自己在进程虚拟空间中的起始位置,因为 可执行文件往往是第一个被加载的文件,它可以选择一个固定空闲的地址,比如Linux 下 般都是0x08040000, Windows 下一般都是0x0040000.</p>
+<h3 id="装载时重定位"><a href="#装载时重定位" class="headerlink" title="装载时重定位"></a>装载时重定位</h3><p>为了能够使共享对象在任意地址装载,我们首先能想到的方法就是静态链接中的重定 位。这个想法的基本思路就是,在链接时,对所有绝对地址的引用不作重定位,而把这一步 推迟到装载时再完成。一旦模块装载地址确定,即目标地址确定,那么系统就对程序中所有 的绝对地址引用进行重定位。假设函数 foobar 相对于代码段的起始地址是0x100,当模块被 装载到 0x10000000 时,我们假设代码段位于模块的最开始,即代码段的装载地址也是 0x10000000,那么我们就可以确定 foobar 的地址为0x10000100。这时候,系统遍历模块中 的重定位表,把所有对 foobar 的地址引用都重定位至0x10000100.</p>
+<p>我们前面在静态链接时提到过重定位,那时的重定位叫做链接时重定位(Link Time Relocation),而现在这种情况经常被称为装载时重定位(Load Time Relocation),在 Windows 中,这种装载时重定位又被叫做基址重置 (Rebasing)。</p>
+<p>总结一下：</p>
+<p>在静态链接或非PIC（Position Independent Code，地址无关代码）的动态库中：</p>
+<ul>
+<li>编译时，代码和数据的地址是<strong>假设的固定地址</strong>（如 <code>.text</code> 从 <code>0x1000</code> 开始）。</li>
+<li>如果实际装载时该地址被占用，<strong>加载器（Loader）</strong> 需要<strong>修改指令中的绝对地址</strong>，使其指向正确的内存位置。</li>
+</ul>
+<p>需要注意的是：<strong>装载时重定位不适用于共享库的代码段</strong></p>
+<p>动态链接库（如 <code>libc.so</code>）的核心特性是：<strong>代码段（<code>.text</code>）在多个进程间共享</strong>，物理内存中只需一份副本。</p>
+<p>如果采用装载时重定位：</p>
+<ul>
+<li>进程A 将库加载到 <code>0x1000</code>，需修改指令中的地址。</li>
+<li>进程B 将同一库加载到 <code>0x2000</code>，需<strong>再次修改指令</strong>。</li>
+<li>结果：<strong>同一份代码在内存中存在多份不同副本</strong>（因指令被修改），失去共享库的优势。</li>
+</ul>
+<p><strong>结论</strong>：</p>
+<ul>
+<li><strong>代码段不能使用装载时重定位</strong>，否则无法在进程间共享。</li>
+<li><strong>数据段（<code>.data</code>、<code>.bss</code>）可以</strong>，因为每个进程需要独立副本（如全局变量）。动态链接器可以安全地修改数据段中的地址引用（如指针初始值），不会影响其他进程。</li>
+</ul>
+<h3 id="地址无关代码引入"><a href="#地址无关代码引入" class="headerlink" title="地址无关代码引入"></a>地址无关代码引入</h3><p>为了避免装载时重定位代码段，动态链接库采用 <strong>PIC（Position Independent Code）</strong>：</p>
+<blockquote>
+<p>我们需要有一种更好的方法解决共享对象指令中对绝对地址的重定位问题。其实我们的目的很简单,希望程序模块中共享的指令部分在装载时不需要因为装载地址的改变而改变,所以实现 的基本想法就是:</p>
+<p>把指令中那些需要被修改的部分分离出来,跟数据部分放在一起,这样指令 部分就可以保持不变,而数据部分可以在每个进程中拥有一个副本。这种方案就是目前被称 为地址无关代码(PIC, Position-independent Code)的技术。</p>
+</blockquote>
+<p>对于现代的机器来说,产生地址无关的代码并不麻烦。我们先来分析模块中各种类型的地址引用方式。这里我们把共享对象模块中的地址引用按照是否为跨模块分成两类:模块内 部引用和模块外部引用;按照不同的引用方式又可以分为指令引用和数据访问:</p>
+<ul>
+<li>第一种是模块内部的函数调用、跳转等。 </li>
+<li>第二种是模块内部的数据访问,比如模块中定义的全局变量、静态变量。 </li>
+<li>第三种是模块外部的函数调用、跳转等。 </li>
+<li>第四种是模块外部的数据访问,比如其他模块中定义的全局变量。</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/05/27/Mj1cTevr4iY6Azg.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>当编译器在编译 pic.c 时,它实际上并不能确定变量b和函数 ext()是模块外部的还是 模块内部的,因为它们有可能被定义在同一个共享对象的其他目标文件中。由于没法 确定,编译器只能把它们都当作模块外部的函数和变量来处理。MSVC 编译器提供了 _decispec(dllimport)编译器扩展来表示一个符号是模块内部的还是模块外部的。</p>
+</blockquote>
+<h4 id="模块内部调用或跳转"><a href="#模块内部调用或跳转" class="headerlink" title="模块内部调用或跳转"></a>模块内部调用或跳转</h4><p>第一种类型应该是最简单的,那就是模块内部调用。因为被调用的函数 与调用者都处于同一个模块,它们之间的相对位置是固定的,所以这种情况比较简单。对于 现代的系统来讲,模块内部的跳转、函数调用都可以是相对地址调用,或者是基于寄存器的 相对调用,所以对于这种指令是不需要重定位的。</p>
+<blockquote>
+<p>这样看起来第一个模块内部调用或跳转很容易解决,但实际上这种方式还有一定的问 题,这里存在一个叫做共享对象全局符号介入(Global Symbol Interposition)</p>
+</blockquote>
+<h4 id="模块内部数据访问"><a href="#模块内部数据访问" class="headerlink" title="模块内部数据访问"></a>模块内部数据访问</h4><p>接着来看看第二种类型,模块内部的数据访问。很明显,指令中不能直接包含数据的绝对地址,那么唯一的办法就是相对寻址。我们知道,一个模块前面一般是若干个页的代码, 后面紧跟着若干个页的数据,这些页之间的相对位置是固定的,也就是说,<strong>任何一条指令与 它需要访问的模块内部数据之间的相对位置是固定的,那么只需要相对于当前指令加上固定的偏移量就可以访问模块内部数据了。</strong></p>
+<p>动态链接库（<code>.so</code>）的代码段（<code>.text</code>）会被多个进程共享，因此：</p>
+<ul>
+<li><strong>不能使用绝对地址</strong>（如 <code>mov eax, [0x1234]</code>），因为不同进程加载库的基址不同（如进程A在 <code>0x10000000</code>，进程B在 <code>0x20000000</code>）。</li>
+<li><strong>必须通过相对地址</strong> 访问数据，确保无论库被加载到哪个地址，代码都能正确运行。</li>
+</ul>
+<p>现代的体系结构中,数据的相对寻址往往没有相对与当前指令地址(PC)的寻址方式,所以ELF 用了一个很巧妙的办法来得到当前的PC值, 然后再加上一个偏移量就可以达到访问相应变量的目的了。</p>
+<h5 id="解决方案：PC-相对寻址"><a href="#解决方案：PC-相对寻址" class="headerlink" title="解决方案：PC 相对寻址"></a><strong>解决方案：PC 相对寻址</strong></h5><p>由于现代 CPU 通常不支持 <strong>直接相对于 PC（当前指令地址）的数据寻址</strong>，ELF 采用了一种巧妙的间接方法：</p>
+<ol>
+<li><p><strong>获取当前指令地址（PC）</strong></p>
+<p>通过 <code>call</code> 指令将下一条指令的地址压栈，再从栈中读取到寄存器。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">call i686.get_pc_thunk.cx  ; 调用一个辅助函数<br>; 返回后，ecx = 下一条指令的地址<br></code></pre></td></tr></table></figure>
+
+<p><code>i686.get_pc_thunk.cx</code> 的实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs assembly">i686.get_pc_thunk.cx:<br>    mov (%esp), %ecx  ; 将栈顶的返回地址（PC）存入 ecx<br>    ret<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>计算变量地址</strong></p>
+<p>已知变量与当前指令的偏移是固定的，通过 <code>add</code> 和 <code>mov</code> 计算最终地址。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">add $0x118c, %ecx    ; ecx = PC + 0x118c<br>mov 0x28(%ecx), %eax ; 访问变量a（地址 = ecx + 0x28）<br></code></pre></td></tr></table></figure>
+
+<p>如果模块加载基址是 <code>0x10000000</code>，则：</p>
+<ul>
+<li><code>PC = 0x10000454</code>（假设 <code>call</code> 后下一条指令地址）</li>
+<li><code>ecx = 0x10000454 + 0x118c = 0x100015e0</code></li>
+<li>变量 <code>a</code> 的地址 &#x3D; <code>0x100015e0 + 0x28 = 0x10001608</code></li>
+</ul>
+</li>
+</ol>
+<h5 id="关键点解析"><a href="#关键点解析" class="headerlink" title="关键点解析"></a><strong>关键点解析</strong></h5><h6 id="（1）为什么用-call-获取-PC？"><a href="#（1）为什么用-call-获取-PC？" class="headerlink" title="（1）为什么用 call 获取 PC？"></a><strong>（1）为什么用 <code>call</code> 获取 PC？</strong></h6><p><code>call</code> 指令会将返回地址（下一条指令的地址）压栈，从而间接获取 PC。这是 x86 架构下的一种通用技巧，因为 x86 没有直接读取 PC 的指令。</p>
+<h6 id="（2）数据访问的地址无关性"><a href="#（2）数据访问的地址无关性" class="headerlink" title="（2）数据访问的地址无关性"></a><strong>（2）数据访问的地址无关性</strong></h6><p>无论模块被加载到哪个基址（如 <code>0x10000000</code> 或 <code>0x20000000</code>），<code>PC + 固定偏移</code> 总能计算出变量的正确地址。无需修改指令，保证代码段可被多进程共享。</p>
+<p><img src="https://s2.loli.net/2025/05/27/WhYMVHXRLZxCQK7.png" srcset="/img/loading.gif" lazyload></p>
+<h5 id="对比其他架构的实现"><a href="#对比其他架构的实现" class="headerlink" title="对比其他架构的实现"></a><strong>对比其他架构的实现</strong></h5><p><strong>x86-64（64位）</strong>:直接支持 <strong>RIP（PC）相对寻址</strong>，无需 <code>call</code> 技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs asm">lea a(%rip), %rax  ; 直接计算变量a的地址<br></code></pre></td></tr></table></figure>
+
+<p><strong>ARM</strong>使用 <code>ADR</code> 指令直接获取 PC 相对地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">ADR r0, a  ; r0 = PC + offset_to_a<br></code></pre></td></tr></table></figure>
+
+<h4 id="模块间数据访问"><a href="#模块间数据访问" class="headerlink" title="模块间数据访问"></a>模块间数据访问</h4><p>模块间的数据访问比模块内部稍微麻烦一点,因为模块间的数据访问目标地址要等到装载时才决定。</p>
+<p>比如变量b,它被定义在其他模块中,并且该地址在装载时才能 确定。我们前面提到要使得代码地址无关,基本的思想就是把跟地址相关的部分放到数据段 里面,很明显,这些其他模块的全局变量的地址是跟模块装载地址有关的。ELF的做法是在 数据段里面建立一个指向这些变量的指针数组,也被称为全局偏移表(Global Offset Table, GOT),当代码需要引用该全局变量时,可以通过 GOT 中相对应的项间接引用。</p>
+<p><img src="https://s2.loli.net/2025/05/27/c71NeVEsyRWQfLS.png" srcset="/img/loading.gif" lazyload></p>
+<p>当指令中需要访问变量时,程序会先找到GOT,然后根据GOT 中变量所对应的项找 到变量的目标地址。每个变量都对应一个4个字节的地址,链接器在装载模块的时候会查找 每个变量所在的地址,然后填充 GOT中的各个项,以确保每个指针所指向的地址正确。由 于GOT 本身是放在数据段的,所以它可以在模块装载时被修改,并且每个进程都可以有独 立的副本,相互不受影响。</p>
+<p>我们来看看 GOT 如何做到指令的地址无关性。从第二中类型的数据访问我们了解到, 模块在编译时可以确定模块内部变量相对与当前指令的偏移,那么我们也可以在编译时确定GOT 相对于当前指令的偏移。确定 GOT 的位置跟上面的访问变量a的方法基本一样,通过 得到PC值然后加上一个偏移量,就可以得到GOT 的位置。然后我们根据变量地址在GOT 中的偏移就可以得到变量的地址,当然GOT 中每个地址对应于哪个变量是由编译器决定的, 比如第一个地址对应变量b,第二个对应变量等。</p>
+<h4 id="模块间调用、跳转"><a href="#模块间调用、跳转" class="headerlink" title="模块间调用、跳转"></a>模块间调用、跳转</h4><p>对于模块间调用和跳转,我们也可以采用上面类似的方法来解决。与上面的类型有所不同的是,GOT 中相应的项保存的是目标函数的地址,当模块需要调用目标函数时,可以 通过 GOT 中的项进行间接跳转</p>
+<p><img src="https://s2.loli.net/2025/05/27/dEimNJ64qOkCpwM.png" srcset="/img/loading.gif" lazyload></p>
+<p>这种方法很简单,但是存在一些性能问题,实际上 ELF 采用了一种更加复杂和精巧的方法</p>
+<h3 id="共享模块的全局变量问题"><a href="#共享模块的全局变量问题" class="headerlink" title="共享模块的全局变量问题"></a>共享模块的全局变量问题</h3><p>有一种很特殊的情况是,当一个模块引用了一个定义在共享对象的全局变量的时候，更明确一点即：<strong>当共享库（<code>.so</code>）和可执行文件（如主程序）同时引用同一个全局变量时，如何避免变量多副本冲突？</strong>比如如下场景：</p>
+<ul>
+<li><strong>共享库</strong>（如 <code>libfoo.so</code>）定义了一个全局变量 <code>global</code>。</li>
+<li><strong>可执行文件</strong>（如 <code>main</code>）或另一个共享库通过 <code>extern int global;</code> 引用了该变量。</li>
+</ul>
+<p>当编译器编译 module.c 时,它无法根据这个上下文判断 global是定义在同一个模块的其他目标文件还是定义在另外一个共享对象之中,即无法判断是否为跨模块间的调用。 <strong>冲突根源</strong>在于：</p>
+<ul>
+<li>编译器在编译时<strong>无法确定 <code>global</code> 的定义位置</strong>（是同一模块内还是其他共享库？）。</li>
+<li>如果可执行文件<strong>非 PIC（非地址无关代码）</strong>，它会在自己的 <code>.bss</code> 段创建一个 <code>global</code> 的副本。</li>
+<li>结果：<strong>同一全局变量存在多个副本</strong>（共享库中一份，可执行文件中一份），导致数据不一致。</li>
+</ul>
+<h4 id="传统处理方式（非-PIC-可执行文件）"><a href="#传统处理方式（非-PIC-可执行文件）" class="headerlink" title="传统处理方式（非 PIC 可执行文件）"></a><strong>传统处理方式（非 PIC 可执行文件）</strong></h4><h5 id="（1）可执行文件的行为"><a href="#（1）可执行文件的行为" class="headerlink" title="（1）可执行文件的行为"></a><strong>（1）可执行文件的行为</strong></h5><p>非 PIC 可执行文件在<strong>链接时</strong>会为 <code>global</code> 分配空间（在 <code>.bss</code> 或 <code>.data</code> 段）。生成的代码直接使用绝对地址访问 <code>global</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">movl $0x1, 0x804a010  ; 假设 0x804a010 是可执行文件中 global 的地址<br></code></pre></td></tr></table></figure>
+
+<h5 id="（2）共享库的行为"><a href="#（2）共享库的行为" class="headerlink" title="（2）共享库的行为"></a><strong>（2）共享库的行为</strong></h5><p>共享库默认<strong>假设 <code>global</code> 可能被其他模块引用</strong>，因此：</p>
+<p>通过 <strong>GOT（Global Offset Table）</strong> 间接访问 <code>global</code>。生成的 PIC 代码类似：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">mov 0x2000(%ebx), %eax  ; 从 GOT 加载 global 的地址<br>movl $0x1, (%eax)        ; 写入值<br></code></pre></td></tr></table></figure>
+
+<h5 id="（3）冲突结果"><a href="#（3）冲突结果" class="headerlink" title="（3）冲突结果"></a><strong>（3）冲突结果</strong></h5><p>可执行文件直接访问自己的 <code>global</code> 副本。共享库通过 GOT 访问 <code>global</code>，但默认指向共享库内部的副本。<strong>两个副本不同步</strong>，程序行为错误。</p>
+<h4 id="ELF-的解决方案：全局变量单例化"><a href="#ELF-的解决方案：全局变量单例化" class="headerlink" title="ELF 的解决方案：全局变量单例化"></a><strong>ELF 的解决方案：全局变量单例化</strong></h4><p>为了确保全局变量<strong>只有一个实例</strong>，动态链接器（<code>ld.so</code>）采用以下策略：</p>
+<h5 id="（1）规则"><a href="#（1）规则" class="headerlink" title="（1）规则"></a><strong>（1）规则</strong></h5><ul>
+<li>如果全局变量在<strong>可执行文件中有副本</strong>，则：共享库的 GOT 项指向可执行文件的副本。共享库的初始化值（如果有）被复制到可执行文件的副本中。</li>
+<li>如果全局变量<strong>仅在共享库中定义</strong>，则：GOT 指向共享库内部的副本。</li>
+</ul>
+<h5 id="（2）实现步骤"><a href="#（2）实现步骤" class="headerlink" title="（2）实现步骤"></a><strong>（2）实现步骤</strong></h5><ol>
+<li><p><strong>动态链接器扫描依赖关系</strong></p>
+<p>检查可执行文件和所有共享库的符号表，确定 <code>global</code> 的<strong>正确定义位置</strong>。</p>
+</li>
+<li><p><strong>修正 GOT 条目</strong></p>
+<p>如果 <code>global</code> 在可执行文件中存在，将共享库的 GOT 项指向可执行文件的副本。</p>
+</li>
+<li><p><strong>复制初始化值（如有）</strong></p>
+<p>如果共享库中 <code>global</code> 已初始化（如 <code>int global = 42;</code>），将该值复制到可执行文件的副本。</p>
+</li>
+</ol>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a><strong>示例</strong></h4><p>**共享库 <code>libfoo.so</code>**：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">int global = 42;  // 初始化值<br></code></pre></td></tr></table></figure>
+
+<p>**可执行文件 <code>main</code>**：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">extern int global;<br>int main() &#123; global = 100; &#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>运行时行为</strong>：</p>
+<ul>
+<li>动态链接器发现 <code>main</code> 有自己的 <code>global</code> 副本。</li>
+<li>将 <code>libfoo.so</code> 的 GOT 项指向 <code>main</code> 的 <code>global</code>。</li>
+<li>将初始值 <code>42</code> 复制到 <code>main</code> 的 <code>global</code>。</li>
+<li>最终 <code>global</code> 只有一份（在 <code>main</code> 中），共享库通过 GOT 访问它。</li>
+</ul>
+<h3 id="数据段地址无关性"><a href="#数据段地址无关性" class="headerlink" title="数据段地址无关性"></a>数据段地址无关性</h3><h4 id="数据段的绝对地址问题"><a href="#数据段的绝对地址问题" class="headerlink" title="数据段的绝对地址问题"></a><strong>数据段的绝对地址问题</strong></h4><p>共享对象中可能存在 <strong>数据段内的绝对地址引用</strong>，例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span> a;<br><span class="hljs-type">static</span> <span class="hljs-type">int</span>* p = &amp;a;  <span class="hljs-comment">// p 的初始值是 a 的绝对地址</span><br></code></pre></td></tr></table></figure>
+<ul>
+<li>变量 <code>a</code> 的地址会随共享对象的加载基址变化（如第一次加载到 <code>0x1000</code>，第二次加载到 <code>0x2000</code>）。</li>
+<li>指针 <code>p</code> 的初始值（<code>&amp;a</code>）在编译时是固定的，但运行时需要修正。</li>
+</ul>
+<h5 id="核心矛盾"><a href="#核心矛盾" class="headerlink" title="核心矛盾"></a><strong>核心矛盾</strong></h5><ul>
+<li><strong>代码段</strong> 可以通过 PIC 实现地址无关性（如 <code>PC + 偏移</code>）。</li>
+<li><strong>数据段</strong> 的初始值（如指针、全局变量）可能直接存储绝对地址，需运行时修正。</li>
+</ul>
+<hr>
+<h4 id="解决方案：装载时重定位（Load-Time-Relocation）"><a href="#解决方案：装载时重定位（Load-Time-Relocation）" class="headerlink" title="解决方案：装载时重定位（Load-Time Relocation）"></a><strong>解决方案：装载时重定位（Load-Time Relocation）</strong></h4><h5 id="（1）重定位表（Relocation-Table）"><a href="#（1）重定位表（Relocation-Table）" class="headerlink" title="（1）重定位表（Relocation Table）"></a><strong>（1）重定位表（Relocation Table）</strong></h5><p>编译器会为数据段生成 <strong>重定位表</strong>，标记需要修正的地址：</p>
+<ul>
+<li>类型为 <code>R_386_RELATIVE</code>（x86）或 <code>R_X86_64_RELATIVE</code>（x64）。</li>
+<li>动态链接器（<code>ld.so</code>）在加载共享对象时，根据实际基址修正这些地址。</li>
+</ul>
+<h5 id="（2）修正过程"><a href="#（2）修正过程" class="headerlink" title="（2）修正过程"></a><strong>（2）修正过程</strong></h5><ol>
+<li>动态链接器解析共享对象，发现 <code>R_386_RELATIVE</code> 重定位项。</li>
+<li>计算变量 <code>a</code> 的实际地址：<figure class="highlight fix"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs fix"><span class="hljs-attr">实际地址 </span>=<span class="hljs-string"> 共享对象加载基址 + a 的原始偏移</span><br></code></pre></td></tr></table></figure></li>
+<li>将 <code>p</code> 的值更新为 <code>a</code> 的实际地址。</li>
+</ol>
+<h5 id="（3）为什么数据段可以重定位？"><a href="#（3）为什么数据段可以重定位？" class="headerlink" title="（3）为什么数据段可以重定位？"></a><strong>（3）为什么数据段可以重定位？</strong></h5><ul>
+<li>数据段 <strong>不被多进程共享</strong>，每个进程有独立副本，修改不会影响其他进程。</li>
+<li>重定位仅发生在进程初始化阶段，不影响运行时性能。</li>
+</ul>
+<hr>
+<h4 id="对比：代码段的地址无关性（PIC）"><a href="#对比：代码段的地址无关性（PIC）" class="headerlink" title="对比：代码段的地址无关性（PIC）"></a><strong>对比：代码段的地址无关性（PIC）</strong></h4><h5 id="（1）PIC-的原理"><a href="#（1）PIC-的原理" class="headerlink" title="（1）PIC 的原理"></a><strong>（1）PIC 的原理</strong></h5><p>代码段通过 <strong>PC 相对寻址</strong> 或 <strong>GOT（Global Offset Table）</strong> 访问数据和函数。无需重定位，可被多进程共享。</p>
+<h5 id="（2）非-PIC-代码的问题"><a href="#（2）非-PIC-代码的问题" class="headerlink" title="（2）非 PIC 代码的问题"></a><strong>（2）非 PIC 代码的问题</strong></h5><p>如果共享对象不使用 <code>-fPIC</code> 编译：代码段包含绝对地址（如 <code>call 0x1234</code>），需装载时重定位。</p>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>每个进程需独立修改代码段，无法共享内存。</li>
+<li>失去动态库的核心优势（节省内存）。</li>
+</ul>
+<h5 id="（3）PIC-vs-装载时重定位的性能权衡"><a href="#（3）PIC-vs-装载时重定位的性能权衡" class="headerlink" title="（3）PIC vs 装载时重定位的性能权衡"></a><strong>（3）PIC vs 装载时重定位的性能权衡</strong></h5><table>
+<thead>
+<tr>
+<th><strong>特性</strong></th>
+<th><strong>PIC（地址无关代码）</strong></th>
+<th><strong>装载时重定位</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>代码段共享</strong></td>
+<td>✔️ 是（多进程共享同一物理内存）</td>
+<td>❌ 否（每进程需独立重定位）</td>
+</tr>
+<tr>
+<td><strong>数据段处理</strong></td>
+<td>通过 GOT 间接访问</td>
+<td>直接重定位修正</td>
+</tr>
+<tr>
+<td><strong>运行速度</strong></td>
+<td>稍慢（需间接寻址）</td>
+<td>更快（直接访问绝对地址）</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>默认（共享库必须用 PIC）</td>
+<td>可执行文件（非共享场景）</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="技术实现示例"><a href="#技术实现示例" class="headerlink" title="技术实现示例"></a><strong>技术实现示例</strong></h4><h5 id="（1）PIC-数据访问（通过-GOT）"><a href="#（1）PIC-数据访问（通过-GOT）" class="headerlink" title="（1）PIC 数据访问（通过 GOT）"></a><strong>（1）PIC 数据访问（通过 GOT）</strong></h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs asm">; 访问全局变量 global<br>mov 0x2000(%ebx), %eax  ; 从 GOT 加载 global 地址<br>movl $42, (%eax)        ; 写入值<br></code></pre></td></tr></table></figure>
+
+<h5 id="（2）装载时重定位数据段"><a href="#（2）装载时重定位数据段" class="headerlink" title="（2）装载时重定位数据段"></a><strong>（2）装载时重定位数据段</strong></h5><p>编译时生成重定位表：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">readelf -r libfoo.so  <span class="hljs-comment"># 查看重定位条目</span><br></code></pre></td></tr></table></figure>
+
+<p>动态链接器修正：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 伪代码：ld.so 的重定位逻辑</span><br><span class="hljs-keyword">for</span> (each R_386_RELATIVE entry) &#123;<br>    *target_address = load_base + original_offset;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="延迟绑定-PLT"><a href="#延迟绑定-PLT" class="headerlink" title="延迟绑定(PLT)"></a>延迟绑定(PLT)</h2><p>动态链接的确有很多优势,比静态链接要灵活得多,但它是以牺牲一部分性能为代价的。 据统计 ELF 程序在静态链接下要比动态库稍微快点,大约为1%~5%,当然这取决于程序 本身的特性及运行环境等。</p>
+<p>我们知道动态链接比静态链接慢的主要原因是动态链接下对于全局和静态的数据访问都要进行复杂的GOT 定位,然后间接寻址;对于模块间的调用也要先 定位 GOT,然后再进行间接跳转,如此一来,程序的运行速度必定会减慢。</p>
+<p>另外一个减慢 运行速度的原因是动态链接的链接工作在运行时完成,即程序开始执行时,动态链接器都要 进行一次链接工作,正如我们上面提到的,动态链接器会寻找并装载所需要的共享对象,然后进行符号查找地址重定位等工作,这些工作势必减慢程序的启动速度。</p>
+<h3 id="延迟绑定实现"><a href="#延迟绑定实现" class="headerlink" title="延迟绑定实现"></a>延迟绑定实现</h3><p>动态链接库（<code>.so</code>）中的函数调用在编译时无法确定地址（因为函数可能定义在其他模块中）。<br>传统做法是加载时解析所有函数地址（<strong>立即绑定</strong>），但这样会导致：</p>
+<ul>
+<li><strong>启动时间变长</strong>：需解析所有外部函数，即使某些函数可能永远不会被调用。</li>
+<li><strong>内存浪费</strong>：可能加载从未使用的函数符号。</li>
+</ul>
+<p><strong>解决方案</strong>：延迟绑定（Lazy Binding），即 <strong>第一次调用函数时才解析其地址</strong>。</p>
+<p>所以程序开始执行时,模块间的函数调用都没有进行绑 定,而是需要用到时才由动态链接器来负责绑定。这样的做法可以大大加快程序的启动速度, 特别有利于一些有大量函数引用和大量模块的程序。</p>
+<p>ELF 使用 PLT (Procedure Linkage Table)的方法来实现,这种方法使用了一些很精 巧的指令序列来完成。在开始详细介绍 PLT之前,我们先从动态链接器的角度设想一下: 假设 liba.so 需要调用 libc.so 中的bar()函数,那么当liba.so 中第一次调用bar()时,这时候就 需要调用动态链接器中的某个函数来完成地址绑定工作,我们假设这个函数叫做 lookup(), 那么 lookup()需要知道哪些必要的信息才能完成这个函数地址绑定工作呢?我想答案很明 显,lookup)至少需要知道这个地址绑定发生在哪个模块,哪个函数?</p>
+<p>那么我们可以假设 lookup 的原型为lookup (module, function),这两个参数的值在我们这个例子中分别为 liba.so 和bar()。在Glibc 中,我们这里的 lookup()函数真正的名字叫_dl_runtime_resolve()。</p>
+<p><img src="https://s2.loli.net/2025/05/27/wDv6dnmHJSiVbT4.png" srcset="/img/loading.gif" lazyload></p>
+<p>当我们调用某个外部模块的函数时,如果按照通常的做法应该是通过GOT 中相应的项 进行间接跳转。PLT 为了实现延迟绑定,在这个过程中间又增加了一层间接跳转。调用函数并不直接通过GOT 跳转,而是通过一个叫作 PLT项的结构来进行跳转。每个外部函数在PLT 中都有一个相应的项,比如bar()函数在PLT中的项的地址我们称之为bar@plt</p>
+<h3 id="PLT-GOT-的分工"><a href="#PLT-GOT-的分工" class="headerlink" title="PLT&#x2F;GOT 的分工"></a><strong>PLT&#x2F;GOT 的分工</strong></h3><h4 id="GOT（Global-Offset-Table）"><a href="#GOT（Global-Offset-Table）" class="headerlink" title="GOT（Global Offset Table）"></a><strong>GOT（Global Offset Table）</strong></h4><p><code>.got</code>：存储全局变量的地址。</p>
+<p><code>.got.plt</code>：存储外部函数的地址（专用于 PLT 的跳转目标）。</p>
+<p><strong>前三项特殊用途</strong>：</p>
+<ol>
+<li><code>.dynamic</code> 段的地址（描述动态链接信息）。</li>
+<li><strong>本模块的 ID</strong>（用于符号查找）。</li>
+<li><code>_dl_runtime_resolve</code> 的地址（动态链接器的解析函数）。</li>
+</ol>
+<h4 id="PLT（Procedure-Linkage-Table）"><a href="#PLT（Procedure-Linkage-Table）" class="headerlink" title="PLT（Procedure Linkage Table）"></a><strong>PLT（Procedure Linkage Table）</strong></h4><p>位于 <strong><code>.plt</code> 段</strong>，是一段 <strong>地址无关的代码</strong>，用于间接跳转到目标函数。</p>
+<p><strong>PLT 的结构</strong>：</p>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>PLT表项</strong></th>
+<th align="center"><strong>存储内容</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>PLT[0]</strong></td>
+<td align="center">跳转到动态链接器（<code>_dl_runtime_resolve</code>）的代码，用于首次解析函数地址。</td>
+</tr>
+<tr>
+<td align="center"><strong>PLT[n] (n≥1)</strong></td>
+<td align="center">1. 第一条指令：跳转到<strong>GOT表</strong>对应项（初始指向PLT项的下一条指令）。 2. 后续指令：压栈函数ID，跳转到PLT[0]触发解析。</td>
+</tr>
+</tbody></table>
+<p><strong>PLT[0]（PLT 的“入口”）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">push *(GOT + 4)    ; 压入模块ID（GOT[1]）<br>jump *(GOT + 8)    ; 跳转到 _dl_runtime_resolve（GOT[2]）<br></code></pre></td></tr></table></figure>
+
+<p><strong>PLT[n]（第 n 个外部函数的桩代码）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs assembly">bar@plt:<br>    jmp *(bar@GOT)  ; 第一次跳转到 GOT 中的地址（初始指向下一条指令）<br>    push n          ; 压入符号在重定位表中的下标<br>    jump PLT0       ; 跳转到 PLT[0]，触发符号解析<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2025/05/27/YUNoMreG2PDlRpF.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="延迟绑定的完整流程"><a href="#延迟绑定的完整流程" class="headerlink" title="延迟绑定的完整流程"></a><strong>延迟绑定的完整流程</strong></h3><h4 id="（1）第一次调用-bar"><a href="#（1）第一次调用-bar" class="headerlink" title="（1）第一次调用 bar()"></a><strong>（1）第一次调用 <code>bar()</code></strong></h4><ol>
+<li><p><strong>执行 <code>bar@plt</code> 的第一条指令</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">jmp *(bar@GOT)  ; 初始时 GOT 存的是 `push n` 的地址（即下一条指令）<br></code></pre></td></tr></table></figure>
+
+<p>效果：直接执行下一条指令（相当于 <code>jmp</code> 被忽略）。</p>
+</li>
+<li><p><strong>压入符号信息</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">push n          ; n 是 `bar` 在 `.rel.plt` 中的下标<br>jump PLT0       ; 跳转到 PLT[0]<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>PLT[0] 调用动态链接器</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">push *(GOT + 4) ; 压入模块ID（GOT[1]）<br>jump *(GOT + 8) ; 跳转到 _dl_runtime_resolve（GOT[2]）<br></code></pre></td></tr></table></figure>
+
+<p><code>_dl_runtime_resolve</code> 根据模块ID和符号下标 <code>n</code> 解析 <code>bar</code> 的真实地址。</p>
+</li>
+<li><p><strong>修正 GOT 并跳转</strong>：</p>
+<ul>
+<li>动态链接器将 <code>bar</code> 的真实地址写入 <code>bar@GOT</code>。</li>
+<li>跳转到 <code>bar</code> 函数执行。</li>
+</ul>
+</li>
+</ol>
+<h4 id="（2）后续调用-bar"><a href="#（2）后续调用-bar" class="headerlink" title="（2）后续调用 bar()"></a><strong>（2）后续调用 <code>bar()</code></strong></h4><ul>
+<li><p><strong><code>bar@GOT</code> 已被修正为 <code>bar</code> 的真实地址</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">jmp *(bar@GOT)  ; 直接跳转到 bar()<br></code></pre></td></tr></table></figure>
+
+<p>不再执行 <code>push n</code> 和 <code>jump PLT0</code>，直接调用目标函数。</p>
+</li>
+</ul>
+<p>relocation 完成之后的函数调用关系如下：</p>
+<p><img src="https://s2.loli.net/2025/05/27/CFirDHsZtxYoRAX.png" srcset="/img/loading.gif" lazyload></p>
+<p>linker 在加载 ELF 时的最主要工作是 relocation（重定位），这个过程的目的是为当前 ELF 的每个“导入符号”找到对应的外部符号（函数或数据）的绝对地址。最终，这些地址会被写入以下几个地方：</p>
+<ul>
+<li><code>.got.plt</code>：保存外部函数的绝对地址。这就是我们经常会听到的 “GOT 表”。</li>
+<li><code>.data</code>，<code>.data.rel.ro</code>：保存外部数据（包括函数指针）的绝对地址。</li>
+</ul>
+<p>要完成 relocation 过程，需要依赖于 ELF 中的以下信息：</p>
+<ul>
+<li><code>.rel.plt</code>，<code>.rela.plt</code>：用于关联 <code>.dynsym</code> 和 <code>.got.plt</code>。这就是我们经常会听到的 “PLT 表”。</li>
+<li><code>.rel.dyn</code>，<code>.rela.dyn</code>，<code>.rel.dyn.aps2</code>，<code>.rela.dyn.aps2</code>：用于关联 <code>.dynsym</code> 和 <code>.data</code>，<code>.data.rel.ro</code>。</li>
+</ul>
+<h3 id="补充数据结构"><a href="#补充数据结构" class="headerlink" title="补充数据结构"></a>补充数据结构</h3><h4 id="hash-table（哈希表）"><a href="#hash-table（哈希表）" class="headerlink" title="hash table（哈希表）"></a>hash table（哈希表）</h4><p>为了加速“动态链接符号的字符串”的查找过程，ELF 中包含了这些字符串的哈希表，通过查哈希表，可以快速确认 ELF 中是否存在某个动态链接符号，以及这个符号对应的信息项在 <code>.dynsym</code> 中的偏移位置。</p>
+<p>历史原因，Android ELF 中会存在两种格式的哈希表：</p>
+<ul>
+<li><code>.hash</code>：SYSV hash。其中包含了所有的动态链接符号。</li>
+<li><code>.gnu.hash</code>：GNU hash。只包含动态链接符号中的导出符号。</li>
+</ul>
+<p>ELF 中可能同时包含 <code>.hash</code> 和 <code>.gnu.hash</code>，也可能只包含其中一个。具体看 ELF 编译时的静态链接参数 <code>-Wl,--hash-style</code>，可以设置为 <code>sysv</code> 或 <code>gnu</code> 或 <code>both</code>。从 Android 6.0 开始，linker 支持了 <code>.gnu.hash</code> 的解析。</p>
+<p><img src="https://s2.loli.net/2025/05/27/HIzPixfGcD4Ms8k.png" srcset="/img/loading.gif" lazyload alt="linker（动态链接器）"></p>
+<p>relocation 完成之后的数据引用关系如下：</p>
+<p><img src="https://s2.loli.net/2025/05/27/Pzcf9mTaHN85Xqk.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="关键点解析-1"><a href="#关键点解析-1" class="headerlink" title="关键点解析"></a><strong>关键点解析</strong></h3><h4 id="（1）GOT-的初始化"><a href="#（1）GOT-的初始化" class="headerlink" title="（1）GOT 的初始化"></a><strong>（1）GOT 的初始化</strong></h4><p><strong><code>.got.plt</code> 的前三项</strong>由动态链接器在加载时填充：</p>
+<ul>
+<li><code>GOT[1]</code>：模块ID（用于符号查找）。</li>
+<li><code>GOT[2]</code>：<code>_dl_runtime_resolve</code> 的地址。</li>
+</ul>
+<p><strong>其余项（如 <code>bar@GOT</code>）</strong>：</p>
+<ul>
+<li>初始指向 <code>push n</code> 的地址（即 PLT 的第二条指令）。</li>
+<li>解析后更新为真实函数地址。</li>
+</ul>
+<h4 id="（2）PLT-的代码复用"><a href="#（2）PLT-的代码复用" class="headerlink" title="（2）PLT 的代码复用"></a><strong>（2）PLT 的代码复用</strong></h4><ul>
+<li><strong>PLT[0] 是公共代码</strong>：所有未解析的函数调用最终都会跳转到这里。</li>
+<li><strong>PLT[n] 是桩代码</strong>：每个外部函数对应一个 PLT 条目（固定 16 字节）。</li>
+</ul>
+<h4 id="（3）-rel-plt-的作用"><a href="#（3）-rel-plt-的作用" class="headerlink" title="（3）.rel.plt 的作用"></a><strong>（3）<code>.rel.plt</code> 的作用</strong></h4><ul>
+<li>记录 <strong>函数符号的重定位信息</strong>（如 <code>bar</code> 的下标 <code>n</code>）。</li>
+<li>供 <code>_dl_runtime_resolve</code> 查找符号的真实地址。</li>
+</ul>
+<h3 id="延迟绑定的优势"><a href="#延迟绑定的优势" class="headerlink" title="延迟绑定的优势"></a><strong>延迟绑定的优势</strong></h3><table>
+<thead>
+<tr>
+<th align="left"><strong>场景</strong></th>
+<th align="left"><strong>立即绑定</strong></th>
+<th align="left"><strong>延迟绑定（PLT&#x2F;GOT）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>启动时间</strong></td>
+<td align="left">慢（需解析所有符号）</td>
+<td align="left">快（仅解析实际调用的符号）</td>
+</tr>
+<tr>
+<td align="left"><strong>内存占用</strong></td>
+<td align="left">可能加载未使用的符号</td>
+<td align="left">按需加载符号</td>
+</tr>
+<tr>
+<td align="left"><strong>实现复杂度</strong></td>
+<td align="left">简单</td>
+<td align="left">较复杂（需 PLT&#x2F;GOT 协作）</td>
+</tr>
+</tbody></table>
+<h2 id="动态链接相关结构"><a href="#动态链接相关结构" class="headerlink" title="动态链接相关结构"></a>动态链接相关结构</h2><blockquote>
+<p>在了解了共享对象的绝对地址引用问题以后,我们基本上对动态链接的原理有了初步的了解,接下来的问题就是整个动态链接具体的实现过程了。动态链接在不同的系统上有不同 的实现方式,ELF 的动态链接实现方式比 PE 稍微简单一点,在这里我们还是先介绍 ELF 的动态链接机制在Linux下的实现</p>
+</blockquote>
+<p>我们在前面的章节已经看到,动态链接情况下,可执行文件的装载与静态链接情况基本 一样。首先操作系统会读取可执行文件的头部,检查文件的合法性,然后从头部中的“Program Header”中读取每个“Segment”的虚拟地址、文件地址和属性,并将它们映射到进程虚拟 空间的相应位置,这些步骤跟前面的静态链接情况下的装载基本无异。</p>
+<p>在静态链接情况下, 操作系统接着就可以把控制权转交给可执行文件的入口地址,然后程序开始执行,一切看起 来非常直观。但是在动态链接情况下,操作系统还不能在装载完可执行文件之后就把控制权交给可执行文件,因为我们知道可执行文件依赖于很多共享对象。这时候,可执行文件里对于很多外 部符号的引用还处于无效地址的状态,即还没有跟相应的共享对象中的实际位置链接起来。 所以在映射完可执行文件之后,操作系统会先启动一个动态链接器(Dynamic Linker)。</p>
+<p>在Linux 下,动态链接器 Id.so 实际上是一个共享对象,操作系统同样通过映射的方式 将它加载到进程的地址空间中。操作系统在加载完动态链接器之后,就将控制权交给动态链 接器的入口地址(与可执行文件一样,共享对象也有入口地址)。当动态链接器得到控制权 之后,它开始执行一系列自身的初始化操作,然后根据当前的环境参数,开始对可执行文件 进行动态链接工作。当所有动态链接工作完成以后,动态链接器会将控制权转交到可执行文 件的入口地址,程序开始正式执行。</p>
+<h3 id="关键数据结构"><a href="#关键数据结构" class="headerlink" title="关键数据结构"></a>关键数据结构</h3><pre><code class=" mermaid">graph TD
+    A[.interp] --&gt;|指定| B(动态链接器 ld-linux.so)
+    B --&gt; C[.dynamic]
+    C --&gt; D[依赖库列表 DT_NEEDED]
+    C --&gt; E[.dynsym 符号表]
+    C --&gt; F[.rel.plt/.rel.dyn 重定位表]
+    C --&gt; G[.got.plt]
+    E --&gt; H[符号解析]
+    F --&gt; I[地址修正]
+    G --&gt; J[延迟绑定]
+</code></pre>
+
+<h4 id="interp-段：指定动态链接器路径"><a href="#interp-段：指定动态链接器路径" class="headerlink" title=".interp 段：指定动态链接器路径"></a><strong><code>.interp</code> 段：指定动态链接器路径</strong></h4><p>存储在可执行文件或共享库中，<strong>指定动态链接器（Loader）的路径</strong>（如 <code>/lib64/ld-linux-x86-64.so.2</code>）。内核执行程序时，首先加载该动态链接器，再由它完成后续的库加载和符号解析。</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">readelf -p <span class="hljs-string">.interp</span> <span class="hljs-string">/bin/ls</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>若缺失 <code>.interp</code>，程序无法动态链接（静态链接程序无此段）。</li>
+<li>动态链接器的路径需与系统 ABI 兼容（如 32 位程序用 <code>/lib/ld-linux.so.2</code>）。</li>
+</ul>
+<h4 id="dynamic-段：动态链接信息总入口"><a href="#dynamic-段：动态链接信息总入口" class="headerlink" title=".dynamic 段：动态链接信息总入口"></a><strong><code>.dynamic</code> 段：动态链接信息总入口</strong></h4><p>是动态链接的<strong>核心元数据表</strong>，包含以下信息：</p>
+<ul>
+<li>依赖的共享库列表（<code>DT_NEEDED</code>）。</li>
+<li>动态符号表（<code>.dynsym</code>）和字符串表（<code>.dynstr</code>）的位置。</li>
+<li>重定位表（<code>.rel.plt</code>&#x2F;<code>.rel.dyn</code>）的地址。</li>
+<li>PLT&#x2F;GOT 的初始化信息（如 <code>DT_PLTGOT</code> 指向 <code>.got.plt</code>）。</li>
+</ul>
+<h5 id="关键字段"><a href="#关键字段" class="headerlink" title="关键字段"></a><strong>关键字段</strong></h5><table>
+<thead>
+<tr>
+<th align="left"><strong>Tag</strong></th>
+<th align="left"><strong>类型</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>DT_NEEDED</code></td>
+<td align="left">依赖库</td>
+<td align="left">如 <code>libc.so.6</code></td>
+</tr>
+<tr>
+<td align="left"><code>DT_SYMTAB</code></td>
+<td align="left">动态符号表（<code>.dynsym</code>）</td>
+<td align="left">符号名称、类型、绑定信息</td>
+</tr>
+<tr>
+<td align="left"><code>DT_STRTAB</code></td>
+<td align="left">字符串表（<code>.dynstr</code>）</td>
+<td align="left">存储符号名称字符串</td>
+</tr>
+<tr>
+<td align="left"><code>DT_PLTGOT</code></td>
+<td align="left">PLT&#x2F;GOT 地址</td>
+<td align="left">指向 <code>.got.plt</code></td>
+</tr>
+<tr>
+<td align="left"><code>DT_REL</code>&#x2F;<code>DT_RELA</code></td>
+<td align="left">重定位表</td>
+<td align="left">记录需要修正的地址</td>
+</tr>
+</tbody></table>
+<h4 id="动态符号表（-dynsym）"><a href="#动态符号表（-dynsym）" class="headerlink" title="动态符号表（.dynsym）"></a><strong>动态符号表（<code>.dynsym</code>）</strong></h4><p>存储动态链接所需的<strong>导出符号（供其他模块使用）和未解析符号（需从其他模块获取）</strong>。</p>
+<p>每个条目（<code>Elf64_Sym</code>）包含：</p>
+<ul>
+<li>符号名称（在 <code>.dynstr</code> 中的偏移）。</li>
+<li>符号类型（函数&#x2F;变量&#x2F;未定义等）。</li>
+<li>符号绑定（全局&#x2F;局部）。</li>
+<li>符号所在段（如 <code>.text</code> 或 <code>UND</code> 表示未定义）。</li>
+</ul>
+<h4 id="动态链接重定位表（-rel-plt-rel-dyn）"><a href="#动态链接重定位表（-rel-plt-rel-dyn）" class="headerlink" title="动态链接重定位表（.rel.plt&#x2F;.rel.dyn）"></a><strong>动态链接重定位表（<code>.rel.plt</code>&#x2F;<code>.rel.dyn</code>）</strong></h4><p>记录 <strong>需要动态链接器修正的地址</strong>，分为两类：</p>
+<ol>
+<li>**<code>.rel.plt</code>**：修正 <strong>PLT 中的函数引用</strong>（如 <code>printf@plt</code>）。</li>
+<li>**<code>.rel.dyn</code>**：修正 <strong>数据段中的绝对地址引用</strong>（如全局变量指针）。</li>
+</ol>
+<h5 id="重定位类型"><a href="#重定位类型" class="headerlink" title="重定位类型"></a><strong>重定位类型</strong></h5><table>
+<thead>
+<tr>
+<th align="left"><strong>类型</strong></th>
+<th align="left"><strong>目标</strong></th>
+<th align="left"><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>R_X86_64_JUMP_SLOT</code>（<code>.rel.plt</code>）</td>
+<td align="left">函数地址（GOT）</td>
+<td align="left">用于延迟绑定（如 <code>printf</code>）</td>
+</tr>
+<tr>
+<td align="left"><code>R_X86_64_GLOB_DAT</code>（<code>.rel.dyn</code>）</td>
+<td align="left">全局变量地址</td>
+<td align="left">修正数据段的绝对引用</td>
+</tr>
+</tbody></table>
+<h3 id="动态链接的完整流程"><a href="#动态链接的完整流程" class="headerlink" title="动态链接的完整流程"></a><strong>动态链接的完整流程</strong></h3><ol>
+<li><strong>内核加载可执行文件</strong>：读取 <code>.interp</code>，启动动态链接器（如 <code>ld-linux.so</code>）。</li>
+<li>**动态链接器解析 <code>.dynamic</code>**：加载依赖库（<code>DT_NEEDED</code>），定位 <code>.dynsym</code> 和重定位表。</li>
+<li><strong>符号解析与重定位</strong>：根据 <code>.rel.plt</code> 和 <code>.rel.dyn</code> 修正 GOT&#x2F;PLT 和数据段地址。</li>
+<li><strong>延迟绑定（Lazy Binding）</strong>：首次调用函数时，通过 PLT&#x2F;GOT 触发 <code>_dl_runtime_resolve</code> 解析符号。</li>
+</ol>
+<h2 id="动态链接的步骤和实现"><a href="#动态链接的步骤和实现" class="headerlink" title="动态链接的步骤和实现"></a>动态链接的步骤和实现</h2><blockquote>
+<p>有了前面诸多的铺垫,我们终于要开始分析动态链接的实际链接步骤了。动态链接的步 骤基本上分为3步:先是启动动态链接器本身,然后装载所有需要的共享对象,最后是重定 位和初始化。</p>
+</blockquote>
+<h3 id="动态链接器的特殊性"><a href="#动态链接器的特殊性" class="headerlink" title="动态链接器的特殊性"></a><strong>动态链接器的特殊性</strong></h3><p>动态链接器本身是一个共享对象（<code>.so</code>），但它必须解决“<strong>鸡生蛋</strong>”问题：</p>
+<ul>
+<li><strong>普通共享对象</strong>：依赖其他库，由动态链接器完成其重定位。</li>
+<li><strong>动态链接器</strong>：不能依赖任何外部库，且需<strong>自行完成自身的重定位</strong>。</li>
+</ul>
+<p><strong>自举（Bootstrap）的核心条件</strong></p>
+<ol>
+<li><strong>不依赖其他共享对象</strong>：  动态链接器必须独立编译，不使用任何外部库（如 <code>libc</code>）。</li>
+<li><strong>自举代码禁用全局变量和函数调用</strong>：  在完成自身重定位前，不能访问全局变量（因 GOT 未初始化）或调用函数（因 PLT 未初始化）。</li>
+</ol>
+<hr>
+<h3 id="动态链接器的自举流程"><a href="#动态链接器的自举流程" class="headerlink" title="动态链接器的自举流程"></a><strong>动态链接器的自举流程</strong></h3><h4 id="（1）入口：自举代码的执行"><a href="#（1）入口：自举代码的执行" class="headerlink" title="（1）入口：自举代码的执行"></a><strong>（1）入口：自举代码的执行</strong></h4><ul>
+<li>操作系统将控制权交给动态链接器的入口（即自举代码）。</li>
+<li>此时，动态链接器的代码段已加载，但数据段（如 GOT）未重定位。</li>
+</ul>
+<h4 id="（2）定位关键数据结构"><a href="#（2）定位关键数据结构" class="headerlink" title="（2）定位关键数据结构"></a><strong>（2）定位关键数据结构</strong></h4><ol>
+<li><strong>找到 GOT</strong>：  动态链接器的 GOT 第一个条目（<code>GOT[0]</code>）存储 <code>.dynamic</code> 段的地址。</li>
+<li><strong>解析 <code>.dynamic</code> 段</strong>：  获取动态链接器自身的符号表（<code>.dynsym</code>）、字符串表（<code>.dynstr</code>）和重定位表（<code>.rel.plt</code>&#x2F;<code>.rel.dyn</code>）。</li>
+</ol>
+<h4 id="（3）重定位自身"><a href="#（3）重定位自身" class="headerlink" title="（3）重定位自身"></a><strong>（3）重定位自身</strong></h4><p>遍历重定位表，修正 GOT 和数据段中的绝对地址引用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 伪代码：自举重定位逻辑</span><br><span class="hljs-keyword">for</span> (each reloc_entry in .rel.plt) &#123;<br>    *reloc_entry.offset = resolve_symbol(reloc_entry.symbol);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>完成后</strong>，动态链接器才能使用全局变量和调用函数。</p>
+<h4 id="（4）禁止调用函数的原因"><a href="#（4）禁止调用函数的原因" class="headerlink" title="（4）禁止调用函数的原因"></a><strong>（4）禁止调用函数的原因</strong></h4><p>PIC 代码中，<strong>即使是内部函数调用</strong>，也通过 PLT&#x2F;GOT 跳转（如 <code>call foo@plt</code>）。在自举阶段，PLT&#x2F;GOT 尚未重定位，调用函数会导致崩溃。</p>
+<h3 id="动态链接的完整步骤"><a href="#动态链接的完整步骤" class="headerlink" title="动态链接的完整步骤"></a><strong>动态链接的完整步骤</strong></h3><h4 id="（1）合并全局符号表"><a href="#（1）合并全局符号表" class="headerlink" title="（1）合并全局符号表"></a><strong>（1）合并全局符号表</strong></h4><p>动态链接器将可执行文件、自身和所有依赖库的符号表合并为<strong>全局符号表</strong>。</p>
+<h4 id="（2）装载依赖的共享对象"><a href="#（2）装载依赖的共享对象" class="headerlink" title="（2）装载依赖的共享对象"></a><strong>（2）装载依赖的共享对象</strong></h4><ol>
+<li><strong>遍历依赖图</strong>：  从可执行文件的 <code>.dynamic</code> 段中读取 <code>DT_NEEDED</code> 条目（如 <code>libc.so.6</code>）。递归加载所有依赖的共享对象（广度优先或深度优先）。</li>
+<li><strong>映射到内存</strong>：  对每个共享对象，读取其 ELF 头，映射代码段（<code>.text</code>）和数据段（<code>.data</code>、<code>.bss</code>）到进程空间。</li>
+</ol>
+<h4 id="（3）符号解析与重定位"><a href="#（3）符号解析与重定位" class="headerlink" title="（3）符号解析与重定位"></a><strong>（3）符号解析与重定位</strong></h4><p><strong>修正所有未定义符号</strong>：  根据全局符号表，填充 GOT 中的函数地址（如 <code>printf</code>）。重定位数据段中的绝对地址引用（如全局变量指针）。</p>
+<h4 id="（4）初始化共享对象"><a href="#（4）初始化共享对象" class="headerlink" title="（4）初始化共享对象"></a><strong>（4）初始化共享对象</strong></h4><p>执行共享对象的初始化代码（如 <code>.init</code> 段或构造函数）。程序从可执行文件的入口地址（<code>e_entry</code>）开始执行。</p>
+<h2 id="显式运行时链接"><a href="#显式运行时链接" class="headerlink" title="显式运行时链接"></a>显式运行时链接</h2><p>支持动态链接的系统往往都支持一种更加灵活的模块加载方式,叫做显式运行时链接 (Explicit Run-time Linking),有时候也叫做运行时加载。也就是让程序自己在运行时控制 加载指定的模块,并且可以在不需要该模块时将其卸载。从前面我们了解到的来看,如果动 态链接器可以在运行时将共享模块装载进内存并且可以进行重定位等操作,那么这种运行时 加载在理论上也是很容易实现的。而且一般的共享对象不需要进行任何修改就可以进行运行 时装载,这种共享对象往往被叫做动态装载库(Dynamic Loading Library),其实本质上它 跟一般的共享对象没什么区别,只是程序开发者使用它的角度不同。</p>
+<p>程序在​<strong>​运行时​</strong>​动态加载&#x2F;卸载共享库（<code>.so</code>&#x2F;<code>.dll</code>），而非启动时自动链接。与普通动态链接的区别：</p>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>特性</strong></th>
+<th align="center">普通动态链接</th>
+<th align="center">显式运行时链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>加载时机</strong></td>
+<td align="center">程序启动时（透明完成）</td>
+<td align="center">程序运行时（主动控制）</td>
+</tr>
+<tr>
+<td align="center"><strong>API控制</strong></td>
+<td align="center">无</td>
+<td align="center"><code>dlopen</code>&#x2F;<code>dlsym</code>等</td>
+</tr>
+<tr>
+<td align="center"><strong>典型用途</strong></td>
+<td align="center">基础库（如<code>libc.so</code>）</td>
+<td align="center">插件、驱动、热更新模块</td>
+</tr>
+</tbody></table>
+<p>在Linux 中,从文件本身的格式上来看,动态库实际上跟一般的共享对象没有区别,正 如我们前面讨论过的。</p>
+<p>主要的区别是共享对象是由动态链接器在程序启动之前负责装载和链 接的,这一系列步骤都由动态连接器自动完成,对于程序本身是透明的;而动态库的装载则 是通过一系列由动态链接器提供的API,具体地讲共有4个函数:打开动态库(dlopen)、 查找符号(dlsym)、错误处理(dlerror)以及关闭动态库(dlclose)程序可以通过这几个 API 对动态库进行操作。这几个API 的实现是在&#x2F;lib&#x2F;libdl.so.2里面,它们的声明和相关常量 被定义在系统标准头文件。</p>
+<h3 id="核心API详解（Linux-Unix）"><a href="#核心API详解（Linux-Unix）" class="headerlink" title="核心API详解（Linux&#x2F;Unix）"></a>核心API详解（Linux&#x2F;Unix）</h3><h4 id="1-dlopen-—-打开动态库"><a href="#1-dlopen-—-打开动态库" class="headerlink" title="(1) dlopen — 打开动态库"></a><strong>(1) <code>dlopen</code> — 打开动态库</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">dlopen</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* filename, <span class="hljs-type">int</span> flag)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<p><code>filename</code>：库路径（如<code>&quot;./plugin.so&quot;</code>），若为<code>NULL</code>则返回主程序句柄。<code>flag</code>：</p>
+<ul>
+<li><p><code>RTLD_LAZY</code>：延迟绑定（符号使用时才解析）。</p>
+</li>
+<li><p><code>RTLD_NOW</code>：立即解析所有符号。</p>
+</li>
+<li><p><code>RTLD_GLOBAL</code>：使库的符号全局可见（可被其他模块使用）。</p>
+</li>
+<li><p><strong>返回值</strong>：库的句柄（失败返回<code>NULL</code>）。</p>
+</li>
+</ul>
+<h4 id="2-dlsym-—-查找符号"><a href="#2-dlsym-—-查找符号" class="headerlink" title="(2) dlsym — 查找符号"></a><strong>(2) <code>dlsym</code> — 查找符号</strong></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">dlsym</span><span class="hljs-params">(<span class="hljs-type">void</span>* handle, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* symbol)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p>参数：</p>
+<ul>
+<li><code>handle</code>：<code>dlopen</code>返回的句柄。</li>
+<li><code>symbol</code>：函数&#x2F;变量名（如<code>&quot;create_plugin&quot;</code>）。</li>
+</ul>
+<p><strong>返回值</strong>：符号地址（失败返回<code>NULL</code>）。</p>
+<h4 id="3-dlerror-—-错误处理"><a href="#3-dlerror-—-错误处理" class="headerlink" title="(3) dlerror — 错误处理"></a><strong>(3) <code>dlerror</code> — 错误处理</strong></h4><p><code>char* dlerror(void);</code><strong>作用</strong>：返回最后一次API调用的错误信息（无错误时返回<code>NULL</code>）。</p>
+<h4 id="4-dlclose-—-关闭动态库"><a href="#4-dlclose-—-关闭动态库" class="headerlink" title="(4) dlclose — 关闭动态库"></a><strong>(4) <code>dlclose</code> — 关闭动态库</strong></h4><p><code>int dlclose(void* handle);</code><strong>作用</strong>：卸载库（引用计数减为0时真正卸载）。</p>
+<hr>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a><strong>使用示例</strong></h3><h4 id="动态加载一个数学插件"><a href="#动态加载一个数学插件" class="headerlink" title="动态加载一个数学插件"></a><strong>动态加载一个数学插件</strong></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;dlfcn.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">// 1. 打开动态库</span><br>    <span class="hljs-type">void</span>* handle = <span class="hljs-built_in">dlopen</span>(<span class="hljs-string">&quot;./math_plugin.so&quot;</span>, RTLD_LAZY);<br>    <span class="hljs-keyword">if</span> (!handle) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;Error: %s\n&quot;</span>, <span class="hljs-built_in">dlerror</span>());<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 2. 获取函数指针</span><br>    <span class="hljs-function"><span class="hljs-keyword">typedef</span> <span class="hljs-title">int</span> <span class="hljs-params">(*add_func)</span><span class="hljs-params">(<span class="hljs-type">int</span>, <span class="hljs-type">int</span>)</span></span>;<br>    add_func add = (add_func)<span class="hljs-built_in">dlsym</span>(handle, <span class="hljs-string">&quot;add&quot;</span>);<br>    <span class="hljs-keyword">if</span> (!add) &#123;<br>        <span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;Error: %s\n&quot;</span>, <span class="hljs-built_in">dlerror</span>());<br>        <span class="hljs-built_in">dlclose</span>(handle);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 3. 使用函数</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;3 + 5 = %d\n&quot;</span>, <span class="hljs-built_in">add</span>(<span class="hljs-number">3</span>, <span class="hljs-number">5</span>));<br><br>    <span class="hljs-comment">// 4. 关闭库</span><br>    <span class="hljs-built_in">dlclose</span>(handle);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="编译与运行"><a href="#编译与运行" class="headerlink" title="编译与运行"></a><strong>编译与运行</strong></h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"># 编译主程序（链接libdl）<br>gcc main.c -o main -ldl<br><br># 运行<br>./main<br># 输出: <span class="hljs-number">3</span> + <span class="hljs-number">5</span> = <span class="hljs-number">8</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="跨平台兼容性"><a href="#跨平台兼容性" class="headerlink" title="跨平台兼容性"></a><strong>跨平台兼容性</strong></h3><table>
+<thead>
+<tr>
+<th><strong>平台</strong></th>
+<th><strong>API</strong></th>
+<th><strong>头文件</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Linux&#x2F;Unix</td>
+<td><code>dlopen</code>&#x2F;<code>dlsym</code></td>
+<td><code>&lt;dlfcn.h&gt;</code></td>
+</tr>
+<tr>
+<td>Windows</td>
+<td><code>LoadLibrary</code>&#x2F;<code>GetProcAddress</code></td>
+<td><code>&lt;windows.h&gt;</code></td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>同Linux</td>
+<td><code>&lt;dlfcn.h&gt;</code></td>
+</tr>
+</tbody></table>
+<p><strong>Windows示例</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c++">HMODULE handle = <span class="hljs-built_in">LoadLibrary</span>(<span class="hljs-string">&quot;plugin.dll&quot;</span>);<br>FARPROC func = <span class="hljs-built_in">GetProcAddress</span>(handle, <span class="hljs-string">&quot;exported_func&quot;</span>);<br><span class="hljs-built_in">FreeLibrary</span>(handle);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/tardis/zm/art/111682188?source_id=1005">【读书】《程序员的自我修养》——全书思维导图（上）</a></p>
+<p><a target="_blank" rel="noopener" href="https://lug.ustc.edu.cn/wiki/user/boj/linkers-and-loaders/#37-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E7%89%88%E6%9C%AC">《程序员的自我修养》读书笔记 - LUG @ USTC</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhang759740844.github.io/2019/05/28/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%87%AA%E6%88%91%E4%BF%AE%E5%85%BB/">《程序员的自我修养》读书笔记 | Zachary’s blog</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/SpiritiualWander/p/17903141.html">《程序员的自我修养——链接、装载与库》（作者：俞子甲）读书笔记 - 逝玄 - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/" class="category-chain-item">计算机技术</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Windows内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/" class="category-chain-item">装载链接运行</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>装载与动态链接</div>
+      <div>https://hermes37.vercel.app/2025/05/27/工科知识库/计算机技术/操作系统/Windows内核原理/装载链接运行/装载与动态链接/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月27日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/30/%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/%E9%80%86%E5%90%91%E4%B8%8E%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%85%A8%E6%A0%88%E5%BC%80%E5%8F%91/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/TypeScript%E5%9F%BA%E7%A1%80/" title="TypeScript基础">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">TypeScript基础</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/27/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%8A%80%E6%9C%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Windows%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E8%A3%85%E8%BD%BD%E9%93%BE%E6%8E%A5%E8%BF%90%E8%A1%8C/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/" title="静态链接">
+                        <span class="hidden-mobile">静态链接</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
