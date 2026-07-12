@@ -1,0 +1,1011 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="PMS概述PMS的启动流程android系统启动流程 - The Peak Tower  Cross Reference: &#x2F;frameworks&#x2F;base&#x2F;services&#x2F;java&#x2F;com&#x2F;android&#x2F;server&#x2F;SystemServer.java   startBootstrapServices123456">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PMS源码阅读">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/PMS%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="PMS概述PMS的启动流程android系统启动流程 - The Peak Tower  Cross Reference: &#x2F;frameworks&#x2F;base&#x2F;services&#x2F;java&#x2F;com&#x2F;android&#x2F;server&#x2F;SystemServer.java   startBootstrapServices123456">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/04/05/ZkSiCqvspNUf7nP.png">
+<meta property="og:image" content="https://s2.loli.net/2025/04/05/wXJyUIfkO7enhxA.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.455Z">
+<meta property="article:modified_time" content="2026-07-12T03:18:59.825Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2025/04/05/ZkSiCqvspNUf7nP.png">
+  
+  
+  
+  <title>PMS源码阅读 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PMS源码阅读"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PMS源码阅读</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="PMS概述"><a href="#PMS概述" class="headerlink" title="PMS概述"></a>PMS概述</h1><h1 id="PMS的启动流程"><a href="#PMS的启动流程" class="headerlink" title="PMS的启动流程"></a>PMS的启动流程</h1><p><a target="_blank" rel="noopener" href="https://restack3.github.io/2024/01/03/Android%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/#SystemServer%E8%BF%9B%E7%A8%8B">android系统启动流程 - The Peak Tower</a></p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/base/services/java/com/android/server/SystemServer.java">Cross Reference: &#x2F;frameworks&#x2F;base&#x2F;services&#x2F;java&#x2F;com&#x2F;android&#x2F;server&#x2F;SystemServer.java</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/04/05/ZkSiCqvspNUf7nP.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="startBootstrapServices"><a href="#startBootstrapServices" class="headerlink" title="startBootstrapServices"></a>startBootstrapServices</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">startBootstrapServices</span><span class="hljs-params">(<span class="hljs-meta">@NonNull</span> TimingsTraceAndSlog t)</span> &#123;<br>    .........<br>    <span class="hljs-comment">// 初始化 PackageManagerService（PMS），这是Android核心服务之一，负责应用安装、卸载、权限管理等</span><br>mPackageManagerService = PackageManagerService.main(<br>        mSystemContext,          <span class="hljs-comment">// 系统级Context对象，提供全局资源访问</span><br>        installer,               <span class="hljs-comment">// Installer服务对象，用于APK的实际安装/删除操作</span><br>        mFactoryTestMode != FactoryTest.FACTORY_TEST_OFF, <span class="hljs-comment">// 是否处于工厂测试模式</span><br>        mOnlyCore                <span class="hljs-comment">// 是否仅加载核心系统应用（如开机动画阶段）</span><br>);<br><span class="hljs-comment">// 判断是否为首次启动（例如新设备或恢复出厂设置后）</span><br>mFirstBoot = mPackageManagerService.isFirstBoot();<br><span class="hljs-comment">// 获取系统级别的PackageManager对象，供其他服务调用</span><br>mPackageManager = mSystemContext.getPackageManager();<br><span class="hljs-comment">// 结束Trace标记（用于系统启动性能分析）</span><br>traceEnd();<br>    ............<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="PackageManagerService"><a href="#PackageManagerService" class="headerlink" title="PackageManagerService"></a>PackageManagerService</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java">Cross Reference: &#x2F;frameworks&#x2F;base&#x2F;services&#x2F;core&#x2F;java&#x2F;com&#x2F;android&#x2F;server&#x2F;pm&#x2F;PackageManagerService.java</a></p>
+</blockquote>
+<h2 id="main"><a href="#main" class="headerlink" title="main"></a><strong>main</strong></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * PackageManagerService 的主入口方法，负责初始化 PMS 并注册系统服务。</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> PackageManagerService <span class="hljs-title function_">main</span><span class="hljs-params">(Context context, Installer installer,</span><br><span class="hljs-params">        <span class="hljs-type">boolean</span> factoryTest, <span class="hljs-type">boolean</span> onlyCore)</span> &#123;<br>    <br>    <span class="hljs-comment">// 1. 编译器自检：验证系统配置是否满足 PMS 编译要求</span><br>    PackageManagerServiceCompilerMapping.checkProperties();<br><br>    <span class="hljs-comment">// 2. 创建 PMS 实例（核心初始化逻辑在构造函数中）</span><br>    <span class="hljs-type">PackageManagerService</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageManagerService</span>(context, installer,<br>            factoryTest, onlyCore);<br><br>    <span class="hljs-comment">// 3. 启用多用户支持：允许系统用户访问所有应用</span><br>    m.enableSystemUserPackages();<br><br>    <span class="hljs-comment">// 4. 注册 Binder 服务到 ServiceManager</span><br>    <span class="hljs-comment">//    - &quot;package&quot;：Java 层服务，供普通应用调用</span><br>    ServiceManager.addService(<span class="hljs-string">&quot;package&quot;</span>, m);<br>    <span class="hljs-comment">//    - &quot;package_native&quot;：Native 层服务，优化系统内部调用</span><br>    <span class="hljs-keyword">final</span> <span class="hljs-type">PackageManagerNative</span> <span class="hljs-variable">pmn</span> <span class="hljs-operator">=</span> m.<span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageManagerNative</span>();<br>    ServiceManager.addService(<span class="hljs-string">&quot;package_native&quot;</span>, pmn);<br><br>    <span class="hljs-comment">// 5. 返回 PMS 实例供 SystemServer 后续使用</span><br>    <span class="hljs-keyword">return</span> m;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="PMS-的构造函数"><a href="#PMS-的构造函数" class="headerlink" title="PMS 的构造函数"></a>PMS 的构造函数</h3><p>以下是按照启动阶段划分的 <code>PackageManagerService</code> 构造方法的关键代码注释，结合 Android 系统启动流程的里程碑事件（<code>BOOT_PROGRESS_*</code>）：</p>
+<hr>
+<h4 id="1-开始阶段-BOOT-PROGRESS-PMS-START"><a href="#1-开始阶段-BOOT-PROGRESS-PMS-START" class="headerlink" title="1. 开始阶段 (BOOT_PROGRESS_PMS_START)"></a><strong>1. 开始阶段 (<code>BOOT_PROGRESS_PMS_START</code>)</strong></h4><p><strong>作用</strong>：初始化基础组件和系统配置  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-title function_">PackageManagerService</span><span class="hljs-params">(Context context, Installer installer,</span><br><span class="hljs-params">        <span class="hljs-type">boolean</span> factoryTest, <span class="hljs-type">boolean</span> onlyCore)</span> &#123;<br>    <span class="hljs-comment">// 加锁保护核心数据结构</span><br>    LockGuard.installLock(mPackages, LockGuard.INDEX_PACKAGES);<br>    <br>    <span class="hljs-comment">// 标记PMS启动开始（性能追踪）</span><br>    Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="hljs-string">&quot;create package manager&quot;</span>);<br>    EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_START, SystemClock.uptimeMillis());<br><br>    <span class="hljs-comment">// 基础参数校验</span><br>    <span class="hljs-keyword">if</span> (mSdkVersion &lt;= <span class="hljs-number">0</span>) &#123;<br>        Slog.w(TAG, <span class="hljs-string">&quot;**** ro.build.version.sdk not set!&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-comment">// 核心成员初始化</span><br>    mContext = context;<br>    mFactoryTest = factoryTest;  <span class="hljs-comment">// 工厂测试模式标志</span><br>    mOnlyCore = onlyCore;        <span class="hljs-comment">// 是否仅加载核心应用</span><br>    mMetrics = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DisplayMetrics</span>(); <span class="hljs-comment">// 显示参数</span><br>    mInstaller = installer;      <span class="hljs-comment">// 连接installd守护进程</span><br><br>    <span class="hljs-comment">// 初始化子组件（需按顺序）</span><br>    <span class="hljs-keyword">synchronized</span> (mInstallLock) &#123;<br>    <span class="hljs-keyword">synchronized</span> (mPackages) &#123;<br>        <span class="hljs-comment">// 注册内部服务供系统组件使用</span><br>        LocalServices.addService(PackageManagerInternal.class, <span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageManagerInternalImpl</span>());<br>        <br>        <span class="hljs-comment">// 用户管理服务（多用户支持）</span><br>        sUserManager = <span class="hljs-keyword">new</span> <span class="hljs-title class_">UserManagerService</span>(context, <span class="hljs-built_in">this</span>, <br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">UserDataPreparer</span>(mInstaller, mInstallLock, mContext, mOnlyCore), mPackages);<br>        <br>        <span class="hljs-comment">// 权限管理服务</span><br>        mPermissionManager = PermissionManagerService.create(context,<br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultPermissionGrantedCallback</span>() &#123;<br>                    <span class="hljs-meta">@Override</span><br>                    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onDefaultRuntimePermissionsGranted</span><span class="hljs-params">(<span class="hljs-type">int</span> userId)</span> &#123;<br>                        mSettings.onDefaultRuntimePermissionsGrantedLPr(userId);<br>                    &#125;<br>                &#125;, mPackages);<br>        <br>        mSettings = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Settings</span>(mPermissionManager.getPermissionSettings(), mPackages);<br>    &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 预定义共享UID（系统核心组件）</span><br>    mSettings.addSharedUserLPw(<span class="hljs-string">&quot;android.uid.system&quot;</span>, Process.SYSTEM_UID, <br>            ApplicationInfo.FLAG_SYSTEM, ApplicationInfo.PRIVATE_FLAG_PRIVILEGED);<br>    <span class="hljs-comment">// ...（其他共享UID：phone/log/nfc/bluetooth等）</span><br><br>    <span class="hljs-comment">// 调试参数：进程分离配置（adb调试用）</span><br>    <span class="hljs-type">String</span> <span class="hljs-variable">separateProcesses</span> <span class="hljs-operator">=</span> SystemProperties.get(<span class="hljs-string">&quot;debug.separate_processes&quot;</span>);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-string">&quot;*&quot;</span>.equals(separateProcesses)) &#123;<br>        mDefParseFlags = PackageParser.PARSE_IGNORE_PROCESSES;<br>    &#125;<br>    <span class="hljs-comment">// ...（其他调试配置）</span><br><br>    <span class="hljs-comment">// 初始化Dex优化器</span><br>    mPackageDexOptimizer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageDexOptimizer</span>(installer, mInstallLock, context, <span class="hljs-string">&quot;*dexopt*&quot;</span>);<br>    mDexManager = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DexManager</span>(...);  <span class="hljs-comment">// Dex文件管理</span><br>    mArtManagerService = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArtManagerService</span>(...); <span class="hljs-comment">// ART运行时服务</span><br><br>    <span class="hljs-comment">// 获取系统配置（如可用功能、共享库等）</span><br>    <span class="hljs-type">SystemConfig</span> <span class="hljs-variable">systemConfig</span> <span class="hljs-operator">=</span> SystemConfig.getInstance();<br>    mAvailableFeatures = systemConfig.getAvailableFeatures();<br>    mProtectedPackages = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ProtectedPackages</span>(mContext); <span class="hljs-comment">// 受保护应用列表</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, AOSP源码阅读]</li>
+</ul>
+<hr>
+<h4 id="2-系统扫描阶段-BOOT-PROGRESS-PMS-SYSTEM-SCAN-START"><a href="#2-系统扫描阶段-BOOT-PROGRESS-PMS-SYSTEM-SCAN-START" class="headerlink" title="2. 系统扫描阶段 (BOOT_PROGRESS_PMS_SYSTEM_SCAN_START)"></a><strong>2. 系统扫描阶段 (<code>BOOT_PROGRESS_PMS_SYSTEM_SCAN_START</code>)</strong></h4><p><strong>作用</strong>：扫描 <code>/system</code> 分区下的系统应用  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">synchronized</span> (mInstallLock) &#123;<br><span class="hljs-keyword">synchronized</span> (mPackages) &#123;<br>    <span class="hljs-comment">// 启动后台处理线程</span><br>    mHandlerThread = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServiceThread</span>(TAG, Process.THREAD_PRIORITY_BACKGROUND, <span class="hljs-literal">true</span>);<br>    mHandlerThread.start();<br>    mHandler = <span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageHandler</span>(mHandlerThread.getLooper());<br><br>    <span class="hljs-comment">// 加载系统共享库（如android.test.runner）</span><br>    ArrayMap&lt;String, String&gt; libConfig = systemConfig.getSharedLibraries();<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; libConfig.size(); i++) &#123;<br>        addSharedLibraryLPw(libConfig.valueAt(i), <span class="hljs-literal">null</span>, libConfig.keyAt(i), ...);<br>    &#125;<br><br>    <span class="hljs-comment">// 读取SELinux策略</span><br>    SELinuxMMAC.readInstallPolicy();<br><br>    <span class="hljs-comment">// 读取用户设置（packages.xml）</span><br>    Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="hljs-string">&quot;read user settings&quot;</span>);<br>    mFirstBoot = !mSettings.readLPw(sUserManager.getUsers(<span class="hljs-literal">false</span>));<br>    Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);<br><br>    <span class="hljs-comment">// 清理无效系统包（如OTA后残留）</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> mSettings.mPackages.size() - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i--) &#123;<br>        <span class="hljs-type">PackageSetting</span> <span class="hljs-variable">ps</span> <span class="hljs-operator">=</span> mSettings.mPackages.valueAt(i);<br>        <span class="hljs-keyword">if</span> (!ps.codePath.exists() &amp;&amp; mSettings.getDisabledSystemPkgLPr(ps.name) != <span class="hljs-literal">null</span>) &#123;<br>            mSettings.mPackages.removeAt(i);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 开始系统扫描（性能标记）</span><br>    EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SYSTEM_SCAN_START, startTime);<br><br>    <span class="hljs-comment">// 扫描关键目录（按优先级排序）</span><br>    scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(VENDOR_OVERLAY_DIR), ...);  <span class="hljs-comment">// 厂商覆盖层</span><br>    scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(Environment.getRootDirectory(), <span class="hljs-string">&quot;framework&quot;</span>), ...); <span class="hljs-comment">// 框架资源</span><br>    scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(Environment.getRootDirectory(), <span class="hljs-string">&quot;priv-app&quot;</span>), ...); <span class="hljs-comment">// 特权应用</span><br>    scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(Environment.getRootDirectory(), <span class="hljs-string">&quot;app&quot;</span>), ...);      <span class="hljs-comment">// 普通系统应用</span><br>    <span class="hljs-comment">// ...（扫描vendor/odm/oem等分区）</span><br><br>    <span class="hljs-comment">// 系统扫描完成统计</span><br>    Slog.i(TAG, <span class="hljs-string">&quot;Finished scanning system apps. Time: &quot;</span> + systemScanTime + <span class="hljs-string">&quot; ms&quot;</span>);<br>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="3-Data扫描阶段-BOOT-PROGRESS-PMS-DATA-SCAN-START"><a href="#3-Data扫描阶段-BOOT-PROGRESS-PMS-DATA-SCAN-START" class="headerlink" title="3. Data扫描阶段 (BOOT_PROGRESS_PMS_DATA_SCAN_START)"></a><strong>3. Data扫描阶段 (<code>BOOT_PROGRESS_PMS_DATA_SCAN_START</code>)</strong></h4><p><strong>作用</strong>：扫描 <code>/data</code> 分区的用户应用  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">if</span> (!mOnlyCore) &#123;<br>    EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_DATA_SCAN_START,<br>            SystemClock.uptimeMillis());<br><br>    <span class="hljs-comment">// 扫描/data/app目录（用户安装的应用）</span><br>    scanDirTracedLI(sAppInstallDir, <span class="hljs-number">0</span>, scanFlags | SCAN_REQUIRE_KNOWN, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-comment">// 处理OTA后失效的更新包</span><br>    <span class="hljs-keyword">for</span> (String deletedAppName : possiblyDeletedUpdatedSystemApps) &#123;<br>        mSettings.removeDisabledSystemPackageLPw(deletedAppName);<br>    &#125;<br><br>    <span class="hljs-comment">// 数据扫描完成统计</span><br>    Slog.i(TAG, <span class="hljs-string">&quot;Finished scanning non-system apps. Time: &quot;</span> + dataScanTime + <span class="hljs-string">&quot; ms&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>[逆向与风控, Android平台, 内核, Android内核, AOSP源码阅读]</li>
+</ul>
+<hr>
+<h4 id="4-扫描结束-BOOT-PROGRESS-PMS-SCAN-END"><a href="#4-扫描结束-BOOT-PROGRESS-PMS-SCAN-END" class="headerlink" title="4. 扫描结束 (BOOT_PROGRESS_PMS_SCAN_END)"></a><strong>4. 扫描结束 (<code>BOOT_PROGRESS_PMS_SCAN_END</code>)</strong></h4><p><strong>作用</strong>：完成扫描后的收尾工作  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 更新所有共享库依赖</span><br>updateAllSharedLibrariesLPw(<span class="hljs-literal">null</span>);<br><br><span class="hljs-comment">// 记录应用使用情况</span><br>mPackageUsage.read(mPackages);<br>mCompilerStats.read();<br><br><span class="hljs-comment">// 标记扫描结束</span><br>EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END, SystemClock.uptimeMillis());<br>Slog.i(TAG, <span class="hljs-string">&quot;Time to scan packages: &quot;</span> + (SystemClock.uptimeMillis()-startTime)/<span class="hljs-number">1000f</span> + <span class="hljs-string">&quot; seconds&quot;</span>);<br><br><span class="hljs-comment">// SDK版本升级时重新授权权限</span><br><span class="hljs-keyword">if</span> (ver.sdkVersion != mSdkVersion) &#123;<br>    mPermissionManager.updateAllPermissions(...);<br>&#125;<br><br><span class="hljs-comment">// 准备应用数据目录（CE/DE加密存储）</span><br>reconcileAppsDataLI(StorageManager.UUID_PRIVATE_INTERNAL, UserHandle.USER_SYSTEM, ...);<br><br><span class="hljs-comment">// OTA升级后清理代码缓存</span><br><span class="hljs-keyword">if</span> (mIsUpgrade &amp;&amp; !onlyCore) &#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; mSettings.mPackages.size(); i++) &#123;<br>        clearAppDataLIF(..., Installer.FLAG_CLEAR_CODE_CACHE_ONLY);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="5-就绪阶段-BOOT-PROGRESS-PMS-READY"><a href="#5-就绪阶段-BOOT-PROGRESS-PMS-READY" class="headerlink" title="5. 就绪阶段 (BOOT_PROGRESS_PMS_READY)"></a><strong>5. 就绪阶段 (<code>BOOT_PROGRESS_PMS_READY</code>)</strong></h4><p><strong>作用</strong>：完成初始化并标记PMS就绪  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 写入最终设置（packages.xml）</span><br>Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="hljs-string">&quot;write settings&quot;</span>);<br>mSettings.writeLPr();<br>Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);<br><br><span class="hljs-comment">// 标记PMS就绪</span><br>EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_READY, SystemClock.uptimeMillis());<br><br><span class="hljs-comment">// 初始化安装器服务</span><br>mInstallerService = <span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageInstallerService</span>(context, <span class="hljs-built_in">this</span>);<br><br><span class="hljs-comment">// 加载Dex使用统计</span><br>mDexManager.load(userPackages);<br><br><span class="hljs-comment">// 触发GC释放内存</span><br>Runtime.getRuntime().gc();<br><br><span class="hljs-comment">// 结束初始化追踪</span><br>Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);<br></code></pre></td></tr></table></figure>
+
+<p><strong>阶段关键点总结</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>阶段</strong></th>
+<th><strong>核心操作</strong></th>
+<th><strong>耗时因素</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>开始阶段</strong></td>
+<td>初始化权限&#x2F;用户管理服务，加载系统配置</td>
+<td>系统配置复杂度</td>
+</tr>
+<tr>
+<td><strong>系统扫描</strong></td>
+<td>扫描 <code>/system</code> 分区下的特权应用和系统库</td>
+<td>系统应用数量</td>
+</tr>
+<tr>
+<td><strong>Data扫描</strong></td>
+<td>扫描 <code>/data/app</code> 等用户分区，处理OTA残留</td>
+<td>用户应用数量</td>
+</tr>
+<tr>
+<td><strong>扫描结束</strong></td>
+<td>更新权限、清理缓存、准备数据目录</td>
+<td>加密存储处理</td>
+</tr>
+<tr>
+<td><strong>就绪阶段</strong></td>
+<td>持久化设置、启动安装服务、内存优化</td>
+<td>磁盘I&#x2F;O速度</td>
+</tr>
+</tbody></table>
+<h1 id="APP目录的解析流程"><a href="#APP目录的解析流程" class="headerlink" title="APP目录的解析流程"></a>APP目录的解析流程</h1><h2 id="目录扫描的入口"><a href="#目录扫描的入口" class="headerlink" title="目录扫描的入口"></a><strong>目录扫描的入口</strong></h2><p>PMS 构造函数中通过 <code>scanDirTracedLI()</code> 方法触发目录扫描，按优先级扫描以下关键目录：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(VENDOR_OVERLAY_DIR), ...);  <span class="hljs-comment">// 厂商覆盖层</span><br>scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(Environment.getRootDirectory(), <span class="hljs-string">&quot;framework&quot;</span>), ...); <span class="hljs-comment">// 框架资源</span><br>scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(Environment.getRootDirectory(), <span class="hljs-string">&quot;priv-app&quot;</span>), ...); <span class="hljs-comment">// 特权应用</span><br>scanDirTracedLI(<span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(Environment.getRootDirectory(), <span class="hljs-string">&quot;app&quot;</span>), ...);      <span class="hljs-comment">// 普通系统应用</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="scanDirTracedLI"><a href="#scanDirTracedLI" class="headerlink" title="scanDirTracedLI"></a>scanDirTracedLI</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">scanDirTracedLI</span><span class="hljs-params">(File scanDir, <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> parseFlags, <span class="hljs-type">int</span> scanFlags, <span class="hljs-type">long</span> currentTime)</span> &#123;<br>    <span class="hljs-comment">// 1. 开始追踪：标记当前扫描目录路径（用于性能分析工具）</span><br>    Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="hljs-string">&quot;scanDir [&quot;</span> + scanDir.getAbsolutePath() + <span class="hljs-string">&quot;]&quot;</span>);<br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 2. 调用核心扫描逻辑</span><br>        scanDirLI(scanDir, parseFlags, scanFlags, currentTime);<br>    &#125; <span class="hljs-keyword">finally</span> &#123;<br>        <span class="hljs-comment">// 3. 结束追踪：确保无论是否异常都会结束Trace块</span><br>        Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="单目录解析流程"><a href="#单目录解析流程" class="headerlink" title="单目录解析流程"></a><strong>单目录解析流程</strong></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 核心目录扫描实现</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">scanDirLI</span><span class="hljs-params">(File scanDir, <span class="hljs-type">int</span> parseFlags, <span class="hljs-type">int</span> scanFlags, <span class="hljs-type">long</span> currentTime)</span> &#123;<br>    <span class="hljs-comment">// 获取目录下所有文件</span><br>    <span class="hljs-keyword">final</span> File[] files = scanDir.listFiles();<br>    <span class="hljs-comment">// 空目录快速返回优化</span><br>    <span class="hljs-keyword">if</span> (ArrayUtils.isEmpty(files)) &#123;<br>        Log.d(TAG, <span class="hljs-string">&quot;No files in app dir &quot;</span> + scanDir);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    ...........<br><br>    <span class="hljs-comment">// 使用try-with-resources确保并行解析器自动关闭</span><br>    <span class="hljs-keyword">try</span> (<span class="hljs-type">ParallelPackageParser</span> <span class="hljs-variable">parallelPackageParser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ParallelPackageParser</span>(<br>            mSeparateProcesses, mOnlyCore, mMetrics, mCacheDir,<br>            mParallelPackageParserCallback)) &#123;<br>        <br>        <span class="hljs-comment">// 第一阶段：提交任务到线程池</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">fileCount</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>        <span class="hljs-comment">//遍历目录下的APK文件</span><br>        <span class="hljs-keyword">for</span> (File file : files) &#123;<br>            <span class="hljs-comment">// 检查是否为有效APK文件（排除临时安装文件）</span><br>            <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-variable">isPackage</span> <span class="hljs-operator">=</span> (isApkFile(file) || file.isDirectory())<br>                    &amp;&amp; !PackageInstallerService.isStageName(file.getName());<br>            <span class="hljs-keyword">if</span> (!isPackage) &#123;<br>                <span class="hljs-keyword">continue</span>; <span class="hljs-comment">// 跳过非APK文件</span><br>            &#125;<br>            <br>            <span class="hljs-comment">// 提交到并行解析队列</span><br>            parallelPackageParser.submit(file, parseFlags);<br>            fileCount++;<br>        &#125;<br><br>        <span class="hljs-comment">// 第二阶段：处理解析结果</span><br>        <span class="hljs-keyword">for</span> (; fileCount &gt; <span class="hljs-number">0</span>; fileCount--) &#123;<br>            <span class="hljs-comment">// 阻塞获取解析结果</span><br>            ParallelPackageParser.<span class="hljs-type">ParseResult</span> <span class="hljs-variable">parseResult</span> <span class="hljs-operator">=</span> parallelPackageParser.take();<br>            <br>            <span class="hljs-comment">// 异常处理分支</span><br>            <span class="hljs-keyword">if</span> (parseResult.throwable != <span class="hljs-literal">null</span>) &#123;<br>                handleParseError(parseResult); <span class="hljs-comment">// 处理解析错误</span><br>            &#125; <br>            <span class="hljs-comment">// 正常包处理分支</span><br>            <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-comment">// 静态共享库特殊处理</span><br>                <span class="hljs-keyword">if</span> (parseResult.pkg.applicationInfo.isStaticSharedLibrary()) &#123;<br>                    renameStaticSharedLibraryPackage(parseResult.pkg);<br>                &#125;<br>                <br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">// 核心扫描逻辑</span><br>                    scanPackageChildLI(parseResult.pkg, parseFlags, scanFlags,<br>                            currentTime, <span class="hljs-literal">null</span>);<br>                &#125; <span class="hljs-keyword">catch</span> (PackageManagerException e) &#123;<br>                    Slog.w(TAG, <span class="hljs-string">&quot;Failed to scan &quot;</span> + parseResult.scanFile + <span class="hljs-string">&quot;: &quot;</span> + e.getMessage());<br>                &#125;<br>            &#125;<br><br>            <span class="hljs-comment">// 用户分区无效包清理</span><br>            <span class="hljs-keyword">if</span> ((scanFlags &amp; SCAN_AS_SYSTEM) == <span class="hljs-number">0</span> &amp;&amp;<br>                    parseResult.throwable != <span class="hljs-literal">null</span>) &#123;<br>                logCriticalInfo(Log.WARN,<br>                        <span class="hljs-string">&quot;Deleting invalid package at &quot;</span> + parseResult.scanFile);<br>                removeCodePathLI(parseResult.scanFile);<br>            &#125;<br>        &#125;<br>    &#125; <span class="hljs-comment">// 自动调用parallelPackageParser.close()</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="解析APK文件"><a href="#解析APK文件" class="headerlink" title="解析APK文件"></a><strong>解析APK文件</strong></h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/base/services/core/java/com/android/server/pm/ParallelPackageParser.java">Cross Reference: &#x2F;frameworks&#x2F;base&#x2F;services&#x2F;core&#x2F;java&#x2F;com&#x2F;android&#x2F;server&#x2F;pm&#x2F;ParallelPackageParser.java</a></p>
+</blockquote>
+<h4 id="parallelPackageParser-submit"><a href="#parallelPackageParser-submit" class="headerlink" title="parallelPackageParser.submit"></a>parallelPackageParser.submit</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 提交APK文件到并行解析队列</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> scanFile 待解析的APK文件对象</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> parseFlags 解析控制标志位（如PARSE_IS_SYSTEM）</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">submit</span><span class="hljs-params">(File scanFile, <span class="hljs-type">int</span> parseFlags)</span> &#123;<br>    <span class="hljs-comment">// 将解析任务提交到线程池</span><br>    mService.submit(() -&gt; &#123;<br>        <span class="hljs-type">ParseResult</span> <span class="hljs-variable">pr</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ParseResult</span>();  <span class="hljs-comment">// 创建解析结果容器</span><br>        <br>        <span class="hljs-comment">// 开始性能追踪（可观测单个APK解析耗时）</span><br>        Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, <span class="hljs-string">&quot;parallel parsePackage [&quot;</span> + scanFile + <span class="hljs-string">&quot;]&quot;</span>);<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">// 1. 创建PackageParser实例（每个线程独立）</span><br>            <span class="hljs-type">PackageParser</span> <span class="hljs-variable">pp</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PackageParser</span>();<br>            <br>            <span class="hljs-comment">// 2. 配置解析器参数</span><br>            pp.setSeparateProcesses(mSeparateProcesses);  <span class="hljs-comment">// 是否分离进程（调试用）</span><br>            pp.setOnlyCoreApps(mOnlyCore);               <span class="hljs-comment">// 是否仅核心应用</span><br>            pp.setDisplayMetrics(mMetrics);              <span class="hljs-comment">// 显示参数</span><br>            pp.setCacheDir(mCacheDir);                   <span class="hljs-comment">// 缓存目录</span><br>            pp.setCallback(mPackageParserCallback);      <span class="hljs-comment">// 解析回调</span><br>            <br>            <span class="hljs-comment">// 3. 执行核心解析</span><br>            pr.scanFile = scanFile;<br>            pr.pkg = parsePackage(pp, scanFile, parseFlags);  <span class="hljs-comment">// 实际解析逻辑</span><br>            <br>        &#125; <span class="hljs-keyword">catch</span> (Throwable e) &#123;<br>            <span class="hljs-comment">// 4. 捕获所有异常（包括Error）</span><br>            pr.throwable = e;<br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);  <span class="hljs-comment">// 结束追踪</span><br>        &#125;<br><br>        <span class="hljs-comment">// 5. 将结果放入队列（阻塞操作）</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            mQueue.put(pr);<br>        &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>            <span class="hljs-comment">// 6. 处理线程中断</span><br>            Thread.currentThread().interrupt();<br>            mInterruptedInThread = Thread.currentThread().getName();  <span class="hljs-comment">// 记录中断线程</span><br>        &#125;<br>    &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="packageParser-parsePackage"><a href="#packageParser-parsePackage" class="headerlink" title="packageParser.parsePackage"></a>packageParser.parsePackage</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="http://androidxref.com/9.0.0_r3/xref/frameworks/base/core/java/android/content/pm/PackageParser.java">Cross Reference: &#x2F;frameworks&#x2F;base&#x2F;core&#x2F;java&#x2F;android&#x2F;content&#x2F;pm&#x2F;PackageParser.java</a></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 解析指定的 APK 文件并返回包信息</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> packageParser PackageParser 实例，用于执行实际的解析工作</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> scanFile 要扫描的 APK 文件</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> parseFlags 解析标志，控制解析行为</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">protected</span> PackageParser.Package <span class="hljs-title function_">parsePackage</span><span class="hljs-params">(PackageParser packageParser, File scanFile,</span><br><span class="hljs-params">        <span class="hljs-type">int</span> parseFlags)</span> <span class="hljs-keyword">throws</span> PackageParser.PackageParserException &#123;<br>    <span class="hljs-comment">// 调用 PackageParser 的 parsePackage 方法解析 APK 文件</span><br>    <span class="hljs-keyword">return</span> packageParser.parsePackage(scanFile, parseFlags, <span class="hljs-literal">true</span> <span class="hljs-comment">/* useCaches */</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 解析指定的 APK 文件或目录，并返回 Package 对象。</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> packageFile 要解析的 APK 文件或目录（Split APK 场景）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> flags 解析标志，控制解析行为（如是否解析资源等）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> useCaches 是否使用缓存优化解析性能</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> Package <span class="hljs-title function_">parsePackage</span><span class="hljs-params">(File packageFile, <span class="hljs-type">int</span> flags, <span class="hljs-type">boolean</span> useCaches)</span><br>        <span class="hljs-keyword">throws</span> PackageParserException &#123;<br>    <span class="hljs-comment">// 如果启用缓存，尝试从缓存中获取已解析的结果</span><br>    <span class="hljs-type">Package</span> <span class="hljs-variable">parsed</span> <span class="hljs-operator">=</span> useCaches ? getCachedResult(packageFile, flags) : <span class="hljs-literal">null</span>;<br>    <span class="hljs-keyword">if</span> (parsed != <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-keyword">return</span> parsed; <span class="hljs-comment">// 缓存命中，直接返回</span><br>    &#125;<br>    <span class="hljs-comment">// 记录解析开始时间（仅在日志记录启用时）</span><br>    <span class="hljs-type">long</span> <span class="hljs-variable">parseTime</span> <span class="hljs-operator">=</span> LOG_PARSE_TIMINGS ? SystemClock.uptimeMillis() : <span class="hljs-number">0</span>;<br><br>    <span class="hljs-comment">// 根据输入类型选择解析方式：</span><br>    <span class="hljs-keyword">if</span> (packageFile.isDirectory()) &#123;<br>        <span class="hljs-comment">// 处理 Split APK（多个 APK 组成的应用）</span><br>        parsed = parseClusterPackage(packageFile, flags);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 处理单个 APK 文件</span><br>        parsed = parseMonolithicPackage(packageFile, flags);<br>    &#125;<br><br>    <span class="hljs-comment">// 记录缓存更新时间（仅在日志记录启用时）</span><br>    <span class="hljs-type">long</span> <span class="hljs-variable">cacheTime</span> <span class="hljs-operator">=</span> LOG_PARSE_TIMINGS ? SystemClock.uptimeMillis() : <span class="hljs-number">0</span>;<br>    <br>    <span class="hljs-comment">// 将解析结果存入缓存</span><br>    cacheResult(packageFile, flags, parsed);<br><br>    <span class="hljs-comment">// 如果启用了日志记录且总时间超过阈值，输出性能日志</span><br>    <span class="hljs-keyword">if</span> (LOG_PARSE_TIMINGS) &#123;<br>        parseTime = cacheTime - parseTime;      <span class="hljs-comment">// 计算实际解析耗时</span><br>        cacheTime = SystemClock.uptimeMillis() - cacheTime; <span class="hljs-comment">// 计算缓存更新耗时</span><br>        <span class="hljs-keyword">if</span> (parseTime + cacheTime &gt; LOG_PARSE_TIMINGS_THRESHOLD_MS) &#123;<br>            Slog.i(TAG, <span class="hljs-string">&quot;Parse times for &#x27;&quot;</span> + packageFile + <span class="hljs-string">&quot;&#x27;: parse=&quot;</span> + parseTime<br>                    + <span class="hljs-string">&quot;ms, update_cache=&quot;</span> + cacheTime + <span class="hljs-string">&quot; ms&quot;</span>);<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> parsed;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 等效于 parsePackage(packageFile, flags, false) 的便捷方法</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> Package <span class="hljs-title function_">parsePackage</span><span class="hljs-params">(File packageFile, <span class="hljs-type">int</span> flags)</span> <span class="hljs-keyword">throws</span> PackageParserException &#123;<br>    <span class="hljs-keyword">return</span> parsePackage(packageFile, flags, <span class="hljs-literal">false</span> <span class="hljs-comment">/* useCaches */</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在parseBaseApk中会简单调用parseBaseApplication这个核心的函数：</p>
+<h5 id="parseBaseApplication"><a href="#parseBaseApplication" class="headerlink" title="parseBaseApplication"></a>parseBaseApplication</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> ParseResult&lt;ParsingPackage&gt; <span class="hljs-title function_">parseBaseApplication</span><span class="hljs-params">(ParseInput input,</span><br><span class="hljs-params">            ParsingPackage pkg, Resources res, XmlResourceParser parser, <span class="hljs-type">int</span> flags)</span><br>            <span class="hljs-keyword">throws</span> XmlPullParserException, IOException &#123;<br>        <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">pkgName</span> <span class="hljs-operator">=</span> pkg.getPackageName();<br>        <span class="hljs-type">int</span> <span class="hljs-variable">targetSdk</span> <span class="hljs-operator">=</span> pkg.getTargetSdkVersion();<br><br>        <span class="hljs-comment">// 获取应用信息，android.content.pm.ApplicationInfo.java</span><br>        <span class="hljs-keyword">final</span> <span class="hljs-type">ApplicationInfo</span> <span class="hljs-variable">ai</span> <span class="hljs-operator">=</span> owner.applicationInfo;<br>        <span class="hljs-comment">// 包名</span><br>        <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">pkgName</span> <span class="hljs-operator">=</span> owner.applicationInfo.packageName;<br><br>        <span class="hljs-comment">// 获取 application 节点</span><br>        <span class="hljs-type">TypedArray</span> <span class="hljs-variable">sa</span> <span class="hljs-operator">=</span> res.obtainAttributes(parser, R.styleable.AndroidManifestApplication);<br><br>        <span class="hljs-comment">// 获取 application 节点下的 icon</span><br>        ai.iconRes = sa.getResourceId(<br>            com.android.internal.R.styleable.AndroidManifestApplication_icon, <span class="hljs-number">0</span>);<br>        <span class="hljs-comment">// 获取 application 节点下的 roundIcon</span><br>        ai.roundIconRes = sa.getResourceId(<br>            com.android.internal.R.styleable.AndroidManifestApplication_roundIcon, <span class="hljs-number">0</span>);<br><br>        <span class="hljs-comment">// 解析 application 节点下的 name，label，icon，roundIcon，logo，banner</span><br>        <span class="hljs-comment">// （居然还有一个叫 banner 的属性）</span><br>        <span class="hljs-keyword">if</span> (!parsePackageItemInfo(owner, ai, outError,<br>                <span class="hljs-string">&quot;&lt;application&gt;&quot;</span>, sa, <span class="hljs-literal">false</span> <span class="hljs-comment">/*nameRequired*/</span>,<br>                com.android.internal.R.styleable.AndroidManifestApplication_name,<br>                com.android.internal.R.styleable.AndroidManifestApplication_label,<br>                com.android.internal.R.styleable.AndroidManifestApplication_icon,<br>                com.android.internal.R.styleable.AndroidManifestApplication_roundIcon,<br>                com.android.internal.R.styleable.AndroidManifestApplication_logo,<br>                com.android.internal.R.styleable.AndroidManifestApplication_banner)) &#123;<br>            sa.recycle();<br>            <span class="hljs-comment">// 如果属性错误就会返回false</span><br>            mParseError = PackageManager.INSTALL_PARSE_FAILED_MANIFEST_MALFORMED;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br><br>        <span class="hljs-comment">// 是否有 application 的类</span><br>        <span class="hljs-keyword">if</span> (ai.name != <span class="hljs-literal">null</span>) &#123;<br>            ai.className = ai.name;<br>        &#125;<br><br>        ... <span class="hljs-comment">// 省略代码，解析安装包 AndroidManifest 中的各种属性</span><br>	    <span class="hljs-comment">// 版本，等等……</span><br><br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">hasActivityOrder</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">hasReceiverOrder</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">hasServiceOrder</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> <span class="hljs-variable">depth</span> <span class="hljs-operator">=</span> parser.getDepth();<br><br>        <span class="hljs-comment">// 接下来开始解析四大组件</span><br>        <span class="hljs-type">int</span> type;<br>        <span class="hljs-keyword">while</span> ((type = parser.next()) != XmlPullParser.END_DOCUMENT<br>                &amp;&amp; (type != XmlPullParser.END_TAG<br>                || parser.getDepth() &gt; depth)) &#123;<br>            <span class="hljs-keyword">if</span> (type != XmlPullParser.START_TAG) &#123;<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br><br>            <span class="hljs-keyword">final</span> ParseResult result;<br>            <span class="hljs-type">String</span> <span class="hljs-variable">tagName</span> <span class="hljs-operator">=</span> parser.getName();<br>            <span class="hljs-type">boolean</span> <span class="hljs-variable">isActivity</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>            <span class="hljs-keyword">switch</span> (tagName) &#123;<br>                <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;activity&quot;</span>:<br>                	<span class="hljs-comment">// 解析 activity，可以发现 activity 和 receiver 的解析方式的一样的。</span><br>                    isActivity = <span class="hljs-literal">true</span>;<br>                    <span class="hljs-comment">// fall-through</span><br>                <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;receiver&quot;</span>:<br>                    ParseResult&lt;ParsedActivity&gt; activityResult =<br>                            ParsedActivityUtils.parseActivityOrReceiver(mSeparateProcesses, pkg,<br>                                    res, parser, flags, sUseRoundIcon, input);<br><br>                    <span class="hljs-keyword">if</span> (activityResult.isSuccess()) &#123;<br>                        <span class="hljs-type">ParsedActivity</span> <span class="hljs-variable">activity</span> <span class="hljs-operator">=</span> activityResult.getResult();<br>                        <span class="hljs-keyword">if</span> (isActivity) &#123;<br>                            hasActivityOrder |= (activity.getOrder() != <span class="hljs-number">0</span>);<br>                            <span class="hljs-comment">// 添加 Activity</span><br>                            pkg.addActivity(activity);<br>                        &#125; <span class="hljs-keyword">else</span> &#123;<br>                            hasReceiverOrder |= (activity.getOrder() != <span class="hljs-number">0</span>);<br>                            <span class="hljs-comment">// 添加 Receiver</span><br>                            pkg.addReceiver(activity);<br>                        &#125;<br>                    &#125;<br><br>                    result = activityResult;<br>                    <span class="hljs-keyword">break</span>;<br>                <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;service&quot;</span>:<br>                    ParseResult&lt;ParsedService&gt; serviceResult =<br>                            ParsedServiceUtils.parseService(mSeparateProcesses, pkg, res, parser,<br>                                    flags, sUseRoundIcon, input);<br>                    <span class="hljs-keyword">if</span> (serviceResult.isSuccess()) &#123;<br>                        <span class="hljs-type">ParsedService</span> <span class="hljs-variable">service</span> <span class="hljs-operator">=</span> serviceResult.getResult();<br>                        hasServiceOrder |= (service.getOrder() != <span class="hljs-number">0</span>);<br>                        <span class="hljs-comment">// 添加 Service</span><br>                        pkg.addService(service);<br>                    &#125;<br><br>                    result = serviceResult;<br>                    <span class="hljs-keyword">break</span>;<br>                <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;provider&quot;</span>:<br>                    ParseResult&lt;ParsedProvider&gt; providerResult =<br>                            ParsedProviderUtils.parseProvider(mSeparateProcesses, pkg, res, parser,<br>                                    flags, sUseRoundIcon, input);<br>                    <span class="hljs-keyword">if</span> (providerResult.isSuccess()) &#123;<br>	                    <span class="hljs-comment">// 添加 Provider</span><br>                        pkg.addProvider(providerResult.getResult());<br>                    &#125;<br><br>                    result = providerResult;<br>                    <span class="hljs-keyword">break</span>;<br>                <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;activity-alias&quot;</span>:<br>                    activityResult = ParsedActivityUtils.parseActivityAlias(pkg, res,<br>                            parser, sUseRoundIcon, input);<br>                    <span class="hljs-keyword">if</span> (activityResult.isSuccess()) &#123;<br>                        <span class="hljs-type">ParsedActivity</span> <span class="hljs-variable">activity</span> <span class="hljs-operator">=</span> activityResult.getResult();<br>                        hasActivityOrder |= (activity.getOrder() != <span class="hljs-number">0</span>);<br>                        pkg.addActivity(activity);<br>                    &#125;<br><br>                    result = activityResult;<br>                    <span class="hljs-keyword">break</span>;<br>                <span class="hljs-keyword">default</span>:<br>                    result = parseBaseAppChildTag(input, tagName, pkg, res, parser, flags);<br>                    <span class="hljs-keyword">break</span>;<br>            &#125;<br><br>            <span class="hljs-keyword">if</span> (result.isError()) &#123;<br>                <span class="hljs-keyword">return</span> input.error(result);<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (TextUtils.isEmpty(pkg.getStaticSharedLibName())) &#123;<br>            <span class="hljs-comment">// 为普通的应用程序添加一个隐藏的应用程序细节活动，</span><br>            <span class="hljs-comment">// 将用户转发到应用程序详情页面。</span><br>            ParseResult&lt;ParsedActivity&gt; a = generateAppDetailsHiddenActivity(input, pkg);<br>            pkg.addActivity(a.getResult());<br>        &#125;<br><br>		<span class="hljs-comment">// 为 Activity 排序</span><br>        <span class="hljs-keyword">if</span> (hasActivityOrder) &#123;<br>            pkg.sortActivities();<br>        &#125;<br><br>		<span class="hljs-comment">// 为 Receiver 排序</span><br>        <span class="hljs-keyword">if</span> (hasReceiverOrder) &#123;<br>            pkg.sortReceivers();<br>        &#125;<br><br>        <span class="hljs-comment">// 为 Service 排序</span><br>        <span class="hljs-keyword">if</span> (hasServiceOrder) &#123;<br>            pkg.sortServices();<br>        &#125;<br><br>        <span class="hljs-comment">// 必须在整个&#123;@link ApplicationInfo&#125;被完全处理之后，并且在</span><br>        <span class="hljs-comment">// 每个活动信息有机会从其属性中设置它之后运行。</span><br>        <span class="hljs-comment">// 每个活动信息都有机会从其属性中设置它。</span><br>        setMaxAspectRatio(pkg);<br>        setMinAspectRatio(pkg);<br>        setSupportsSizeChanges(pkg);<br><br>        pkg.setHasDomainUrls(hasDomainURLs(pkg));<br><br>        <span class="hljs-keyword">return</span> input.success(pkg);<br>    &#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>parseBaseApplication 这个函数主要做了三件事</p>
+<ol>
+<li>解析 application 节点下的属性（我们熟悉的 name，label，icon，roundIcon，logo 都会被解析）</li>
+<li>解析四大组件节点，并把它们加进 pkg（ParsingPackage）中</li>
+<li>如果需要排序就进行排序</li>
+</ol>
+<p>再往后经过一系列函数的调用主要解析APP应用程序中的：</p>
+<table>
+<thead>
+<tr>
+<th><strong>类别</strong></th>
+<th><strong>具体解析项</strong></th>
+<th><strong>XML 标签&#x2F;来源</strong></th>
+<th><strong>存储对象</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>基础信息</strong></td>
+<td>包名 (<code>packageName</code>)</td>
+<td><code>&lt;manifest package=&quot;...&quot;&gt;</code></td>
+<td><code>Package.packageName</code></td>
+</tr>
+<tr>
+<td></td>
+<td>版本号 (<code>versionCode</code>, <code>versionName</code>)</td>
+<td><code>&lt;manifest android:versionCode/Name&gt;</code></td>
+<td><code>Package.versionCode/versionName</code></td>
+</tr>
+<tr>
+<td></td>
+<td>最小&#x2F;目标 SDK (<code>minSdkVersion</code>, <code>targetSdkVersion</code>)</td>
+<td><code>&lt;uses-sdk&gt;</code></td>
+<td><code>Package.applicationInfo</code></td>
+</tr>
+<tr>
+<td></td>
+<td>签名信息（证书、签名）</td>
+<td>APK 的 <code>META-INF/</code> 目录</td>
+<td><code>PackageSigningInfo</code></td>
+</tr>
+<tr>
+<td><strong>四大组件</strong></td>
+<td><code>Activity</code>（入口、主题、启动模式等）</td>
+<td><code>&lt;activity&gt;</code></td>
+<td><code>Package.activities</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>Service</code>（后台服务）</td>
+<td><code>&lt;service&gt;</code></td>
+<td><code>Package.services</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>BroadcastReceiver</code>（广播接收器）</td>
+<td><code>&lt;receiver&gt;</code></td>
+<td><code>Package.receivers</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>ContentProvider</code>（数据共享）</td>
+<td><code>&lt;provider&gt;</code></td>
+<td><code>Package.providers</code></td>
+</tr>
+<tr>
+<td><strong>权限与安全</strong></td>
+<td>应用声明的权限（需用户授权）</td>
+<td><code>&lt;uses-permission&gt;</code></td>
+<td><code>Package.requestedPermissions</code></td>
+</tr>
+<tr>
+<td></td>
+<td>应用定义的权限（供其他应用使用）</td>
+<td><code>&lt;permission&gt;</code></td>
+<td><code>Package.permissions</code></td>
+</tr>
+<tr>
+<td></td>
+<td>权限组和权限树</td>
+<td><code>&lt;permission-group/tree&gt;</code></td>
+<td><code>Package.permissionGroups/Trees</code></td>
+</tr>
+<tr>
+<td><strong>资源与特性</strong></td>
+<td>应用图标、主题、标签</td>
+<td><code>&lt;application android:icon/label&gt;</code></td>
+<td><code>ApplicationInfo</code></td>
+</tr>
+<tr>
+<td></td>
+<td>硬件&#x2F;软件特性要求（如摄像头、蓝牙）</td>
+<td><code>&lt;uses-feature&gt;</code></td>
+<td><code>Package.features</code></td>
+</tr>
+<tr>
+<td></td>
+<td>依赖库（如 <code>androidx</code>）</td>
+<td><code>&lt;uses-library&gt;</code></td>
+<td><code>Package.usesLibraries</code></td>
+</tr>
+<tr>
+<td><strong>Split APK</strong></td>
+<td>主 APK (<code>base.apk</code>) 的组件和资源</td>
+<td><code>base.apk</code> 的 <code>AndroidManifest.xml</code></td>
+<td><code>Package.baseApplicationInfo</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Split APK 的附加资源（如多语言、屏幕密度）</td>
+<td><code>split_config.xx.apk</code> 的 <code>manifest</code></td>
+<td><code>Package.splitNames</code></td>
+</tr>
+<tr>
+<td><strong>元数据与配置</strong></td>
+<td><code>Meta-data</code>（键值对配置，如 <code>Google Play</code> 服务）</td>
+<td><code>&lt;meta-data&gt;</code></td>
+<td><code>ComponentInfo.metaData</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Intent 过滤器（<code>Activity</code>&#x2F;<code>Service</code>&#x2F;<code>Receiver</code> 的响应规则）</td>
+<td><code>&lt;intent-filter&gt;</code></td>
+<td><code>ComponentInfo.intentFilters</code></td>
+</tr>
+<tr>
+<td><strong>安装与优化</strong></td>
+<td>安装位置（内部存储或外部存储）</td>
+<td><code>android:installLocation</code></td>
+<td><code>Package.installLocation</code></td>
+</tr>
+<tr>
+<td></td>
+<td>是否支持备份 (<code>allowBackup</code>)</td>
+<td><code>&lt;application android:allowBackup&gt;</code></td>
+<td><code>ApplicationInfo.flags</code></td>
+</tr>
+</tbody></table>
+<p>更进一步可以跟进源码中一探究竟，这里先按下不表。</p>
+<h2 id="应用注册到PMS"><a href="#应用注册到PMS" class="headerlink" title="应用注册到PMS"></a><strong>应用注册到PMS</strong></h2><h3 id="scanPackageNewLI"><a href="#scanPackageNewLI" class="headerlink" title="scanPackageNewLI"></a>scanPackageNewLI</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 扫描并安装一个新解析的包（APK），更新PMS内部状态。</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> pkg         已解析的包对象（包含APK元数据）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> parseFlags  解析标志（如PARSE_FORCE_SDK、PARSE_CHATTY等）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> scanFlags   扫描标志（如SCAN_NEW_INSTALL、SCAN_UPDATE_SIGNATURE）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> currentTime 当前时间戳（用于记录安装时间）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@param</span> user        目标用户（多用户场景）</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@return</span>            扫描后的包对象</span><br><span class="hljs-comment"> * <span class="hljs-doctag">@throws</span> PackageManagerException 如果扫描或安装失败</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">private</span> PackageParser.Package <span class="hljs-title function_">scanPackageNewLI</span><span class="hljs-params">(</span><br><span class="hljs-params">        <span class="hljs-meta">@NonNull</span> PackageParser.Package pkg,</span><br><span class="hljs-params">        <span class="hljs-keyword">final</span> <span class="hljs-meta">@ParseFlags</span> <span class="hljs-type">int</span> parseFlags,</span><br><span class="hljs-params">        <span class="hljs-meta">@ScanFlags</span> <span class="hljs-type">int</span> scanFlags,</span><br><span class="hljs-params">        <span class="hljs-type">long</span> currentTime,</span><br><span class="hljs-params">        <span class="hljs-meta">@Nullable</span> UserHandle user)</span> <span class="hljs-keyword">throws</span> PackageManagerException &#123;<br><br>    <span class="hljs-comment">// 1. 检查包名重定向（如系统应用更新后包名可能变化）</span><br>    <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">renamedPkgName</span> <span class="hljs-operator">=</span> mSettings.getRenamedPackageLPr(pkg.mRealPackage);<br>    <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">realPkgName</span> <span class="hljs-operator">=</span> getRealPackageName(pkg, renamedPkgName);<br>    <span class="hljs-keyword">if</span> (realPkgName != <span class="hljs-literal">null</span>) &#123;<br>        ensurePackageRenamed(pkg, renamedPkgName); <span class="hljs-comment">// 确保重定向包名一致性</span><br>    &#125;<br><br>    <span class="hljs-comment">// 2. 获取包的安装状态和设置信息</span><br>    <span class="hljs-keyword">final</span> <span class="hljs-type">PackageSetting</span> <span class="hljs-variable">originalPkgSetting</span> <span class="hljs-operator">=</span> getOriginalPackageLocked(pkg, renamedPkgName);<br>    <span class="hljs-keyword">final</span> <span class="hljs-type">PackageSetting</span> <span class="hljs-variable">pkgSetting</span> <span class="hljs-operator">=</span> mSettings.getPackageLPr(pkg.packageName);<br>    <span class="hljs-keyword">final</span> <span class="hljs-type">PackageSetting</span> <span class="hljs-variable">disabledPkgSetting</span> <span class="hljs-operator">=</span> mSettings.getDisabledSystemPkgLPr(pkg.packageName);<br><br>    <span class="hljs-comment">// 3. 检查是否已转移的包（避免残留APK冲突）</span><br>    <span class="hljs-keyword">if</span> (mTransferedPackages.contains(pkg.packageName)) &#123;<br>        Slog.w(TAG, <span class="hljs-string">&quot;Package &quot;</span> + pkg.packageName + <span class="hljs-string">&quot; was transferred to another, but its .apk remains&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-comment">// 4. 动态调整扫描标志（例如系统应用更新需特殊处理）</span><br>    scanFlags = adjustScanFlags(scanFlags, pkgSetting, disabledPkgSetting, user, pkg);<br><br>    <span class="hljs-comment">// 同步锁保护PMS内部状态</span><br>    <span class="hljs-keyword">synchronized</span> (mPackages) &#123;<br>        <span class="hljs-comment">// 5. 应用安装策略（如权限、签名验证）</span><br>        applyPolicy(pkg, parseFlags, scanFlags, mPlatformPackage);<br>        assertPackageIsValid(pkg, parseFlags, scanFlags);<br><br>        <span class="hljs-comment">// 6. 处理共享用户（android:sharedUserId）</span><br>        <span class="hljs-type">SharedUserSetting</span> <span class="hljs-variable">sharedUserSetting</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>        <span class="hljs-keyword">if</span> (pkg.mSharedUserId != <span class="hljs-literal">null</span>) &#123;<br>            sharedUserSetting = mSettings.getSharedUserLPw(<br>                pkg.mSharedUserId, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">true</span>); <span class="hljs-comment">// 获取或创建共享用户配置</span><br>            <span class="hljs-keyword">if</span> (DEBUG_PACKAGE_SCANNING) &#123;<br>                Log.d(TAG, <span class="hljs-string">&quot;Shared UserID &quot;</span> + pkg.mSharedUserId + <span class="hljs-string">&quot; (uid=&quot;</span> + sharedUserSetting.userId + <span class="hljs-string">&quot;)&quot;</span>);<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-comment">// 7. 执行核心扫描逻辑</span><br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">scanSucceeded</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-type">ScanRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ScanRequest</span>(<br>                pkg, sharedUserSetting, <br>                pkgSetting == <span class="hljs-literal">null</span> ? <span class="hljs-literal">null</span> : pkgSetting.pkg, <br>                pkgSetting, disabledPkgSetting, originalPkgSetting,<br>                realPkgName, parseFlags, scanFlags, <br>                (pkg == mPlatformPackage), user<br>            );<br>            <span class="hljs-type">ScanResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> scanPackageOnlyLI(request, mFactoryTest, currentTime);<br>            <span class="hljs-keyword">if</span> (result.success) &#123;<br>                commitScanResultsLocked(request, result); <span class="hljs-comment">// 提交扫描结果到PMS</span><br>            &#125;<br>            scanSucceeded = <span class="hljs-literal">true</span>;<br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            <span class="hljs-comment">// 8. 扫描失败时清理数据（仅当SCAN_DELETE_DATA_ON_FAILURES启用）</span><br>            <span class="hljs-keyword">if</span> (!scanSucceeded &amp;&amp; (scanFlags &amp; SCAN_DELETE_DATA_ON_FAILURES) != <span class="hljs-number">0</span>) &#123;<br>                destroyAppDataLIF(pkg, UserHandle.USER_ALL, <br>                    StorageManager.FLAG_STORAGE_DE | StorageManager.FLAG_STORAGE_CE);<br>                destroyAppProfilesLIF(pkg, UserHandle.USER_ALL);<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> pkg;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>scanPackageNewLI</code> 是 <strong>PackageManagerService (PMS)</strong> 中用于 <strong>安装或更新APK的核心方法</strong>，主要完成以下任务：</p>
+<ul>
+<li><strong>验证包合法性</strong>：检查包名重定向、签名、权限等。</li>
+<li><strong>更新PMS状态</strong>：将解析后的APK信息（<code>Package</code>对象）写入PMS内部数据结构（如<code>mPackages</code>、<code>mSettings</code>）。</li>
+<li><strong>处理共享用户</strong>：为<code>android:sharedUserId</code>分配或复用UID。</li>
+<li><strong>失败回滚</strong>：在扫描失败时清理残留数据。</li>
+</ul>
+<p>往后接着调用**<code>commitReconciledScanResultLocked()</code><strong>，用于</strong>提交经过冲突解决后的扫描结果**，用于处理APK安装或更新时可能出现的包名、UID、签名等冲突，并最终将合法的包信息写入PMS内部状态</p>
+<p>而后**<code>commitPackageSettings()</code>**提交最终的包设置到PMS全局状态，完成安装流程的最后一步，使应用对系统可见。</p>
+<blockquote>
+<p>此过程中注意：<code>ComponentResolver.addAllComponents()</code> 负责将应用的所有 <strong>四大组件</strong>（Activity、Service、BroadcastReceiver、ContentProvider）注册到系统的全局解析器中，使它们能够被正确发现和调用。</p>
+</blockquote>
+<hr>
+<p>整个过程总结如下：</p>
+<ol>
+<li>安装包的包名都添加到了 mPackages，这是一个 Map，key 是包名，value 是 AndroidPackage。</li>
+<li>安装包的 AndroidPackage 添加到了 mComponentResolver，这是一个 ComponentResolver，四大组件启动中经常看到它的身影，我们等下可以看一下。</li>
+<li>安装包的全类名添加到了 mInstrumentation，这也是一个 map。</li>
+<li>把扫描安装包的权限结果添加到了 mPermissionManager 中，这是一个 PermissionManagerServiceInternal。</li>
+</ol>
+<h1 id="APK-的安装流程"><a href="#APK-的安装流程" class="headerlink" title="APK 的安装流程"></a>APK 的安装流程</h1><blockquote>
+<p>详细参考：<a target="_blank" rel="noopener" href="https://juejin.cn/post/7210756376309284925">PMS源码解析——apk的安装流程（Android12）之前我们介绍了 PMS 的工作原理。主要包括 PMS 的启动流程 - 掘金</a></p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/04/05/wXJyUIfkO7enhxA.png" srcset="/img/loading.gif" lazyload></p>
+<p>在之前的<a target="_blank" rel="noopener" href="https://restack3.github.io/2024/01/08/APP%E4%BB%8E%E5%AE%89%E8%A3%85%E5%88%B0%E8%BF%90%E8%A1%8C%E5%85%A8%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/">APP安装到启动流程大体概览 - The Peak Tower</a>简单也提到了APP的安装过程。这里不多解释，仅大概提供大致流程：</p>
+<p>APK安装流程主要分为以下几个阶段：</p>
+<ol>
+<li>安装请求的发起</li>
+<li>安装前的验证和准备</li>
+<li>实际安装过程</li>
+<li>安装后的处理</li>
+</ol>
+<hr>
+<h2 id="1-安装请求的发起"><a href="#1-安装请求的发起" class="headerlink" title="1. 安装请求的发起"></a>1. 安装请求的发起</h2><p>安装请求可以通过多种方式发起，如：</p>
+<ul>
+<li>通过<code>PackageInstaller</code> API</li>
+<li>ADB命令安装</li>
+<li>应用商店安装</li>
+<li>系统启动时的预装应用安装</li>
+</ul>
+<p>主要入口点在<code>PackageManagerService.java</code>中的<code>installPackageAsUser()</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java</span><br><br><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">installPackageAsUser</span><span class="hljs-params">(String originPath, PackageInstaller.SessionParams params,</span><br><span class="hljs-params">        String installerPackageName, <span class="hljs-type">int</span> userId)</span> &#123;<br>    <span class="hljs-comment">// 权限检查</span><br>    mContext.enforceCallingOrSelfPermission(android.Manifest.permission.INSTALL_PACKAGES, <span class="hljs-literal">null</span>);<br>    <br>    <span class="hljs-comment">// 创建安装会话</span><br>    <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> <span class="hljs-variable">sessionId</span> <span class="hljs-operator">=</span> mInstallerService.createSession(params, installerPackageName, userId);<br>    <br>    <span class="hljs-comment">// 准备安装</span><br>    preparePackageInstall(originPath, sessionId, params, installerPackageName, userId);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-安装前的验证和准备"><a href="#2-安装前的验证和准备" class="headerlink" title="2. 安装前的验证和准备"></a>2. 安装前的验证和准备</h2><p>在<code>preparePackageInstall()</code>方法中，系统会进行以下操作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">preparePackageInstall</span><span class="hljs-params">(String originPath, <span class="hljs-type">int</span> sessionId, </span><br><span class="hljs-params">        PackageInstaller.SessionParams params, String installerPackageName, <span class="hljs-type">int</span> userId)</span> &#123;<br>    <span class="hljs-comment">// 验证APK签名</span><br>    verifySignatures(originPath);<br>    <br>    <span class="hljs-comment">// 检查存储空间</span><br>    checkStorage(originPath);<br>    <br>    <span class="hljs-comment">// 解析APK基本信息</span><br>    PackageParser.<span class="hljs-type">Package</span> <span class="hljs-variable">pkg</span> <span class="hljs-operator">=</span> parsePackage(originPath);<br>    <br>    <span class="hljs-comment">// 检查版本兼容性</span><br>    checkVersionCompatibility(pkg);<br>    <br>    <span class="hljs-comment">// 检查权限</span><br>    checkPermissions(pkg);<br>    <br>    <span class="hljs-comment">// 创建临时目录</span><br>    createSessionDir(sessionId);<br>    <br>    <span class="hljs-comment">// 复制APK到临时目录</span><br>    copyPackageToSession(originPath, sessionId);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-实际安装过程"><a href="#3-实际安装过程" class="headerlink" title="3. 实际安装过程"></a>3. 实际安装过程</h2><p>实际安装过程在<code>installPackageTracedLI()</code>方法中完成：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">installPackageTracedLI</span><span class="hljs-params">(PackageParser.Package pkg, <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> policyFlags, <span class="hljs-type">int</span> installFlags,</span><br><span class="hljs-params">        <span class="hljs-type">int</span> installReason, String installerPackageName, <span class="hljs-type">int</span>[] allUsers)</span> &#123;<br>    <br>    <span class="hljs-comment">// 1. 验证包</span><br>    verifyPackage(pkg);<br>    <br>    <span class="hljs-comment">// 2. 收集并验证native库</span><br>    collectCertificates(pkg);<br>    <br>    <span class="hljs-comment">// 3. 检查覆盖安装</span><br>    <span class="hljs-keyword">if</span> (isUpdate) &#123;<br>        checkUpdate(pkg, oldPkg);<br>    &#125;<br>    <br>    <span class="hljs-comment">// 4. 执行预安装</span><br>    executePreInstall(pkg);<br>    <br>    <span class="hljs-comment">// 5. 创建安装目录</span><br>    createInstallDir(pkg);<br>    <br>    <span class="hljs-comment">// 6. 重命名临时目录为最终目录</span><br>    renameTempToFinal(pkg);<br>    <br>    <span class="hljs-comment">// 7. 扫描包</span><br>    scanPackageTracedLI(pkg, policyFlags, scanFlags, System.currentTimeMillis(), user);<br>    <br>    <span class="hljs-comment">// 8. 执行dex优化</span><br>    performDexOpt(pkg);<br>    <br>    <span class="hljs-comment">// 9. 更新设置</span><br>    updateSettings(pkg, installerPackageName, allUsers);<br>    <br>    <span class="hljs-comment">// 10. 发送安装完成的广播</span><br>    sendPackageBroadcast(Intent.ACTION_PACKAGE_ADDED, pkg.packageName);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="4-扫描包过程"><a href="#4-扫描包过程" class="headerlink" title="4. 扫描包过程"></a>4. 扫描包过程</h2><p><code>scanPackageTracedLI()</code>是安装过程中的关键方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> PackageParser.Package <span class="hljs-title function_">scanPackageTracedLI</span><span class="hljs-params">(PackageParser.Package pkg,</span><br><span class="hljs-params">        <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> policyFlags, <span class="hljs-type">int</span> scanFlags, <span class="hljs-type">long</span> currentTime, UserHandle user)</span><br>        <span class="hljs-keyword">throws</span> PackageManagerException &#123;<br>    <br>    <span class="hljs-comment">// 1. 解析AndroidManifest.xml</span><br>    parseManifest(pkg);<br>    <br>    <span class="hljs-comment">// 2. 收集组件信息</span><br>    collectComponents(pkg);<br>    <br>    <span class="hljs-comment">// 3. 收集权限</span><br>    collectPermissions(pkg);<br>    <br>    <span class="hljs-comment">// 4. 验证应用ID和签名</span><br>    verifySignatures(pkg);<br>    <br>    <span class="hljs-comment">// 5. 处理共享用户ID</span><br>    handleSharedUser(pkg);<br>    <br>    <span class="hljs-comment">// 6. 更新包数据库</span><br>    updatePackageDatabase(pkg);<br>    <br>    <span class="hljs-keyword">return</span> pkg;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="5-Dex优化过程"><a href="#5-Dex优化过程" class="headerlink" title="5. Dex优化过程"></a>5. Dex优化过程</h2><p>在Android 12中，Dex优化过程有所改变：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">performDexOpt</span><span class="hljs-params">(PackageParser.Package pkg)</span> &#123;<br>    <span class="hljs-comment">// ART使用新的优化策略</span><br>    <span class="hljs-keyword">if</span> (isBackgroundDexOptEnabled()) &#123;<br>        <span class="hljs-comment">// 后台优化</span><br>        BackgroundDexOptService.schedule(pkg);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 立即优化</span><br>        DexOptimizer.optimize(pkg);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>关键类说明：</p>
+<ol>
+<li><code>PackageManagerService</code>：包管理的核心服务</li>
+<li><code>PackageInstallerService</code>：处理安装会话</li>
+<li><code>PackageParser</code>：解析APK文件</li>
+<li><code>DexOptimizer</code>：负责Dex文件的优化</li>
+<li><code>Installd</code>：Native层的安装助手</li>
+</ol>
+<hr>
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7208188047707177015#heading-10">PMS源码解析——PMS的启动流程（Android12）android源码分析目录 一 概述 PackageManage - 掘金</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7209201396846854199#heading-47">PMS工作原理解析——app目录的解析流程（Android12）上一篇 PackageManagerService 源码 - 掘金</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/" class="category-chain-item">计算机与AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/" class="category-chain-item">核心底层</a>
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PMS源码阅读</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机与AI/操作系统/Andorid内核原理/核心底层/PMS源码阅读/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/WMS%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="WMS源码阅读">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">WMS源码阅读</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/%E6%A0%B8%E5%BF%83%E5%BA%95%E5%B1%82/AMS%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" title="AMS源码阅读">
+                        <span class="hidden-mobile">AMS源码阅读</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

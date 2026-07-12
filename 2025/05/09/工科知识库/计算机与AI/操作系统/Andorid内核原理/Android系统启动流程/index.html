@@ -1,0 +1,926 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="android整体架构图 可以看出android系统是基于底层linux构建的。也正因如此，android系统启动的起点在linux启动后的用户空间的第一个进程init，进程号为1.当bootloader启动后，启动kernel，kernel启动完后，在用户空间启动init进程。 倘若再往上走就是linux启动过程，具体可自行百度linux启动流程。  1.引导加载程序（Bootloader）启动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android系统启动流程">
+<meta property="og:url" content="https://hermes37.vercel.app/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/Android%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="android整体架构图 可以看出android系统是基于底层linux构建的。也正因如此，android系统启动的起点在linux启动后的用户空间的第一个进程init，进程号为1.当bootloader启动后，启动kernel，kernel启动完后，在用户空间启动init进程。 倘若再往上走就是linux启动过程，具体可自行百度linux启动流程。  1.引导加载程序（Bootloader）启动">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/20/NiF83nBS4sItpYR.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/3YcVQto2GbqMzCN.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/20/kTpboDfICxgNz1Q.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/md2z6wo5qugXxY8.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/htVWoFqQnzSuYyL.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/3pqmgrcHeWozPQx.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/dZTmxI2Yy8kz1tM.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/IzisVvtlSMXnOaE.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/RgeblPvEmN8SAQ3.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20241008194506579.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/JMYWoLXnjBU49V1.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/pc7S2BMIEv4QqCW.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/WKLGhCXSPNOwpg4.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/eztnSVYgbl8LAmj.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/G39r2btcljHy5mv.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/Xe7iEBZK5OhstyR.png">
+<meta property="og:image" content="https://s2.loli.net/2024/10/08/mpCSY3h7r8szdJ2.png">
+<meta property="article:published_time" content="2025-05-09T07:31:42.448Z">
+<meta property="article:modified_time" content="2026-07-12T03:18:59.620Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/20/NiF83nBS4sItpYR.png">
+  
+  
+  
+  <title>Android系统启动流程 - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Android系统启动流程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Android系统启动流程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="android整体架构图"><a href="#android整体架构图" class="headerlink" title="android整体架构图"></a>android整体架构图</h1><p><img src="https://s2.loli.net/2024/12/20/NiF83nBS4sItpYR.png" srcset="/img/loading.gif" lazyload alt="android整体架构"></p>
+<p>可以看出android系统是基于底层linux构建的。也正因如此，android系统启动的起点在linux启动后的用户空间的第一个进程init，进程号为1.当bootloader启动后，启动kernel，kernel启动完后，在用户空间启动init进程。</p>
+<p>倘若再往上走就是linux启动过程，具体可自行百度linux启动流程。</p>
+<ul>
+<li><strong>1.引导加载程序（Bootloader）启动</strong>： 当设备上电或者重启时，首先会由引导加载程序负责启动。引导加载程序通常存储在设备的固件中，它的主要任务是初始化硬件，并加载并启动操作系统内核。引导加载程序会首先运行自身的初始化代码，然后加载操作系统内核到内存中。</li>
+<li><strong>2.内核加载</strong>： 引导加载程序会根据预定义的配置从设备存储中加载操作系统内核。在Android设备中，通常使用的是Linux内核。引导加载程序将内核加载到内存中的指定位置。</li>
+<li><strong>3.内核初始化</strong>： 一旦内核加载到内存中，引导加载程序会将控制权转交给内核。内核开始执行初始化过程，包括对硬件进行初始化、建立虚拟文件系统、创建进程和线程等。</li>
+<li><strong>4.启动 init 进程</strong>： 内核初始化完成后，会启动名为init的用户空间进程。init进程是Android系统的第一个用户空间进程，它负责系统的进一步初始化和启动。init进程会读取系统配置文件（例如 init.rc），并根据其中的指令启动系统服务和应用程序。</li>
+</ul>
+<h1 id="Init进程"><a href="#Init进程" class="headerlink" title="Init进程"></a>Init进程</h1><p><img src="https://s2.loli.net/2024/10/08/3YcVQto2GbqMzCN.png" srcset="/img/loading.gif" lazyload alt="Android系统启动流程"></p>
+<p>根据不同的入参，响应init不同阶段、处理不同业务逻辑。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> &#123;<br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">strcmp</span>(basename(argv[<span class="hljs-number">0</span>]), <span class="hljs-string">&quot;ueventd&quot;</span>)) &#123;<br>        <span class="hljs-keyword">return</span> ueventd_main(argc, argv);<br>    &#125;<br>    <span class="hljs-comment">////watchdogd俗称看门狗，用于系统出问题时重启系统</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">strcmp</span>(basename(argv[<span class="hljs-number">0</span>]), <span class="hljs-string">&quot;watchdogd&quot;</span>)) &#123;<br>        <span class="hljs-keyword">return</span> watchdogd_main(argc, argv);<br>    &#125;<br>    <br>    <span class="hljs-keyword">if</span> (argc &gt; <span class="hljs-number">1</span> &amp;&amp; !<span class="hljs-built_in">strcmp</span>(argv[<span class="hljs-number">1</span>], <span class="hljs-string">&quot;subcontext&quot;</span>)) &#123;<br>        InitKernelLogging(argv);<br>        <span class="hljs-type">const</span> BuiltinFunctionMap function_map;<br>        <span class="hljs-keyword">return</span> SubcontextMain(argc, argv, &amp;function_map);<br>    &#125;<br>    <span class="hljs-comment">//如果设置了 REBOOT_BOOTLOADER_ON_PANIC，则安装重启信号处理器，确保在系统崩溃时能够重启进入 bootloader 模式。</span><br>    <span class="hljs-keyword">if</span> (REBOOT_BOOTLOADER_ON_PANIC) &#123;<br>        InstallRebootSignalHandlers();<br>    &#125;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="第一阶段"><a href="#第一阶段" class="headerlink" title="第一阶段"></a>第一阶段</h2><ol>
+<li>挂载文件系统并创建目录</li>
+<li>初始化日志输出、挂载分区设备</li>
+<li>启用SELinux安全策略</li>
+<li>开始第二阶段前的准备</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> &#123;<br>    ...<br>    <span class="hljs-type">bool</span> is_first_stage = (getenv(<span class="hljs-string">&quot;INIT_SECOND_STAGE&quot;</span>) == nullptr);<br>    <span class="hljs-comment">// 在第一阶段，初始化基本的文件系统，并创建和挂载必要的系统目录</span><br>    <span class="hljs-keyword">if</span> (is_first_stage) &#123;<br>        boot_clock::time_point start_time = boot_clock::now();<br>        umask(<span class="hljs-number">0</span>);<br>        clearenv();<br>        mount(<span class="hljs-string">&quot;tmpfs&quot;</span>, <span class="hljs-string">&quot;/dev&quot;</span>, <span class="hljs-string">&quot;tmpfs&quot;</span>, MS_NOSUID, <span class="hljs-string">&quot;mode=0755&quot;</span>);<br>        mkdir(<span class="hljs-string">&quot;/dev/pts&quot;</span>, <span class="hljs-number">0755</span>);<br>        mkdir(<span class="hljs-string">&quot;/dev/socket&quot;</span>, <span class="hljs-number">0755</span>);<br>        mount(<span class="hljs-string">&quot;devpts&quot;</span>, <span class="hljs-string">&quot;/dev/pts&quot;</span>, <span class="hljs-string">&quot;devpts&quot;</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">NULL</span>);<br>        <span class="hljs-meta">#<span class="hljs-keyword">define</span> MAKE_STR(x) __STRING(x)</span><br>        mount(<span class="hljs-string">&quot;proc&quot;</span>, <span class="hljs-string">&quot;/proc&quot;</span>, <span class="hljs-string">&quot;proc&quot;</span>, <span class="hljs-number">0</span>, <span class="hljs-string">&quot;hidepid=2,gid=&quot;</span> MAKE_STR(AID_READPROC));<br>        chmod(<span class="hljs-string">&quot;/proc/cmdline&quot;</span>, <span class="hljs-number">0440</span>);<br>        <span class="hljs-type">gid_t</span> groups[] = &#123; AID_READPROC &#125;;<br>        setgroups(arraysize(groups), groups);<br>        mount(<span class="hljs-string">&quot;sysfs&quot;</span>, <span class="hljs-string">&quot;/sys&quot;</span>, <span class="hljs-string">&quot;sysfs&quot;</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">NULL</span>);<br>        mount(<span class="hljs-string">&quot;selinuxfs&quot;</span>, <span class="hljs-string">&quot;/sys/fs/selinux&quot;</span>, <span class="hljs-string">&quot;selinuxfs&quot;</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">NULL</span>);<br>        mknod(<span class="hljs-string">&quot;/dev/kmsg&quot;</span>, S_IFCHR | <span class="hljs-number">0600</span>, makedev(<span class="hljs-number">1</span>, <span class="hljs-number">11</span>));<br>        <span class="hljs-keyword">if</span> <span class="hljs-title function_">constexpr</span> <span class="hljs-params">(WORLD_WRITABLE_KMSG)</span> &#123;<br>            mknod(<span class="hljs-string">&quot;/dev/kmsg_debug&quot;</span>, S_IFCHR | <span class="hljs-number">0622</span>, makedev(<span class="hljs-number">1</span>, <span class="hljs-number">11</span>));<br>        &#125;<br>        <span class="hljs-comment">//创建 /dev/kmsg、/dev/random、/dev/urandom 等设备节点，用于日志和随机数生成。</span><br>        mknod(<span class="hljs-string">&quot;/dev/random&quot;</span>, S_IFCHR | <span class="hljs-number">0666</span>, makedev(<span class="hljs-number">1</span>, <span class="hljs-number">8</span>));<br>        mknod(<span class="hljs-string">&quot;/dev/urandom&quot;</span>, S_IFCHR | <span class="hljs-number">0666</span>, makedev(<span class="hljs-number">1</span>, <span class="hljs-number">9</span>));<br>        mount(<span class="hljs-string">&quot;tmpfs&quot;</span>, <span class="hljs-string">&quot;/mnt&quot;</span>, <span class="hljs-string">&quot;tmpfs&quot;</span>, MS_NOEXEC | MS_NOSUID | MS_NODEV,<br>        mkdir(<span class="hljs-string">&quot;/mnt/vendor&quot;</span>, <span class="hljs-number">0755</span>);<br>        <span class="hljs-comment">//初始化log系统并打印</span><br>        InitKernelLogging(argv);<br>        ......<br>        <span class="hljs-comment">//初始化Android的安全框架Android Verified Boot</span><br>        SetInitAvbVersionInRecovery();<br>        global_seccomp();<br>        ...<br>        <span class="hljs-comment">// Set up SELinux, loading the SELinux policy.</span><br>        <span class="hljs-comment">//为第二阶段启动加载安全策略(安全策略：一个Linux内核模块和安全架构，旨在提供更细粒度的访问控制)</span><br>        SelinuxSetupKernelLogging();<br>        SelinuxInitialize();<br>        ...<br>        <span class="hljs-comment">//设置第二阶段开关</span><br>        setenv(<span class="hljs-string">&quot;INIT_SECOND_STAGE&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>, <span class="hljs-number">1</span>);<br>        <span class="hljs-type">static</span> constexpr <span class="hljs-type">uint32_t</span> kNanosecondsPerMillisecond = <span class="hljs-number">1e6</span>;<br>        <span class="hljs-type">uint64_t</span> start_ms = start_time.time_since_epoch().count() / kNanosecondsPerMillisecond;<br><br>		<span class="hljs-comment">//设置环境变量 INIT_SECOND_STAGE 并重新执行 init 进程，进入第二阶段。</span><br>        setenv(<span class="hljs-string">&quot;INIT_STARTED_AT&quot;</span>, <span class="hljs-built_in">std</span>::to_string(start_ms).c_str(), <span class="hljs-number">1</span>);<br>        <span class="hljs-type">char</span>* path = argv[<span class="hljs-number">0</span>];<br>        <span class="hljs-type">char</span>* args[] = &#123; path, nullptr &#125;;<br>        execv(path, args);<br>        PLOG(FATAL) &lt;&lt; <span class="hljs-string">&quot;execv(\&quot;&quot;</span> &lt;&lt; path &lt;&lt; <span class="hljs-string">&quot;\&quot;) failed&quot;</span>;<br>    &#125;<br>              <br> &#125;<br>   <br></code></pre></td></tr></table></figure>
+
+<h2 id="第二阶段"><a href="#第二阶段" class="headerlink" title="第二阶段"></a>第二阶段</h2><ol>
+<li>初始化属性系统</li>
+<li>执行SELinux第二阶段并恢复一些文件安全上下文</li>
+<li>新建epoll并初始化子进程终止信号处理函数</li>
+<li>设置其他系统属性并开启属性服务</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs c">   <span class="hljs-comment">//初始化属性系统</span><br>   <span class="hljs-comment">//继续初始化日志、属性系统和内核命令行参数，并准备系统启动。</span><br>    InitKernelLogging(argv);<br>    ....<br>    <span class="hljs-comment">//property系统用于管理系统属性</span><br>    process_kernel_dt();<br>    process_kernel_cmdline();<br><br>    export_kernel_boot_props();<br><br>    property_set(<span class="hljs-string">&quot;ro.boottime.init&quot;</span>, getenv(<span class="hljs-string">&quot;INIT_STARTED_AT&quot;</span>));<br>    property_set(<span class="hljs-string">&quot;ro.boottime.init.selinux&quot;</span>, getenv(<span class="hljs-string">&quot;INIT_SELINUX_TOOK&quot;</span>));<br><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* avb_version = getenv(<span class="hljs-string">&quot;INIT_AVB_VERSION&quot;</span>);<br>    <span class="hljs-keyword">if</span> (avb_version) property_set(<span class="hljs-string">&quot;ro.boot.avb_version&quot;</span>, avb_version);<br>    <span class="hljs-comment">// Clean up our environment.</span><br>    unsetenv(<span class="hljs-string">&quot;INIT_SECOND_STAGE&quot;</span>);<br>    unsetenv(<span class="hljs-string">&quot;INIT_STARTED_AT&quot;</span>);<br>    unsetenv(<span class="hljs-string">&quot;INIT_SELINUX_TOOK&quot;</span>);<br>    unsetenv(<span class="hljs-string">&quot;INIT_AVB_VERSION&quot;</span>);<br><br>    <span class="hljs-comment">//加载 SELinux 策略</span><br>    SelinuxSetupKernelLogging();<br>    SelabelInitialize();<br>    SelinuxRestoreContext();<br>    <span class="hljs-comment">//启动 epoll 等待系统事件(设置 epoll 文件描述符，用于监听系统事件，并启动属性服务和信号处理。)</span><br>    epoll_fd = epoll_create1(EPOLL_CLOEXEC);<br>    <span class="hljs-keyword">if</span> (epoll_fd == <span class="hljs-number">-1</span>) &#123;<br>        PLOG(FATAL) &lt;&lt; <span class="hljs-string">&quot;epoll_create1 failed&quot;</span>;<br>    &#125;<br>    <span class="hljs-comment">//来初始化信号处理过程</span><br>    sigchld_handler_init();<br><br>    <span class="hljs-keyword">if</span> (!IsRebootCapable()) &#123;<br>    <br>        InstallSigtermHandler();<br>    &#125;<br>    <span class="hljs-comment">//设置其他系统属性并开启属性服务</span><br>    property_load_boot_defaults();<br>    export_oem_lock_status();<br>    start_property_service();<br>    set_usb_controller();<br>    ...<br>    <span class="hljs-type">const</span> BuiltinFunctionMap function_map;<br>    Action::set_function_map(&amp;function_map);<br><br>   <span class="hljs-comment">// Android 中负责管理子上下文</span><br>    subcontexts = InitializeSubcontexts();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="第三阶段"><a href="#第三阶段" class="headerlink" title="第三阶段"></a>第三阶段</h2><ol>
+<li>通过init.rc机制，读取配置文件，来启动不同的进程。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs c"><br>    <span class="hljs-comment">//通常负责管理系统中的各种动作或命令, 解析init.rc等文件，建立rc文件的action 、service，启动其他进程</span><br>    <span class="hljs-comment">//ActionManager 和 ServiceList 管理系统中的命令和服务，初始化并触发系统的启动事件和动作。</span><br>    ActionManager&amp; am = ActionManager::GetInstance();<br>	<span class="hljs-comment">//负责管理系统中所有的服务</span><br>    ServiceList&amp; sm = ServiceList::GetInstance();<br>	<br>    <span class="hljs-comment">//加载脚本文件命令</span><br>    LoadBootScripts(am, sm);<br><br>    ...<br><br>   <span class="hljs-comment">//进入主循环，使用 epoll_wait 监听系统事件，并执行相应的系统命令和服务操作。</span><br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>        <span class="hljs-comment">// By default, sleep until something happens.</span><br>        <span class="hljs-type">int</span> epoll_timeout_ms = <span class="hljs-number">-1</span>;<br><br>        <span class="hljs-keyword">if</span> (do_shutdown &amp;&amp; !shutting_down) &#123;<br>            do_shutdown = <span class="hljs-literal">false</span>;<br>            <span class="hljs-keyword">if</span> (HandlePowerctlMessage(shutdown_command)) &#123;<br>                shutting_down = <span class="hljs-literal">true</span>;<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (!(waiting_for_prop || Service::is_exec_service_running())) &#123;<br>            am.ExecuteOneCommand();<br>        &#125;<br>        <span class="hljs-keyword">if</span> (!(waiting_for_prop || Service::is_exec_service_running())) &#123;<br>            <span class="hljs-keyword">if</span> (!shutting_down) &#123;<br>                <span class="hljs-keyword">auto</span> next_process_restart_time = RestartProcesses();<br>                <span class="hljs-keyword">if</span> (next_process_restart_time) &#123;<br>                    epoll_timeout_ms = <span class="hljs-built_in">std</span>::chrono::<span class="hljs-built_in">ceil</span>&lt;<span class="hljs-built_in">std</span>::chrono::milliseconds&gt;(<br>                                           *next_process_restart_time - boot_clock::now())<br>                                           .count();<br>                    <span class="hljs-keyword">if</span> (epoll_timeout_ms &lt; <span class="hljs-number">0</span>) epoll_timeout_ms = <span class="hljs-number">0</span>;<br>                &#125;<br>            &#125;<br>            <span class="hljs-keyword">if</span> (am.HasMoreCommands()) epoll_timeout_ms = <span class="hljs-number">0</span>;<br>        &#125;<br><br>        epoll_event ev;<br>        <span class="hljs-type">int</span> nr = TEMP_FAILURE_RETRY(epoll_wait(epoll_fd, &amp;ev, <span class="hljs-number">1</span>, epoll_timeout_ms));<br>        <span class="hljs-keyword">if</span> (nr == <span class="hljs-number">-1</span>) &#123;<br>            PLOG(ERROR) &lt;&lt; <span class="hljs-string">&quot;epoll_wait failed&quot;</span>;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (nr == <span class="hljs-number">1</span>) &#123;<br>            ((<span class="hljs-type">void</span> (*)()) ev.data.ptr)();<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br>&#125; <br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="init-rc脚本"><a href="#init-rc脚本" class="headerlink" title="init.rc脚本"></a><code>init.rc</code>脚本</h3><p><img src="https://s2.loli.net/2024/12/20/kTpboDfICxgNz1Q.png" srcset="/img/loading.gif" lazyload alt="image-20241008120230933"></p>
+<p><strong>service zygote &#x2F;system&#x2F;bin&#x2F;app_process -Xzygote &#x2F;system&#x2F;bin –zygote –start-system-server</strong>:</p>
+<ul>
+<li><strong>service zygote</strong>: 定义一个名为zygote的服务</li>
+<li><strong>&#x2F;system&#x2F;bin&#x2F;app_process</strong>：这是启动Zygote进程的可执行文件，64位系统为<code>app_process64</code>。</li>
+<li><strong>-Xzygote</strong>：标志表明这是一个Zygote进程启动的特殊模式。</li>
+<li><strong>&#x2F;system&#x2F;bin</strong>：指定进程的工作目录。</li>
+<li><strong>–zygote</strong>：告诉app_process以Zygote模式启动。</li>
+<li><strong>–start-system-server</strong>：Zygote启动时还要启动System Server进程，这是Android系统中管理关键系统服务的核心进程。</li>
+</ul>
+<p><strong>class main</strong>:</p>
+<ul>
+<li>将Zygote服务归类为main类别。</li>
+<li>Android系统在启动过程中会启动所有“main”类别的服务。</li>
+</ul>
+<p><strong>socket zygote stream 660 root system</strong>:<br>创建了一个名为zygote的UNIX域Socket套接字，用于其他进程与Zygote进程通信。</p>
+<p><strong>onrestart write &#x2F;sys&#x2F;android_power&#x2F;request_state wake</strong>：<br>当zygote服务重启时，系统应该将“&#x2F;sys&#x2F;android_power&#x2F;request_state”文件的内容设置为“wake”，以唤醒设备。</p>
+<p><strong>onrestart write &#x2F;sys&#x2F;power&#x2F;state on</strong>：<br>当zygote服务重启时，系统应该将“&#x2F;sys&#x2F;power&#x2F;state”文件的内容设置为 “on”，以打开电源。</p>
+<p><strong>onrestart restart media</strong>：<br>当zygote服务重启时，系统应该重启媒体服务（如音频、视频等），以恢复媒体功能。</p>
+<p><strong>onrestart restart netd</strong>：<br>当zygote服务重启时，系统应该重启网络守护进程（netd），以恢复网络功能。</p>
+<h1 id="Zygote进程"><a href="#Zygote进程" class="headerlink" title="Zygote进程"></a>Zygote进程</h1><p>在上一节，可以看到在启动 app_process中，启动zygote了进程，并同时启动了诸如audioserver、cameraserver、media等服务。</p>
+<h2 id="main方法"><a href="#main方法" class="headerlink" title="main方法"></a><code>main</code>方法</h2><p><code>app_process</code>主入口点是<code>main</code>方法，它是整个进程启动流程的起点。</p>
+<p>通过解析rc文件参数，启动ZygoteInit。</p>
+<p><img src="https://s2.loli.net/2024/10/08/md2z6wo5qugXxY8.png" srcset="/img/loading.gif" lazyload alt="image-20241008194103840"></p>
+<h2 id="AppRuntime类-AndroidRuntime"><a href="#AppRuntime类-AndroidRuntime" class="headerlink" title="AppRuntime类(AndroidRuntime)"></a><code>AppRuntime</code>类(AndroidRuntime)</h2><p><strong>AppRuntime</strong>继承自<strong>AndroidRuntime</strong>(ART)，是Android中的一个关键类，负责管理和启动 Android 应用程序或系统服务的 Java 虚拟机 (JVM)。</p>
+<p><img src="https://s2.loli.net/2024/10/08/htVWoFqQnzSuYyL.png" srcset="/img/loading.gif" lazyload alt="image-20241008194008645"></p>
+<p><img src="https://s2.loli.net/2024/10/08/3pqmgrcHeWozPQx.png" srcset="/img/loading.gif" lazyload alt="image-20241008194040488"></p>
+<p><code>app_process</code>的main方法调用了<code>AppRuntime</code>的start方法，也就是<code>AppRuntime</code>的父类<code>AndroidRuntime</code>的start方法</p>
+<p><img src="https://s2.loli.net/2024/10/08/dZTmxI2Yy8kz1tM.png" srcset="/img/loading.gif" lazyload alt="image-20241008194334607"></p>
+<p>通过JNI调用ZygoteInit.main()</p>
+<p><img src="https://s2.loli.net/2024/10/08/IzisVvtlSMXnOaE.png" srcset="/img/loading.gif" lazyload alt="image-20241008194356872"></p>
+<h2 id="ZygoteInit-main"><a href="#ZygoteInit-main" class="headerlink" title="ZygoteInit.main()"></a>ZygoteInit.main()</h2><p>在<code>AndroidRuntime</code>的<strong>start</strong>方法，通过JNI调用ZygoteInit.main()，系统第一次进入Java层(ZygoteInit是系统运行的第一个Java类)，当前线程也正式成为Java虚拟机（JVM）的主线程。</p>
+<p><img src="https://s2.loli.net/2024/10/08/RgeblPvEmN8SAQ3.png" srcset="/img/loading.gif" lazyload alt="image-20241008194450720"></p>
+<p><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20241008194506579.png" srcset="/img/loading.gif" lazyload alt="image-20241008194506579"></p>
+<p><img src="https://s2.loli.net/2024/10/08/JMYWoLXnjBU49V1.png" srcset="/img/loading.gif" lazyload alt="image-20241008194607975"></p>
+<p><img src="https://s2.loli.net/2024/10/08/pc7S2BMIEv4QqCW.png" srcset="/img/loading.gif" lazyload alt="image-20241008194639231"></p>
+<p>整体流程图：</p>
+<p><img src="https://s2.loli.net/2024/10/08/WKLGhCXSPNOwpg4.png" srcset="/img/loading.gif" lazyload alt="753d2faffdc5f60b5e5d98fd108d4421"></p>
+<h1 id="SystemServer进程"><a href="#SystemServer进程" class="headerlink" title="SystemServer进程"></a>SystemServer进程</h1><p>Android系统在启动的时候,在启动两个重要的进程，一个是Zygote进程，另一个是由zygote进程fork出来的system_server进程。SystemSever负责启动系统的各项服务，Android系统中Java世界的核心Service都在这里启动。比如：</p>
+<table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Activity Manager Service (AMS)</td>
+<td>管理应用程序的生命周期，包括启动和停止应用、管理任务和活动栈、处理广播等</td>
+</tr>
+<tr>
+<td>Package Manager Service (PMS)</td>
+<td>管理应用包的安装、卸载、更新、权限分配等</td>
+</tr>
+<tr>
+<td>System Config Service</td>
+<td>管理系统配置和资源</td>
+</tr>
+<tr>
+<td>Power Manager Service</td>
+<td>管理设备的电源状态和电源策略，如休眠、唤醒等</td>
+</tr>
+<tr>
+<td>Display Manager Service</td>
+<td>管理显示设备，如屏幕亮度、显示模式等</td>
+</tr>
+<tr>
+<td>User Manager Service</td>
+<td>管理用户账户和用户信息</td>
+</tr>
+<tr>
+<td>Battery Service</td>
+<td>监控和管理电池状态和电池使用情况</td>
+</tr>
+<tr>
+<td>Vibrator Service</td>
+<td>控制设备的振动功能</td>
+</tr>
+<tr>
+<td>Sensor Service</td>
+<td>管理设备的传感器，如加速度计、陀螺仪等</td>
+</tr>
+<tr>
+<td>Window Manager Service (WMS)</td>
+<td>管理窗口和显示内容，包括窗口的创建、删除、布局等</td>
+</tr>
+<tr>
+<td>Input Manager Service</td>
+<td>管理输入设备，如触摸屏、键盘等</td>
+</tr>
+<tr>
+<td>Alarm Manager Service</td>
+<td>提供定时任务调度功能</td>
+</tr>
+<tr>
+<td>Connectivity Service</td>
+<td>管理网络连接，如 Wi-Fi、移动数据等</td>
+</tr>
+<tr>
+<td>Network Management Service</td>
+<td>管理网络接口和网络连接</td>
+</tr>
+<tr>
+<td>Telephony Registry</td>
+<td>管理电话和短信服务</td>
+</tr>
+<tr>
+<td>Input Method Manager Service (IMMS)</td>
+<td>管理输入法框架</td>
+</tr>
+<tr>
+<td>Accessibility Manager Service</td>
+<td>管理无障碍服务，为有特殊需要的用户提供辅助功能</td>
+</tr>
+<tr>
+<td>Mount Service</td>
+<td>管理存储设备的挂载和卸载</td>
+</tr>
+<tr>
+<td>Location Manager Service</td>
+<td>管理位置服务，如 GPS 和网络定位</td>
+</tr>
+<tr>
+<td>Search Manager Service</td>
+<td>管理系统搜索功能</td>
+</tr>
+<tr>
+<td>Clipboard Service</td>
+<td>管理剪贴板功能</td>
+</tr>
+<tr>
+<td>DevicePolicy Manager Service</td>
+<td>管理设备的安全策略和企业管理功能</td>
+</tr>
+<tr>
+<td>Status Bar Service</td>
+<td>管理状态栏显示和操作</td>
+</tr>
+<tr>
+<td>Wallpaper Manager Service</td>
+<td>管理壁纸设置和操作</td>
+</tr>
+<tr>
+<td>Media Router Service</td>
+<td>管理媒体设备路由</td>
+</tr>
+</tbody></table>
+<p><img src="https://s2.loli.net/2024/10/08/eztnSVYgbl8LAmj.png" srcset="/img/loading.gif" lazyload alt="image-20241008200351668"></p>
+<p><img src="https://s2.loli.net/2024/10/08/G39r2btcljHy5mv.png" srcset="/img/loading.gif" lazyload alt="image-20241008200413406"></p>
+<p>整体流程如下：</p>
+<p><img src="https://s2.loli.net/2024/10/08/Xe7iEBZK5OhstyR.png" srcset="/img/loading.gif" lazyload alt="0776be314b69defe63cbf793f867f1b9"></p>
+<h1 id="Home进程"><a href="#Home进程" class="headerlink" title="Home进程"></a>Home进程</h1><p>一般情况下，Android原生的软体会包含两个home进程，一个是Settings进程的Fallbackhome，一个是Launcher进程。</p>
+<h2 id="Launcher进程启动"><a href="#Launcher进程启动" class="headerlink" title="Launcher进程启动"></a>Launcher进程启动</h2><p>​    FallbackHome是系统由未解密到解密过程的一个过度界面，只要用户把系统解锁过一次后，FallbackHome收到解锁广播就会退出，而WMS检测到当前Acitivity栈是空的，进而启动真正的Launcher。由于FallbackHome没有界面，所以可能会出现一个问题，home进程切换时会出现空白界面，接下来才是显示Launcher的一个图标界面。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@packages</span>\apps\Settings\src\com\android\settings\FallbackHome.java<br><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onCreate</span><span class="hljs-params">(Bundle savedInstanceState)</span> &#123;<br>    ...<br>    registerReceiver(mReceiver, <span class="hljs-keyword">new</span> <span class="hljs-title class_">IntentFilter</span>(Intent.ACTION_USER_UNLOCKED));<span class="hljs-comment">//注册ACTION_USER_UNLOCKED广播</span><br>    maybeFinish();<br>&#125;<br><br><span class="hljs-keyword">private</span> <span class="hljs-type">BroadcastReceiver</span> <span class="hljs-variable">mReceiver</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BroadcastReceiver</span>() &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onReceive</span><span class="hljs-params">(Context context, Intent intent)</span> &#123;<br>        maybeFinish();<span class="hljs-comment">//接收ACTION_USER_UNLOCKED广播</span><br>    &#125;<br>&#125;;<br><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">maybeFinish</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">if</span> (getSystemService(UserManager.class).isUserUnlocked()) &#123;<br>        <span class="hljs-keyword">final</span> <span class="hljs-type">Intent</span> <span class="hljs-variable">homeIntent</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Intent</span>(Intent.ACTION_MAIN)<br>                .addCategory(Intent.CATEGORY_HOME);<br>        <span class="hljs-keyword">final</span> <span class="hljs-type">ResolveInfo</span> <span class="hljs-variable">homeInfo</span> <span class="hljs-operator">=</span> getPackageManager().resolveActivity(homeIntent, <span class="hljs-number">0</span>);<span class="hljs-comment">//查询home包名信息，此处一般是返回Launcher的信息</span><br>        <span class="hljs-keyword">if</span> (Objects.equals(getPackageName(), homeInfo.activityInfo.packageName)) &#123;<br>            Log.d(TAG, <span class="hljs-string">&quot;User unlocked but no home; let&#x27;s hope someone enables one soon?&quot;</span>);<br>            mHandler.sendEmptyMessageDelayed(<span class="hljs-number">0</span>, <span class="hljs-number">500</span>);<span class="hljs-comment">//间隔500ms轮询</span><br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            Log.d(TAG, <span class="hljs-string">&quot;User unlocked and real home found; let&#x27;s go!&quot;</span>);<br>            getSystemService(PowerManager.class).userActivity(<br>                    SystemClock.uptimeMillis(), <span class="hljs-literal">false</span>);<br>            finish();<span class="hljs-comment">//结束当前Activity，启动Launcher应用</span><br>        &#125;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>在上一节systemserver中注意到：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">startOtherServices</span><span class="hljs-params">(<span class="hljs-meta">@NonNull</span> TimingsTraceAndSlog t)</span> &#123;<br>    ...<br>    <span class="hljs-comment">// 启动ActivityManagerService</span><br>    mActivityManagerService = mSystemServiceManager.startService(<br>            ActivityManagerService.Lifecycle.class).getService();<br>    ...<br>    <span class="hljs-comment">// 启动Launcher</span><br>    mActivityManagerService.systemReady(...)<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在AMS中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">systemReady</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Runnable goingCallback, TimingsTraceAndSlog t)</span> &#123;<br>    ...<br>    <span class="hljs-comment">// 在所有显示器上启动Launcher</span><br>    mAtmInternal.startHomeOnAllDisplays(currentUserId, <span class="hljs-string">&quot;systemReady&quot;</span>);<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>此行代码最终会调用到<code>RootWindowContainer.java</code>的<code>startHomeOnAllDisplays</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs java"> <br><span class="hljs-type">boolean</span> <span class="hljs-title function_">startHomeOnAllDisplays</span><span class="hljs-params">(<span class="hljs-type">int</span> userId, String reason)</span> &#123;<br>    <span class="hljs-type">boolean</span> <span class="hljs-variable">homeStarted</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> getChildCount() - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i--) &#123;<br>        <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> <span class="hljs-variable">displayId</span> <span class="hljs-operator">=</span> getChildAt(i).mDisplayId;<br>        <span class="hljs-comment">// 在每一个显示器上启动桌面程序</span><br>        homeStarted |= startHomeOnDisplay(userId, reason, displayId);<br>    &#125;<br>    <span class="hljs-keyword">return</span> homeStarted;<br>&#125;<br> <br><span class="hljs-type">boolean</span> <span class="hljs-title function_">startHomeOnDisplay</span><span class="hljs-params">(<span class="hljs-type">int</span> userId, String reason, <span class="hljs-type">int</span> displayId)</span> &#123;<br>    <span class="hljs-keyword">return</span> startHomeOnDisplay(userId, reason, displayId, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>);<br>&#125;<br> <br><span class="hljs-type">boolean</span> <span class="hljs-title function_">startHomeOnDisplay</span><span class="hljs-params">(<span class="hljs-type">int</span> userId, String reason, <span class="hljs-type">int</span> displayId, <span class="hljs-type">boolean</span> allowInstrumenting, <span class="hljs-type">boolean</span> fromHomeKey)</span> &#123;<br>    ...<br>    <span class="hljs-comment">// 调用startHomeOnTaskDisplayArea</span><br>    <span class="hljs-keyword">return</span> display.reduceOnAllTaskDisplayAreas((taskDisplayArea, result) -&gt;<br>                    result | startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,<br>                            allowInstrumenting, fromHomeKey),<span class="hljs-literal">false</span>);<br>&#125;<br> <br><span class="hljs-type">boolean</span> <span class="hljs-title function_">startHomeOnTaskDisplayArea</span><span class="hljs-params">(<span class="hljs-type">int</span> userId, String reason, TaskDisplayArea taskDisplayArea,</span><br><span class="hljs-params">        <span class="hljs-type">boolean</span> allowInstrumenting, <span class="hljs-type">boolean</span> fromHomeKey)</span> &#123;<br>    ...<br>    <span class="hljs-type">Intent</span> <span class="hljs-variable">homeIntent</span> <span class="hljs-operator">=</span> mService.getHomeIntent();<br>    mService.getActivityStartController().startHomeActivity(homeIntent, aInfo, myReason,<br>            taskDisplayArea);<br>    ...<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br> <br></code></pre></td></tr></table></figure>
+
+<p>最终通过Intent和startHomeActivity方法启动了桌面程序</p>
+<h2 id="FallbackHome进程启动"><a href="#FallbackHome进程启动" class="headerlink" title="FallbackHome进程启动"></a>FallbackHome进程启动</h2><h3 id="（1）-启动home进程"><a href="#（1）-启动home进程" class="headerlink" title="（1） 启动home进程"></a><strong>（1）</strong> 启动home进程</h3><p>   刚开机时，SystemSever进程会启动WMS服务，如果WMS未检测到Activity栈有任务时，会启动一个默认的home进程，此进程即FallbackHome。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@frameworks</span>\base\services\core\java\com\android\server\wm\RootWindowContainer.java<br><span class="hljs-keyword">void</span> <span class="hljs-title function_">startHomeOnEmptyDisplays</span><span class="hljs-params">(String reason)</span> &#123;<br>    forAllTaskDisplayAreas(taskDisplayArea -&gt; &#123;<br>        <span class="hljs-keyword">if</span> (taskDisplayArea.topRunningActivity() == <span class="hljs-literal">null</span>) &#123;<br>            startHomeOnTaskDisplayArea(mCurrentUser, reason, taskDisplayArea,<br>                    <span class="hljs-literal">false</span> <span class="hljs-comment">/* allowInstrumenting */</span>, <span class="hljs-literal">false</span> <span class="hljs-comment">/* fromHomeKey */</span>);<br>        &#125;<br>    &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="（2）-ACTION-USER-UNLOCKED广播发送"><a href="#（2）-ACTION-USER-UNLOCKED广播发送" class="headerlink" title="（2） ACTION_USER_UNLOCKED广播发送"></a><strong>（2）</strong> ACTION_USER_UNLOCKED广播发送</h3><p>​    系统解锁时会发送该广播，相关代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@frameworks</span>\base\services\core\java\com\android\server\am\UserController.java<br><span class="hljs-keyword">void</span> <span class="hljs-title function_">finishUserUnlocked</span><span class="hljs-params">(<span class="hljs-keyword">final</span> UserState uss)</span> &#123;<br>    ...<br>    <span class="hljs-keyword">if</span> (!mInjector.getUserManager().isPreCreated(userId)) &#123;<br>        <span class="hljs-comment">// Dispatch unlocked to external apps</span><br>        <span class="hljs-keyword">final</span> <span class="hljs-type">Intent</span> <span class="hljs-variable">unlockedIntent</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Intent</span>(Intent.ACTION_USER_UNLOCKED);<br>        unlockedIntent.putExtra(Intent.EXTRA_USER_HANDLE, userId);<br>        unlockedIntent.addFlags(<br>                Intent.FLAG_RECEIVER_REGISTERED_ONLY | Intent.FLAG_RECEIVER_FOREGROUND);<br>        mInjector.broadcastIntent(unlockedIntent, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">0</span>, <span class="hljs-literal">null</span>,<br>                <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, AppOpsManager.OP_NONE, <span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>, MY_PID, SYSTEM_UID,<br>                Binder.getCallingUid(), Binder.getCallingPid(), userId);<br>    &#125;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>最后附上一张完整流程图：</p>
+<p><img src="https://s2.loli.net/2024/10/08/mpCSY3h7r8szdJ2.png" srcset="/img/loading.gif" lazyload alt="android系统启动流程"></p>
+<h1 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h1><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/anywherego/p/18221943">Android启动过程-万字长文(Android14) - 柳云居士 - 博客园 (cnblogs.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/IT_xiao_bai0516/article/details/121566564?spm=1001.2014.3001.5502">源码详解Android 9.0(P) 系统启动流程之SystemServer_android9 systemserver启动-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zhiqinlin/p/18001113#44-init%E8%BF%9B%E7%A8%8B">Android 开机流程介绍 - 林奋斗同学 - 博客园</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/" class="category-chain-item">工科知识库</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/" class="category-chain-item">计算机与AI</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/" class="category-chain-item">Andorid内核原理</a>
+  
+  
+
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Android系统启动流程</div>
+      <div>https://hermes37.vercel.app/2025/05/09/工科知识库/计算机与AI/操作系统/Andorid内核原理/Android系统启动流程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Andorid%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86/APP%E4%BB%8E%E5%AE%89%E8%A3%85%E5%88%B0%E8%BF%90%E8%A1%8C%E5%85%A8%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/" title="APP从安装到运行全流程解析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">APP从安装到运行全流程解析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/09/%E5%B7%A5%E7%A7%91%E7%9F%A5%E8%AF%86%E5%BA%93/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8EAI/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/%E4%BC%A0%E8%BE%93%E5%B1%82/" title="传输层">
+                        <span class="hidden-mobile">传输层</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
