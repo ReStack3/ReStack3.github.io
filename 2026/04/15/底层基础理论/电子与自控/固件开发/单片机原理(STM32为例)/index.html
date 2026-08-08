@@ -1,0 +1,2076 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ling">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="简单介绍单片机是一种将中央处理器（CPU）、存储器（RAM&#x2F;ROM）、输入输出接口（I&#x2F;O）、定时器&#x2F;计数器等主要计算机部件集成在一小块芯片上，形成的微型计算机系统。也常提其英文缩写 MCU（Microcontroller Unit）。   它体积小、成本低、功耗低、控制功能强、可靠性高。与通用计算机（如PC）的区别在于：单片机通常用于专用控制，而非通用计算。原理跟计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单片机原理(STM32为例)">
+<meta property="og:url" content="https://hermes37.vercel.app/2026/04/15/%E5%BA%95%E5%B1%82%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/%E7%94%B5%E5%AD%90%E4%B8%8E%E8%87%AA%E6%8E%A7/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/%E5%8D%95%E7%89%87%E6%9C%BA%E5%8E%9F%E7%90%86(STM32%E4%B8%BA%E4%BE%8B)/">
+<meta property="og:site_name" content="Hermes">
+<meta property="og:description" content="简单介绍单片机是一种将中央处理器（CPU）、存储器（RAM&#x2F;ROM）、输入输出接口（I&#x2F;O）、定时器&#x2F;计数器等主要计算机部件集成在一小块芯片上，形成的微型计算机系统。也常提其英文缩写 MCU（Microcontroller Unit）。   它体积小、成本低、功耗低、控制功能强、可靠性高。与通用计算机（如PC）的区别在于：单片机通常用于专用控制，而非通用计算。原理跟计">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/17/f0hD/d05985d63c253120c75158a2058314f2.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/17/O1ih/OIP.webp">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1604064/202002/1604064-20200229111632387-669787598.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/06/02/ygF6/image-20260602101449974.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/06/01/qtZ7/1d7f9b7d8db906221157172e7e1f627c.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260602102934112.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/26/5kuC/image-20260426201226053.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/06/02/igS7/image-20260602102331527.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/19/gV9x/image-20260519171536584.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/19/g4Ct/image-20260519172640538.png">
+<meta property="og:image" content="c:/Users/11252/Desktop%E6%A1%8C%E9%9D%A2/424cee8c27334ea0a46de4b62831a018.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/07/11/q7Gc/e0a395df03bd45e89cf779c9bc3449fb.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/07/11/Cl3e/UART.png">
+<meta property="og:image" content="c:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260711143357793.png">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/07/11/9oyX/25090026_694c8caa71fbf13955.webp">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/07/10/l8vG/spi-interface.jpg">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/07/10/vcG2/2e313be096a35677525954f573dddf88.png">
+<meta property="og:image" content="c:/Users/11252/Desktop%E6%A1%8C%E9%9D%A2/254f332d117c4c79ac04cd8f3cb25056.png">
+<meta property="article:published_time" content="2026-04-15T07:55:42.247Z">
+<meta property="article:modified_time" content="2026-08-08T02:32:43.197Z">
+<meta property="article:author" content="Ling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/17/f0hD/d05985d63c253120c75158a2058314f2.png">
+  
+  
+  
+  <title>单片机原理(STM32为例) - Hermes</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hermes37.vercel.app","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":"ture","follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"7a4M5yfyGptX0OG18qvJppXQ-gzGzoHsz","app_key":"y6dZFtA8I8Lg1KVhHbujblfB","server_url":"https://7a4m5yfy.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="单片机原理(STM32为例)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          17k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          145 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">单片机原理(STM32为例)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="简单介绍"><a href="#简单介绍" class="headerlink" title="简单介绍"></a>简单介绍</h1><p>单片机是一种将中央处理器（CPU）、存储器（RAM&#x2F;ROM）、输入输出接口（I&#x2F;O）、定时器&#x2F;计数器等主要计算机部件集成在一小块芯片上，形成的微型计算机系统。也常提其英文缩写 <strong>MCU</strong>（Microcontroller Unit）。</p>
+<img src="https://files.seeusercontent.com/2026/04/17/f0hD/d05985d63c253120c75158a2058314f2.png" srcset="/img/loading.gif" lazyload alt="51单片机" style="zoom:50%;" />
+
+<p>它体积小、成本低、功耗低、控制功能强、可靠性高。与通用计算机（如PC）的区别在于：单片机通常用于<strong>专用控制</strong>，而非通用计算。原理跟计算机一样。只是由于高度集成化，它的运算速度， 电压等级，存储容量会小很多。运行的程序会精简很多。以至于一些都没有操作系统。</p>
+<p>其被广泛用于智能家电、汽车电子、工业控制和物联网设备中。开发人员常用C语言和Arduino或Keil等工具为单片机编写程序，实现对外部设备的检测与控制。常见的单片机包括8051、AVR、PIC和STM32系列。</p>
+<p><img src="https://files.seeusercontent.com/2026/04/17/O1ih/OIP.webp" srcset="/img/loading.gif" lazyload alt="MCS-51 单片机的内部结构框图"></p>
+<p>下面通过结合Stm32单片机来讲述单片机的基本原理</p>
+<h1 id="GPIO与中断"><a href="#GPIO与中断" class="headerlink" title="GPIO与中断"></a><strong>GPIO与中断</strong></h1><h2 id="通用输入输出"><a href="#通用输入输出" class="headerlink" title="通用输入输出"></a><strong>通用输入输出</strong></h2><blockquote>
+<p><strong>GPIO</strong> 是 <strong>General Purpose Input&#x2F;Output</strong> 的缩写，中文意思是 <strong>通用输入&#x2F;输出</strong>。简单来说，它就是单片机(Microcontroller Unit, MCU)上那些可以用来与外部世界进行数字信号交互的物理引脚（Pin）。可以把单片机的GPIO引脚想象成可以编程控制的、非常小的<strong>电子开关</strong>或<strong>信号端口</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">类别</th>
+<th align="left">模式</th>
+<th align="left">中文名</th>
+<th align="left">典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>输入模式</strong></td>
+<td align="left">浮空输入</td>
+<td align="left">不接上拉&#x2F;下拉电阻，电平由外部决定</td>
+<td align="left">读取不确定电平的信号（如UART RX，但易受干扰）</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">上拉输入</td>
+<td align="left">内部接入上拉电阻，默认高电平</td>
+<td align="left">读取按键（按下接地，未按下读高）</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">下拉输入</td>
+<td align="left">内部接入下拉电阻，默认低电平</td>
+<td align="left">读取部分传感器（输出低有效或高阻态）</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">模拟输入</td>
+<td align="left">不经过TTL施密特触发器，直接给ADC</td>
+<td align="left">ADC采集模拟电压</td>
+</tr>
+<tr>
+<td align="left"><strong>输出模式</strong></td>
+<td align="left">开漏输出</td>
+<td align="left">输出高时为高阻态，需外接上拉电阻</td>
+<td align="left">I2C总线（多设备可共用一条线）、驱动不同电压设备</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">推挽输出</td>
+<td align="left">高低电平都能直接驱动（最常用）</td>
+<td align="left">驱动LED、蜂鸣器、普通数字信号</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">复用推挽</td>
+<td align="left">引脚功能由内部外设（如USART、SPI）控制</td>
+<td align="left">UART、SPI、PWM输出、控制专用芯片</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">复用开漏</td>
+<td align="left">引脚功能由外设控制，且为开漏</td>
+<td align="left">I2C的SCL&#x2F;SDA引脚、某些特殊总线</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left">复用双向</td>
+<td align="left">外设自动切换方向</td>
+<td align="left">1-Wire、SWD调试接口等</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1913227702481158423">(99+ 封私信 &#x2F; 86 条消息) 开漏输出和推挽输出 详细解析 - 知乎</a></p>
+</blockquote>
+<ul>
+<li><strong>推挽输出</strong>：<strong>主动输出高电平和低电平</strong>。输出高电平时，引脚被强力拉到VCC（如3.3V）；输出低电平时，被强力拉到GND（0V）。<strong>驱动能力强</strong>，适合驱动LED、蜂鸣器等。</li>
+<li><strong>开漏输出</strong>：<strong>只能主动输出低电平</strong>。输出高电平时，引脚处于<strong>高阻态</strong>（相当于断开、悬空）。要想输出高电平，<strong>必须在外部加一个上拉电阻</strong>。<strong>适合电平匹配、总线共享</strong>。</li>
+<li><strong>浮空输入</strong>：按键不按时本应是高电平，但由于引脚“悬空”（既不强拉高也不强拉低），引脚上的电压会因电磁干扰、静电等外部噪声而随机波动，导致读取值忽高忽低。</li>
+</ul>
+<p>所有端口都有外部中断能力,为了使用外部中断线,端口必须配置成输入模式。</p>
+<ul>
+<li><strong>电平逻辑</strong>：<ul>
+<li>TTL电平：常见于5V系统，高电平 &gt; 2.0V，低电平 &lt; 0.8V。</li>
+<li>CMOS电平：常见于3.3V系统，高电平 &gt; 0.7 * VCC，低电平 &lt; 0.3 * VCC。</li>
+</ul>
+</li>
+<li><strong>驱动能力</strong>：一个GPIO引脚能安全输出的最大电流（通常几毫安到几十毫安）。直接驱动大功率负载（如大电机）会烧毁引脚，需要使用晶体管、MOSFET或继电器驱动。</li>
+<li><strong>悬空</strong>：输入模式下，如果引脚既没接高电平也没接低电平，其电平状态会不稳定，受电磁干扰而乱跳。解决方法：启用内部上拉&#x2F;下拉电阻，或外接电阻。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">方向</th>
+<th align="left">作用</th>
+<th align="left">例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>输出</strong></td>
+<td align="left">单片机 -&gt; 外部</td>
+<td align="left">控制外部设备</td>
+<td align="left">点灯、驱动蜂鸣器、控制继电器</td>
+</tr>
+<tr>
+<td align="left"><strong>输入</strong></td>
+<td align="left">外部 -&gt; 单片机</td>
+<td align="left">读取外部状态</td>
+<td align="left">读按键、读简单传感器</td>
+</tr>
+<tr>
+<td align="left"><strong>复用</strong></td>
+<td align="left">双向&#x2F;专用</td>
+<td align="left">使用内置硬件外设</td>
+<td align="left">串口通信、PWM调光、ADC采样</td>
+</tr>
+</tbody></table>
+<p>注意在STM32中，为了降低功耗，所有GPIO外设的时钟在默认情况下是<strong>关闭</strong>的。如果忘记使能时钟，你对GPIO配置寄存器的所有写入操作都将<strong>无效</strong>，引脚会处于默认状态（通常是模拟模式或浮空输入，电平不确定，常见为低电平或高阻态）。</p>
+<p>调试常见问题速查表：</p>
+<table>
+<thead>
+<tr>
+<th align="left">现象</th>
+<th align="left">可能原因</th>
+<th align="left">解决方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">引脚无输出</td>
+<td align="left">忘记使能时钟</td>
+<td align="left"><code>__HAL_RCC_GPIOx_CLK_ENABLE()</code></td>
+</tr>
+<tr>
+<td align="left">引脚无输出</td>
+<td align="left">模式配置错误</td>
+<td align="left">检查 <code>Mode = GPIO_MODE_OUTPUT_PP</code></td>
+</tr>
+<tr>
+<td align="left">输出电平不对</td>
+<td align="left">开漏无上拉</td>
+<td align="left">加上拉电阻或改推挽</td>
+</tr>
+<tr>
+<td align="left">输入读不对</td>
+<td align="left">上下拉配置错误</td>
+<td align="left">检查外部电路和 <code>Pull</code> 配置</td>
+</tr>
+<tr>
+<td align="left">高速通信失败</td>
+<td align="left">速度配置太低</td>
+<td align="left">提高 <code>Speed</code> 等级</td>
+</tr>
+<tr>
+<td align="left">中断不触发</td>
+<td align="left">未使能 NVIC</td>
+<td align="left"><code>HAL_NVIC_EnableIRQ()</code></td>
+</tr>
+<tr>
+<td align="left">中断一直触发</td>
+<td align="left">未清除中断标志</td>
+<td align="left"><code>__HAL_GPIO_EXTI_CLEAR_IT()</code></td>
+</tr>
+<tr>
+<td align="left">多个中断冲突</td>
+<td align="left">共用同一 EXTI 线</td>
+<td align="left">改用不同引脚</td>
+</tr>
+<tr>
+<td align="left">芯片发烫</td>
+<td align="left">引脚接 5V 非容忍引脚</td>
+<td align="left">检查数据手册，更换引脚</td>
+</tr>
+</tbody></table>
+<ol>
+<li><strong>时钟第一</strong>：操作任何 GPIO 前先使能时钟</li>
+<li><strong>模式匹配</strong>：根据应用选择正确的输入&#x2F;输出&#x2F;复用&#x2F;模拟模式</li>
+<li><strong>中断必清</strong>：使用中断时必须清除中断标志位</li>
+</ol>
+<hr>
+<h2 id="中断系统"><a href="#中断系统" class="headerlink" title="中断系统"></a>中断系统</h2><p><strong>中断</strong>是 CPU 在执行程序过程中，遇到外部或内部紧急事件时，暂停当前任务，转而处理该事件，处理完毕后再返回继续执行原任务的一种机制。</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">中断模式</th>
+<th align="left">事件模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>CPU 响应</strong></td>
+<td align="left">会触发 CPU 执行中断函数</td>
+<td align="left">不触发 CPU 中断</td>
+</tr>
+<tr>
+<td align="left"><strong>用途</strong></td>
+<td align="left">需要 CPU 处理的场景（按键、传感器）</td>
+<td align="left">触发 DMA、ADC、定时器</td>
+</tr>
+<tr>
+<td align="left"><strong>延迟</strong></td>
+<td align="left">有中断响应延迟</td>
+<td align="left">纯硬件，零延迟</td>
+</tr>
+<tr>
+<td align="left"><strong>功耗</strong></td>
+<td align="left">CPU 需唤醒</td>
+<td align="left">CPU 可以休眠</td>
+</tr>
+<tr>
+<td align="left"><strong>配置</strong></td>
+<td align="left">IMR 置1</td>
+<td align="left">EMR 置1</td>
+</tr>
+</tbody></table>
+<h3 id="内部中断"><a href="#内部中断" class="headerlink" title="内部中断"></a>内部中断</h3><p><strong>中断</strong>是 CPU 在执行程序过程中，遇到外部或内部紧急事件时，暂停当前任务，转而处理该事件，处理完毕后再返回继续执行原任务的一种机制。</p>
+<h4 id="STM32-中断向量表"><a href="#STM32-中断向量表" class="headerlink" title="STM32 中断向量表"></a>STM32 中断向量表</h4><p>STM32 有大量中断源，按优先级高低排列：</p>
+<table>
+<thead>
+<tr>
+<th align="left">优先级</th>
+<th align="left">中断类型</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>最高</strong></td>
+<td align="left">系统异常</td>
+<td align="left">NMI、HardFault、MemManage</td>
+</tr>
+<tr>
+<td align="left"><strong>高</strong></td>
+<td align="left">内核外设中断</td>
+<td align="left">SysTick、PendSV</td>
+</tr>
+<tr>
+<td align="left"><strong>中</strong></td>
+<td align="left">外部中断（EXTI）</td>
+<td align="left">GPIO 中断、RTC 闹钟</td>
+</tr>
+<tr>
+<td align="left"><strong>低</strong></td>
+<td align="left">外设中断</td>
+<td align="left">定时器、USART、DMA、ADC</td>
+</tr>
+</tbody></table>
+<h4 id="中断优先级管理（NVIC）"><a href="#中断优先级管理（NVIC）" class="headerlink" title="中断优先级管理（NVIC）"></a>中断优先级管理（NVIC）</h4><p>STM32 使用 <strong>NVIC（Nested Vectored Interrupt Controller）</strong> 管理中断：</p>
+<ul>
+<li><strong>抢占优先级</strong>：高抢占优先级的中断可以打断低抢占优先级的中断</li>
+<li><strong>响应优先级</strong>：同抢占优先级时，高响应优先级先执行，但不能互相打断</li>
+<li><strong>优先级分组</strong>：决定抢占优先级和响应优先级各占多少位</li>
+</ul>
+<h3 id="外部中断-EXTI"><a href="#外部中断-EXTI" class="headerlink" title="外部中断 (EXTI)"></a><strong>外部中断 (EXTI)</strong></h3><p><strong>外部中断（EXTI）是一种硬件机制，它允许单片机在检测到指定GPIO引脚上的电平变化（如上升沿、下降沿）时，立即暂停当前正在执行的代码，去执行一个预先定义好的特殊函数（中断服务函数），执行完后再回去继续执行原来的代码。</strong></p>
+<p><strong>核心特点：</strong></p>
+<ul>
+<li>支持最多 <strong>16 个 GPIO 中断线</strong>（EXTI0 ~ EXTI15）</li>
+<li>每个中断线对应一组引脚（PA0&#x2F;PB0&#x2F;PC0…共用 EXTI0）</li>
+<li>支持独立的边沿检测、中断屏蔽和挂起状态</li>
+<li>可配置为<strong>中断</strong>（通知 CPU）或<strong>事件</strong>（直接触发其他外设）</li>
+</ul>
+<p>EXTI 的 16 条独立中断线：</p>
+<table>
+<thead>
+<tr>
+<th align="left">中断线</th>
+<th align="left">可选的 GPIO 引脚</th>
+<th align="left">典型应用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">EXTI0</td>
+<td align="left">PA0, PB0, PC0, PD0…</td>
+<td align="left">独立按键</td>
+</tr>
+<tr>
+<td align="left">EXTI1</td>
+<td align="left">PA1, PB1, PC1, PD1…</td>
+<td align="left">独立按键</td>
+</tr>
+<tr>
+<td align="left">EXTI2</td>
+<td align="left">PA2, PB2, PC2, PD2…</td>
+<td align="left">传感器中断</td>
+</tr>
+<tr>
+<td align="left">EXTI3</td>
+<td align="left">PA3, PB3, PC3, PD3…</td>
+<td align="left">传感器中断</td>
+</tr>
+<tr>
+<td align="left">EXTI4</td>
+<td align="left">PA4, PB4, PC4, PD4…</td>
+<td align="left">编码器信号</td>
+</tr>
+<tr>
+<td align="left">EXTI5 ~ EXTI9</td>
+<td align="left">PA5<del>PA9, PB5</del>PB9…</td>
+<td align="left">多个外设</td>
+</tr>
+<tr>
+<td align="left">EXTI10 ~ EXTI15</td>
+<td align="left">PA10<del>PA15, PB10</del>PB15…</td>
+<td align="left">矩阵键盘</td>
+</tr>
+</tbody></table>
+<p><strong>重要限制：同一编号的 EXTI 线只能连接一个引脚</strong>。例如，PA0 和 PB0 不能同时作为独立中断源使用。</p>
+<p>关键寄存器：</p>
+<table>
+<thead>
+<tr>
+<th align="left">寄存器</th>
+<th align="left">全称</th>
+<th align="left">位宽</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>IMR</strong></td>
+<td align="left">Interrupt Mask Register</td>
+<td align="left">32位</td>
+<td align="left">中断屏蔽：1&#x3D;允许中断，0&#x3D;屏蔽</td>
+</tr>
+<tr>
+<td align="left"><strong>EMR</strong></td>
+<td align="left">Event Mask Register</td>
+<td align="left">32位</td>
+<td align="left">事件屏蔽：1&#x3D;允许事件输出</td>
+</tr>
+<tr>
+<td align="left"><strong>RTSR</strong></td>
+<td align="left">Rising Trigger Selection Register</td>
+<td align="left">32位</td>
+<td align="left">上升沿触发使能：1&#x3D;使能</td>
+</tr>
+<tr>
+<td align="left"><strong>FTSR</strong></td>
+<td align="left">Falling Trigger Selection Register</td>
+<td align="left">32位</td>
+<td align="left">下降沿触发使能：1&#x3D;使能</td>
+</tr>
+<tr>
+<td align="left"><strong>PR</strong></td>
+<td align="left">Pending Register</td>
+<td align="left">32位</td>
+<td align="left">挂起标志：1&#x3D;有中断请求，写1清除</td>
+</tr>
+<tr>
+<td align="left"><strong>SWIER</strong></td>
+<td align="left">Software Interrupt Event Register</td>
+<td align="left">32位</td>
+<td align="left">软件触发：写1可软件产生中断</td>
+</tr>
+</tbody></table>
+<p>注意EXTI 自身有一个中断屏蔽寄存器（IMR，Interrupt Mask Register），每位控制一条 EXTI 线：</p>
+<table>
+<thead>
+<tr>
+<th align="left">寄存器位</th>
+<th align="left">值</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">IMRx &#x3D; 0</td>
+<td align="left"><strong>屏蔽</strong></td>
+<td align="left">EXTI 不产生中断请求，信号被丢弃</td>
+</tr>
+<tr>
+<td align="left">IMRx &#x3D; 1</td>
+<td align="left"><strong>允许</strong></td>
+<td align="left">EXTI 可以产生中断请求，挂起标志会生效</td>
+</tr>
+</tbody></table>
+<p><strong>即使 EXTI 的 IMR 允许了中断，还需要 NVIC 层面使能才能真正触发 CPU 中断。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// NVIC 控制（第二层）</span><br>HAL_NVIC_EnableIRQ(EXTI0_IRQn);   <span class="hljs-comment">// NVIC 使能</span><br>HAL_NVIC_DisableIRQ(EXTI0_IRQn);  <span class="hljs-comment">// NVIC 屏蔽</span><br><br><span class="hljs-comment">// 还可以设置优先级</span><br>HAL_NVIC_SetPriority(EXTI0_IRQn, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);<br></code></pre></td></tr></table></figure>
+
+<p>即：</p>
+<table>
+<thead>
+<tr>
+<th align="left">IMR</th>
+<th align="left">NVIC 使能</th>
+<th align="left">结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">不触发</td>
+</tr>
+<tr>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">不触发（EXTI 层已屏蔽）</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">不触发（NVIC 层已屏蔽）</td>
+</tr>
+<tr>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left"><strong>触发中断</strong></td>
+</tr>
+</tbody></table>
+<h1 id="时钟与定时器"><a href="#时钟与定时器" class="headerlink" title="时钟与定时器"></a>时钟与定时器</h1><p><strong>定时器&#x2F;计数器本质上就是一个“可以自动数数的硬件计数器”。它数的是由内部时钟源提供的脉冲（时间），或者是由外部引脚输入的变化信号（事件）。</strong>【通过寄存器选择 TMR0 的计数信号源：来自内部时钟（晶振分频）时是定时器模式，来自外部引脚脉冲时是计数器模式。】</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/792577975">(99+ 封私信 &#x2F; 86 条消息) 单片机定时器与计数器的区别 - 知乎</a></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">数什么？</th>
+<th align="left">数的速度由谁决定？</th>
+<th align="left">应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>定时器模式</strong></td>
+<td align="left">内部时钟源（如系统时钟72MHz分频后）的<strong>脉冲</strong></td>
+<td align="left">芯片内部，稳定精确。</td>
+<td align="left">精确延时、产生周期信号（PWM）、计时、触发事件。</td>
+</tr>
+<tr>
+<td align="left"><strong>计数器模式</strong></td>
+<td align="left">外部引脚（如TIMx_CH1, TIMx_ETR）上的<strong>电平变化</strong>（上升沿或下降沿）</td>
+<td align="left">外部输入信号的频率。</td>
+<td align="left">测量外部脉冲频率、统计编码器转动圈数、记录流水线上的产品数量。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>核心在于“<strong>自动</strong>”和“<strong>不占用CPU</strong>”。一旦启动，它就独立工作，数到目标值后可以触发中断或执行其他动作，无需CPU时刻盯着。</p>
+</blockquote>
+<h2 id="时钟系统"><a href="#时钟系统" class="headerlink" title="时钟系统"></a>时钟系统</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://shequ.stmicroelectronics.cn/thread-634699-1-1.html">【经验分享】STM32-时钟系统详解 - STM32团队 ST意法半导体中文论坛</a></p>
+</blockquote>
+<p><img src="https://img2018.cnblogs.com/blog/1604064/202002/1604064-20200229111632387-669787598.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="内部时钟"><a href="#内部时钟" class="headerlink" title="内部时钟"></a>内部时钟</h3><p>STM32包含了5个时钟源，分别为HSI、HSE、LSI、LSE、PLL。</p>
+<ul>
+<li>HSI是高速内部时钟、RC振荡器，频率为8MHz；</li>
+<li>HSE是高速外部时钟，即晶振，可接石英&#x2F;陶瓷谐振器或接外部时钟源，频率范围为4MHz~16MHz；</li>
+<li>LSI为低速内部时钟、RC振荡器，频率40kHz；</li>
+<li>LSE为低速外部时钟，接32.768kHz晶振，作为RTC时钟源；</li>
+<li>PLL为锁相环倍频输出，其时钟输入源可选择为HSI&#x2F;2、HSE或者HSE&#x2F;2。倍频可选择为2~16倍，但是其输出频率最大不得超过72MHz；</li>
+</ul>
+<p><img src="https://files.seeusercontent.com/2026/06/02/ygF6/image-20260602101449974.png" srcset="/img/loading.gif" lazyload alt="image-20260602101449974"></p>
+<p>其中<strong>HSE&#x2F;HSI</strong> 经过 PLL（锁相环）倍频后产生 <strong>SYSCLK</strong>（系统时钟）而SYSCLK 经过分频器产生总线时钟：<strong>AHB (HCLK)</strong> → **APB1&#x2F;APB2 (PCLK1&#x2F;PCLK2)**，即：时钟源 → 时钟树</p>
+<img src="https://files.seeusercontent.com/2026/06/01/qtZ7/1d7f9b7d8db906221157172e7e1f627c.png" srcset="/img/loading.gif" lazyload style="zoom: 33%;" />
+
+<h3 id="外部时钟"><a href="#外部时钟" class="headerlink" title="外部时钟"></a>外部时钟</h3><img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260602102934112.png" srcset="/img/loading.gif" lazyload alt="image-20260602102934112" style="zoom:50%;" />
+
+<p>STM32 定时器提供了<strong>两种</strong>外部时钟模式：</p>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">时钟来源</th>
+<th align="left">配置方式</th>
+<th align="left">最大频率</th>
+<th align="left">典型应用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>外部时钟模式1</strong></td>
+<td align="left">TI1 或 TI2（通道1&#x2F;2引脚）</td>
+<td align="left"><code>SMS=0b111</code></td>
+<td align="left">约 TIM_CLK&#x2F;2</td>
+<td align="left">低频脉冲计数</td>
+</tr>
+<tr>
+<td align="left"><strong>外部时钟模式2</strong></td>
+<td align="left">ETR 引脚（专用外部触发引脚）</td>
+<td align="left"><code>ECE=1</code></td>
+<td align="left">约 TIM_CLK&#x2F;4</td>
+<td align="left">高频脉冲计数、频率测量</td>
+</tr>
+</tbody></table>
+<p><strong>外部时钟是 STM32 定时器的一种工作模式，其核心特征是：定时器计数器的计数脉冲不是来自芯片内部的 APB 总线时钟（PCLK），而是来自外部引脚输入的信号。</strong> 这意味着每来一个外部脉冲，计数器就自动加1（或减1），完全独立于系统时钟运行。</p>
+<p>STM32 提供了两种外部时钟模式：</p>
+<ul>
+<li><strong>外部时钟模式1</strong>使用通用定时器的通道1或通道2引脚（TI1&#x2F;TI2）作为时钟源，每个有效边沿驱动计数器计数，最大输入频率可达定时器时钟频率的一半；</li>
+<li><strong>外部时钟模式2</strong>使用专用的 ETR（External Trigger）引脚作为时钟源，支持可编程的边沿检测、数字滤波和分频器（可对输入信号进行1、2、4、8分频后再计数），最大输入频率约为定时器时钟频率的四分之一。</li>
+</ul>
+<p>以 TIM2 配置为外部时钟模式1为例，需要完成以下步骤：</p>
+<p>使能 TIM2 和 GPIO 时钟，将对应引脚配置为复用功能模式，设置定时器的预分频器（PSC）和自动重装载值（ARR），然后将 TIM2_SMCR 寄存器的 SMS 位设为 0b111（选择外部时钟模式1），同时设置 TS 位选择 TI1 或 TI2 作为触发源，再配置 CCMR1 寄存器的 CC1S 位将通道设为输入模式，最后通过 CCER 寄存器的 CC1P 位选择上升沿或下降沿触发，使能定时器后计数器便开始跟随外部脉冲计数。</p>
+<p>外部时钟模式下，计数器每计满 ARR+1 个脉冲就会产生更新事件（溢出中断），因此非常适合实现<strong>精确的脉冲计数</strong>：例如设置 ARR&#x3D;99，每100个外部脉冲触发一次中断；或者连续读取 CNT 寄存器的值，直接获得两个时间点之间的脉冲个数。这种硬件计数方式完全由外设独立完成，不占用 CPU 资源，也不会因为软件响应延迟而漏掉脉冲。</p>
+<blockquote>
+<p>实际应用中需要特别注意几点：首先，外部信号的脉宽必须至少大于2个定时器时钟周期，否则可能被漏计；其次，输入信号建议加数字滤波（通过 ETF 或 ICF 位配置）以消除毛刺干扰；再次，如果使用外部时钟模式1，会占用该通道的输入捕获功能，两者不能同时使用；最后，GPIO 的复用功能映射必须与定时器通道对应正确，具体引脚需查阅芯片数据手册。</p>
+</blockquote>
+<h2 id="定时器"><a href="#定时器" class="headerlink" title="定时器"></a>定时器</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://shequ.stmicroelectronics.cn/thread-634687-1-1.html">【经验分享】STM32-定时器详解 - STM32团队 ST意法半导体中文论坛</a></p>
+</blockquote>
+<p>STM32 内部集成了多个定时&#x2F;计数器,根据型号不同,STM32 系列芯片最多包含8个定时&#x2F;计数器。最终工作时钟 <code>TIMx_CLK</code> 取决于它挂在哪个总线上，即：时钟树 → 定时器：</p>
+<table>
+<thead>
+<tr>
+<th align="left">定时器类型</th>
+<th align="left">所在总线</th>
+<th align="left">时钟来源</th>
+<th align="left">特殊说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">TIM1, TIM8</td>
+<td align="left">APB2</td>
+<td align="left">PCLK2</td>
+<td align="left">高级定时器</td>
+</tr>
+<tr>
+<td align="left">TIM2<del>5, TIM9</del>14</td>
+<td align="left">APB1</td>
+<td align="left">PCLK1</td>
+<td align="left">通用定时器</td>
+</tr>
+<tr>
+<td align="left">TIM6, TIM7</td>
+<td align="left">APB1</td>
+<td align="left">PCLK1</td>
+<td align="left">基本定时器</td>
+</tr>
+</tbody></table>
+<p>注意：<strong>定时器的最终时钟频率不是简单等于总线时钟频率！</strong></p>
+<ul>
+<li>如果 APB1 预分频系数 &#x3D; 1：TIM2~7 的时钟 &#x3D; PCLK1</li>
+<li>否则：TIM2~7 的时钟 &#x3D; PCLK1 × 2</li>
+</ul>
+<p><img src="https://files.seeusercontent.com/2026/04/26/5kuC/image-20260426201226053.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="功能寄存器"><a href="#功能寄存器" class="headerlink" title="功能寄存器"></a>功能寄存器</h3><p><img src="https://files.seeusercontent.com/2026/06/02/igS7/image-20260602102331527.png" srcset="/img/loading.gif" lazyload alt="image-20260602102331527"></p>
+<p>通用定时器的时基单元由三个关键寄存器构成，定义了计数的时空尺度与边界：</p>
+<ul>
+<li><strong>预分频器 (PSC)<strong>：将输入的时钟频率降速。</strong>16位</strong>，计数范围 1~65536。例如，TIMx_CLK为72MHz，设PSC&#x3D;71，则分频后脉冲频率为 72MHz &#x2F; (71+1) &#x3D; 1MHz。<strong>记住，实际分频系数是 PSC + 1</strong>。</li>
+<li><strong>计数器 (CNT)<strong>：硬件自动累加或递减的核心。</strong>16位</strong>，实时反映“数到哪儿了”。</li>
+<li><strong>自动重装载寄存器 (ARR)<strong>：计数的目标值或上限。</strong>16位</strong>。当CNT达到ARR设定的值时，计数器会溢出（或下溢），产生更新事件（UEV），同时依据计数方向自动归零或重载到初始值。</li>
+</ul>
+<p>这三位一体的配合，决定了 <strong>“数多快、数到几、数到头后怎么办”</strong>。</p>
+<h3 id="硬件状态机"><a href="#硬件状态机" class="headerlink" title="硬件状态机"></a><strong>硬件状态机</strong></h3><p><strong>外部触发及输入&#x2F;输出通道</strong>，是通用定时器最强大的部分，让它远超一个简单计数器。一个通用定时器的外部交互通道大致可以分为三部分：</p>
+<ol>
+<li><strong>时钟&#x2F;触发输入</strong>：从外部引脚接收信号，控制定时器的启停或作为计数时钟。当通道引脚出现预设的边沿（上升沿&#x2F;下降沿&#x2F;双沿）时，硬件会将当前计数器的值<strong>立即锁存</strong>到对应的捕获&#x2F;比较寄存器（CCR）中，并触发中断或DMA。</li>
+<li><strong>捕获输入</strong>：从外部引脚接收信号，记录信号变化时刻的计数器值。锁定外部的“时间戳”。当外部引脚上的选定边沿到来时，硬件瞬间将当前CNT值拷贝到**捕获&#x2F;比较寄存器 (CCR)**中。可用于精确测量外部信号的频率或脉宽。</li>
+<li><strong>比较输出</strong>：从定时器向外输出波形，当计数器值与比较寄存器匹配时改变引脚电平。在预设时刻产生外部动作。当CNT值与CCR相等时，硬件自动在对应引脚上执行指定动作（置高、拉低、翻转等）。这是产生PWM的物理基础。</li>
+<li><strong>PWM生成</strong>：是输出比较的一种特殊应用。通过设定ARR决定周期（频率），设定CCR决定占空比。边沿对齐PWM常用向上计数，中央对齐PWM则用中央对齐模式。</li>
+</ol>
+<h2 id="使用流程"><a href="#使用流程" class="headerlink" title="使用流程"></a>使用流程</h2><p>这里是<strong>从时钟配置到定时器实际应用</strong>的代码案例。以 <strong>STM32F407</strong> 为例，使用 <strong>HAL 库</strong>，实现两个常见功能：</p>
+<ol>
+<li><strong>定时器中断</strong>：TIM2 每 500ms 翻转一次 LED</li>
+<li><strong>PWM 输出</strong>：TIM3 通道 1 输出 1kHz，占空比从 0% 渐变到 100%</li>
+</ol>
+<h3 id="时钟配置流程"><a href="#时钟配置流程" class="headerlink" title="时钟配置流程"></a>时钟配置流程</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief 系统时钟配置函数</span><br><span class="hljs-comment">  * @note   配置为 168MHz 主频（典型 F407 配置）</span><br><span class="hljs-comment">  *         HSE = 8MHz 外部晶振</span><br><span class="hljs-comment">  *         PLL 倍频：8MHz / M(8) * N(336) / P(2) = 168MHz</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">SystemClock_Config</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    RCC_OscInitTypeDef RCC_OscInitStruct = &#123;<span class="hljs-number">0</span>&#125;;<br>    RCC_ClkInitTypeDef RCC_ClkInitStruct = &#123;<span class="hljs-number">0</span>&#125;;<br><br>    <span class="hljs-comment">// 1. 配置振荡器</span><br>    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;  <span class="hljs-comment">// 使用 HSE</span><br>    RCC_OscInitStruct.HSEState = RCC_HSE_ON;                    <span class="hljs-comment">// 开启 HSE</span><br>    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;                <span class="hljs-comment">// 开启 PLL</span><br>    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;        <span class="hljs-comment">// PLL 时钟源 = HSE</span><br>    RCC_OscInitStruct.PLL.PLLM = <span class="hljs-number">8</span>;     <span class="hljs-comment">// 分频系数 M = 8 → 8MHz / 8 = 1MHz</span><br>    RCC_OscInitStruct.PLL.PLLN = <span class="hljs-number">336</span>;   <span class="hljs-comment">// 倍频系数 N = 336 → 1MHz * 336 = 336MHz</span><br>    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;  <span class="hljs-comment">// 分频 P = 2 → 336MHz / 2 = 168MHz (SYSCLK)</span><br>    RCC_OscInitStruct.PLL.PLLQ = <span class="hljs-number">7</span>;     <span class="hljs-comment">// 分频 Q = 7 → 336MHz / 7 = 48MHz (USB/SDIO)</span><br>    HAL_RCC_OscConfig(&amp;RCC_OscInitStruct);<br><br>    <span class="hljs-comment">// 2. 配置总线时钟</span><br>    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK<br>                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;<br>    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;   <span class="hljs-comment">// SYSCLK = 168MHz</span><br>    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;           <span class="hljs-comment">// HCLK = SYSCLK / 1 = 168MHz</span><br>    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;            <span class="hljs-comment">// PCLK1 = HCLK / 4 = 42MHz</span><br>    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;            <span class="hljs-comment">// PCLK2 = HCLK / 2 = 84MHz</span><br>    HAL_RCC_ClockConfig(&amp;RCC_ClkInitStruct, FLASH_LATENCY_5);    <span class="hljs-comment">// FLASH 等待周期 5</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>关键说明</strong>：</p>
+<ul>
+<li>APB1 分频系数 &#x3D; 4 → <strong>挂载在 APB1 上的定时器（TIM2~TIM7）时钟频率 &#x3D; 42MHz × 2 &#x3D; 84MHz</strong></li>
+<li>APB2 分频系数 &#x3D; 2 → <strong>挂载在 APB2 上的定时器（TIM1、TIM8~TIM11）时钟频率 &#x3D; 84MHz × 1 &#x3D; 84MHz</strong></li>
+</ul>
+<h3 id="定时器中断案例（LED-闪烁）"><a href="#定时器中断案例（LED-闪烁）" class="headerlink" title="定时器中断案例（LED 闪烁）"></a>定时器中断案例（LED 闪烁）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 全局变量</span><br>TIM_HandleTypeDef htim2;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief TIM2 定时器初始化（500ms 中断）</span><br><span class="hljs-comment">  * @note   定时器时钟 = 84MHz</span><br><span class="hljs-comment">  *         目标周期 = 500ms</span><br><span class="hljs-comment">  *         配置：PSC = 8399 → CK_CNT = 84MHz / 8400 = 10kHz</span><br><span class="hljs-comment">  *              ARR = 4999 → 每 5000 个计数周期触发中断</span><br><span class="hljs-comment">  *              中断周期 = 5000 / 10kHz = 0.5s</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">MX_TIM2_Init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    htim2.Instance = TIM2;<br>    htim2.Init.Prescaler = <span class="hljs-number">8399</span>;           <span class="hljs-comment">// 预分频器值 (PSC)</span><br>    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;  <span class="hljs-comment">// 向上计数</span><br>    htim2.Init.Period = <span class="hljs-number">4999</span>;              <span class="hljs-comment">// 自动重装载值 (ARR)</span><br>    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;<br>    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;<br>    HAL_TIM_Base_Init(&amp;htim2);<br><br>    <span class="hljs-comment">// 开启中断</span><br>    HAL_NVIC_SetPriority(TIM2_IRQn, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);<br>    HAL_NVIC_EnableIRQ(TIM2_IRQn);<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief 定时器底层初始化（HAL 回调）</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_TIM_Base_MspInit</span><span class="hljs-params">(TIM_HandleTypeDef *htim)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(htim-&gt;Instance == TIM2) &#123;<br>        __HAL_RCC_TIM2_CLK_ENABLE();  <span class="hljs-comment">// 使能 TIM2 时钟</span><br>    &#125;<br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief TIM2 中断服务函数</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">TIM2_IRQHandler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    HAL_TIM_IRQHandler(&amp;htim2);  <span class="hljs-comment">// HAL 库统一处理</span><br>&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief 定时器溢出回调函数</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_TIM_PeriodElapsedCallback</span><span class="hljs-params">(TIM_HandleTypeDef *htim)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(htim-&gt;Instance == TIM2) &#123;<br>        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);  <span class="hljs-comment">// 翻转 LED (PA5)</span><br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// main 函数中启动定时器</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    HAL_Init();<br>    SystemClock_Config();<br>    MX_GPIO_Init();   <span class="hljs-comment">// 初始化 LED 引脚</span><br>    MX_TIM2_Init();<br>    <br>    HAL_TIM_Base_Start_IT(&amp;htim2);  <span class="hljs-comment">// 启动定时器中断模式</span><br>    <br>    <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-comment">// 主循环可以干其他事，LED 自动闪烁</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="PWM-输出案例（呼吸灯）"><a href="#PWM-输出案例（呼吸灯）" class="headerlink" title="PWM 输出案例（呼吸灯）"></a>PWM 输出案例（呼吸灯）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs c">TIM_HandleTypeDef htim3;<br>TIM_OC_HandleTypeDef sConfigOC;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief TIM3 通道 1 PWM 初始化</span><br><span class="hljs-comment">  * @note   定时器时钟 = 84MHz</span><br><span class="hljs-comment">  *         目标 PWM 频率 = 1kHz</span><br><span class="hljs-comment">  *         配置：PSC = 83 → CK_CNT = 84MHz / 84 = 1MHz</span><br><span class="hljs-comment">  *              ARR = 999 → PWM 周期 = 1000 / 1MHz = 1ms (1kHz)</span><br><span class="hljs-comment">  *              CCR1 控制占空比（范围 0~1000）</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">MX_TIM3_PWM_Init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    htim3.Instance = TIM3;<br>    htim3.Init.Prescaler = <span class="hljs-number">83</span>;             <span class="hljs-comment">// PSC = 83 → 84MHz / 84 = 1MHz</span><br>    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;<br>    htim3.Init.Period = <span class="hljs-number">999</span>;               <span class="hljs-comment">// ARR = 999 → 周期 1000 个计数</span><br>    htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;<br>    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;<br>    HAL_TIM_PWM_Init(&amp;htim3);<br>    <br>    <span class="hljs-comment">// 配置通道 1</span><br>    sConfigOC.OCMode = TIM_OCMODE_PWM1;           <span class="hljs-comment">// PWM 模式 1</span><br>    sConfigOC.Pulse = <span class="hljs-number">0</span>;                          <span class="hljs-comment">// 初始占空比 0</span><br>    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;   <span class="hljs-comment">// 有效电平为高</span><br>    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;<br>    HAL_TIM_PWM_ConfigChannel(&amp;htim3, &amp;sConfigOC, TIM_CHANNEL_1);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_TIM_PWM_MspInit</span><span class="hljs-params">(TIM_HandleTypeDef *htim)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(htim-&gt;Instance == TIM3) &#123;<br>        __HAL_RCC_TIM3_CLK_ENABLE();<br>        __HAL_RCC_GPIOB_CLK_ENABLE();  <span class="hljs-comment">// TIM3_CH1 在 PB4 或 PA6（取决于封装）</span><br>        <br>        GPIO_InitTypeDef GPIO_InitStruct = &#123;<span class="hljs-number">0</span>&#125;;<br>        GPIO_InitStruct.Pin = GPIO_PIN_4;      <span class="hljs-comment">// PB4 复用功能 AF2</span><br>        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;<br>        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;<br>        GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;<br>        HAL_GPIO_Init(GPIOB, &amp;GPIO_InitStruct);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// main 函数中使用</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-type">uint16_t</span> duty = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">uint8_t</span> dir = <span class="hljs-number">1</span>;  <span class="hljs-comment">// 1: 增加, 0: 减少</span><br>    <br>    HAL_Init();<br>    SystemClock_Config();<br>    MX_TIM3_PWM_Init();<br>    <br>    HAL_TIM_PWM_Start(&amp;htim3, TIM_CHANNEL_1);  <span class="hljs-comment">// 启动 PWM 输出</span><br>    <br>    <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-comment">// 渐变占空比实现呼吸灯效果</span><br>        <span class="hljs-keyword">if</span>(dir) &#123;<br>            duty += <span class="hljs-number">10</span>;<br>            <span class="hljs-keyword">if</span>(duty &gt;= <span class="hljs-number">1000</span>) dir = <span class="hljs-number">0</span>;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            duty -= <span class="hljs-number">10</span>;<br>            <span class="hljs-keyword">if</span>(duty &lt;= <span class="hljs-number">0</span>) dir = <span class="hljs-number">1</span>;<br>        &#125;<br>        <br>        __HAL_TIM_SET_COMPARE(&amp;htim3, TIM_CHANNEL_1, duty);<br>        HAL_Delay(<span class="hljs-number">10</span>);  <span class="hljs-comment">// 简单延时控制渐变速度</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="输入捕获案例（测量脉冲宽度）"><a href="#输入捕获案例（测量脉冲宽度）" class="headerlink" title="输入捕获案例（测量脉冲宽度）"></a>输入捕获案例（测量脉冲宽度）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs c">TIM_HandleTypeDef htim4;<br><span class="hljs-type">uint32_t</span> ic_value1, ic_value2;<br><span class="hljs-type">uint8_t</span> capture_flag = <span class="hljs-number">0</span>;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">  * @brief TIM4 通道 1 输入捕获初始化</span><br><span class="hljs-comment">  * @note   测量外部脉冲的高电平宽度</span><br><span class="hljs-comment">  *         定时器时钟 = 84MHz，PSC=83 → CK_CNT = 1MHz (1us 分辨率)</span><br><span class="hljs-comment">  *         ARR = 0xFFFF (最大测量范围 65.535ms)</span><br><span class="hljs-comment">  */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">MX_TIM4_IC_Init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    TIM_IC_InitTypeDef sConfigIC;<br>    <br>    htim4.Instance = TIM4;<br>    htim4.Init.Prescaler = <span class="hljs-number">83</span>;            <span class="hljs-comment">// 1MHz 计数频率</span><br>    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;<br>    htim4.Init.Period = <span class="hljs-number">0xFFFF</span>;           <span class="hljs-comment">// 最大范围</span><br>    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;<br>    HAL_TIM_IC_Init(&amp;htim4);<br>    <br>    sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;   <span class="hljs-comment">// 上升沿捕获</span><br>    sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI; <span class="hljs-comment">// 直连通道</span><br>    sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;         <span class="hljs-comment">// 不分频</span><br>    sConfigIC.ICFilter = <span class="hljs-number">0</span>;                         <span class="hljs-comment">// 无滤波</span><br>    HAL_TIM_IC_ConfigChannel(&amp;htim4, &amp;sConfigIC, TIM_CHANNEL_1);<br>    <br>    HAL_NVIC_SetPriority(TIM4_IRQn, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);<br>    HAL_NVIC_EnableIRQ(TIM4_IRQn);<br>&#125;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_TIM_IC_MspInit</span><span class="hljs-params">(TIM_HandleTypeDef *htim)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(htim-&gt;Instance == TIM4) &#123;<br>        __HAL_RCC_TIM4_CLK_ENABLE();<br>        __HAL_RCC_GPIOB_CLK_ENABLE();  <span class="hljs-comment">// TIM4_CH1 在 PB6</span><br>        <br>        GPIO_InitTypeDef GPIO_InitStruct = &#123;<span class="hljs-number">0</span>&#125;;<br>        GPIO_InitStruct.Pin = GPIO_PIN_6;<br>        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;<br>        GPIO_InitStruct.Pull = GPIO_NOPULL;<br>        GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;<br>        HAL_GPIO_Init(GPIOB, &amp;GPIO_InitStruct);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 捕获中断回调</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_TIM_IC_CaptureCallback</span><span class="hljs-params">(TIM_HandleTypeDef *htim)</span><br>&#123;<br>    <span class="hljs-keyword">if</span>(htim-&gt;Instance == TIM4 &amp;&amp; htim-&gt;Channel == HAL_TIM_ACTIVE_CHANNEL_1) &#123;<br>        <span class="hljs-keyword">if</span>(capture_flag == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-comment">// 第一次捕获（上升沿）</span><br>            ic_value1 = HAL_TIM_ReadCapturedValue(&amp;htim4, TIM_CHANNEL_1);<br>            __HAL_TIM_SET_CAPTUREPOLARITY(&amp;htim4, TIM_CHANNEL_1, TIM_ICPOLARITY_FALLING);<br>            capture_flag = <span class="hljs-number">1</span>;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-comment">// 第二次捕获（下降沿）</span><br>            ic_value2 = HAL_TIM_ReadCapturedValue(&amp;htim4, TIM_CHANNEL_1);<br>            <span class="hljs-type">uint32_t</span> pulse_width = (ic_value2 - ic_value1) &amp; <span class="hljs-number">0xFFFF</span>;  <span class="hljs-comment">// 单位：us</span><br>            <span class="hljs-comment">// pulse_width 即为高电平宽度（微秒）</span><br>            <br>            <span class="hljs-comment">// 重新配置为上升沿捕获，准备下一次测量</span><br>            __HAL_TIM_SET_CAPTUREPOLARITY(&amp;htim4, TIM_CHANNEL_1, TIM_ICPOLARITY_RISING);<br>            capture_flag = <span class="hljs-number">0</span>;<br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// main 中启动</span><br>HAL_TIM_IC_Start_IT(&amp;htim4, TIM_CHANNEL_1);  <span class="hljs-comment">// 启动输入捕获中断</span><br></code></pre></td></tr></table></figure>
+
+<p>时钟与定时器关系总结:</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>代码体现</th>
+<th>对定时器的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>APB1&#x2F;APB2 分频</strong></td>
+<td><code>APB1CLKDivider = RCC_HCLK_DIV4</code></td>
+<td>决定 <code>TIMx_CLK = PCLK × 2（如果分频≠1）</code></td>
+</tr>
+<tr>
+<td><strong>PSC 预分频器</strong></td>
+<td><code>Prescaler = 8399</code></td>
+<td>决定计数时钟 <code>CK_CNT = TIM_CLK / (PSC+1)</code></td>
+</tr>
+<tr>
+<td><strong>ARR 自动重装载</strong></td>
+<td><code>Period = 4999</code></td>
+<td>决定溢出周期 <code>T = (ARR+1) / CK_CNT</code></td>
+</tr>
+<tr>
+<td><strong>CCR 捕获&#x2F;比较</strong></td>
+<td><code>Pulse = duty</code></td>
+<td>PWM 占空比 或 捕获的时刻值</td>
+</tr>
+</tbody></table>
+<p>使用建议:</p>
+<ol>
+<li><strong>检查时钟频率</strong>：在 CubeMX 的 Clock Configuration 标签页确认定时器实际时钟</li>
+<li><strong>验证计算</strong>：<code>溢出时间 = (PSC+1) × (ARR+1) / TIM_CLK</code></li>
+<li><strong>调试技巧</strong>：用逻辑分析仪或示波器确认 PWM 频率和占空比</li>
+<li><strong>中断优先级</strong>：多个定时器时注意优先级分配，避免死锁</li>
+</ol>
+<h1 id="直接存储器读取-DMA"><a href="#直接存储器读取-DMA" class="headerlink" title="直接存储器读取(DMA)"></a>直接存储器读取(DMA)</h1><p>连续接收多个字节时数据丢失</p>
+<p><strong>CPU来不及处理数据</strong>导致的。UART的接收寄存器（DR）在收到下一个字节前，如果上一个字节没有被及时读走，就会被覆盖，造成数据丢失。</p>
+<ul>
+<li><strong>DMA（直接内存访问）</strong> 可以在<strong>不需要CPU干预</strong>的情况下，自动将接收到的字节依次存入你指定的<strong>数组缓冲区</strong>。即使CPU正在忙（比如处理其他中断、执行复杂计算），DMA也能在后台稳稳地把数据收完，只在接收完一组数据（例如一帧数据完成或半满）后才通知CPU来处理。</li>
+<li>这就相当于：CPU不参与每个字节的搬运，只负责整体处理，完全消除了“来不及读”的瓶颈。</li>
+</ul>
+<p><strong>DMA 是一个专门负责在内存和外设之间、或内存与内存之间搬运数据的“硬件小助手”。它可以在不需要CPU参与的情况下，独立完成大量数据的快速转移。</strong></p>
+<h2 id="配置要素"><a href="#配置要素" class="headerlink" title="配置要素"></a><strong>配置要素</strong></h2><ul>
+<li><strong>源地址</strong>：数据从哪里来。例如：<code>&amp;ADC1-&gt;DR</code>（ADC数据寄存器的地址）。</li>
+<li><strong>目标地址</strong>：数据要搬到哪里去。例如：<code>&amp;myBuffer[0]</code>（你自己定义的数组的首地址）。</li>
+<li><strong>传输数量</strong>：总共要搬多少个数据。例如：<code>1000</code>。</li>
+<li><strong>传输方向</strong>：<ul>
+<li>外设 → 内存（最常见，如ADC采集、接收UART数据）</li>
+<li>内存 → 外设（如发送UART数据、DAC输出波形）</li>
+<li>内存 → 内存（仅部分DMA支持，如M2M模式）</li>
+</ul>
+</li>
+<li><strong>触发源</strong>：什么时候开始搬一次数据。例如：<ul>
+<li>ADC转换完成信号</li>
+<li>定时器更新信号</li>
+<li>UART接收寄存器非空信号</li>
+<li>软件触发</li>
+</ul>
+</li>
+<li><strong>循环模式</strong>：<ul>
+<li>普通模式：搬完指定数量的数据后就停止。</li>
+<li>循环模式：搬完最后一个数据后，自动重新从头开始，无限循环（非常适合ADC连续采样、PWM控制）。</li>
+</ul>
+</li>
+</ul>
+<p>DMA 中断不是默认开启的。要产生“传输完成中断”，需要 <strong>显式使能中断使能位</strong>。</p>
+<p>以标准库 &#x2F; HAL 库为例：</p>
+<ul>
+<li>在 HAL 库中：<code>__HAL_DMA_ENABLE_IT(hdma, DMA_IT_TC)</code> 或在初始化结构体中设置 <code>hdma.Init.PeriphDataAlignment</code> 等参数后调用 <code>HAL_DMA_Start_IT()</code> 而非 <code>HAL_DMA_Start()</code>。</li>
+<li>在寄存器层面：需要设置 DMA_CCR 寄存器中的 <strong>TCIE (Transfer Complete Interrupt Enable)</strong> 位。</li>
+</ul>
+<p>如果只配置了通道、地址、长度，并启动了 DMA，但 <strong>没有使能 TC 中断</strong>，那么传输完成后只会置起标志位（TCIF），但不会触发中断请求（NVIC 不会收到信号），自然无法执行中断服务函数。</p>
+<h2 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a><strong>工作流程</strong></h2><p><img src="https://files.seeusercontent.com/2026/05/19/gV9x/image-20260519171536584.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="阶段1：触发与仲裁（对应通用流程的“DMA请求”）"><a href="#阶段1：触发与仲裁（对应通用流程的“DMA请求”）" class="headerlink" title="阶段1：触发与仲裁（对应通用流程的“DMA请求”）"></a>阶段1：触发与仲裁（对应通用流程的“DMA请求”）</h4><ol>
+<li><strong>事件触发</strong>：外设（如ADC、USART、定时器）发生一个事件，向外发送一个<strong>DMA请求信号</strong>。</li>
+<li><strong>请求映射</strong>：不同外设的请求通过“逻辑或”进入DMA控制器。<strong>关键</strong>：某时刻一个通道只能处理一个请求，所以需要在配置时选择正确的映射（如表8-xx）。</li>
+<li><strong>仲裁（优先级判断）</strong>：DMA控制器收到多个通道的请求后，根据以下规则决定先响应哪个：<ul>
+<li><strong>软件优先级（4级）</strong>：最高 &gt; 高 &gt; 中等 &gt; 低（可编程）。</li>
+<li><strong>硬件优先级（同软件级时）</strong>：通道编号越低，优先级越高（如通道2 &gt; 通道4）。</li>
+</ul>
+</li>
+</ol>
+<h4 id="阶段2：握手与总线控制（对应通用流程的“DMA响应”）"><a href="#阶段2：握手与总线控制（对应通用流程的“DMA响应”）" class="headerlink" title="阶段2：握手与总线控制（对应通用流程的“DMA响应”）"></a>阶段2：握手与总线控制（对应通用流程的“DMA响应”）</h4><ul>
+<li>DMA控制器选择了高优先级的请求后，<strong>向外设发送一个应答信号</strong>（握手）。</li>
+<li>外设收到应答信号后，<strong>立即撤销请求</strong>。</li>
+<li>DMA控制器检测到请求撤销后，也<strong>撤销应答信号</strong>。一次握手完成。</li>
+<li><strong>注意</strong>：这里隐含了DMA控制器会通过总线裁决逻辑向CPU请求总线控制权的过程（与上一轮对话一致）。获得总线后，才进入下一阶段。</li>
+</ul>
+<h4 id="阶段3：传输控制（对应通用流程的“DMA传输”）"><a href="#阶段3：传输控制（对应通用流程的“DMA传输”）" class="headerlink" title="阶段3：传输控制（对应通用流程的“DMA传输”）"></a>阶段3：传输控制（对应通用流程的“DMA传输”）</h4><p>这是STM32 DMA的特色，你的资料详细描述了传输过程中的关键控制：</p>
+<ul>
+<li><strong>数据宽度与地址自增</strong>：<ul>
+<li>数据宽度可设（1、2、4字节）。</li>
+<li>外设和存储器的地址指针可独立选择是否<strong>自增</strong>（增量值 &#x3D; 数据宽度）。</li>
+<li><strong>常见场景</strong>：从ADC数据寄存器（固定地址）读取到数组（自增地址）。</li>
+</ul>
+</li>
+<li><strong>传输数量</strong>：可设置最大65535次传输。</li>
+<li><strong>传输模式</strong>：<ul>
+<li><strong>非循环模式</strong>：传输完成（计数器归零）后停止DMA操作。</li>
+<li><strong>循环模式</strong>：传输完成（计数器归零）后<strong>自动恢复初始值</strong>，并继续DMA操作。常用于<strong>ADC扫描模式</strong>、音频环形缓冲区。</li>
+</ul>
+</li>
+<li><strong>存储器到存储器模式</strong>：<ul>
+<li>无需外设请求，直接触发DMA传输。</li>
+<li><strong>注意</strong>：该模式<strong>不能与循环模式同时使用</strong>。通常用于大块内存复制。</li>
+</ul>
+</li>
+</ul>
+<h4 id="阶段4：中断与结束（对应通用流程的“DMA结束”）"><a href="#阶段4：中断与结束（对应通用流程的“DMA结束”）" class="headerlink" title="阶段4：中断与结束（对应通用流程的“DMA结束”）"></a>阶段4：中断与结束（对应通用流程的“DMA结束”）</h4><ul>
+<li><strong>中断类型</strong>（可独立使能）：<ul>
+<li><strong>半传输中断（HTIF）</strong>：当传输完成一半时置位，可产生中断。常用于双缓冲处理（在处理前半部分的同时，DMA继续填充后半部分）。</li>
+<li><strong>传输完成中断（TCIF）</strong>：当传输计数器归零时置位，可产生中断。通知CPU数据已全部搬运完毕。</li>
+<li><strong>传输错误中断（FEIF）</strong>：当DMA读写过程中发生总线错误时置位，可产生中断。此时硬件会自动清除该通道的配置寄存器位，并停止该通道操作。</li>
+</ul>
+</li>
+<li><strong>结束后的动作</strong>：<ul>
+<li>非循环模式：通道停止，等待重新配置启动。</li>
+<li>循环模式：自动重置计数器，继续传输，直到被软件关闭。</li>
+</ul>
+</li>
+</ul>
+<h1 id="模-数转换器"><a href="#模-数转换器" class="headerlink" title="模&#x2F;数转换器"></a>模&#x2F;数转换器</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://shequ.stmicroelectronics.cn/thread-634845-1-1.html">【经验分享】STM32的ADC的原理与使用（内附代码） - STM32团队 ST意法半导体中文论坛</a></p>
+</blockquote>
+<p><strong>ADC 是一个将连续的模拟电压信号（如 0V ~ 3.3V）转换为离散的数字值（如 0 ~ 4095）的硬件模块。</strong></p>
+<p>输入&#x2F;输出通道是计算机与工业生产过程交换信息的桥梁。按照信号输入&#x2F;输出的方式可 分为输入通道和输出通道。</p>
+<p><img src="https://files.seeusercontent.com/2026/05/19/g4Ct/image-20260519172640538.png" srcset="/img/loading.gif" lazyload></p>
+<p>单片机应用系统中的输入通道用于采集控制或测量对象的各类变量，其中数字信号可直接通过GPIO口输入，若信号幅值过小则需先经放大器放大以满足TTL或CMOS电平要求；</p>
+<p>而连续变化的模拟信号必须先经模&#x2F;数转换器（ADC）转换为数字量后才能被单片机处理，若原始物理量（如温度、压力、流量、速度等）是非电信号，则还需先通过传感器转换为模拟电信号，必要时再经放大器放大。</p>
+<p>输出通道则承担数&#x2F;模转换、功率放大驱动和干扰信号防治三项主要作用：</p>
+<ol>
+<li>首先，单片机输出的数字控制信号需要通过D&#x2F;A转换器（DAC）转换为模拟电压或电流；</li>
+<li>其次，由于转换后的模拟信号通常功率不足，需要经过功率放大才能驱动外部负载；</li>
+<li>最后，后向输出通道靠近控制对象，工作环境恶劣，驱动系统极易通过信号通道、电源、空间电磁场甚至机械方式对单片机系统造成干扰，因此必须采取信号隔离、电源隔离以及大功率开关过零切换等措施进行防治。</li>
+</ol>
+<p>最终，单片机系统的处理结果可以以开关量、数字量或频率量的形式输出。</p>
+<h2 id="ADC"><a href="#ADC" class="headerlink" title="ADC"></a>ADC</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/qinruiqian/p/19038392">【自学嵌入式：stm32单片机】ADC模数转换器 - 秦瑞迁 - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1947214691760845359">(99+ 封私信 &#x2F; 86 条消息) 单片机技术总结说明(八) ADC模拟电平数字转换模块 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/tardis/zm/art/25331471241?source_id=1005">深入理解ADC模数转换器：原理、应用与STM32实战</a></p>
+</blockquote>
+<p><strong>ADC（模数转换器，Analog-to-Digital Converter）</strong> 是一种将连续的模拟电压信号转换为离散的数字量的电路模块，广泛用于嵌入式系统中采集传感器信号（如温度、光强、电压等）。</p>
+<p>在 STM32 微控制器中，ADC 通常为 12 位逐次逼近型（SAR），支持单次、连续、扫描、间断等多种转换模式，并可使用软件或定时器、外部中断等触发采样。其关键参数包括分辨率（决定转换精度）、采样时间（影响转换速度和抗混叠能力）、参考电压 Vref（决定输入范围）以及通道数（可复用多个输入引脚）。</p>
+<p>使用 ADC 时需注意：输入电压不得超过参考电压范围，避免浮空引脚造成读数抖动；合理选择采样时间和时钟频率；在噪声敏感场合可能需要硬件滤波或多采样平均；注意引脚映射与复用冲突。典型应用包括电池电压监测、麦克风信号采集、电位器读数和各类工业传感器接口。调试时，若 ADC 读数与预期偏差大，应依次检查参考电压、通道配置、采样时间、对齐方式（左对齐&#x2F;右对齐）、是否启用 DMA 以及数据对齐后的数值转换公式是否正确。</p>
+<img src="C:/Users/11252/Desktop%E6%A1%8C%E9%9D%A2/424cee8c27334ea0a46de4b62831a018.png" srcset="/img/loading.gif" lazyload alt="424cee8c27334ea0a46de4b62831a018" style="zoom: 80%;" />
+
+<h3 id="开关、时钟和通道"><a href="#开关、时钟和通道" class="headerlink" title="开关、时钟和通道"></a>开关、时钟和通道</h3><table>
+<thead>
+<tr>
+<th align="left">要素</th>
+<th align="left">控制对象</th>
+<th align="left">配置位置</th>
+<th align="left">常见错误</th>
+<th align="left">检查方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>开关(ADON)</strong></td>
+<td align="left">ADC电源状态</td>
+<td align="left">ADC_CR2寄存器</td>
+<td align="left">忘了使能ADC时钟</td>
+<td align="left">检查RCC_APB2外设时钟使能</td>
+</tr>
+<tr>
+<td align="left"><strong>时钟(ADCCLK)</strong></td>
+<td align="left">ADC工作频率</td>
+<td align="left">RCC预分频器</td>
+<td align="left">频率超限</td>
+<td align="left">计算PCLK2&#x2F;分频系数</td>
+</tr>
+<tr>
+<td align="left"><strong>通道</strong></td>
+<td align="left">采样引脚</td>
+<td align="left">GPIO+ADC_CHSELR</td>
+<td align="left">引脚模式错误</td>
+<td align="left">确认GPIO_MODE_ANALOG</td>
+</tr>
+</tbody></table>
+<h3 id="模式控制"><a href="#模式控制" class="headerlink" title="模式控制"></a>模式控制</h3><p><strong>ADC的运行模式</strong>主要分为<strong>转换模式</strong>和<strong>组类型</strong>。</p>
+<ul>
+<li><strong>转换模式</strong>：决定ADC“什么时候开始、什么时候结束”（比如单次、连续、扫描、间断）</li>
+<li><strong>组类型</strong>：决定ADC“采集哪些通道、优先级如何”（规则组、注入组）</li>
+</ul>
+<h4 id="转换模式"><a href="#转换模式" class="headerlink" title="转换模式"></a>转换模式</h4><ul>
+<li>**单次转换 (Single)**：触发一次，只转换所选“通道组”里的一个通道，然后停止。适合偶尔测量。</li>
+<li>**连续转换 (Continuous)**：触发一次后，不停地将同一个通道的转换结果刷进寄存器。适合监测单一模拟量。</li>
+<li><strong>扫描模式 (Scan)<strong>：触发一次，自动对“规则组”里所有选中的通道，从低到高依次转换一遍。</strong>必须配合DMA</strong>，否则ADC_DR里只能保留最后一个通道的值。</li>
+<li>**间断模式 (Discontinuous)**：一种特殊的扫描。触发一次，只转换“规则组”里的一个（或几个）通道，再次触发才转换下一个。适合需要程序精确控制每个通道采样时机的场景。</li>
+</ul>
+<p>组合参考：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs">开始<br>  │<br>  ├─ 只测1个信号？<br>  │    ├─ 偶尔测一次 → 单次转换模式<br>  │    └─ 持续监测   → 连续转换模式<br>  │<br>  └─ 测多个信号？<br>       ├─ 一次性全测完就停 → 单次转换 + 扫描模式 + DMA<br>       ├─ 循环不停地测     → 连续转换 + 扫描模式 + DMA<br>       ├─ 程序控制逐个测   → 间断模式<br>       └─ 多路中有紧急信号 → 规则组负责常规轮询，注入组负责紧急信号触发<br></code></pre></td></tr></table></figure>
+
+<h4 id="组类型"><a href="#组类型" class="headerlink" title="组类型"></a>组类型</h4><ul>
+<li><strong>规则组</strong>：<strong>按部就班的日常工作</strong>。事先排好一个任务列表（比如先测温度、再测湿度、再测压力），ADC就按这个顺序一遍遍地循环执行。</li>
+<li><strong>注入组</strong>：<strong>突发的紧急任务</strong>。不管当前规则组执行到哪一步，都要<strong>立刻打断</strong>，优先执行注入组的测量，测完再回去继续刚才被打断的规则任务。</li>
+</ul>
+<p>在STM32 ADC中的实际差异：</p>
+<table>
+<thead>
+<tr>
+<th align="left">对比项</th>
+<th align="left">规则组</th>
+<th align="left">注入组</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>优先级</strong></td>
+<td align="left">低（可被打断）</td>
+<td align="left">高（打断别人）</td>
+</tr>
+<tr>
+<td align="left"><strong>最多通道数</strong></td>
+<td align="left">16个</td>
+<td align="left">4个</td>
+</tr>
+<tr>
+<td align="left"><strong>数据寄存器</strong></td>
+<td align="left">只有1个（ADC_DR） 不配合DMA会被覆盖</td>
+<td align="left">4个独立的（ADC_JDR1~4） 每个通道结果自动保存</td>
+</tr>
+<tr>
+<td align="left"><strong>典型用途</strong></td>
+<td align="left">常规传感器轮询</td>
+<td align="left">过流保护、紧急位置检测</td>
+</tr>
+<tr>
+<td align="left"><strong>触发方式</strong></td>
+<td align="left">软件&#x2F;定时器&#x2F;PWM等</td>
+<td align="left">通常外部事件（定时器、EXTI）</td>
+</tr>
+<tr>
+<td align="left"><strong>打断行为</strong></td>
+<td align="left">被注入打断时， <strong>当前正在转换的规则通道作废</strong></td>
+<td align="left">注入转换期间， 规则事件来了也不理（不会被中断）</td>
+</tr>
+</tbody></table>
+<h3 id="中断和DMA请求"><a href="#中断和DMA请求" class="headerlink" title="中断和DMA请求"></a>中断和DMA请求</h3><blockquote>
+<p>如果说规则组&#x2F;注入组决定了“测什么、谁优先”，转换模式决定了“何时测”，那么中断和DMA就决定了“怎么把数据取走”以及“怎么通知CPU来处理”。</p>
+</blockquote>
+<p>这两个是ADC<strong>数据搬运</strong>和<strong>事件通知</strong>的核心机制</p>
+<ol>
+<li>ADC 中断 规则组和注入组转换结束时能产生中断,当模拟看门狗状态位被设置为1时,也能产生 中断。它们都有独立的中断使能位。 </li>
+<li>DMA 请求 因为规则通道转换的值存储在一个仅有的数据寄存器中,所以当转换多个规则通道时需 要使用 DMA,这可以避免丢失已经存储在 ADC_DR 寄存器中的数据。只有在规则通道转换 结束时才产生 DMA 请求,并将转换的数据从 ADC_DR 寄存器传输到用户指定的目的地址。</li>
+</ol>
+<h4 id="ADC中断：事件驱动的三大来源"><a href="#ADC中断：事件驱动的三大来源" class="headerlink" title="ADC中断：事件驱动的三大来源"></a>ADC中断：事件驱动的三大来源</h4><p>ADC能触发中断的场景，恰好对应了三种典型需求：</p>
+<table>
+<thead>
+<tr>
+<th align="left">中断来源</th>
+<th align="left">触发时刻</th>
+<th align="left">典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>规则组转换结束 (EOC)</strong></td>
+<td align="left">每一个规则通道转换完成时置位</td>
+<td align="left">单次或间断模式下，逐通道处理数据</td>
+</tr>
+<tr>
+<td align="left"><strong>注入组转换结束 (JEOC)</strong></td>
+<td align="left">整个注入组的所有通道都转换完成时置位</td>
+<td align="left">紧急事件处理完毕，通知CPU立刻读取 JDR1~4</td>
+</tr>
+<tr>
+<td align="left"><strong>模拟看门狗 (AWD)</strong></td>
+<td align="left">被监控通道的电压超出设定阈值时置位</td>
+<td align="left">过压&#x2F;欠压报警，无需CPU持续轮询比较</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>这三个中断各有独立的中断使能位（在 <code>ADC_CR1</code> 寄存器中），可以单独开启或关闭。注：规则组还有“序列结束 (EOS)”中断，在扫描模式下一个完整序列完成时触发，适合需要“一轮数据全取完再处理”的场景。<strong>使用建议</strong>：注入组的中断通常优先级设得比规则组更高，确保紧急数据被最先响应。</p>
+</blockquote>
+<h4 id="DMA请求：规则组多通道扫描的“必选项”"><a href="#DMA请求：规则组多通道扫描的“必选项”" class="headerlink" title="DMA请求：规则组多通道扫描的“必选项”"></a>DMA请求：规则组多通道扫描的“必选项”</h4><p><strong>为什么规则组多通道必须用DMA？</strong></p>
+<p>规则组有16个通道，但<strong>只配了1个数据寄存器 ADC_DR</strong>。在扫描模式下，ADC会依次转换所有选中的规则通道。每转完一个，新结果就<strong>直接覆盖</strong>前一个。如果没有DMA，等CPU进中断来读时，ADC_DR里就只剩最后一个通道的值了，前面全丢。</p>
+<p><strong>DMA的工作时序：</strong></p>
+<p>ADC每完成一个规则通道的转换，就产生一个DMA请求。DMA控制器收到请求，立刻把 <code>ADC_DR</code> 中的数据搬运到用户指定的内存数组（<code>uint16_t adc_values[16]</code>）。全程无需CPU干预。等一轮扫描结束（EOS中断），内存数组里已经是整整齐齐的一整套通道数据了。</p>
+<p><strong>为什么注入组不需要DMA？</strong></p>
+<p>注入组只有4个通道，且每个通道都配有独立的 <code>ADC_JDR1~JDR4</code> 寄存器。转换结果<strong>各自安好、互不覆盖</strong>，CPU在注入转换结束中断里一次性全部读取即可。</p>
+<p>软件滤波（通常指数位滤波）是在单片机（如STM32）中通过算法对多次ADC采样值进行处理，以得到更稳定、更平滑的结果</p>
+<table>
+<thead>
+<tr>
+<th align="left">问题特征</th>
+<th align="left">推荐滤波方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">白噪声（细小跳动）</td>
+<td align="left">算术平均 &#x2F; 移动平均</td>
+</tr>
+<tr>
+<td align="left">偶发尖刺（脉冲干扰）</td>
+<td align="left">中值滤波</td>
+</tr>
+<tr>
+<td align="left">既有白噪声又有尖刺</td>
+<td align="left">滑动中值平均</td>
+</tr>
+<tr>
+<td align="left">内存很小（如8位单片机）</td>
+<td align="left">一阶低通滤波</td>
+</tr>
+<tr>
+<td align="left">要求实时响应快</td>
+<td align="left">一阶低通滤波</td>
+</tr>
+</tbody></table>
+<h1 id="串行通信协议"><a href="#串行通信协议" class="headerlink" title="串行通信协议"></a>串行通信协议</h1><p>串行通信协议是指规定数据在单条信号线或差分信号线上按比特顺序逐个传输时所遵循的一组规则与标准，它涵盖了物理层（如电压电平、连接器引脚定义、传输速率）与数据链路层（如起始位、数据位、奇偶校验位、停止位、帧格式、流量控制、错误检测等）的具体约定，使得发送端与接收端能够同步并正确解析二进制数据流；</p>
+<p>常见的串行协议包括UART（通用异步收发传输器）、I²C、SPI、RS-232、RS-485、CAN、USB、PCIe、以太网（虽常被视为并行或复杂串行，但底层仍依赖串行编码）等，它们因距离、速度、拓扑结构、成本和应用场景（如嵌入式设备内部通信、工业现场总线、汽车网络、外设连接、远距离传输）的不同而被选择。</p>
+<blockquote>
+<p>简单来说，串行通信协议就像是两个人用一条电话线一个字一个字地对话，事先约定好语速、发音方式、单词长度、停顿间隔以及如何纠错，从而确保信息准确传达。</p>
+</blockquote>
+<p>要建立稳定的串口通信，必须先统一双方的“语言规则”，即以下 5 个核心参数：</p>
+<ul>
+<li><strong>波特率（Baud Rate）</strong>：单位时间内传输的二进制位数，常见值为 9600、115200、38400。例如 9600bps 表示每秒传输 9600 位（含起始位、数据位、校验位、停止位），实际有效数据率需剔除控制位。</li>
+<li><strong>数据位（Data Bits）</strong>：每帧数据中包含的有效数据位数，通常为 8 位（对应一个字节），也有 7 位（适配 ASCII 码）。</li>
+<li><strong>停止位（Stop Bits）</strong>：每帧数据结束后的标识位，可设为 1 位、1.5 位或 2 位，用于接收方判断一帧数据是否结束。</li>
+<li><strong>校验位（Parity Bit）</strong>：用于校验数据传输是否出错，分为奇校验（数据位 + 校验位中 1 的个数为奇数）、偶校验（1 的个数为偶数）、无校验（最常用，依赖上层协议容错）。</li>
+<li><strong>流控（Flow Control）</strong>：可选参数，用于防止数据溢出（如 RTS&#x2F;CTS 硬件流控、XON&#x2F;XOFF 软件流控），多数简单场景（如传感器数据传输）无需启用。</li>
+</ul>
+<p><strong>关键原理</strong>：发送方按参数封装数据帧（起始位 + 数据位 + 校验位 + 停止位），接收方按相同参数解析帧结构，若参数不匹配，接收数据会出现乱码（如波特率不匹配时常见“####”或乱码字符）。</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>距离</th>
+<th>速率</th>
+<th>节点数</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UART</td>
+<td>&lt;15m（TTL&lt;1m）</td>
+<td>115.2k～4Mbps</td>
+<td>1对1</td>
+<td>调试、模块通信、GPS</td>
+</tr>
+<tr>
+<td>SPI</td>
+<td>&lt;1m</td>
+<td>1M～100Mbps</td>
+<td>1主多从</td>
+<td>Flash、显示屏、高速ADC</td>
+</tr>
+<tr>
+<td>I²C</td>
+<td>&lt;1m</td>
+<td>100k&#x2F;400k&#x2F;3.4Mbps</td>
+<td>最多127</td>
+<td>传感器、EEPROM、少量低速外设</td>
+</tr>
+<tr>
+<td>RS-485</td>
+<td><strong>1200m</strong></td>
+<td>最高10Mbps</td>
+<td>最多32节点</td>
+<td>工业仪表、Modbus RTU</td>
+</tr>
+<tr>
+<td>CAN</td>
+<td><strong>500m@1Mbps</strong></td>
+<td>最高8Mbps(FD)</td>
+<td>最多110节点</td>
+<td>汽车、工业控制</td>
+</tr>
+<tr>
+<td>USB</td>
+<td>5m</td>
+<td>12Mbps(FS)&#x2F;480Mbps(HS)</td>
+<td>1主127从</td>
+<td>PC外设、固件升级</td>
+</tr>
+<tr>
+<td>以太网</td>
+<td><strong>100m</strong></td>
+<td>100M&#x2F;1Gbps</td>
+<td>无限制</td>
+<td>工业以太网、IoT</td>
+</tr>
+</tbody></table>
+<h2 id="UART（通用异步收发）"><a href="#UART（通用异步收发）" class="headerlink" title="UART（通用异步收发）"></a>UART（通用异步收发）</h2><p>UART（通用异步收发传输器）是一种最基础且广泛使用的串行通信协议，其核心特点在于“异步”与“全双工”：</p>
+<p>它不需要在数据传输线之外单独提供时钟信号来同步收发双方，而是通过预先约定相同的<strong>波特率</strong>（如9600、115200bps）、<strong>数据格式</strong>（起始位、数据位、奇偶校验位、停止位的位数与规则）以及<strong>相同的物理层电压逻辑</strong>，使得接收端能够根据起始位的跳变沿来自动校准字符内部的位边界；</p>
+<p>在空闲时，发送端保持高电平（逻辑1），当需要发送一个字节时，先拉低电平一个周期作为起始位，随后按最低有效位优先的顺序依次发送5至9位数据，接着可选一位奇偶校验位用于简单检错，最后发送1至2位高电平的停止位以分隔连续字符。</p>
+<p>由于不共享时钟信号，UART对收发双方的时钟精度要求较高（通常允许±2-5%的波特率误差），但同时也省去了时钟线，仅需发送（TX）、接收（RX）和地线（GND）三根线即可实现点对点双向通信，因此具有结构简单、成本低廉、兼容性极佳（几乎所有微控制器、计算机、工业设备均支持）的优点，主要应用于调试信息输出、GPS模块通信、蓝牙&#x2F;串口转USB模块、老旧设备与PC之间的短距离低速数据传输等场景。</p>
+<p><img src="https://files.seeusercontent.com/2026/07/11/q7Gc/e0a395df03bd45e89cf779c9bc3449fb.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="核心参数"><a href="#核心参数" class="headerlink" title="核心参数"></a>核心参数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 波特率、数据位、停止位、奇偶校验 — &quot;9600 8N1&quot; 的含义 */</span><br><span class="hljs-comment">/* 9600  = 每秒9600个符号位 */</span><br><span class="hljs-comment">/* 8     = 数据8位 */</span><br><span class="hljs-comment">/* N     = 无奇偶校验（None） */</span><br><span class="hljs-comment">/* 1     = 1个停止位 */</span><br><br><span class="hljs-comment">/* HAL 配置示例（STM32） */</span><br>UART_HandleTypeDef huart1 = &#123;<br>    .Init.BaudRate   = <span class="hljs-number">115200</span>,<br>    .Init.WordLength = UART_WORDLENGTH_8B,<br>    .Init.StopBits   = UART_STOPBITS_1,<br>    .Init.Parity     = UART_PARITY_NONE,<br>    .Init.Mode       = UART_MODE_TX_RX,<br>    .Init.HwFlowCtl  = UART_HWCONTROL_NONE,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="帧结构"><a href="#帧结构" class="headerlink" title="帧结构"></a>帧结构</h3><p><img src="https://files.seeusercontent.com/2026/07/11/Cl3e/UART.png" srcset="/img/loading.gif" lazyload alt="UART时序图"></p>
+<p>UART使用异步模式工作，不需要时钟信号，其一般格式为：<strong>起始位+数据位+校验位+停止位</strong>。其中起始位1位，数据位5~8位，校验位0或1位，停止位1、1.5或2位。不过最常用的格式是<strong>1位起始位、8位数据位、没有奇偶校验、1位停止位，简记为8&#x2F;N&#x2F;1</strong>。</p>
+<img src="C:/Users/11252/AppData/Roaming/Typora/typora-user-images/image-20260711143357793.png" srcset="/img/loading.gif" lazyload style="zoom:25%;" />
+
+<p>空闲时数据线上规定为逻辑1。</p>
+<p>开始传输数据时先发送起始位，规定为逻辑0，接收端会检测这个下降沿，以便之后开始采样接收数据。</p>
+<p>起始位之后是数据位，规定<strong>先发送最低位，即LSB First</strong>。因为UART没有时钟信号，故使用波特率来确定每一位的长度，不过为保证检测的准确性，实际采样频率会高于波特率，一般每一位会进行若干次采样，取中间的采样值作为这一位的结果。</p>
+<p>奇偶校验位一般不使用。</p>
+<p>停止位一般使用1位，规定为逻辑1，除了表示传输结束外，停止位还可以起到时钟同步的作用。</p>
+<p>需要注意的是，这里的逻辑0并不一定是0V，这与使用的电平标准有关。<strong>对于TTL电平而言，逻辑0是0V，逻辑1是高电平（一般为3.3V或5V）；对于RS-232电平而言，逻辑0是3V<del>15V，逻辑1是-3</del>-15V。</strong></p>
+<h3 id="事务时序"><a href="#事务时序" class="headerlink" title="事务时序"></a>事务时序</h3><p><img src="https://files.seeusercontent.com/2026/07/11/9oyX/25090026_694c8caa71fbf13955.webp" srcset="/img/loading.gif" lazyload alt="25090026_694c8caa71fbf13955"></p>
+<p>三种接收方式对比：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 1. 轮询（调试用，生产慎用） */</span><br>HAL_UART_Receive(&amp;huart1, buf, len, timeout);<br><br><span class="hljs-comment">/* 2. 中断接收（最常用） */</span><br>HAL_UART_Receive_IT(&amp;huart1, &amp;rx_byte, <span class="hljs-number">1</span>);<br><span class="hljs-comment">/* 每收到1字节触发回调 */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_UART_RxCpltCallback</span><span class="hljs-params">(UART_HandleTypeDef *huart)</span> &#123;<br>    ring_buffer_push(&amp;rb, rx_byte);<br>    HAL_UART_Receive_IT(&amp;huart1, &amp;rx_byte, <span class="hljs-number">1</span>); <span class="hljs-comment">/* 重新使能 */</span><br>&#125;<br><br><span class="hljs-comment">/* 3. DMA + 空闲中断（高吞吐量推荐）*/</span><br>HAL_UARTEx_ReceiveToIdle_DMA(&amp;huart1, dma_buf, DMA_BUF_SIZE);<br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_UARTEx_RxEventCallback</span><span class="hljs-params">(UART_HandleTypeDef *huart, <span class="hljs-type">uint16_t</span> Size)</span> &#123;<br>    <span class="hljs-comment">/* Size 是实际接收字节数，支持不定长帧 */</span><br>    process_frame(dma_buf, Size);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>工程陷阱：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>根因</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>乱码</td>
+<td>两端波特率不一致 &#x2F; 时钟源误差</td>
+<td>实测误差 &lt; 2%，HSE 优于 HSI</td>
+</tr>
+<tr>
+<td>丢数据</td>
+<td>中断优先级太低，FIFO 溢出</td>
+<td>用 DMA，或提高 UART 中断优先级</td>
+</tr>
+<tr>
+<td>半帧</td>
+<td>帧协议没有长度域或尾部校验</td>
+<td>自定义协议加帧头+长度+CRC</td>
+</tr>
+<tr>
+<td>重入</td>
+<td>回调里再次发送卡死</td>
+<td>HAL_UART_Transmit_IT 非重入，加互斥</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="SPI（串行外设接口）"><a href="#SPI（串行外设接口）" class="headerlink" title="SPI（串行外设接口）"></a>SPI（串行外设接口）</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://shequ.stmicroelectronics.cn/thread-639324-1-1.html">基于STM32的经验分享—SPI详解 - STM32团队 ST意法半导体中文论坛</a></p>
+</blockquote>
+<p>SPI（Serial Peripheral Interface，串行外设接口）是一种高速、全双工、同步的串行通信协议，由摩托罗拉公司提出，主要应用于芯片内部的短距离、高吞吐量数据传输。</p>
+<p><img src="https://files.seeusercontent.com/2026/07/10/l8vG/spi-interface.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>与UART的异步方式不同，SPI通过独立的时钟线（SCK）来同步主设备（Master）与从设备（Slave）之间的每一位传输，因此发送端无需预先约定严格的波特率，通信速率可以达到数十兆赫兹甚至更高。其接口通常使用四根信号线：SCK（串行时钟，由主设备产生）、MOSI（主设备输出&#x2F;从设备输入，用于主设备向从设备发送数据）、MISO（主设备输入&#x2F;从设备输出，用于从设备向主设备发送数据）以及CS&#x2F;SS（片选信号，低电平有效，主设备通过拉低某个从设备的CS线来选中该从设备）。</p>
+<p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=MCi7dCBhVpQ&t=161s">(27) SPI: The serial peripheral interface - YouTube</a></p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs crmsh"><span class="hljs-keyword">Master</span>          <span class="hljs-title">Slave</span><br>  SCLK ────────► SCLK    时钟（<span class="hljs-literal">Master</span>产生）<br>  MOSI ────────► MOSI    主发从收<br>  MISO ◄──────── MISO    从发主收<br>  CS<span class="hljs-comment">#  ────────► CS#     片选（低有效）</span><br></code></pre></td></tr></table></figure>
+
+<p>由于MOSI和MISO两条数据线独立且同时工作，SPI能够在同一时钟周期内完成发送和接收，实现了真正的全双工通信。工作时，主设备首先拉低目标从设备的CS引脚以激活该从设备，然后在每个SCK时钟边沿（上升沿或下降沿，依极性配置而定）同时移出和移入一位数据，通常8位为一个字节。</p>
+<p><strong>SPI协议没有固定的数据帧格式（如起始位、停止位），也不包含应答机制或流控制，因此单纯依靠硬件引脚的片选信号来选择从设备，整个通信完全由主设备控制</strong>。这种精简设计带来了极高的协议效率，但也导致了以下特点与局限：</p>
+<ul>
+<li>每个从设备需要独立的CS引脚，因此连接多个从设备时会占用较多主设备的GPIO（通用输入输出）资源；</li>
+<li>缺少应答和校验机制，发送端无法直接确认接收端是否正确收到数据，需要上层协议补充；</li>
+<li>没有定义多主设备冲突处理规则；传输距离极短（通常仅在电路板内部使用，线长不超过几十厘米）。</li>
+</ul>
+<p>SPI因其高速度（常可达50MHz以上）和低协议开销，被大量用于对速度要求苛刻且通信距离极短的场景，例如：Flash存储器&#x2F;EEPROM读写、SD卡（Secure Digital Memory Card，安全数字存储卡）通信、LCD&#x2F;OLED显示屏驱动、模数转换器（ADC）&#x2F;数模转换器（DAC）配置、实时时钟（RTC）、传感器（如加速度计、陀螺仪、温度传感器）数据采集，以及FPGA或数字信号处理器与外围芯片之间的高速数据交换。</p>
+<p>四种模式（CPOL&#x2F;CPHA）：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>CPOL</th>
+<th>CPHA</th>
+<th>空闲时钟</th>
+<th>采样沿</th>
+<th>典型器件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>低</td>
+<td>上升沿</td>
+<td>SD卡、多数传感器</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>低</td>
+<td>下降沿</td>
+<td>部分ADC</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>高</td>
+<td>下降沿</td>
+<td>-</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>高</td>
+<td>上升沿</td>
+<td>W25Qxx Flash</td>
+</tr>
+</tbody></table>
+<p><strong>常见翻车：</strong> 器件 datasheet 写 MODE3，代码配了 MODE0，现象是读出全0xFF。</p>
+<blockquote>
+<p>SPI 的 CPOL（时钟极性）和 CPHA（时钟相位）决定了数据是在时钟的上升沿还是下降沿采样，以及空闲时钟电平是高还是低。如果主设备与从设备的 <strong>CPOL &#x2F; CPHA 配置不一致</strong>，会导致采样点错位，最常见现象就是 <strong>读到的数据整体偏移一个字节（或几个位）</strong>。这种错位是 <strong>固定偏移</strong>，不会随机乱码，非常有规律。</p>
+</blockquote>
+<h3 id="DMA-收发（生产推荐）"><a href="#DMA-收发（生产推荐）" class="headerlink" title="DMA 收发（生产推荐）"></a>DMA 收发（生产推荐）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 同时发送和接收（全双工） */</span><br>HAL_SPI_TransmitReceive_DMA(&amp;hspi1, tx_buf, rx_buf, len);<br><br><span class="hljs-comment">/* CS 手动控制 — HAL 不帮你拉低！ */</span><br>HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);<br>HAL_SPI_TransmitReceive_DMA(&amp;hspi1, tx_buf, rx_buf, len);<br><span class="hljs-comment">/* 等 DMA 完成回调再拉高 CS */</span><br><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_SPI_TxRxCpltCallback</span><span class="hljs-params">(SPI_HandleTypeDef *hspi)</span> &#123;<br>    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="多从机"><a href="#多从机" class="headerlink" title="多从机"></a>多从机</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 多个从机 — 每个单独 CS 引脚，同一 SCLK/MOSI/MISO 总线 */</span><br><span class="hljs-comment">/* 同一时刻只能有一个 CS 拉低，否则总线冲突 */</span><br><br><span class="hljs-type">void</span> <span class="hljs-title function_">spi_select</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> device)</span> &#123;<br>    HAL_GPIO_WritePin(CS_FLASH_Port, CS_FLASH_Pin, GPIO_PIN_SET);   <span class="hljs-comment">/* 先全部拉高 */</span><br>    HAL_GPIO_WritePin(CS_SENSOR_Port, CS_SENSOR_Pin, GPIO_PIN_SET);<br>    <span class="hljs-keyword">switch</span>(device) &#123;<br>        <span class="hljs-keyword">case</span> DEV_FLASH:  HAL_GPIO_WritePin(CS_FLASH_Port,  CS_FLASH_Pin,  GPIO_PIN_RESET); <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> DEV_SENSOR: HAL_GPIO_WritePin(CS_SENSOR_Port, CS_SENSOR_Pin, GPIO_PIN_RESET); <span class="hljs-keyword">break</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="事务时序-1"><a href="#事务时序-1" class="headerlink" title="事务时序"></a>事务时序</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/adylee/p/5399742.html">SPI总线协议及SPI时序图详解 - Ady Lee - 博客园</a></p>
+</blockquote>
+<hr>
+<h2 id="I²C（双线串行总线）"><a href="#I²C（双线串行总线）" class="headerlink" title="I²C（双线串行总线）"></a>I²C（双线串行总线）</h2><p>I²C（Inter-Integrated Circuit，内部集成电路总线）是一种由飞利浦公司（现恩智浦半导体）于1982年发明的半双工、同步串行通信协议，它仅使用两条开漏（Open-Drain）信号线——串行数据线（SDA）和串行时钟线（SCL），配合上拉电阻即可实现多主设备（Multi-Master）与多从设备（Multi-Slave）之间的通信。</p>
+<img src="https://files.seeusercontent.com/2026/07/10/vcG2/2e313be096a35677525954f573dddf88.png" srcset="/img/loading.gif" lazyload alt="2e313be096a35677525954f573dddf88" style="zoom:50%;" />
+
+<p>与SPI需要多个片选引脚不同，I²C通过唯一的7位或10位设备地址来寻址每个从设备，从而仅用两根线就能挂载多达上百个节点（受总线电容限制，标准模式下通常为数十个），极大地节省了微控制器的引脚资源。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">SDA</span> ──┬──┬──  开漏，必须外接上拉（典型 <span class="hljs-number">4</span>.<span class="hljs-number">7</span>kΩ @<span class="hljs-number">3</span>.<span class="hljs-number">3</span>V <span class="hljs-number">100</span>kHz）<br><span class="hljs-attribute">SCL</span> ──┘  └──  速率：标准 <span class="hljs-number">100</span>kHz，快速 <span class="hljs-number">400</span>kHz，高速 <span class="hljs-number">3</span>.<span class="hljs-number">4</span>MHz<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>多主机，多从机</strong>（7位地址 &#x3D; 最多 127 个设备）</li>
+<li><strong>半双工</strong></li>
+<li><strong>ACK&#x2F;NACK</strong> 是协议核心，NACK 必须处理</li>
+</ul>
+<p><strong>在物理层，由于SDA和SCL均为开漏结构，任何设备都只能将线路拉低（输出逻辑0）或释放（高阻态），而高电平通过外部上拉电阻产生，这种设计允许多个设备无竞争地共享总线并实现仲裁机制。</strong></p>
+<blockquote>
+<p><strong>“线与”</strong>：多个设备连接在同一根线上，只要 <strong>有一个</strong> 输出 0，那这根线就是 0；只有 <strong>所有</strong> 设备都输出 1（即释放总线），这根线才是 1。</p>
+<ul>
+<li>这很像“民主投票”：一票否决（0 是强势的），全票通过才是 1。</li>
+</ul>
+<p><strong>仲裁机制</strong>：</p>
+<ul>
+<li>如果主设备 A 想发送 1（释放总线），但主设备 B 想发送 0（拉低线路），那么线上的实际结果是 <strong>0</strong>。</li>
+<li>I2C 协议规定，发送方要 <strong>回读</strong> 总线上的电平。当 A 发现自己想发 1 但总线是 0 时，就知道 <strong>有别人在抢总线</strong>，并且 A 会主动退出发送（失去仲裁）。</li>
+<li>这样，多个设备可以同时开始发送，<strong>不会烧坏引脚</strong>（因为开漏结构允许短接到地），并且 <strong>优先级高的设备（发 0 的）会赢</strong>，无损地完成传输。</li>
+</ul>
+</blockquote>
+<p>在通信协议层面，I²C的帧结构具有明确的开始与停止条件：<strong>当SCL为高电平时，SDA发生下降沿表示起始信号（Start），上升沿表示停止信号（Stop）</strong>。所有数据传输以字节（8位）为单位，每个字节后跟随一个应答位（ACK，低电平有效），由接收端拉低SDA表示成功接收；若接收端不响应（保持高电平，即NACK），主设备可发出停止或重复起始信号。起始信号后，主设备先发送7位从设备地址和1位读写方向位（0表示写，1表示读），寻址到的从设备通过应答响应，随后按方向传输若干字节，每个字节后都有应答位，最终由停止信号结束总线会话。</p>
+<p>I²C支持多种速率模式：标准模式（100 kbit&#x2F;s）、快速模式（400 kbit&#x2F;s）、快速模式+（1 Mbit&#x2F;s）、高速模式（3.4 Mbit&#x2F;s）以及超快速模式（5 Mbit&#x2F;s，仅用于单向传输）。由于其地址空间有限，为应对地址冲突还扩展了10位寻址模式和软件协议（如D&#x2F;C&#x2F;I²C地址分配标准）。</p>
+<p>I²C的主要优点包括引脚占用极少、支持多主设备仲裁（当多个主设备同时启动时，通过逐位比较SDA上的数据，丢失仲裁的一方主动退出）、内置应答检错机制、功耗较低，以及便于构建传感器网络。但它也存在明显局限：</p>
+<ul>
+<li>半双工通信意味着同一时刻只能单向传输，速度低于SPI；</li>
+<li>总线电容限制了传输距离（通常限于同一电路板或短电缆，约1-2米）；</li>
+<li>每个从设备需要唯一地址，且开漏结构的上拉电阻导致速率与功耗之间的权衡（上拉电阻越小速率越快但功耗越高）。</li>
+</ul>
+<p>I²C广泛应用于各种低速外设的连接，例如温度传感器（如LM75）、加速度计、陀螺仪、磁力计、触摸屏控制器、EEPROM（24LC系列）、实时时钟（DS1307&#x2F;DS3231）、模数转换器（如ADS1115）、I&#x2F;O扩展器（PCF8574）、OLED&#x2F;LCD显示模块（基于SSD1306等驱动），以及电源管理芯片与SoC之间的配置与控制。简而言之，I²C以两根线的极简成本，构成了嵌入式系统中设备间慢速控制与状态读取的骨干总线。</p>
+<h3 id="寄存器读写范式"><a href="#寄存器读写范式" class="headerlink" title="寄存器读写范式"></a>寄存器读写范式</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 写寄存器（最常见操作：配置传感器） */</span><br><span class="hljs-type">uint8_t</span> <span class="hljs-title function_">write_reg</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> dev_addr, <span class="hljs-type">uint8_t</span> reg, <span class="hljs-type">uint8_t</span> val)</span> &#123;<br>    <span class="hljs-type">uint8_t</span> buf[<span class="hljs-number">2</span>] = &#123;reg, val&#125;;<br>    <span class="hljs-keyword">return</span> HAL_I2C_Master_Transmit(&amp;hi2c1, dev_addr &lt;&lt; <span class="hljs-number">1</span>, buf, <span class="hljs-number">2</span>, <span class="hljs-number">10</span>);<br>&#125;<br><br><span class="hljs-comment">/* 读寄存器 */</span><br><span class="hljs-type">uint8_t</span> <span class="hljs-title function_">read_reg</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> dev_addr, <span class="hljs-type">uint8_t</span> reg, <span class="hljs-type">uint8_t</span> *out)</span> &#123;<br>    HAL_I2C_Master_Transmit(&amp;hi2c1, dev_addr &lt;&lt; <span class="hljs-number">1</span>, &amp;reg, <span class="hljs-number">1</span>, <span class="hljs-number">10</span>); <span class="hljs-comment">/* 写寄存器地址 */</span><br>    <span class="hljs-keyword">return</span> HAL_I2C_Master_Receive(&amp;hi2c1, (dev_addr &lt;&lt; <span class="hljs-number">1</span>) | <span class="hljs-number">0x01</span>, out, <span class="hljs-number">1</span>, <span class="hljs-number">10</span>);<br>&#125;<br><br><span class="hljs-comment">/* 更简洁：使用 HAL Mem 系列（内部处理了 restart） */</span><br>HAL_I2C_Mem_Write(&amp;hi2c1, dev_addr &lt;&lt; <span class="hljs-number">1</span>, reg, I2C_MEMADD_SIZE_8BIT, &amp;val, <span class="hljs-number">1</span>, <span class="hljs-number">10</span>);<br>HAL_I2C_Mem_Read (&amp;hi2c1, dev_addr &lt;&lt; <span class="hljs-number">1</span>, reg, I2C_MEMADD_SIZE_8BIT, out, <span class="hljs-number">1</span>, <span class="hljs-number">10</span>);<br></code></pre></td></tr></table></figure>
+
+<p>常见故障：</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>排查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>HAL_BUSY</code> 永远返回</td>
+<td>总线锁死（NACK后SDA被从机拉低）</td>
+<td>软件复位 I2C，或手动 toggle SCL 9次</td>
+</tr>
+<tr>
+<td>地址 ACK 失败</td>
+<td>地址错误 &#x2F; 设备未上电 &#x2F; 上拉缺失</td>
+<td>逻辑分析仪，确认 ADDR 帧 ACK</td>
+</tr>
+<tr>
+<td>读数异常</td>
+<td>重复起始条件（ReSTART）时序错误</td>
+<td>用 <code>Mem_Read</code> 替代手动 Transmit+Receive</td>
+</tr>
+<tr>
+<td>400kHz 工作不稳定</td>
+<td>上拉电阻太大（线电容+速率限制）</td>
+<td>换 2.2kΩ，或降回 100kHz</td>
+</tr>
+</tbody></table>
+<p>如果主设备的 GPIO 被错误地配置为 <strong>推挽输出（push-pull）</strong>，则：</p>
+<ul>
+<li><p>主设备输出高电平时会 <strong>主动驱动高电平</strong>，而不是释放总线。</p>
+</li>
+<li><p>从设备想要拉低 SDA 时，会与主设备的强推挽高电平 <strong>产生冲突</strong>，导致 SDA 无法被拉低。</p>
+</li>
+<li><p>SCL 上能看到低电平脉冲，说明时钟信号在活动（可能是由从设备产生时钟拉伸，或主设备本身在发送时钟）。但 SDA 线被主设备的推挽输出 <strong>锁在高电平或无法释放</strong>，所以通信失败。</p>
+</li>
+</ul>
+<h3 id="I²C-总线锁死恢复"><a href="#I²C-总线锁死恢复" class="headerlink" title="I²C 总线锁死恢复"></a>I²C 总线锁死恢复</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">i2c_recover</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> &#123;<br>    <span class="hljs-comment">/* 配置 SCL 为普通 GPIO 输出 */</span><br>    GPIO_InitTypeDef GPIO_InitStruct = &#123;<span class="hljs-number">0</span>&#125;;<br>    GPIO_InitStruct.Pin  = I2C_SCL_PIN;<br>    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;<br>    HAL_GPIO_Init(I2C_SCL_PORT, &amp;GPIO_InitStruct);<br><br>    <span class="hljs-comment">/* 发送 9 个时钟脉冲，释放被锁住的 SDA */</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">9</span>; i++) &#123;<br>        HAL_GPIO_WritePin(I2C_SCL_PORT, I2C_SCL_PIN, GPIO_PIN_RESET);<br>        HAL_Delay(<span class="hljs-number">1</span>);<br>        HAL_GPIO_WritePin(I2C_SCL_PORT, I2C_SCL_PIN, GPIO_PIN_SET);<br>        HAL_Delay(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">/* 发送 STOP 条件，然后重新初始化 I2C 外设 */</span><br>    HAL_I2C_DeInit(&amp;hi2c1);<br>    HAL_I2C_Init(&amp;hi2c1);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="事务时序-2"><a href="#事务时序-2" class="headerlink" title="事务时序"></a>事务时序</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2062402">i2c时序图的详细讲解</a></p>
+</blockquote>
+<hr>
+<h2 id="USB（通用串行总线）"><a href="#USB（通用串行总线）" class="headerlink" title="USB（通用串行总线）"></a>USB（通用串行总线）</h2><p>嵌入式场景中最常用的是 <strong>USB CDC（虚拟串口）</strong> 和 <strong>USB HID</strong>，底层协议由 ST&#x2F;NXP USB 库处理，工程师主要关注应用层接口。</p>
+<h3 id="6-1-设备类型速查"><a href="#6-1-设备类型速查" class="headerlink" title="6.1 设备类型速查"></a>6.1 设备类型速查</h3><table>
+<thead>
+<tr>
+<th>类</th>
+<th>典型用途</th>
+<th>PC端驱动</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CDC-ACM</td>
+<td>虚拟串口、调试、AT命令</td>
+<td>免驱（Win10&#x2F;Linux&#x2F;Mac）</td>
+</tr>
+<tr>
+<td>HID</td>
+<td>鼠标、键盘、自定义报告</td>
+<td>免驱</td>
+</tr>
+<tr>
+<td>MSC</td>
+<td>U盘、SD卡读卡器</td>
+<td>免驱</td>
+</tr>
+<tr>
+<td>DFU</td>
+<td>固件升级</td>
+<td>dfu-util</td>
+</tr>
+<tr>
+<td>Vendor-specific</td>
+<td>自定义协议</td>
+<td>需要驱动（libusb）</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-USB-CDC-收发（最常用）"><a href="#6-2-USB-CDC-收发（最常用）" class="headerlink" title="6.2 USB CDC 收发（最常用）"></a>6.2 USB CDC 收发（最常用）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 发送（CubeMX 生成 CDC 工程中）*/</span><br><span class="hljs-keyword">extern</span> USBD_HandleTypeDef hUsbDeviceFS;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">usb_cdc_send</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> *buf, <span class="hljs-type">uint16_t</span> len)</span> &#123;<br>    <span class="hljs-comment">/* 等待上一次发送完成，否则可能丢数据 */</span><br>    <span class="hljs-type">uint32_t</span> timeout = <span class="hljs-number">1000</span>;<br>    <span class="hljs-keyword">while</span> (CDC_Transmit_FS(buf, len) == USBD_BUSY &amp;&amp; --timeout);<br>&#125;<br><br><span class="hljs-comment">/* 接收（在 usbd_cdc_if.c 中重写回调）*/</span><br><span class="hljs-type">static</span> <span class="hljs-type">int8_t</span> <span class="hljs-title function_">CDC_Receive_FS</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> *Buf, <span class="hljs-type">uint32_t</span> *Len)</span> &#123;<br>    <span class="hljs-comment">/* Buf 是接收缓冲，Len 是实际接收字节数 */</span><br>    <span class="hljs-comment">/* 注意：这是在 USB 中断上下文中调用的！不能做耗时操作 */</span><br>    ring_buffer_write(&amp;usb_rx_rb, Buf, *Len);<br>    USBD_CDC_SetRxBuffer(&amp;hUsbDeviceFS, &amp;Buf[<span class="hljs-number">0</span>]);<br>    USBD_CDC_ReceivePacket(&amp;hUsbDeviceFS);<br>    <span class="hljs-keyword">return</span> USBD_OK;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-3-DFU-固件升级"><a href="#6-3-DFU-固件升级" class="headerlink" title="6.3 DFU 固件升级"></a>6.3 DFU 固件升级</h3><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">PC                          Device<br>  dfu-util -D firmware.<span class="hljs-keyword">bin</span><br><span class="hljs-keyword"></span>        │<br>        ▼<br>  USB DFU Class (<span class="hljs-number">0xFE</span>)<br>        │<br>        ├── DETACH  → 设备进入 DFU 模式（或跳转到 <span class="hljs-keyword">Bootloader）</span><br><span class="hljs-keyword"></span>        ├── DNLOAD  → 下载固件数据块<br>        ├── GETSTATUS → 查询擦写状态<br>        └── MANIFEST → 完成，设备验证并重启<br></code></pre></td></tr></table></figure>
+
+<h2 id="CAN（控制器局域网）"><a href="#CAN（控制器局域网）" class="headerlink" title="CAN（控制器局域网）"></a>CAN（控制器局域网）</h2><p>汽车、工业控制领域的骨干总线，差分信号（CAN_H &#x2F; CAN_L），极强抗干扰。</p>
+<h3 id="4-1-帧格式（标准帧-11位ID）"><a href="#4-1-帧格式（标准帧-11位ID）" class="headerlink" title="4.1 帧格式（标准帧 11位ID）"></a>4.1 帧格式（标准帧 11位ID）</h3><figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">SOF</span> │ ID(<span class="hljs-number">11</span>) │ RTR │ IDE │ r0 │ DLC(<span class="hljs-number">4</span>) │ Data(<span class="hljs-number">0</span>-<span class="hljs-number">64</span>B) │ CRC(<span class="hljs-number">15</span>) │ ACK │ EOF<br> <span class="hljs-attribute">1</span>  │   <span class="hljs-number">11</span>   │  <span class="hljs-number">1</span>  │  <span class="hljs-number">1</span>  │  <span class="hljs-number">1</span> │   <span class="hljs-number">4</span>    │   <span class="hljs-number">0</span>~<span class="hljs-number">8</span> Byte  │   <span class="hljs-number">15</span>   │  <span class="hljs-number">2</span>  │  <span class="hljs-number">7</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>DLC</strong>：数据长度 0-8 字节（CAN FD 可达 64B）</li>
+<li><strong>ID</strong>：仲裁 ID，数值越小优先级越高（总线仲裁是非破坏性的）</li>
+<li><strong>RTR</strong>：远程帧请求（主动向其他节点请求数据）</li>
+</ul>
+<h3 id="4-2-波特率与位时间"><a href="#4-2-波特率与位时间" class="headerlink" title="4.2 波特率与位时间"></a>4.2 波特率与位时间</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs objectivec">位时间 = <span class="hljs-number">1</span> / 波特率<br>       = Sync_Seg + Prop_Seg + Phase_Seg1 + Phase_Seg2<br><br><span class="hljs-comment">/* STM32 CAN 250kbps 配置（APB1=36MHz）*/</span><br>hcan.Init.Prescaler = <span class="hljs-number">9</span>;    <span class="hljs-comment">/* Tq = 9/36M = 250ns */</span><br>hcan.Init.TimeSeg1  = <span class="hljs-built_in">CAN_BS1_13TQ</span>;  <span class="hljs-comment">/* 13Tq */</span><br>hcan.Init.TimeSeg2  = <span class="hljs-built_in">CAN_BS2_2TQ</span>;   <span class="hljs-comment">/* 2Tq */</span><br><span class="hljs-comment">/* 位时间 = (1+13+2) × 250ns = 4us → 250kbps ✓ */</span><br><span class="hljs-comment">/* 采样点 = (1+13)/16 = 87.5%（典型值 75%-87.5%） */</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="4-3-过滤器配置（最容易忘）"><a href="#4-3-过滤器配置（最容易忘）" class="headerlink" title="4.3 过滤器配置（最容易忘）"></a>4.3 过滤器配置（最容易忘）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 只接收 ID=0x123 的报文 */</span><br>CAN_FilterTypeDef filter = &#123;<br>    .FilterIdHigh         = <span class="hljs-number">0x123</span> &lt;&lt; <span class="hljs-number">5</span>,   <span class="hljs-comment">/* ID左移5位（标准帧） */</span><br>    .FilterIdLow          = <span class="hljs-number">0x0000</span>,<br>    .FilterMaskIdHigh     = <span class="hljs-number">0x7FF</span> &lt;&lt; <span class="hljs-number">5</span>,   <span class="hljs-comment">/* 全匹配掩码 */</span><br>    .FilterMaskIdLow      = <span class="hljs-number">0x0000</span>,<br>    .FilterFIFOAssignment = CAN_RX_FIFO0,<br>    .FilterBank           = <span class="hljs-number">0</span>,<br>    .FilterMode           = CAN_FILTERMODE_IDMASK,<br>    .FilterScale          = CAN_FILTERSCALE_32BIT,<br>    .FilterActivation     = ENABLE,<br>&#125;;<br>HAL_CAN_ConfigFilter(&amp;hcan, &amp;filter);<br><br><span class="hljs-comment">/* 接受所有报文（掩码全0） */</span><br>filter.FilterMaskIdHigh = <span class="hljs-number">0x0000</span>;<br>filter.FilterMaskIdLow  = <span class="hljs-number">0x0000</span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-4-发送与接收"><a href="#4-4-发送与接收" class="headerlink" title="4.4 发送与接收"></a>4.4 发送与接收</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 发送 */</span><br>CAN_TxHeaderTypeDef TxHeader = &#123;<br>    .StdId = <span class="hljs-number">0x321</span>,<br>    .IDE   = CAN_ID_STD,<br>    .RTR   = CAN_RTR_DATA,<br>    .DLC   = <span class="hljs-number">8</span>,<br>&#125;;<br><span class="hljs-type">uint8_t</span> TxData[<span class="hljs-number">8</span>] = &#123;<span class="hljs-number">0x01</span>, <span class="hljs-number">0x02</span>, <span class="hljs-number">0x03</span>, <span class="hljs-number">0x04</span>, <span class="hljs-number">0x05</span>, <span class="hljs-number">0x06</span>, <span class="hljs-number">0x07</span>, <span class="hljs-number">0x08</span>&#125;;<br><span class="hljs-type">uint32_t</span> TxMailbox;<br>HAL_CAN_AddTxMessage(&amp;hcan, &amp;TxHeader, TxData, &amp;TxMailbox);<br><br><span class="hljs-comment">/* 接收（FIFO0中断） */</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">HAL_CAN_RxFifo0MsgPendingCallback</span><span class="hljs-params">(CAN_HandleTypeDef *hcan)</span> &#123;<br>    CAN_RxHeaderTypeDef RxHeader;<br>    <span class="hljs-type">uint8_t</span> RxData[<span class="hljs-number">8</span>];<br>    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &amp;RxHeader, RxData);<br>    <span class="hljs-comment">/* 处理 RxHeader.StdId 和 RxData */</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-5-错误状态机"><a href="#4-5-错误状态机" class="headerlink" title="4.5 错误状态机"></a>4.5 错误状态机</h3><figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs xl">主动错误态（正常）→（错误计数&gt;<span class="hljs-number">127</span>）→ 被动错误态 → （&gt;<span class="hljs-number">255</span>）→ 总线关闭<br>                                                              ↓<br>                                              <span class="hljs-number">128</span>次<span class="hljs-number">11</span>连续隐性位后自动恢复<br><span class="hljs-comment">/* 读取错误计数 */</span><br>uint32_t err = HAL_CAN_GetError(&amp;hcan);<br><span class="hljs-comment">/* TEC（发送错误计数）和 REC（接收错误计数）可从寄存器读取 */</span><br><span class="hljs-function"><span class="hljs-title">uint8_t</span> TEC = (hcan.Instance-&gt;</span>ESR &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0</span>xFF;<br><span class="hljs-function"><span class="hljs-title">uint8_t</span> REC = (hcan.Instance-&gt;</span>ESR &gt;&gt; <span class="hljs-number">24</span>) &amp; <span class="hljs-number">0</span>xFF;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="RS-485-与-Modbus-RTU"><a href="#RS-485-与-Modbus-RTU" class="headerlink" title="RS-485 与 Modbus RTU"></a>RS-485 与 Modbus RTU</h2><h3 id="5-1-RS-485-物理层"><a href="#5-1-RS-485-物理层" class="headerlink" title="5.1 RS-485 物理层"></a>5.1 RS-485 物理层</h3><p>RS-485 是 <strong>差分半双工</strong> 多节点总线，基于 UART，加了收发器（如 MAX485）。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MCU UART_TX ──→ DE/RE + DI ──→ 差分线 A/B ──→ ... ──→ 从机<br>MCU UART_RX ←── RO       ←──<br><br><span class="hljs-comment">/* 发送前拉高 DE（使能驱动），接收时拉低 DE */</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> RS485_TX_ENABLE()  HAL_GPIO_WritePin(DE_PORT, DE_PIN, GPIO_PIN_SET)</span><br><span class="hljs-meta">#<span class="hljs-keyword">define</span> RS485_RX_ENABLE()  HAL_GPIO_WritePin(DE_PORT, DE_PIN, GPIO_PIN_RESET)</span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">rs485_send</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> *buf, <span class="hljs-type">uint16_t</span> len)</span> </span>&#123;<br>    <span class="hljs-built_in">RS485_TX_ENABLE</span>();<br>    <span class="hljs-built_in">HAL_UART_Transmit</span>(&amp;huart2, buf, len, <span class="hljs-number">100</span>);<br>    <span class="hljs-comment">/* 等待发送完成！不能立即切换，否则最后字节被截断 */</span><br>    <span class="hljs-keyword">while</span> (__HAL_UART_GET_FLAG(&amp;huart2, UART_FLAG_TC) == RESET);<br>    <span class="hljs-built_in">RS485_RX_ENABLE</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong> <code>HAL_UART_Transmit</code> 返回不代表最后一个字节已从移位寄存器发出，必须等 TC（Transmission Complete）标志。</p>
+<h3 id="5-2-Modbus-RTU-帧格式"><a href="#5-2-Modbus-RTU-帧格式" class="headerlink" title="5.2 Modbus RTU 帧格式"></a>5.2 Modbus RTU 帧格式</h3><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">┌────────┬──────────┬──────────┬────────────────┬──────────┐<br>│ <span class="hljs-keyword">ADDR </span>  │ FUNC CODE│ DATA     │ CRC<span class="hljs-number">-16</span>         │ 静默间隔 │<br>│ <span class="hljs-number">1</span> <span class="hljs-keyword">Byte </span>│ <span class="hljs-number">1</span> <span class="hljs-keyword">Byte </span>  │ N <span class="hljs-keyword">Bytes </span> │ <span class="hljs-number">2</span> <span class="hljs-keyword">Bytes(低字节先)│ </span>≥<span class="hljs-number">3</span>.<span class="hljs-number">5</span>字符 │<br>└────────┴──────────┴──────────┴────────────────┘<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-3-常用功能码"><a href="#5-3-常用功能码" class="headerlink" title="5.3 常用功能码"></a>5.3 常用功能码</h3><table>
+<thead>
+<tr>
+<th>功能码</th>
+<th>操作</th>
+<th>数据对象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x01</td>
+<td>读</td>
+<td>线圈（1bit，可读写）</td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>读</td>
+<td>离散输入（1bit，只读）</td>
+</tr>
+<tr>
+<td>0x03</td>
+<td>读</td>
+<td>保持寄存器（16bit，可读写）<strong>最常用</strong></td>
+</tr>
+<tr>
+<td>0x04</td>
+<td>读</td>
+<td>输入寄存器（16bit，只读）</td>
+</tr>
+<tr>
+<td>0x06</td>
+<td>写单个</td>
+<td>保持寄存器</td>
+</tr>
+<tr>
+<td>0x10</td>
+<td>写多个</td>
+<td>保持寄存器</td>
+</tr>
+</tbody></table>
+<h3 id="5-4-CRC-16-实现"><a href="#5-4-CRC-16-实现" class="headerlink" title="5.4 CRC-16 实现"></a>5.4 CRC-16 实现</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">uint16_t</span> <span class="hljs-title function_">modbus_crc16</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">uint8_t</span> *data, <span class="hljs-type">uint16_t</span> len)</span> &#123;<br>    <span class="hljs-type">uint16_t</span> crc = <span class="hljs-number">0xFFFF</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">uint16_t</span> i = <span class="hljs-number">0</span>; i &lt; len; i++) &#123;<br>        crc ^= data[i];<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">uint8_t</span> j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">8</span>; j++) &#123;<br>            <span class="hljs-keyword">if</span> (crc &amp; <span class="hljs-number">0x0001</span>) crc = (crc &gt;&gt; <span class="hljs-number">1</span>) ^ <span class="hljs-number">0xA001</span>;<br>            <span class="hljs-keyword">else</span>              crc &gt;&gt;= <span class="hljs-number">1</span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> crc;  <span class="hljs-comment">/* 低字节先发送 */</span><br>&#125;<br><br><span class="hljs-comment">/* 构建读保持寄存器请求（FC=03）*/</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">build_read_holding</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> addr, <span class="hljs-type">uint16_t</span> reg, <span class="hljs-type">uint16_t</span> count, <span class="hljs-type">uint8_t</span> *frame)</span> &#123;<br>    frame[<span class="hljs-number">0</span>] = addr;<br>    frame[<span class="hljs-number">1</span>] = <span class="hljs-number">0x03</span>;<br>    frame[<span class="hljs-number">2</span>] = reg &gt;&gt; <span class="hljs-number">8</span>;<br>    frame[<span class="hljs-number">3</span>] = reg &amp; <span class="hljs-number">0xFF</span>;<br>    frame[<span class="hljs-number">4</span>] = count &gt;&gt; <span class="hljs-number">8</span>;<br>    frame[<span class="hljs-number">5</span>] = count &amp; <span class="hljs-number">0xFF</span>;<br>    <span class="hljs-type">uint16_t</span> crc = modbus_crc16(frame, <span class="hljs-number">6</span>);<br>    frame[<span class="hljs-number">6</span>] = crc &amp; <span class="hljs-number">0xFF</span>;   <span class="hljs-comment">/* CRC低字节 */</span><br>    frame[<span class="hljs-number">7</span>] = crc &gt;&gt; <span class="hljs-number">8</span>;     <span class="hljs-comment">/* CRC高字节 */</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="TCP-IP-与-LWIP（嵌入式以太网）"><a href="#TCP-IP-与-LWIP（嵌入式以太网）" class="headerlink" title="TCP&#x2F;IP 与 LWIP（嵌入式以太网）"></a>TCP&#x2F;IP 与 LWIP（嵌入式以太网）</h2><h3 id="7-1-嵌入式网络栈结构"><a href="#7-1-嵌入式网络栈结构" class="headerlink" title="7.1 嵌入式网络栈结构"></a>7.1 嵌入式网络栈结构</h3><figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs gcode">应用层      MQTT / HTTP / Modbus TCP / 自定义协议<br>            ──────────────────────────────────────<br>传输层      TCP / UDP        <span class="hljs-comment">(LWIP socket API)</span><br>网络层      IP / ICMP / ARP  <span class="hljs-comment">(LWIP 内部)</span><br>链路层      ETH MAC          <span class="hljs-comment">(STM32 HAL)</span><br>物理层      PHY 芯片（LA<span class="hljs-symbol">N8720</span>/DP<span class="hljs-number">83848</span>）<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-2-Socket-编程（LWIP-raw-BSD-两种风格）"><a href="#7-2-Socket-编程（LWIP-raw-BSD-两种风格）" class="headerlink" title="7.2 Socket 编程（LWIP raw&#x2F;BSD 两种风格）"></a>7.2 Socket 编程（LWIP raw&#x2F;BSD 两种风格）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* BSD socket 风格（阻塞，放在独立任务中）*/</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">tcp_client_connect</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *ip, <span class="hljs-type">uint16_t</span> port)</span> &#123;<br>    <span class="hljs-type">int</span> sock = socket(AF_INET, SOCK_STREAM, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">server</span> =</span> &#123;<br>        .sin_family = AF_INET,<br>        .sin_port   = htons(port),<br>    &#125;;<br>    inet_aton(ip, &amp;server.sin_addr);<br><br>    <span class="hljs-keyword">if</span> (connect(sock, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;server, <span class="hljs-keyword">sizeof</span>(server)) &lt; <span class="hljs-number">0</span>) &#123;<br>        closesocket(sock);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> sock;<br>&#125;<br><br><span class="hljs-comment">/* 发送数据 */</span><br>send(sock, data, len, <span class="hljs-number">0</span>);<br><br><span class="hljs-comment">/* 接收（阻塞直到有数据）*/</span><br><span class="hljs-type">int</span> n = recv(sock, buf, <span class="hljs-keyword">sizeof</span>(buf), <span class="hljs-number">0</span>);<br><span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-comment">/* 连接断开，n=0 对端关闭，n&lt;0 错误 */</span><br>    closesocket(sock);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-3-TCP-粘包处理"><a href="#7-3-TCP-粘包处理" class="headerlink" title="7.3 TCP 粘包处理"></a>7.3 TCP 粘包处理</h3><p>TCP 是流协议，<code>recv</code> 返回的字节数不对应一个”消息”，必须自己组帧：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 方法：在帧头加长度域 */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>    <span class="hljs-type">uint16_t</span> magic;   <span class="hljs-comment">/* 0xAA55 帧头 */</span><br>    <span class="hljs-type">uint16_t</span> length;  <span class="hljs-comment">/* 后续数据字节数 */</span><br>    <span class="hljs-type">uint8_t</span>  cmd;<br>    <span class="hljs-type">uint8_t</span>  data[];  <span class="hljs-comment">/* 变长数据 */</span><br>&#125; __attribute__((packed)) Frame_t;<br><br><span class="hljs-comment">/* 接收状态机 */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">enum</span> &#123;</span> WAIT_HEADER, WAIT_DATA &#125; RxState;<br>RxState state = WAIT_HEADER;<br><span class="hljs-type">uint8_t</span> rx_buf[<span class="hljs-number">1024</span>];<br><span class="hljs-type">int</span> rx_count = <span class="hljs-number">0</span>;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">tcp_recv_task</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> &#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-type">int</span> n = recv(sock, rx_buf + rx_count, <span class="hljs-keyword">sizeof</span>(rx_buf) - rx_count, <span class="hljs-number">0</span>);<br>        <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">0</span>) <span class="hljs-keyword">break</span>;<br>        rx_count += n;<br><br>        <span class="hljs-keyword">while</span> (rx_count &gt;= <span class="hljs-keyword">sizeof</span>(Frame_t)) &#123;<br>            Frame_t *f = (Frame_t *)rx_buf;<br>            <span class="hljs-keyword">if</span> (f-&gt;magic != <span class="hljs-number">0xAA55</span>) &#123; <span class="hljs-comment">/* 帧头错误，丢弃1字节重新同步 */</span><br>                memmove(rx_buf, rx_buf + <span class="hljs-number">1</span>, --rx_count);<br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br>            <span class="hljs-type">int</span> total = <span class="hljs-keyword">sizeof</span>(Frame_t) + f-&gt;length;<br>            <span class="hljs-keyword">if</span> (rx_count &lt; total) <span class="hljs-keyword">break</span>; <span class="hljs-comment">/* 数据还不够 */</span><br>            process_frame(f);<br>            memmove(rx_buf, rx_buf + total, rx_count -= total);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<img src="C:/Users/11252/Desktop%E6%A1%8C%E9%9D%A2/254f332d117c4c79ac04cd8f3cb25056.png" srcset="/img/loading.gif" lazyload style="zoom: 25%;" />
+
+
+
+<p> <strong>STM32 待机模式（Standby mode）</strong> 的一个重要特性：<strong>唤醒后相当于芯片复位</strong>。</p>
+<p>首先要区分 STM32 的几种低功耗模式：</p>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">唤醒后行为</th>
+<th align="left">内核状态</th>
+<th align="left">RAM 保持</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>睡眠模式</strong></td>
+<td align="left">从断点继续执行</td>
+<td align="left">时钟停止，内核停止</td>
+<td align="left">全部保持</td>
+</tr>
+<tr>
+<td align="left"><strong>停机模式</strong></td>
+<td align="left">从断点继续执行</td>
+<td align="left">时钟停止，内核停止</td>
+<td align="left">全部保持</td>
+</tr>
+<tr>
+<td align="left"><strong>待机模式</strong></td>
+<td align="left"><strong>相当于硬件复位</strong></td>
+<td align="left">完全掉电</td>
+<td align="left"><strong>丢失</strong>（除备份域）</td>
+</tr>
+</tbody></table>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li><strong>待机模式（Standby）</strong> 唤醒后，芯片会执行 <strong>复位流程</strong>（从 <code>Reset_Handler</code> 开始，最终进入 <code>main()</code>）。</li>
+<li><strong>题目说“唤醒后程序没有从 main 函数开始执行”</strong> —— 这句话本身可能意味着两种情况：<ol>
+<li>唤醒后压根没有执行代码（卡死&#x2F;锁住）→ 可能是唤醒源配置错误，导致没有真正唤醒。</li>
+<li>唤醒后执行了代码，但不是从 <code>main()</code> 开始（比如从复位中断向量开始）→ 这其实是<strong>正常现象</strong>，但题目的表述暗示“不符合预期”，所以可能用户预期是继续执行而不是复位。</li>
+</ol>
+</li>
+</ul>
+<p>结合常见考题，<strong>A</strong> 是出题人的预期答案：因为没有正确配置唤醒源，系统实际上是被 <strong>复位</strong> 了（而不是“唤醒后继续”），用户误以为没有从 main 开始执行。</p>
+<p><code>HFSR</code>（HardFault Status Register）和 <code>CFSR</code>（Configurable Fault Status Register）可以告诉你硬错误的具体原因（比如总线错误、用法错误、存储器管理等）。</p>
+<p>STM32 的 RTC（Real-Time Clock）核心和它的寄存器位于 <strong>备份域（Backup Domain）</strong>。这个区域在以下情况下仍可保持供电：</p>
+<ul>
+<li>当主电源 VDD 断电时，如果 <strong>VBAT 引脚</strong> 连接了电池（如 CR2032），备份域会自动切换到 VBAT 供电。</li>
+<li>如果 VBAT 悬空或未接电池，主电源断电后，备份域也会掉电，RTC 的计数值和配置就会丢失（复位到默认值）。</li>
+</ul>
+<p>因此，<strong>断电后时间丢失</strong> 最直接的原因是没有为 VBAT 提供后备电源，加电池就能解决。</p>
+<ul>
+<li>STM32 进入 <strong>睡眠模式（Sleep）</strong> 时，CPU 时钟停止，但 GPIO 外设的电源和寄存器内容 <strong>不会掉电</strong>，GPIO 状态理论上应该保持不变。</li>
+<li>但在实际系统中，如果在睡眠期间发生了 <strong>意外复位</strong>（如看门狗、外部复位等），或者某些配置被意外修改，GPIO 状态可能改变。</li>
+<li><strong>GPIO 锁定机制（Lock Register）</strong> 可以防止 GPIO 配置（模式、输出类型、速度、上拉&#x2F;下拉等）在锁定后被意外更改，直到下一次复位。</li>
+<li>对于需要 <strong>在睡眠模式下保持特定输出状态</strong> 的设计（如驱动功率管、保持继电器吸合等），在进入睡眠前 <strong>锁定 GPIO 配置</strong> 是一种可靠做法，可以避免被其他代码或事件误改。</li>
+</ul>
+<blockquote>
+<p>注意：睡眠模式本身并不会重置 GPIO 输出。本题可能隐含了“防止外部干扰或代码误操作导致状态改变”的场景，因此锁定寄存器是最直接的方案。</p>
+</blockquote>
+<ul>
+<li>中断服务函数（ISR）应该 <strong>短小精悍</strong>，只做最紧急、最少的事情（如置标志位、清中断标志、保存数据），把耗时的处理放到主循环或任务中执行。</li>
+<li>如果 ISR 中做了太多事情（例如处理数据、调用复杂函数），当中断触发频率很高时，CPU 会频繁进入 ISR，导致主循环得不到执行机会。</li>
+<li><strong>置标志位</strong> 的方式使得 ISR 只花几个 CPU 周期就退出，主循环可以正常轮询标志位并进行后续处理。</li>
+</ul>
+<p>STM32 定时器的输入捕获单元使用 <strong>定时器时钟</strong>（通常是 APB 时钟，如 72MHz）对输入信号进行采样。由于输入信号相对于定时器时钟是 <strong>异步的</strong>，捕获操作存在一个固有的 <strong>±1 个计数时钟周期</strong> 的量化误差。</p>
+<p>这是 <strong>数字测量中的基本原理</strong>：使用一个频率为 f<em>f</em> 的时钟去测量一个异步事件的时间间隔，理论上误差范围是 <strong>±1 个时钟周期</strong>。这个误差无法完全消除，只能通过提高定时器时钟频率来减小相对误差。</p>
+<p>DAC 输出 &#x3D; (DOR &#x2F; 4096) × Vref+。如果 Vref+ 不准（如电压波动、未正确连接），输出偏差会成比例放大。这是首先要确认的。</p>
+<p>SD 卡通过 SPI 通信时，使用 <strong>CS（片选）信号</strong> 来表示一次命令&#x2F;数据传输的开始和结束。SD 卡协议规定：</p>
+<ul>
+<li><strong>CS 拉低</strong>：表示一次事务开始（命令或数据传输）。</li>
+<li><strong>CS 拉高</strong>：表示一次事务结束，SD 卡退出 SPI 模式的数据响应状态，回到命令等待状态。</li>
+</ul>
+<p><strong>常见错误</strong>：</p>
+<ul>
+<li>第一次操作后，忘记将 CS 拉高（仍保持低电平）。</li>
+<li>第二次操作前，没有重新拉低 CS（或者卡认为仍在之前的事务中，导致状态机混乱）。</li>
+</ul>
+<p>这样会导致第二次操作时，SD 卡无法正确识别命令，从而返回错误或无响应。</p>
+<p>SPI 擦除 Flash 芯片后数据未变化。原因是？</p>
+<ul>
+<li><strong>A. Flash 芯片写保护未解除</strong> ✅<br>很多 SPI Flash（如 W25Q64）有写保护引脚（WP#）或状态寄存器中的写保护位。如果未解除写保护，擦除&#x2F;编程操作无效，数据保持不变。</li>
+</ul>
+<p>STM32 启动模式由 BOOT0 和 BOOT1 引脚决定：</p>
+<ul>
+<li>BOOT0 &#x3D; 0 → 用户 Flash</li>
+<li>BOOT0 &#x3D; 1, BOOT1 &#x3D; 0 → 系统存储器（ISP 模式）</li>
+<li>BOOT0 &#x3D; 1, BOOT1 &#x3D; 1 → SRAM<br>如果 BOOT0 被拉高且 BOOT1 &#x3D; 0，就会进入系统存储器。这是最常见原因。</li>
+</ul>
+<p>引脚输出期望 3.3V，但示波器显示高电平只有 2V。可能的原因是？</p>
+<ul>
+<li><strong>A. GPIO 输出驱动能力不足，负载过重</strong> ✅<br>STM32 GPIO 输出驱动能力有限（典型 20mA @ 3.3V）。如果负载电阻过小（如 100Ω），输出电压会被拉低。这是最常见原因。</li>
+<li>B. 引脚配置为开漏输出且未接上拉 → 开漏输出且无上拉时，高电平由外部上拉电阻决定。若无上拉，引脚处于高阻态，示波器探头可能读到不确定电平（通常接近 0 或噪声，不一定是 2V）。</li>
+<li>C. 芯片供电电压不足 → 如果 VDD 本身只有 2V，输出高电平不可能到 3.3V。但题中期望 3.3V，假设供电正常。</li>
+<li>D. 示波器探头接地不良 → 接地不良可能导致测量值不准（偏高或偏低，不稳定），不太可能稳定显示 2V。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BA%95%E5%B1%82%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/" class="category-chain-item">底层基础理论</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%BA%95%E5%B1%82%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/%E7%94%B5%E5%AD%90%E4%B8%8E%E8%87%AA%E6%8E%A7/" class="category-chain-item">电子与自控</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%BA%95%E5%B1%82%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/%E7%94%B5%E5%AD%90%E4%B8%8E%E8%87%AA%E6%8E%A7/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" class="category-chain-item">固件开发</a>
+  
+  
+
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>单片机原理(STM32为例)</div>
+      <div>https://hermes37.vercel.app/2026/04/15/底层基础理论/电子与自控/固件开发/单片机原理(STM32为例)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ling</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/17/%E5%BA%95%E5%B1%82%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/%E7%94%B5%E5%AD%90%E4%B8%8E%E8%87%AA%E6%8E%A7/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/FreeRTOS%E5%9F%BA%E7%A1%80/" title="FreeRTOS基础">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">FreeRTOS基础</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/15/%E5%BA%95%E5%B1%82%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6/%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/%E5%BE%AE%E6%9C%BA%E5%8E%9F%E7%90%86%E4%B8%8E%E6%8E%A5%E5%8F%A3%E6%8A%80%E6%9C%AF/" title="微机原理与接口技术">
+                        <span class="hidden-mobile">微机原理与接口技术</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/toc-toggle.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
